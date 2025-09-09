@@ -17,7 +17,7 @@
     "body-parser": "^2.2.0",
     "cloudinary": "^2.7.0",
     "connect-mongo": "^5.1.0",
-    "dotenv": "^17.2.1",
+    "dotenv": "^17.2.2",
     "ejs": "^3.1.10",
     "express": "^5.1.0",
     "express-session": "^1.18.2",
@@ -25,7 +25,16 @@
     "jspdf": "^3.0.2",
     "mongoose": "^8.18.0",
     "multer": "^2.0.2",
+    "razorpay": "^2.9.6",
     "streamifier": "^0.1.1",
     "tailwindcss": "^4.1.12"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Siddharthdtiwari/ClassConnect.git"
+  },
+  "bugs": {
+    "url": "https://github.com/Siddharthdtiwari/ClassConnect/issues"
+  },
+  "homepage": "https://github.com/Siddharthdtiwari/ClassConnect#readme"
 }

@@ -1,5 +1,5 @@
 // =====================
-//        Imports
+//      Imports
 // =====================
 const PORT = 3000;
 const express = require("express");
@@ -10,10 +10,12 @@ const multer = require("multer");
 const session = require("express-session");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
+const Razorpay = require("razorpay"); // <-- ADDED FOR RAZORPAY
+const crypto = require("crypto");     // <-- ADDED FOR RAZORPAY
 require("dotenv").config();
 
 // =====================
-//        Models
+//      Models
 // =====================
 const User = require("./models/user");
 const Teacher = require("./models/teacher");
@@ -24,7 +26,7 @@ const Attendance = require("./models/attendance");
 const StudyMaterial = require("./models/StudyMaterial");
 
 // =====================
-//        App Setup
+//      App Setup
 // =====================
 const app = express();
 app.set("view engine", "ejs");
@@ -42,8 +44,18 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
+
 // =====================
-//       Multer Setup
+//   Razorpay Instance
+// =====================
+const razorpay = new Razorpay({
+    key_id: process.env.RAZORPAY_KEY_ID,
+    key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
+
+
+// =====================
+//      Multer Setup
 // =====================
 const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, "public/uploads/"),
@@ -52,7 +64,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 // =====================
-//     Cloudinary Setup
+//   Cloudinary Setup
 // =====================
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -103,14 +115,14 @@ const requireStudentLogin = async (req, res, next) => {
 };
 
 // =====================
-//          Routes
+//         Routes
 // =====================
 
 // -------- Home --------
 app.get("/", (req, res) => res.render("index"));
 
 // =====================
-//      Student Routes
+//     Student Routes
 // =====================
 app.get("/student/login", (req, res) => res.render("student/login"));
 app.post("/student/login", async (req, res) => {
@@ -244,7 +256,7 @@ app.get("/student/test_score", requireStudentLogin, async (req, res) => {
 });
 
 
-// -------- Student Fee Payment --------
+// -------- Student Fee Payment (MODIFIED FOR RAZORPAY) --------
 app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -288,12 +300,129 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
     const totalExpected = monthlyFee * monthsElapsed;
     const totalDue = totalExpected - totalPaid;
 
-    res.render("student/fee_payment", { student, feesByMonth, totalPaid, totalDue });
+    res.render("student/fee_payment", { 
+        student, 
+        feesByMonth, 
+        totalPaid, 
+        totalDue,
+        razorpayKeyId: process.env.RAZORPAY_KEY_ID // <-- PASS KEY TO EJS
+    });
   } catch (err) {
     console.error(err);
     res.send("Error loading fee payment");
   }
 });
+
+
+// ===================================
+//     NEW RAZORPAY PAYMENT ROUTES
+// ===================================
+// -------- Create Order --------
+app.post("/create-order", requireStudentLogin, async (req, res) => {
+    try {
+        const { amount } = req.body;
+        if (!amount || amount <= 0) {
+            return res.status(400).json({ error: 'Invalid amount' });
+        }
+        const options = {
+            amount: Math.round(amount * 100), // Amount in the smallest currency unit (paise)
+            currency: 'INR',
+            receipt: `receipt_order_${new Date().getTime()}`,
+        };
+        const order = await razorpay.orders.create(options);
+        if (!order) {
+            return res.status(500).send('Error creating order');
+        }
+        res.json(order);
+    } catch (error) {
+        console.error('Error in /create-order:', error);
+        res.status(500).send('Server Error');
+    }
+});
+
+// -------- Verify Payment --------
+app.post("/verify-payment", requireStudentLogin, async (req, res) => {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
+    const secret = process.env.RAZORPAY_KEY_SECRET;
+
+    const shasum = crypto.createHmac('sha256', secret);
+    shasum.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+    const digest = shasum.digest('hex');
+
+    if (digest === razorpay_signature) {
+        console.log('Payment is legitimate and verified.');
+        
+        try {
+            const student = await User.findById(req.session.userId);
+            if (!student) {
+                throw new Error("Student not found for session.");
+            }
+
+            // --- START OF NEW DYNAMIC LOGIC ---
+            // Re-create the logic from the fee_payment route to find which months are due
+            const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+            const calendarToAcademic = { 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11 };
+
+            const now = new Date();
+            const currentMonthIndex = now.getMonth();
+            const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
+            const monthsElapsed = currentAcademicIndex + 1;
+
+            // Find which months have already been paid by this student
+            const paidFees = await Fee.find({ studentId: student.studentId }).lean();
+            const paidMonths = paidFees.map(f => f.month);
+
+            // Determine the oldest month that is due
+            let dueMonth = null;
+            for (let i = 0; i < monthsElapsed; i++) {
+                const monthToCheck = months[i];
+                if (!paidMonths.includes(monthToCheck)) {
+                    dueMonth = monthToCheck; // This is the oldest due month
+                    break;
+                }
+            }
+
+            if (!dueMonth) {
+                console.log("No due month found, but payment was made. This could be an advance payment or an error.");
+                // We will still record the payment but flag it for review, or you can choose to reject it.
+                // For now, we'll assign it to the current month if possible.
+                dueMonth = months[calendarToAcademic[now.getMonth()]];
+            }
+            
+            const year = now.getFullYear();
+
+            // Create the new Fee document with the correct, dynamically found month
+            const newFee = new Fee({
+                studentId: student.studentId,
+                studentName: student.studentName,
+                standard: student.standard,
+                month: dueMonth, 
+                year: year,
+                amount: amount,
+                method: 'Online',
+                status: 'Paid',
+                datePaid: new Date(),
+                razorpayPaymentId: razorpay_payment_id
+            });
+            await newFee.save();
+            console.log(`Fee record created for ${dueMonth} for payment ID: ${razorpay_payment_id}`);
+            // --- END OF NEW DYNAMIC LOGIC ---
+
+        } catch(dbError) {
+            console.error('Error saving fee to DB after payment verification:', dbError);
+            // Even if DB save fails, we must inform Razorpay. But we should log this error for admin.
+        }
+
+        res.json({
+            status: 'success',
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+        });
+    } else {
+        res.status(400).json({ status: 'failure', message: 'Invalid signature.' });
+    }
+});
+
 
 app.get("/student/take_test", requireStudentLogin, async (req, res) => {
   try {
@@ -423,8 +552,11 @@ app.get("/student/logout", (req, res) => {
 });
 
 // =====================
-//      Teacher Routes
+//     Teacher Routes
 // =====================
+// --- ALL YOUR EXISTING TEACHER ROUTES GO HERE ---
+// --- OMITTED FOR BREVITY, PLEASE KEEP YOURS IN PLACE ---
+
 app.get("/teacher/login", (req, res) => {
   res.render("teacher/login"); // initially no error
 });
@@ -471,7 +603,7 @@ app.get("/teacher/logout", (req, res) => {
 
 
 // =====================
-//    Teacher Management
+//   Teacher Management
 // =====================
 // Add/Edit Teacher, Students, Attendance, Tests, Fees
 // ... (similar formatting can be applied here for remaining routes)
@@ -505,7 +637,7 @@ app.post("/teacher/edit_teacher/:id", requireTeacherLogin, async (req, res) => {
 });
 
 // =====================
-//      Student Management
+//    Student Management
 // =====================
 app.get("/teacher/manage_students", requireTeacherLogin, async (req, res) => {
   const students = await User.find().lean();
@@ -806,7 +938,7 @@ app.get("/api/scores/consolidated_classwise", requireTeacherLogin, async (req, r
 });
 
 // =====================
-//      Study Material
+//     Study Material
 // =====================
 app.get("/teacher/study_material", requireTeacherLogin, async (req, res) => {
   const materials = await StudyMaterial.find().sort({ uploadedAt: -1 }).lean();

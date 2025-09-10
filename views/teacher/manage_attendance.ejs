@@ -110,110 +110,80 @@
 <body class="text-gray-800">
 
   <!-- Main Container -->
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-
-    <!-- Header -->
-    <header class="mb-8">
-      <a href="#" onclick="history.back()" class="text-sm text-brand-purple hover:underline mb-2 block">&larr;
-        Back to Dashboard</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Manage Attendance
-      </h1>
-      <p class="text-gray-600 mt-1">Manage daily attendance for all students.</p>
-    </header>
-
-    <!-- Main Content Area -->
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-
-      <!-- Calendar and Attendance Table Container -->
-      <div id="attendance-container">
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <!-- Left Column: Calendar View -->
-          <div class="lg:col-span-1">
-            <div class="flex items-center justify-between mb-6">
-              <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
-              <h2 id="month-year" class="text-2xl font-bold text-gray-900"></h2>
-              <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
-            </div>
-            <div class="calendar-grid font-semibold text-gray-500 mb-2">
-              <div>Sun</div>
-              <div>Mon</div>
-              <div>Tue</div>
-              <div>Wed</div>
-              <div>Thu</div>
-              <div>Fri</div>
-              <div>Sat</div>
-            </div>
-            <div id="calendar-body" class="calendar-grid">
-              <!-- Calendar days will be dynamically inserted here -->
-            </div>
-
-            <div class="border-t border-gray-200 my-6"></div>
-            
-
-<h3 class="text-lg font-bold text-gray-900 mb-4">Legend</h3>
-
-<div class="space-y-3 text-sm">
-  <!-- Present -->
-  <div class="flex items-center">
-    <div class="w-5 h-5 rounded-full day-present mr-3 flex items-center justify-center text-xs font-bold">
-      P
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- Left Column: Calendar + Legend -->
+  <div class="lg:col-span-1">
+    <!-- Calendar -->
+    <div class="flex items-center justify-between mb-6">
+      <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
+      <h2 id="month-year" class="text-2xl font-bold text-gray-900"></h2>
+      <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
     </div>
-    Present
+    <div class="calendar-grid font-semibold text-gray-500 mb-2">
+      <div>Sun</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+    </div>
+    <div id="calendar-body" class="calendar-grid"></div>
+
+    <!-- Legend -->
+    <div class="border-t border-gray-200 my-6"></div>
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Legend</h3>
+    <div class="space-y-3 text-sm">
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-present mr-3 flex items-center justify-center text-xs font-bold">P</div>
+        Present
+      </div>
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-absent mr-3 flex items-center justify-center text-xs font-bold">A</div>
+        Absent
+      </div>
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-holiday mr-3 flex items-center justify-center text-xs font-bold">H</div>
+        Holiday
+      </div>
+      <div class="flex items-center">
+        <div class="w-4 h-4 rounded-full border-2 border-brand-purple mr-3"></div>
+        Today
+      </div>
+    </div>
   </div>
 
-  <!-- Absent -->
-  <div class="flex items-center">
-    <div class="w-5 h-5 rounded-full day-absent mr-3 flex items-center justify-center text-xs font-bold">
-      A
+  <!-- Right Column: Attendance Table -->
+  <div class="lg:col-span-1" id="attendance-table-container">
+    <div class="flex items-center justify-between mb-6">
+      <button id="prev-day" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
+      <h3 class="text-2xl font-bold text-gray-900">
+        Attendance for <span id="current-date-display"></span>
+      </h3>
+      <button id="next-day" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
     </div>
-    Absent
-  </div>
-
-  <!-- Holiday -->
-  <div class="flex items-center">
-    <div class="w-5 h-5 rounded-full day-holiday mr-3 flex items-center justify-center text-xs font-bold">
-      H
+    <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border">
+      <table class="table-auto rounded-lg overflow-hidden w-full">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="student-attendance-list">
+          <!-- Student rows will be dynamically inserted here -->
+        </tbody>
+      </table>
     </div>
-    Holiday
-  </div>
-
-  <!-- Today -->
-  <div class="flex items-center">
-    <div class="w-4 h-4 rounded-full border-2 border-brand-purple mr-3"></div>
-    Today
+    <div class="mt-6 text-center">
+      <button id="save-attendance-btn" class="py-2 px-4 btn-outline-purple">
+        Save Attendance
+      </button>
+    </div>
   </div>
 </div>
 
-            <!-- Right Column: Attendance Table -->
-            <div class="lg:col-span-1" id="attendance-table-container">
-              <div class="flex items-center justify-between mb-6">
-                <button id="prev-day" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
-                <h3 class="text-2xl font-bold text-gray-900">Attendance for <span id="current-date-display"></span></h3>
-                <button id="next-day" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
-              </div>
-              <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border">
-                <table class="table-auto rounded-lg overflow-hidden w-full">
-                  <thead>
-                    <tr>
-                      <th>Student Name</th>
-                      <th>Student ID</th>
-                      <th>Status</th>
-                    </tr>
-                  </thead>
-                  <tbody id="student-attendance-list">
-                    <!-- Student rows will be dynamically inserted here -->
-                  </tbody>
-                </table>
-              </div>
-              <div class="mt-6 text-center">
-                <button id="save-attendance-btn" class="py-2 px-4 btn-outline-purple">
-                  Save Attendance
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
 
         <!-- Message Box for feedback -->
         <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>

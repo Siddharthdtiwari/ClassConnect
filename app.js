@@ -268,7 +268,8 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
     ];
 
     const calendarToAcademic = {
-      4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11
+      4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7,
+      0: 8, 1: 9, 2: 10, 3: 11
     };
 
     const now = new Date();
@@ -276,29 +277,48 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
     const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
     const monthsElapsed = currentAcademicIndex + 1;
 
+    // Academic year handling
+    const academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+    const yearForMonthIndex = (idx) => (idx < 8 ? academicStartYear : academicStartYear + 1);
+
+    // Fetch all fees for this student
     const fees = await Fee.find({ studentId: student.studentId }).lean();
 
+    // Build month-wise fee status
     const feesByMonth = months.map((month, idx) => {
-      const feeRecord = fees.find(f => f.month === month);
+      const feeYear = yearForMonthIndex(idx);
+      const feeRecord = fees.find(f => f.month === month && Number(f.year) === feeYear);
+
       if (feeRecord) {
         return {
           _id: feeRecord._id,
           month,
           amount: Number(feeRecord.amount || 0),
           status: feeRecord.status || "Paid",
-          datePaid: feeRecord.datePaid
+          datePaid: feeRecord.datePaid,
+          year: feeYear
         };
       } else if (idx < monthsElapsed) {
-        return { month, amount: 0, status: "Due", datePaid: null };
+        return { month, amount: Number(student.monthlyFee || 0), status: "Due", datePaid: null, year: feeYear };
       } else {
-        return { month, amount: 0, status: "Not Yet Due", datePaid: null };
+        return { month, amount: Number(student.monthlyFee || 0), status: "Not Yet Due", datePaid: null, year: feeYear };
       }
     });
 
+    // Totals
     const monthlyFee = Number(student.monthlyFee || 0);
-    const totalPaid = fees.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
     const totalExpected = monthlyFee * monthsElapsed;
-    const totalDue = totalExpected - totalPaid;
+
+    const totalPaid = fees.reduce((sum, f) => {
+      const idx = months.indexOf(f.month);
+      if (idx === -1) return sum;
+      const expectedYear = yearForMonthIndex(idx);
+      if (Number(f.year) !== expectedYear) return sum;
+      if (f.status !== "Paid") return sum;
+      return sum + (Number(f.amount) || 0);
+    }, 0);
+
+    const totalDue = Math.max(0, totalExpected - totalPaid);
 
     res.render("student/fee_payment", { 
         student, 
@@ -307,6 +327,7 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
         totalDue,
         razorpayKeyId: process.env.RAZORPAY_KEY_ID // <-- PASS KEY TO EJS
     });
+
   } catch (err) {
     console.error(err);
     res.send("Error loading fee payment");
@@ -314,9 +335,6 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
 });
 
 
-// ===================================
-//     NEW RAZORPAY PAYMENT ROUTES
-// ===================================
 // -------- Create Order --------
 app.post("/create-order", requireStudentLogin, async (req, res) => {
     try {

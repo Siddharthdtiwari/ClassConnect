@@ -108,10 +108,6 @@
 
                         </div>
 
-                        <!-- ======================================================= -->
-                        <!-- MODIFIED BUTTON: Added id and data-* attributes       -->
-                        <!-- This is the only change in your visible HTML          -->
-                        <!-- ======================================================= -->
                         <% if (totalDue > 0) { %>
                             <button 
                                 id="pay-button" 
@@ -164,15 +160,16 @@
 
                                     </div>
                                     <div class="text-right">
-                                        <p class="font-bold text-gray-800">₹<%= student.monthlyFee.toLocaleString() %>
-                                        </p>
-                                        <span
-                                            class="px-2 py-1 text-xs font-semibold rounded-full 
-                                <%= f.status === 'Paid' ? 'status-paid' : f.status === 'Due' ? 'status-due' : 'status-upcoming' %>">
-                                            <%= f.status %>
-                                        </span>
+  <p class="font-bold text-gray-800">
+    ₹<%= f.status === "Paid" ? f.amount.toLocaleString() : student.monthlyFee.toLocaleString() %>
+  </p>
+  <span
+    class="px-2 py-1 text-xs font-semibold rounded-full 
+    <%= f.status === 'Paid' ? 'status-paid' : f.status === 'Due' ? 'status-due' : 'status-upcoming' %>">
+    <%= f.status %>
+  </span>
+</div>
 
-                                    </div>
                                 </div>
                                 <% }) %>
                         </div>

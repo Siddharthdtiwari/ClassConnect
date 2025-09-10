@@ -623,8 +623,6 @@ app.get("/teacher/logout", (req, res) => {
 // =====================
 //   Teacher Management
 // =====================
-// Add/Edit Teacher, Students, Attendance, Tests, Fees
-// ... (similar formatting can be applied here for remaining routes)
 
 app.get("/teacher/add_teacher", requireTeacherLogin, (req, res) => res.render("teacher/add_teacher"));
 app.post("/teacher/add_teacher", requireTeacherLogin, async (req, res) => {

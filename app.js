@@ -1,7 +1,3 @@
-// =====================
-//        Imports
-// =====================
-const PORT = 3000;
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -10,11 +6,10 @@ const multer = require("multer");
 const session = require("express-session");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
+const Razorpay = require("razorpay");
+const crypto = require("crypto");
 require("dotenv").config();
 
-// =====================
-//        Models
-// =====================
 const User = require("./models/user");
 const Teacher = require("./models/teacher");
 const Test = require("./models/test");
@@ -23,9 +18,6 @@ const Fee = require("./models/fee");
 const Attendance = require("./models/attendance");
 const StudyMaterial = require("./models/StudyMaterial");
 
-// =====================
-//        App Setup
-// =====================
 const app = express();
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -33,7 +25,6 @@ app.set("views", path.join(__dirname, "views"));
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
-app.use("/uploads", express.static(path.join(__dirname, "public/uploads")));
 
 app.use(session({
   secret: process.env.SESSION_SECRET,
@@ -42,36 +33,30 @@ app.use(session({
   cookie: { maxAge: 1000 * 60 * 60 }
 }));
 
-// =====================
-//       Multer Setup
-// =====================
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/uploads/"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
+
+const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
-// =====================
-//     Cloudinary Setup
-// =====================
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
   api_secret: process.env.CLOUDINARY_API_SECRET
 });
 
-const uploadToCloudinary = (fileBuffer, folder = "student-profiles") =>
+const uploadToCloudinary = (fileBuffer, folder = "student-profiles", resourceType = "image") =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: "image" },
+      { folder, resource_type: resourceType },
       (err, result) => (err ? reject(err) : resolve(result))
     );
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 
-// =====================
-//   MongoDB Connection
-// =====================
 mongoose.connect(process.env.MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
@@ -79,9 +64,6 @@ mongoose.connect(process.env.MONGODB_URI, {
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB Connection Error:", err));
 
-// =====================
-//  Authentication Middleware
-// =====================
 const requireTeacherLogin = (req, res, next) => {
   if (!req.session.userId) return res.redirect("/teacher/login");
   next();
@@ -102,15 +84,11 @@ const requireStudentLogin = async (req, res, next) => {
   }
 };
 
-// =====================
-//          Routes
-// =====================
-
 // -------- Home --------
 app.get("/", (req, res) => res.render("index"));
 
 // =====================
-//      Student Routes
+//     Student Routes
 // =====================
 app.get("/student/login", (req, res) => res.render("student/login"));
 app.post("/student/login", async (req, res) => {
@@ -132,7 +110,6 @@ app.post("/student/login", async (req, res) => {
   }
 });
 
-// -------- Student Dashboard --------
 app.get("/student/dashboard", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -154,7 +131,6 @@ app.get("/student/dashboard", requireStudentLogin, async (req, res) => {
   }
 });
 
-// -------- Student Profile --------
 app.get("/student/edit_profile", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -175,7 +151,7 @@ app.post("/student/edit_profile", requireStudentLogin, upload.single("profilePho
     };
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, { folder: "student_profiles" });
+      const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
       updates.profilePhoto = result.secure_url;
     }
 
@@ -187,7 +163,6 @@ app.post("/student/edit_profile", requireStudentLogin, upload.single("profilePho
   }
 });
 
-// -------- Student Attendance ------
 app.get("/student/attendance", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -216,7 +191,6 @@ app.get("/student/attendance", requireStudentLogin, async (req, res) => {
   }
 });
 
-// -------- Student Test Scores --------
 app.get("/student/test_score", requireStudentLogin, async (req, res) => {
   try {
     const studentId = req.session.userId;
@@ -243,8 +217,6 @@ app.get("/student/test_score", requireStudentLogin, async (req, res) => {
   }
 });
 
-
-// -------- Student Fee Payment --------
 app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -256,7 +228,8 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
     ];
 
     const calendarToAcademic = {
-      4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11
+      4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7,
+      0: 8, 1: 9, 2: 10, 3: 11
     };
 
     const now = new Date();
@@ -264,44 +237,162 @@ app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
     const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
     const monthsElapsed = currentAcademicIndex + 1;
 
+    const academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+    const yearForMonthIndex = (idx) => (idx < 8 ? academicStartYear : academicStartYear + 1);
+
     const fees = await Fee.find({ studentId: student.studentId }).lean();
 
     const feesByMonth = months.map((month, idx) => {
-      const feeRecord = fees.find(f => f.month === month);
+      const feeYear = yearForMonthIndex(idx);
+      const feeRecord = fees.find(f => f.month === month && Number(f.year) === feeYear);
+
       if (feeRecord) {
         return {
           _id: feeRecord._id,
           month,
           amount: Number(feeRecord.amount || 0),
           status: feeRecord.status || "Paid",
-          datePaid: feeRecord.datePaid
+          datePaid: feeRecord.datePaid,
+          year: feeYear
         };
       } else if (idx < monthsElapsed) {
-        return { month, amount: 0, status: "Due", datePaid: null };
+        return { month, amount: Number(student.monthlyFee || 0), status: "Due", datePaid: null, year: feeYear };
       } else {
-        return { month, amount: 0, status: "Not Yet Due", datePaid: null };
+        return { month, amount: Number(student.monthlyFee || 0), status: "Not Yet Due", datePaid: null, year: feeYear };
       }
     });
 
     const monthlyFee = Number(student.monthlyFee || 0);
-    const totalPaid = fees.reduce((sum, f) => sum + (Number(f.amount) || 0), 0);
     const totalExpected = monthlyFee * monthsElapsed;
-    const totalDue = totalExpected - totalPaid;
 
-    res.render("student/fee_payment", { student, feesByMonth, totalPaid, totalDue });
+    const totalPaid = fees.reduce((sum, f) => {
+      const idx = months.indexOf(f.month);
+      if (idx === -1) return sum;
+      const expectedYear = yearForMonthIndex(idx);
+      if (Number(f.year) !== expectedYear) return sum;
+      if (f.status !== "Paid") return sum;
+      return sum + (Number(f.amount) || 0);
+    }, 0);
+
+    const totalDue = Math.max(0, totalExpected - totalPaid);
+
+    res.render("student/fee_payment", {
+      student,
+      feesByMonth,
+      totalPaid,
+      totalDue,
+      razorpayKeyId: process.env.RAZORPAY_KEY_ID
+    });
+
   } catch (err) {
     console.error(err);
     res.send("Error loading fee payment");
   }
 });
 
+app.post("/create-order", requireStudentLogin, async (req, res) => {
+  try {
+    const { amount } = req.body;
+    if (!amount || amount <= 0) {
+      return res.status(400).json({ error: 'Invalid amount' });
+    }
+    const options = {
+      amount: Math.round(amount * 100),
+      currency: 'INR',
+      receipt: `receipt_order_${new Date().getTime()}`,
+    };
+    const order = await razorpay.orders.create(options);
+    if (!order) {
+      return res.status(500).send('Error creating order');
+    }
+    res.json(order);
+  } catch (error) {
+    console.error('Error in /create-order:', error);
+    res.status(500).send('Server Error');
+  }
+});
+
+app.post("/verify-payment", requireStudentLogin, async (req, res) => {
+  const { razorpay_order_id, razorpay_payment_id, razorpay_signature, amount } = req.body;
+  const secret = process.env.RAZORPAY_KEY_SECRET;
+
+  const shasum = crypto.createHmac('sha256', secret);
+  shasum.update(`${razorpay_order_id}|${razorpay_payment_id}`);
+  const digest = shasum.digest('hex');
+
+  if (digest === razorpay_signature) {
+    console.log('Payment is legitimate and verified.');
+
+    try {
+      const student = await User.findById(req.session.userId);
+      if (!student) {
+        throw new Error("Student not found for session.");
+      }
+
+      const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+      const calendarToAcademic = { 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11 };
+
+      const now = new Date();
+      const currentMonthIndex = now.getMonth();
+      const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
+      const monthsElapsed = currentAcademicIndex + 1;
+
+      const paidFees = await Fee.find({ studentId: student.studentId }).lean();
+      const paidMonths = paidFees.map(f => f.month);
+
+      let dueMonth = null;
+      for (let i = 0; i < monthsElapsed; i++) {
+        const monthToCheck = months[i];
+        if (!paidMonths.includes(monthToCheck)) {
+          dueMonth = monthToCheck;
+          break;
+        }
+      }
+
+      if (!dueMonth) {
+        console.log("No due month found, but payment was made. This could be an advance payment or an error.");
+        dueMonth = months[calendarToAcademic[now.getMonth()]];
+      }
+
+      const year = now.getFullYear();
+
+      const newFee = new Fee({
+        studentId: student.studentId,
+        studentName: student.studentName,
+        standard: student.standard,
+        month: dueMonth,
+        year: year,
+        amount: amount,
+        method: 'Online',
+        status: 'Paid',
+        datePaid: new Date(),
+        razorpayPaymentId: razorpay_payment_id
+      });
+      await newFee.save();
+      console.log(`Fee record created for ${dueMonth} for payment ID: ${razorpay_payment_id}`);
+
+    } catch (dbError) {
+      console.error('Error saving fee to DB after payment verification:', dbError);
+    }
+
+    res.json({
+      status: 'success',
+      orderId: razorpay_order_id,
+      paymentId: razorpay_payment_id,
+    });
+  } else {
+    res.status(400).json({ status: 'failure', message: 'Invalid signature.' });
+  }
+});
+
+
 app.get("/student/take_test", requireStudentLogin, async (req, res) => {
   try {
     const studentStandard = req.user.standard;
-    const subject = req.query.subject || "overall"; // default overall 
+    const subject = req.query.subject || "overall";
     let query = { standard: studentStandard };
     if (subject !== "overall") {
-      query.subject = subject; // filter only for that subject 
+      query.subject = subject;
     }
     const tests = await Test.find(query).lean();
     res.render("student/take_test", { tests, studentStandard, subject });
@@ -311,61 +402,100 @@ app.get("/student/take_test", requireStudentLogin, async (req, res) => {
 
   }
 });
-// -------- Student Receipt PDF --------
-const { jsPDF } = require("jspdf");
+
+const PDFDocument = require("pdfkit");
+const axios = require("axios");
+
 app.get("/student/receipt/:feeId", requireStudentLogin, async (req, res) => {
   try {
     const fee = await Fee.findById(req.params.feeId).lean();
     if (!fee) return res.send("Receipt not found");
 
     const student = await User.findOne({ studentId: fee.studentId }).lean();
-    const doc = new jsPDF();
 
-    doc.setFontSize(18);
-    doc.setFont("helvetica", "bold");
-    doc.text("Tuition Hub - Fee Receipt", 105, 20, { align: "center" });
+    // Create PDF
+    const doc = new PDFDocument({ size: "A4", margin: 50 });
 
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text("123 Tuition Lane, Mumbai, India", 105, 28, { align: "center" });
-    doc.text("Phone: +91 9876543210 | Email: support@classconnect.com", 105, 34, { align: "center" });
-    doc.line(20, 38, 190, 38);
-
-    doc.setFontSize(14);
-    doc.setFont("helvetica", "bold");
-    doc.text("Payment Receipt", 105, 50, { align: "center" });
-
-    doc.setFontSize(12);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Student Name: ${student.studentName}`, 20, 70);
-    doc.text(`Student ID: ${student.studentId}`, 20, 80);
-    doc.text(`Class: ${student.standard}`, 20, 90);
-
-    doc.setFont("helvetica", "bold");
-    doc.text("Payment Details", 20, 110);
-    doc.setFont("helvetica", "normal");
-    doc.rect(20, 115, 170, 40);
-
-    doc.text(`Month: ${fee.month}`, 30, 125);
-    doc.text(`Amount Paid: ₹${fee.amount}`, 30, 135);
-    doc.text(`Date Paid: ${new Date(fee.datePaid).toDateString()}`, 30, 145);
-    doc.text(`Payment Status: ${fee.status}`, 30, 155);
-
-    doc.setFontSize(10);
-    doc.text("This is a computer-generated receipt and does not require a signature.", 105, 280, { align: "center" });
-
-    const pdf = doc.output();
+    // Stream PDF to browser
     res.setHeader("Content-Type", "application/pdf");
-    res.setHeader("Content-Disposition", `attachment; filename=receipt-${fee._id}.pdf`);
-    res.send(pdf);
+    res.setHeader(
+      "Content-Disposition",
+      `attachment; filename=receipt-${fee._id}.pdf`
+    );
+    doc.pipe(res);
 
+    // === Header Image (logo/banner) ===
+    const headerUrl = process.env.CLOUDINARY_HEADER_URL;
+    if (headerUrl) {
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const imgBuffer = Buffer.from(response.data, "binary");
+      doc.image(imgBuffer, (doc.page.width - 400) / 2, 30, { fit: [400, 80] });
+    }
+
+    doc.moveDown(5);
+
+    // === Title ===
+    doc
+      .fontSize(20)
+      .font("Helvetica-Bold")
+      .text("PAYMENT RECEIPT", { align: "center", underline: true });
+    doc.moveDown(2);
+
+    // === Student Info === (values bold)
+    doc.fontSize(12);
+
+    doc.font("Helvetica").text("Student Name: ", { continued: true });
+    doc.font("Helvetica-Bold").text(student.studentName);
+
+    doc.font("Helvetica").text("Student ID: ", { continued: true });
+    doc.font("Helvetica-Bold").text(student.studentId);
+
+    doc.font("Helvetica").text("Class: ", { continued: true });
+    doc.font("Helvetica-Bold").text(student.standard);
+
+    doc.moveDown(2);
+
+    // === Payment Details ===
+    doc.font("Helvetica-Bold").fontSize(14).text("Payment Details", { underline: true });
+    doc.moveDown(1);
+
+    const labelX = 60;  // label column
+    const valueX = 220; // value column
+    let lineY = doc.y;
+
+    function addDetail(label, value) {
+      doc.font("Helvetica").fontSize(12).text(label, labelX, lineY);
+      doc.font("Helvetica-Bold").text(value, valueX, lineY);
+      lineY += 20;
+    }
+
+    addDetail("Month", `${fee.month} ${fee.year}`);
+    addDetail("Amount Paid", `${fee.amount}rs`);
+    addDetail("Date Paid", new Date(fee.datePaid).toDateString());
+    addDetail("Payment Method", fee.method);
+    addDetail("Status", fee.status);
+
+    doc.moveDown(4);
+
+    // === Footer Note ===
+    doc
+      .font("Helvetica-Oblique")
+      .fontSize(10)
+      .fillColor("gray")
+      .text(
+        "This is a computer-generated receipt and does not require a signature.",
+        { align: "center" }
+      );
+
+    // Finalize PDF
+    doc.end();
   } catch (err) {
     console.error(err);
     res.send("Error generating receipt");
   }
 });
 
-// -------- Student Content --------
+
 app.get("/student/content", requireStudentLogin, async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -383,7 +513,6 @@ app.get("/student/content", requireStudentLogin, async (req, res) => {
   }
 });
 
-// -------- Student Leaderboard --------
 app.get("/student/leader_board", requireStudentLogin, async (req, res) => {
   try {
     const students = await User.find().lean();
@@ -411,7 +540,6 @@ app.get("/student/leader_board", requireStudentLogin, async (req, res) => {
   }
 });
 
-// -------- Student Logout --------
 app.get("/student/logout", (req, res) => {
   req.session.destroy(err => {
     if (err) {
@@ -423,10 +551,11 @@ app.get("/student/logout", (req, res) => {
 });
 
 // =====================
-//      Teacher Routes
+//     Teacher Routes
 // =====================
+
 app.get("/teacher/login", (req, res) => {
-  res.render("teacher/login"); // initially no error
+  res.render("teacher/login");
 });
 
 app.post("/teacher/login", async (req, res) => {
@@ -451,8 +580,6 @@ app.post("/teacher/login", async (req, res) => {
   }
 });
 
-
-
 app.get("/teacher/dashboard", requireTeacherLogin, async (req, res) => {
   const teacher = await Teacher.findById(req.session.userId);
   if (!teacher) return res.redirect("/teacher/login");
@@ -468,13 +595,6 @@ app.get("/teacher/logout", (req, res) => {
     res.redirect("/teacher/login");
   });
 });
-
-
-// =====================
-//    Teacher Management
-// =====================
-// Add/Edit Teacher, Students, Attendance, Tests, Fees
-// ... (similar formatting can be applied here for remaining routes)
 
 app.get("/teacher/add_teacher", requireTeacherLogin, (req, res) => res.render("teacher/add_teacher"));
 app.post("/teacher/add_teacher", requireTeacherLogin, async (req, res) => {
@@ -504,9 +624,6 @@ app.post("/teacher/edit_teacher/:id", requireTeacherLogin, async (req, res) => {
   res.redirect(`/teacher/edit_teacher/${req.params.id}`);
 });
 
-// =====================
-//      Student Management
-// =====================
 app.get("/teacher/manage_students", requireTeacherLogin, async (req, res) => {
   const students = await User.find().lean();
   res.render("teacher/manage_students", { students });
@@ -519,8 +636,8 @@ app.post("/teacher/add_student", requireTeacherLogin, upload.single("profilePhot
 
     let profilePhotoUrl = null;
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, { folder: "student-profiles" });
-      profilePhotoUrl = uploadResult.secure_url;
+      const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
+      profilePhotoUrl = result.secure_url;
     }
 
     const newStudent = new User({
@@ -540,7 +657,6 @@ app.post("/teacher/add_student", requireTeacherLogin, upload.single("profilePhot
   }
 });
 
-// View/Edit student profile
 app.get("/teacher/view_profile/:id", requireTeacherLogin, async (req, res) => {
   const student = await User.findById(req.params.id).lean();
   if (!student) return res.status(404).send("Student not found");
@@ -557,9 +673,7 @@ app.post("/teacher/edit_profile/:id", requireTeacherLogin, upload.single("profil
     const updateData = { studentName, standard, mobileNo };
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "student-profiles"
-      });
+      const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
       updateData.profilePhoto = result.secure_url;
     }
 
@@ -571,10 +685,6 @@ app.post("/teacher/edit_profile/:id", requireTeacherLogin, upload.single("profil
   }
 });
 
-
-// =====================
-//      Attendance
-// =====================
 app.get("/teacher/manage_attendance", requireTeacherLogin, async (req, res) => {
   const students = await User.find().lean();
   const attendanceRecords = await Attendance.find().lean();
@@ -596,9 +706,6 @@ app.post("/teacher/manage_attendance", requireTeacherLogin, async (req, res) => 
   res.json({ success: true, message: "Attendance saved successfully!" });
 });
 
-// =====================
-//      Tests
-// =====================
 app.get("/teacher/add_test", requireTeacherLogin, (req, res) => res.render("teacher/add_test"));
 app.post("/teacher/add_test", requireTeacherLogin, upload.single("questionPaper"), async (req, res) => {
   try {
@@ -606,11 +713,8 @@ app.post("/teacher/add_test", requireTeacherLogin, upload.single("questionPaper"
 
     let questionPaperUrl = null;
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "tests",
-        resource_type: "raw"
-      });
-      questionPaperUrl = uploadResult.secure_url;
+      const result = await uploadToCloudinary(req.file.buffer, "tests", "raw");
+      questionPaperUrl = result.secure_url;
     }
 
     const newTest = new Test({
@@ -629,7 +733,6 @@ app.post("/teacher/add_test", requireTeacherLogin, upload.single("questionPaper"
     res.status(500).send("❌ Failed to add test");
   }
 });
-
 app.get("/teacher/manage_tests", requireTeacherLogin, async (req, res) => {
   const tests = await Test.find().lean();
   res.render("teacher/manage_tests", { tests });
@@ -638,17 +741,11 @@ app.post("/teacher/delete_test/:id", requireTeacherLogin, async (req, res) => {
   await Test.findByIdAndDelete(req.params.id);
   res.redirect("/teacher/manage_tests");
 });
-// =====================
-//      Fees
-// =====================
 
-// GET Add Fee Page
 app.get("/teacher/add_fees", requireTeacherLogin, async (req, res) => {
   const users = await User.find({}, "studentId studentName standard").sort({ studentId: 1 });
   res.render("teacher/add_fees", { users });
 });
-
-// POST Add Fee
 app.post("/teacher/add_fees", requireTeacherLogin, async (req, res) => {
   try {
     const { studentId, studentName, standard, month, year, amount, method, datePaid } = req.body;
@@ -674,18 +771,12 @@ app.post("/teacher/add_fees", requireTeacherLogin, async (req, res) => {
 
 app.get("/teacher/manage_fees", requireTeacherLogin, async (req, res) => {
   try {
-    // Fetch all students
     const students = await User.find({}, "studentId studentName standard").lean();
-
-    // Fetch all fees
     const fees = await Fee.find().lean();
-
     const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
 
     const studentsWithFees = students.map(student => {
-      // Compare strings directly
       const studentFees = fees.filter(f => f.studentId === student.studentId);
-
       const feeMap = {};
       months.forEach(month => {
         const feeRecord = studentFees.find(f => f.month === month);
@@ -694,7 +785,7 @@ app.get("/teacher/manage_fees", requireTeacherLogin, async (req, res) => {
 
       return {
         studentName: student.studentName,
-        studentId: student.studentId, // display your custom ID
+        studentId: student.studentId,
         standard: student.standard,
         fees: feeMap
       };
@@ -707,10 +798,6 @@ app.get("/teacher/manage_fees", requireTeacherLogin, async (req, res) => {
   }
 });
 
-
-// =====================
-//      Scores API
-// =====================
 app.get("/teacher/manage_score", requireTeacherLogin, async (req, res) => {
   const users = await User.find({});
   const standards = [...new Set(users.map(u => u.standard))].sort();
@@ -722,7 +809,6 @@ app.get("/api/tests/:standard", requireTeacherLogin, async (req, res) => {
   res.json(tests);
 });
 
-// Fetch students and scores for a test
 app.get("/api/scores/:standard/:testId", requireTeacherLogin, async (req, res) => {
   const { standard, testId } = req.params;
   const students = await User.find({ standard }).lean();
@@ -738,11 +824,9 @@ app.get("/api/scores/:standard/:testId", requireTeacherLogin, async (req, res) =
     };
   }));
 
-  // Return array directly (not wrapped in object)
   res.json(studentScores);
 });
 
-// Save scores with percentage
 app.post("/api/scores/save", requireTeacherLogin, async (req, res) => {
   const { testId, scores } = req.body;
   const test = await Test.findById(testId);
@@ -771,7 +855,6 @@ app.post("/api/scores/save", requireTeacherLogin, async (req, res) => {
   res.json({ message: "Scores saved successfully!" });
 });
 
-// Consolidated classwise scores (read percentage)
 app.get("/api/scores/consolidated_classwise", requireTeacherLogin, async (req, res) => {
   const classes = ['5', '6', '7', '8', '9', '10'];
   const result = {};
@@ -784,7 +867,7 @@ app.get("/api/scores/consolidated_classwise", requireTeacherLogin, async (req, r
     const studentRows = students.map(s => ({
       studentId: s.studentId,
       studentName: s.studentName,
-      scores: {} // testId -> percentage
+      scores: {}
     }));
 
     scores.forEach(sc => {
@@ -805,9 +888,6 @@ app.get("/api/scores/consolidated_classwise", requireTeacherLogin, async (req, r
   res.json(result);
 });
 
-// =====================
-//      Study Material
-// =====================
 app.get("/teacher/study_material", requireTeacherLogin, async (req, res) => {
   const materials = await StudyMaterial.find().sort({ uploadedAt: -1 }).lean();
   res.render("teacher/study_material", { materials });
@@ -819,13 +899,10 @@ app.post("/teacher/study_material", requireTeacherLogin, upload.single("file"), 
     let filePath = null;
 
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "study-materials",
-        resource_type: "raw"   // 👈 for pdf/docx
-      });
+      const uploadResult = await uploadToCloudinary(req.file.buffer, "study-materials", "raw");
       filePath = uploadResult.secure_url;
     } else if (link) {
-      filePath = link; // external link
+      filePath = link;
     }
 
     if (!filePath) {
@@ -852,4 +929,4 @@ app.post("/teacher/study_material", requireTeacherLogin, upload.single("file"), 
 // =====================
 //     Start Server
 // =====================
-app.listen(PORT, () => console.log(`✅ Server listening on http://localhost:${PORT}`));
+app.listen(3000, () => console.log(`✅ Server listening on http://localhost:3000`));

@@ -203,7 +203,7 @@ app.get("/student/attendance", requireStudentLogin, async (req, res) => {
 
 app.get("/student/test_score", requireStudentLogin, async (req, res) => {
   try {
-    const studentId = req.user.studentId; // <-- now using correct studentId
+    const studentId = req.user.studentId;
 
     const scores = await Score.find({ studentId }).populate("testId").lean();
 
@@ -697,6 +697,58 @@ app.post("/teacher/manage_attendance", requireTeacherLogin, async (req, res) => 
   await attendance.save();
   res.json({ success: true, message: "Attendance saved successfully!" });
 });
+// Defaulter list route
+app.get("/teacher/defaulters/:year/:month", requireTeacherLogin, async (req, res) => {
+  try {
+    const { year, month } = req.params; // month = "09" for September, year = "2025"
+    const startDate = new Date(`${year}-${month}-01`);
+    const endDate = new Date(year, parseInt(month), 0); // last day of month
+
+    // Fetch all students
+    const students = await User.find().lean();
+
+    // Fetch attendance only for that month
+    const attendanceDocs = await Attendance.find({
+      date: { $gte: startDate.toISOString().split("T")[0], $lte: endDate.toISOString().split("T")[0] }
+    }).lean();
+
+    // Count attendance per student
+    const stats = {};
+    students.forEach(s => {
+      stats[s.studentId] = {
+        studentId: s.studentId,       // ✅ Now included
+        studentName: s.studentName,
+        present: 0,
+        absent: 0,
+        total: 0,
+        percentage: 0                 // ✅ Pre-calc field
+      };
+    });
+
+    attendanceDocs.forEach(doc => {
+      doc.records.forEach(r => {
+        if (stats[r.studentId]) {
+          if (r.status === "P") stats[r.studentId].present++;
+          if (r.status === "A") stats[r.studentId].absent++;
+          stats[r.studentId].total++;
+        }
+      });
+    });
+
+    // Apply threshold (example: < 75% attendance = defaulter)
+    const defaulters = Object.values(stats).map(s => {
+      s.percentage = s.total > 0 ? (s.present / s.total) * 100 : 0;
+      return s;
+    }).filter(s => s.percentage < 75);
+
+    res.render("teacher/defaulters", { year, month, defaulters });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generating defaulter list");
+  }
+});
+
+
 
 app.get("/teacher/add_test", requireTeacherLogin, (req, res) => res.render("teacher/add_test"));
 app.post("/teacher/add_test", requireTeacherLogin, upload.single("questionPaper"), async (req, res) => {

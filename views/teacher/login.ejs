@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Tuition Hub - Login</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
@@ -29,17 +30,18 @@
             z-index: 10;
             text-align: center;
             max-width: 600px;
-            padding: 2rem;
+            padding: 2rem 1rem;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
+            width: 90%;
+            margin: 0 auto;
         }
 
-
-        h1 {
-            font-size: 3rem;
+        h3 {
+            font-size: 2rem;
             font-weight: 800;
             margin-bottom: 1.2rem;
             color: #6d2d91;
@@ -86,7 +88,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 1;
+            z-index: 0;
             overflow: hidden;
         }
 
@@ -187,7 +189,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: 3;
+            z-index: 0;
             pointer-events: none;
         }
 
@@ -232,6 +234,31 @@
                 transform: translateX(0);
             }
         }
+
+        /* Responsive Styles */
+        @media (max-width: 768px) {
+            .content-container {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+                margin-bottom: 1rem;
+            }
+
+            p {
+                font-size: 1rem;
+            }
+
+            .btn {
+                padding: 0.7rem 1.5rem;
+                font-size: 0.9rem;
+            }
+
+            input {
+                padding: 0.7rem;
+            }
+        }
     </style>
 </head>
 
@@ -246,10 +273,10 @@
 
     <div class="content-container">
         <img src="/images/logo.png" alt="Tuition Hub Logo" style="max-width: 200px; margin-bottom: 1.5rem;">
-        <h1>Welcome to Tuition Hub</h1>
+        <h3>Welcome back, Teacher <br>Sign in to Your Faculty Account</h3>
         <form action="/teacher/login" method="POST">
             <input type="text" name="teacherId" placeholder="ID Number" required>
-            <input type="password" name="password" required placeholder="Password" required>
+            <input type="password" name="password" required placeholder="Password"> <br>
             <button class="btn" type="submit">Login</button>
         </form>
         <% if (typeof error !=='undefined' ) { %>
@@ -257,8 +284,6 @@
                 <%= error %>
             </div>
             <% } %>
-
-
     </div>
 
     <script>

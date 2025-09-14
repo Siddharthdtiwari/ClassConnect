@@ -203,7 +203,8 @@ app.get("/student/attendance", requireStudentLogin, async (req, res) => {
 
 app.get("/student/test_score", requireStudentLogin, async (req, res) => {
   try {
-    const studentId = req.session.userId;
+    const studentId = req.user.studentId; // <-- now using correct studentId
+
     const scores = await Score.find({ studentId }).populate("testId").lean();
 
     const scoresBySubject = {};
@@ -212,20 +213,21 @@ app.get("/student/test_score", requireStudentLogin, async (req, res) => {
       if (!scoresBySubject[subject]) scoresBySubject[subject] = [];
       scoresBySubject[subject].push({
         testName: score.testName,
-        topic: score.testId?.topic,
+        topic: score.testId?.topic || "No topic",
         score: score.score,
+        percentage: score.percentage,
         subject: score.testId?.subject,
         total: score.testId?.totalMarks || 100,
         questionPaper: score.testId?.questionPaper || ""
       });
     });
-
     res.render("student/test_score", { scoresBySubject });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching scores");
   }
 });
+
 
 app.get("/student/fee_payment", requireStudentLogin, async (req, res) => {
   try {
@@ -848,7 +850,13 @@ app.post("/api/scores/save", requireTeacherLogin, async (req, res) => {
       },
       { upsert: true, new: true }
     );
+    const additionalPoints = parseFloat(percent);
+    await User.findOneAndUpdate(
+      { studentId: s.studentId },
+      { $inc: { points: additionalPoints } }
+    );
   }
+
 
   res.json({ message: "Scores saved successfully!" });
 });

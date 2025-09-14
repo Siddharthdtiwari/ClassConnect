@@ -121,92 +121,83 @@
             </div>
         </div>
 
-        <!-- Hidden div to pass scores from server -->
+        <!-- Hidden scores data -->
         <div id="scores-data" data-scores='<%- JSON.stringify(scoresBySubject) %>'></div>
 
         <script>
-            document.addEventListener('DOMContentLoaded', function () {
-                const subjectTabsContainer = document.getElementById('subject-tabs');
+            document.addEventListener('DOMContentLoaded', () => {
+                const tabs = document.getElementById('subject-tabs');
                 const scoresArea = document.getElementById('scores-area');
                 const scoresData = JSON.parse(document.getElementById('scores-data').dataset.scores);
 
-                function getProgressBarColor(percentage) {
-                    if (percentage >= 80) return 'progress-bar-good';
-                    if (percentage >= 50) return 'progress-bar-average';
+                function getColor(percent) {
+                    if (percent >= 80) return 'progress-bar-good';
+                    if (percent >= 50) return 'progress-bar-average';
                     return 'progress-bar-poor';
                 }
 
-                function renderScores(subject) {
+                function render(subject) {
                     let tests = [];
-
                     if (subject === 'overall') {
-                        // Combine all subjects into one array
-                        for (let key in scoresData) {
-                            tests = tests.concat(scoresData[key]);
-                        }
+                        for (const key in scoresData) tests = tests.concat(scoresData[key]);
                     } else {
                         tests = scoresData[subject] || [];
                     }
 
                     if (!tests.length) {
-                        scoresArea.innerHTML = `<p class="text-gray-500">No scores available for this subject yet.</p>`;
+                        scoresArea.innerHTML = `<p class="text-gray-500">No scores for this subject yet.</p>`;
                         return;
                     }
 
                     const html = `
-        <h3 class="text-xl font-bold text-gray-800 mb-4">${subject === 'overall' ? 'Overall Scores' : subject}</h3>
-        <div class="space-y-4">
-            ${tests.map(test => {
-                        const percentage = ((test.score / (test.total || 100)) * 100).toFixed(2);
-                        const colorClass = getProgressBarColor(percentage);
+      <h3 class="text-xl font-bold mb-4">${subject === 'overall' ? 'Overall Scores' : subject}</h3>
+      <div class="space-y-4">
+        ${tests.map(test => {
+                        const percent = ((test.score / test.total) * 100).toFixed(2);
+                        const colorClass = getColor(percent);
                         return `
-                    <div class="score-item bg-white p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-                        <div class="md:col-span-2">
-                            <p class="font-semibold text-gray-800"> ${test.testName} - ${test.subject} (${test.topic || 'No topic'}) </p>
-                            ${test.questionPaper ? `<a href="${test.questionPaper}" class="text-sm text-blue-600 hover:underline" target="_blank">Download Question Paper</a>` : ''}
-                        </div>
-                        <div class="w-full bg-gray-200 rounded-full h-2.5">
-                            <div class="${colorClass} progress-bar h-2.5 rounded-full" style="width:0%"></div>
-                        </div>
-                        <div class="text-right">
-                            <p class="text-xl font-bold text-brand-purple">${test.score} / ${test.total || 100}</p>
-                            <p class="text-sm font-medium text-gray-500">${percentage}%</p>
-                        </div>
-                    </div>
-                `;
+            <div class="score-item bg-white p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+              <div class="md:col-span-2">
+                <p class="font-semibold text-gray-800">${test.testName} - ${test.subject} (${test.topic || 'No topic'})</p>
+                ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="text-blue-600 hover:underline text-sm">Download Question Paper</a>` : ''}
+              </div>
+              <div class="w-full bg-gray-200 rounded-full h-2.5">
+                <div class="${colorClass} progress-bar h-2.5 rounded-full" style="width:0%"></div>
+              </div>
+              <div class="text-right">
+                <p class="text-xl font-bold text-brand-purple">${test.score} / ${test.total}</p>
+                <p class="text-sm text-gray-500">${percent}%</p>
+              </div>
+            </div>
+          `;
                     }).join('')}
-        </div>
+      </div>
     `;
                     scoresArea.innerHTML = html;
 
-                    // Animate progress bars
-                    const bars = scoresArea.querySelectorAll('.progress-bar');
-                    bars.forEach((bar, i) => {
+                    // Animate bars
+                    scoresArea.querySelectorAll('.progress-bar').forEach((bar, i) => {
                         const test = tests[i];
-                        const percentage = ((test.score / (test.total || 100)) * 100).toFixed(2);
-                        setTimeout(() => bar.style.width = `${percentage}%`, 100);
+                        const percent = ((test.score / test.total) * 100).toFixed(2);
+                        setTimeout(() => bar.style.width = `${percent}%`, 100);
                     });
                 }
 
-
-
-
-                // Button click handler
-                subjectTabsContainer.addEventListener('click', e => {
+                // Button click
+                tabs.addEventListener('click', e => {
                     if (e.target.tagName === 'BUTTON') {
-                        subjectTabsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                        tabs.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
                         e.target.classList.add('active');
-                        renderScores(e.target.dataset.subject);
+                        render(e.target.dataset.subject);
                     }
                 });
 
-                // Initial render based on first active button
-                const firstActiveButton = subjectTabsContainer.querySelector('button.active');
-                if (firstActiveButton) renderScores(firstActiveButton.dataset.subject);
+                // Initial render
+                const active = tabs.querySelector('button.active');
+                if (active) render(active.dataset.subject);
             });
         </script>
 
     </body>
-
 
 </html>

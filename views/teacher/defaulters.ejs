@@ -13,9 +13,18 @@
 
         <!-- Header -->
         <div class="w-full max-w-6xl px-6">
-            <h1 class="text-4xl font-extrabold text-brand-purple mb-8 text-center">
-                📋 Defaulter List - <%= month %>/<%= year %>
-            </h1>
+            <header class="mb-8">
+                <a href="/teacher/dashboard" class="content-container text-purple-700 hover:underline mb-4 block">
+                    &larr; Back to Dashboard
+                </a>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Defaulter List - <%= month %>/<%= year %>
+                </h1>
+                <p class="text-gray-600 mt-1">
+                    List of students with attendance below 75% for the selected month.
+                </p>
+            </header>
+
 
             <% if (defaulters.length> 0) { %>
                 <!-- Table Wrapper -->

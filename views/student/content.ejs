@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Class Content</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to extend Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Color palette from login page and logo */
+        .bg-brand-background {
+            background-color: #f3f4f6;
+            /* A light gray as a fallback */
+            background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+        }
+
+        .text-brand-purple {
+            color: #5d3a9b;
+        }
+
+        .border-brand-purple {
+            border-color: #5d3a9b;
+        }
+
+        .bg-brand-purple-light {
+            background-color: #f3e8ff;
+        }
+
+        /* Button Styles */
+        .btn-outline-purple {
+            color: #5d3a9b;
+            border: 1px solid #5d3a9b;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+        .btn-outline-purple:hover,
+        .btn-outline-purple.active {
+            background-color: #bde045;
+            color: #333;
+            border-color: #bde045;
+        }
+
+        .btn-outline-purple:disabled {
+            background-color: #e5e7eb;
+            color: #9ca3af;
+            border-color: #e5e7eb;
+            cursor: not-allowed;
+        }
+
+        .btn-secondary {
+            background-color: #e5e7eb;
+            /* gray-200 */
+            color: #374151;
+            /* gray-700 */
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+            border-radius: 0.5rem;
+            border: 1px solid #d1d5db;
+        }
+
+        .btn-secondary:hover {
+            background-color: #d1d5db;
+            /* gray-300 */
+        }
+
+        /* Content list item style */
+        .content-item:hover {
+            background-color: #f9fafb;
+            transform: translateX(4px);
+        }
+    </style>
+</head>
+<%- include('../partials/background') %>
+
+    <body class=" text-gray-800">
+
+        <!-- Main Container -->
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="/student/dashboard" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to
+                    Dashboard</a>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Class Content
+                </h1>
+                <p class="text-gray-600 mt-1">Select a subject and view content!</p>
+            </header>
+
+            <!-- Main Content Area -->
+            <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+
+                <!-- Subject Selection Tabs -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-bold text-gray-900 mb-4">Type</h2>
+                    <div id="subject-tabs" class="flex flex-wrap gap-4">
+                        <button class="px-6 py-2 btn-outline-purple active" data-subject="textbook">Textbooks</button>
+                        <button class="px-6 py-2 btn-outline-purple" data-subject="notes">Notes</button>
+                        <button class="px-6 py-2 btn-outline-purple" data-subject="questionPaper">Question
+                            Papers</button>
+                    </div>
+
+                </div>
+
+                <!-- Content Display Area -->
+                <div id="content-area">
+                    <!-- Content for each subject will be dynamically inserted here -->
+                </div>
+
+            </div>
+        </div>
+
+        <!-- Hidden divs to pass DB data -->
+        <div id="materials-data" data-materials='<%- JSON.stringify(materials || []) %>'></div>
+        <div id="tests-data" data-tests='<%- JSON.stringify(tests || []) %>'></div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const subjectTabsContainer = document.getElementById('subject-tabs');
+                const contentArea = document.getElementById('content-area');
+
+                // Read DB data from hidden divs
+                const materials = JSON.parse(document.getElementById('materials-data').dataset.materials || '[]');
+                const tests = JSON.parse(document.getElementById('tests-data').dataset.tests || '[]');
+
+                // Prepare contentData object keyed by tab names
+                const contentData = {
+                    textbook: { title: "Textbooks", items: [] },
+                    notes: { title: "Notes", items: [] },
+                    questionPaper: { title: "Question Papers", items: [] }
+                };
+
+                // Populate textbooks and notes
+                (materials || []).forEach(mat => {
+                    if (!mat.subject || !mat.materialType) return;
+                    const key = mat.materialType; // "textbook" or "notes"
+                    if (!contentData[key]) return;
+                    contentData[key].items.push({
+                        id: mat._id,
+                        type: mat.materialType,
+                        subject: mat.subject,
+                        topic: mat.description || "",
+                        filePath: mat.filePath
+                    });
+                });
+
+                // Populate tests
+                (tests || []).forEach(test => {
+                    if (!test.subject) return;
+                    contentData.questionPaper.items.push({
+                        id: test._id,
+                        type: "test",
+                        testName: test.testName,
+                        subject: test.subject,
+                        topic: test.topic || "",
+                        filePath: test.questionPaper
+                    });
+                });
+
+                // Render content for a tab
+                function renderContent(tabKey) {
+                    const data = contentData[tabKey];
+                    if (!data || !data.items.length) {
+                        contentArea.innerHTML = `<p class="text-gray-500">No content available for this type yet.</p>`;
+                        return;
+                    }
+
+                    const itemsHtml = data.items.map(item => {
+                        let mainTitle = '';
+                        let infoHtml = '';
+
+                        if (item.type.toLowerCase() === 'test') {
+                            mainTitle = item.testName || "Unnamed Test";
+                            infoHtml = `<p class="text-sm text-gray-500">Subject: ${item.subject} | Topic: ${item.topic}</p>`;
+                        } else {
+                            mainTitle = item.topic || item.subject;
+                            infoHtml = `<p class="text-sm text-gray-500">Subject: ${item.subject}</p>`;
+                        }
+
+                        return `
+    <div class="content-item flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 border-b border-gray-200">
+        <div class="flex items-center mb-3 sm:mb-0">
+            <div class="mr-4">${getIcon(item.type)}</div>
+            <div>
+                <p class="font-semibold text-gray-800">${mainTitle}</p>
+                ${infoHtml}
+            </div>
+        </div>
+        <div class="flex items-center gap-2 w-full sm:w-auto">
+            ${item.filePath ? `<a href="${item.filePath}" target="_blank" class="px-4 py-1 text-sm btn-secondary">Download</a>` : ''}
+        </div>
+    </div>`;
+                    }).join('');
+
+
+                    contentArea.innerHTML = `<div class="border border-gray-200 rounded-lg overflow-hidden">${itemsHtml}</div>`;
+                }
+
+                // Simple icon helper
+                function getIcon(type) {
+                    const iconClasses = "w-10 h-10 flex-shrink-0"; // keeps size consistent
+                    switch (type.toLowerCase()) {
+                        case 'pdf':
+                            return `
+            <svg class="${iconClasses} text-red-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zM13 3.5L18.5 9H13V3.5zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h8v2H8V9z"/>
+            </svg>`;
+                        case 'docx':
+                        case 'doc':
+                            return `
+            <svg class="${iconClasses} text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zM13 3.5L18.5 9H13V3.5zM8 9h8v2H8V9zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/>
+            </svg>`;
+                        default:
+                            // Improved default file icon
+                            return `
+            <svg class="${iconClasses} text-brand-purple" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4 2a2 2 0 00-2 2v16a2 2 0 002 2h16a2 2 0 002-2V8l-6-6H4zM14 3.5L19.5 9H14V3.5zM6 8h5v1H6V8zm0 3h12v1H6v-1zm0 3h12v1H6v-1zm0 3h8v1H6v-1z"/>
+            </svg>`;
+                    }
+                }
+
+
+
+
+                // Tab click
+                subjectTabsContainer.addEventListener('click', function (e) {
+                    if (e.target.tagName === 'BUTTON') {
+                        subjectTabsContainer.querySelectorAll('button').forEach(btn => btn.classList.remove('active'));
+                        e.target.classList.add('active');
+                        renderContent(e.target.dataset.subject);
+                    }
+                });
+
+                // Initial render: first tab
+                const firstTab = subjectTabsContainer.querySelector('button');
+                if (firstTab) {
+                    firstTab.classList.add('active');
+                    renderContent(firstTab.dataset.subject);
+                }
+            });
+        </script>
+
+
+
+    </body>
+
+</html>

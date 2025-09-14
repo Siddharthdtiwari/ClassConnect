@@ -1,0 +1,262 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Upload Study Material</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to extend Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Color palette from original student dashboard */
+        .bg-brand-background {
+            background-color: #f3f4f6;
+            background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+        }
+
+        .text-brand-purple {
+            color: #5d3a9b;
+        }
+
+        .border-brand-purple {
+            border-color: #5d3a9b;
+        }
+
+        .btn-outline-purple {
+            color: #5d3a9b;
+            border: 1px solid #5d3a9b;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+        .btn-outline-purple:hover {
+            background-color: #bde045;
+            color: #333;
+            border-color: #bde045;
+        }
+    </style>
+</head>
+<%- include('../partials/background') %>
+
+    <body class="bg-brand-background text-gray-800">
+
+        <!-- Main Container -->
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="#" onclick="history.back()" class="text-brand-purple hover:underline mb-4 block">&larr; Back to
+                    Dashboard</a>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Upload Study Material
+                </h1>
+                <p class="text-gray-600 mt-1">Add notes, presentations, and other resources for your classes.</p>
+            </header>
+
+            <!-- Upload Form and Material List Container -->
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+
+                <form id="upload-form" class="space-y-6">
+                    <!-- Standard Selection Dropdown -->
+                    <div>
+                        <label for="standard-select" class="block text-sm font-medium text-gray-700">Select
+                            Standard</label>
+                        <select id="standard-select" name="standard"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            <option value="">Select Standard</option>
+                            <% for(let i=0;i<=10;i++){ %>
+                                <option value="<%=i%>">Grade <%= i %>
+                                </option>
+                                <% } %>
+                        </select>
+                    </div>
+
+                    <!-- Subject Selection Dropdown -->
+                    <div>
+                        <label for="subject-select" class="block text-sm font-medium text-gray-700">Select
+                            Subject</label>
+                        <select id="subject-select" name="subject"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            <option value="">-- Choose a Subject --</option>
+                            <option value="">Select Subject</option>
+                            <option value="English">English</option>
+                            <option value="Maths I">Maths I</option>
+                            <option value="Maths II">Maths II</option>
+                            <option value="Science I">Science I</option>
+                            <option value="Science II">Science II</option>
+                            <option value="History-Civics">History-Civics</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Marathi">Marathi</option>
+                        </select>
+                    </div>
+
+                    <!-- Material Type Dropdown -->
+                    <div>
+                        <label for="material-type" class="block text-sm font-medium text-gray-700">Material Type</label>
+                        <select id="material-type" name="materialType"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 transition duration-150 ease-in-out">
+                            <option value="">-- Select Material Type --</option>
+                            <option value="textbook">Textbook</option>
+                            <option value="questionPaper">Question Paper</option>
+                            <option value="notes">Study Material</option>
+                        </select>
+                    </div>
+
+                    <!-- Material Description Textarea -->
+                    <div>
+                        <label for="material-description" class="block text-sm font-medium text-gray-700">Description
+                            (Optional)</label>
+                        <textarea id="material-description" name="description" rows="3"
+                            placeholder="Briefly describe the content of the material..."
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"></textarea>
+                    </div>
+
+                    <!-- File OR Link Input -->
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700">Upload File or Provide Link</label>
+
+                        <!-- File Upload -->
+                        <input type="file" id="file-upload" name="file" class="mt-1 block w-full text-sm text-brand-purple
+             file:mr-4 file:py-2 file:px-4 file:rounded-full
+             file:border-0 file:text-sm file:font-semibold
+             file:bg-brand-purple file:text-white hover:file:bg-opacity-80">
+
+                        <p class="text-gray-500 text-sm my-2 text-center">— OR —</p>
+
+                        <!-- External Link -->
+                        <input type="url" id="link-input" name="link" placeholder="https://example.com/resource.pdf"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm
+             focus:border-brand-purple focus:ring focus:ring-brand-purple
+             focus:ring-opacity-50 transition duration-150 ease-in-out">
+                    </div>
+
+
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
+                        Upload Material
+                    </button>
+                </form>
+
+                <!-- Message Box for feedback -->
+                <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+
+                <div class="w-full border-t border-gray-200 my-8"></div>
+
+                <!-- Previously Uploaded Materials Section -->
+                <div class="space-y-4">
+                    <% materials.forEach(mat=> { %>
+                        <div class="flex items-center justify-between p-4 bg-gray-50 rounded-lg shadow-sm">
+                            <div>
+                                <p class="font-semibold">
+                                    <%= mat.description || mat.materialType %>
+                                </p>
+                                <p class="text-sm text-gray-600">
+                                    <%= mat.subject %> - <%= mat.standard %>
+                                </p>
+                            </div>
+                            <% if(mat.filePath){ %>
+                                <a href="<%= mat.filePath %>"
+                                    class="text-brand-purple hover:underline text-sm font-medium"
+                                    target="_blank">Download</a>
+                                <% } %>
+                        </div>
+                        <% }) %>
+                </div>
+
+
+            </div>
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const uploadForm = document.getElementById('upload-form');
+                const messageBox = document.getElementById('message-box');
+                const materialsContainer = document.querySelector('.space-y-4'); // container for materials list
+
+                // Function to show a message to the user
+                function showMessage(message, type = 'success') {
+                    messageBox.textContent = message;
+                    messageBox.className = `mt-6 p-4 rounded-md text-center ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`;
+                    messageBox.classList.remove('hidden');
+                    setTimeout(() => messageBox.classList.add('hidden'), 3000);
+                }
+
+                // Function to append a new material to the list
+                function appendMaterial(material) {
+                    const div = document.createElement('div');
+                    div.classList.add('flex', 'items-center', 'justify-between', 'p-4', 'bg-gray-50', 'rounded-lg', 'shadow-sm');
+
+                    div.innerHTML = `
+                        <div>
+                            <p class="font-semibold">${material.description || material.materialType}</p>
+                            <p class="text-sm text-gray-600">${material.subject} - ${material.standard}</p>
+                        </div>
+                        ${material.filePath
+                            ? `<a href="${material.filePath}" class="text-brand-purple hover:underline text-sm font-medium" target="_blank">
+        ${material.filePath.startsWith('http') ? 'Open Link' : 'Download'}
+     </a>`
+                            : ''
+                        }
+
+                    `;
+
+                    // Insert new material at the top
+                    materialsContainer.prepend(div);
+                }
+
+                // Handle form submission
+                uploadForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+
+                    const formData = new FormData(uploadForm);
+
+                    try {
+                        const res = await fetch('/teacher/study_material', {
+                            method: 'POST',
+                            body: formData
+                        });
+
+                        const data = await res.json();
+
+                        if (data.success) {
+                            showMessage(data.message, 'success');
+
+                            // Append new material to the list
+                            appendMaterial({
+                                standard: formData.get('standard'),
+                                subject: formData.get('subject'),
+                                materialType: formData.get('materialType'),
+                                description: formData.get('description'),
+                                filePath: data.filePath
+
+                            });
+
+
+                            uploadForm.reset();
+                        } else {
+                            showMessage(data.message, 'error');
+                        }
+                    } catch (err) {
+                        console.error(err);
+                        showMessage('Failed to upload material', 'error');
+                    }
+                });
+            });
+        </script>
+
+
+    </body>
+
+</html>

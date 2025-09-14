@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Manage Attendance</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* Custom styles to extend Tailwind */
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    /* Color palette from original student dashboard */
+    .bg-brand-background {
+      background-color: #f3f4f6;
+      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    }
+
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
+
+    .border-brand-purple {
+      border-color: #5d3a9b;
+    }
+
+    .btn-outline-purple {
+      color: #5d3a9b;
+      border: 1px solid #5d3a9b;
+      font-weight: 600;
+      transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+      border-radius: 0.5rem;
+    }
+
+    .btn-outline-purple:hover,
+    .btn-outline-purple.active {
+      background-color: #bde045;
+      color: #333;
+      border-color: #bde045;
+    }
+
+    /* Calendar Styles */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 0.5rem;
+    }
+
+    .calendar-day {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 3rem;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+      cursor: pointer;
+    }
+
+    .calendar-day:hover {
+      background-color: #e5e7eb;
+    }
+
+    .day-present {
+      background-color: #dcfce7;
+      color: #166534;
+    }
+
+    .day-absent {
+      background-color: #fee2e2;
+      color: #991b1b;
+    }
+
+    .day-holiday {
+      background-color: #e0e7ff;
+      color: #3730a3;
+    }
+
+    .day-today {
+      border: 2px solid #5d3a9b;
+    }
+
+    .day-saved {
+      background-color: #ae93e3;
+      /* light purple */
+      color: #fff;
+    }
+
+
+
+    .day-selected {
+      background-color: #bde045;
+      border: 2px solid #5d3a9b;
+    }
+
+    .attendance-status-btn.active {
+      background-color: #5d3a9b;
+      color: #fff;
+    }
+  </style>
+</head>
+<%- include('../partials/background') %>
+
+<body class="text-gray-800">
+
+  <!-- Main Container -->
+<div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="#" onclick="history.back()" class="text-sm text-brand-purple hover:underline mb-2 block">&larr;
+                    Back to Dashboard</a>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Manage Attendance
+                </h1>
+                <p class="text-gray-600 mt-1">Manage daily attendance for all students.</p>
+            </header>
+ <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+  <!-- Left Column: Calendar + Legend -->
+  <div class="lg:col-span-1">
+    <!-- Calendar -->
+    <div class="flex items-center justify-between mb-6">
+      <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
+      <h2 id="month-year" class="text-2xl font-bold text-gray-900"></h2>
+      <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
+    </div>
+    <div class="calendar-grid font-semibold text-gray-500 mb-2">
+      <div>Sun</div>
+      <div>Mon</div>
+      <div>Tue</div>
+      <div>Wed</div>
+      <div>Thu</div>
+      <div>Fri</div>
+      <div>Sat</div>
+    </div>
+    <div id="calendar-body" class="calendar-grid"></div>
+
+    <!-- Legend -->
+    <div class="border-t border-gray-200 my-6"></div>
+    <h3 class="text-lg font-bold text-gray-900 mb-4">Legend</h3>
+    <div class="space-y-3 text-sm">
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-present mr-3 flex items-center justify-center text-xs font-bold">P</div>
+        Present
+      </div>
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-absent mr-3 flex items-center justify-center text-xs font-bold">A</div>
+        Absent
+      </div>
+      <div class="flex items-center">
+        <div class="w-5 h-5 rounded-full day-holiday mr-3 flex items-center justify-center text-xs font-bold">H</div>
+        Holiday
+      </div>
+      <div class="flex items-center">
+        <div class="w-4 h-4 rounded-full border-2 border-brand-purple mr-3"></div>
+        Today
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Attendance Table -->
+  <div class="lg:col-span-1" id="attendance-table-container">
+    <div class="flex items-center justify-between mb-6">
+      <button id="prev-day" class="p-2 rounded-full hover:bg-gray-100">&larr;</button>
+      <h3 class="text-2xl font-bold text-gray-900">
+        Attendance for <span id="current-date-display"></span>
+      </h3>
+      <button id="next-day" class="p-2 rounded-full hover:bg-gray-100">&rarr;</button>
+    </div>
+    <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border">
+      <table class="table-auto rounded-lg overflow-hidden w-full">
+        <thead>
+          <tr>
+            <th>Student Name</th>
+            <th>Student ID</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody id="student-attendance-list">
+          <!-- Student rows will be dynamically inserted here -->
+        </tbody>
+      </table>
+    </div>
+    <div class="mt-6 text-center">
+      <button id="save-attendance-btn" class="py-2 px-4 btn-outline-purple">
+        Save Attendance
+      </button>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+
+        <!-- Message Box for feedback -->
+        <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+      </div>
+    </div>
+
+    <!-- Hidden JSON blocks -->
+    <script id="students-data" type="application/json">
+      <%- JSON.stringify(students || []) %>
+    </script>
+
+    <script id="attendance-data" type="application/json">
+      <%- JSON.stringify(attendance || {}) %>
+    </script>
+
+    <script>
+      document.addEventListener('DOMContentLoaded', function() {
+        const calendarBody = document.getElementById('calendar-body');
+        const monthYearEl = document.getElementById('month-year');
+        const prevMonthBtn = document.getElementById('prev-month');
+        const nextMonthBtn = document.getElementById('next-month');
+        const prevDayBtn = document.getElementById('prev-day');
+        const nextDayBtn = document.getElementById('next-day');
+        const currentDateDisplay = document.getElementById('current-date-display');
+        const studentAttendanceList = document.getElementById('student-attendance-list');
+        const saveAttendanceBtn = document.getElementById('save-attendance-btn');
+        const messageBox = document.getElementById('message-box');
+
+        let currentDate = new Date();
+        let selectedDate = new Date();
+
+        // Parse backend data
+        const allStudents = JSON.parse(document.getElementById("students-data").textContent);
+        const attendanceFromServer = JSON.parse(document.getElementById("attendance-data").textContent);
+
+        // savedAttendance now contains all dates
+        const savedAttendance = attendanceFromServer || {};
+
+        function showMessage(message, type = 'success') {
+          messageBox.textContent = message;
+          messageBox.className = `mt-6 p-4 rounded-md text-center ${type === 'success' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'
+                        }`;
+          messageBox.classList.remove('hidden');
+          setTimeout(() => messageBox.classList.add('hidden'), 3000);
+        }
+
+        function formatDateKey(date) {
+          const year = date.getFullYear();
+          const month = String(date.getMonth() + 1).padStart(2, '0');
+          const day = String(date.getDate()).padStart(2, '0');
+          return `${year}-${month}-${day}`;
+        }
+
+
+        function formatDateDisplay(date) {
+          return date.toDateString();
+        }
+
+        function renderCalendar() {
+          const year = currentDate.getFullYear();
+          const month = currentDate.getMonth();
+          monthYearEl.textContent = `${currentDate.toLocaleString('default', { month: 'long' })} ${year}`;
+          calendarBody.innerHTML = '';
+
+          const firstDay = new Date(year, month, 1).getDay();
+          const daysInMonth = new Date(year, month + 1, 0).getDate();
+
+          for (let i = 0; i < firstDay; i++) calendarBody.innerHTML += `<div></div>`;
+
+          for (let day = 1; day <= daysInMonth; day++) {
+            const dayEl = document.createElement('div');
+            dayEl.textContent = day;
+            dayEl.classList.add('calendar-day');
+
+            const mm = String(month + 1).padStart(2, '0');
+            const dd = String(day).padStart(2, '0');
+            const dateKey = `${year}-${mm}-${dd}`;
+
+            // If any attendance is saved, mark light purple
+            if (savedAttendance[dateKey] && Object.keys(savedAttendance[dateKey]).length > 0) {
+              dayEl.classList.add('day-saved');
+            }
+
+            // Highlight selected day (optional, can be green or border)
+            if (
+              selectedDate &&
+              day === selectedDate.getDate() &&
+              month === selectedDate.getMonth() &&
+              year === selectedDate.getFullYear()
+            ) {
+              dayEl.classList.add('day-selected');
+            }
+
+            dayEl.addEventListener('click', () => {
+              selectedDate = new Date(year, month, day);
+              renderCalendar();
+              renderAttendanceTable();
+            });
+
+            calendarBody.appendChild(dayEl);
+          }
+        }
+
+
+
+        function renderAttendanceTable() {
+          const dateKey = formatDateKey(selectedDate);
+          const attendanceForDate = savedAttendance[dateKey] || {};
+
+          currentDateDisplay.textContent = formatDateDisplay(selectedDate);
+          studentAttendanceList.innerHTML = '';
+
+          allStudents.forEach(student => {
+            const status = attendanceForDate[student.studentId] || 'P';
+            const row = document.createElement('tr');
+            row.dataset.studentId = student.studentId;
+
+            row.innerHTML = `
+                <td class="whitespace-nowrap">${student.studentName}</td>
+                <td>${student.studentId}</td>
+                <td class="whitespace-nowrap">
+                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${status === 'P' ? 'active' : ''}" data-status="P">P</button>
+                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${status === 'A' ? 'active' : ''}" data-status="A">A</button>
+                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${status === 'H' ? 'active' : ''}" data-status="H">H</button>
+                </td>
+            `;
+            studentAttendanceList.appendChild(row);
+          });
+        }
+
+        // Navigation
+        prevMonthBtn.addEventListener('click', () => {
+          currentDate.setMonth(currentDate.getMonth() - 1);
+          renderCalendar();
+        });
+        nextMonthBtn.addEventListener('click', () => {
+          currentDate.setMonth(currentDate.getMonth() + 1);
+          renderCalendar();
+        });
+        prevDayBtn.addEventListener('click', () => {
+          selectedDate.setDate(selectedDate.getDate() - 1);
+          currentDate = new Date(selectedDate);
+          renderCalendar();
+          renderAttendanceTable();
+        });
+        nextDayBtn.addEventListener('click', () => {
+          selectedDate.setDate(selectedDate.getDate() + 1);
+          currentDate = new Date(selectedDate);
+          renderCalendar();
+          renderAttendanceTable();
+        });
+
+        // Status change
+        studentAttendanceList.addEventListener('click', (e) => {
+          if (e.target.classList.contains('attendance-status-btn')) {
+            const studentRow = e.target.closest('tr');
+            studentRow.querySelectorAll('.attendance-status-btn').forEach(btn => btn.classList.remove('active'));
+            e.target.classList.add('active');
+          }
+        });
+
+        // Save attendance
+        saveAttendanceBtn.addEventListener('click', async () => {
+          const dateKey = formatDateKey(selectedDate);
+          const dailyRecords = [];
+
+          allStudents.forEach(student => {
+            const row = studentAttendanceList.querySelector(`tr[data-student-id="${student.studentId}"]`);
+            const selectedStatusBtn = row.querySelector('.attendance-status-btn.active');
+            if (selectedStatusBtn) {
+              dailyRecords.push({
+                studentId: student.studentId,
+                status: selectedStatusBtn.dataset.status
+              });
+            }
+          });
+
+          try {
+            const res = await fetch('/teacher/manage_attendance', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                date: dateKey,
+                records: dailyRecords
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              savedAttendance[dateKey] = {};
+              dailyRecords.forEach(r => savedAttendance[dateKey][r.studentId] = r.status);
+              showMessage('Attendance saved successfully!');
+              renderCalendar();
+            } else {
+              showMessage('Error saving attendance', 'error');
+            }
+          } catch (err) {
+            console.error(err);
+            showMessage('Error saving attendance', 'error');
+          }
+        });
+
+        // Initial render
+        renderCalendar();
+        renderAttendanceTable();
+      });
+    </script>
+
+</body>
+
+</html>

@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Test</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts: Inter -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        /* Custom styles to extend Tailwind */
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        /* Color palette from original student dashboard */
+        .bg-brand-background {
+            background-color: #f3f4f6;
+            background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+        }
+
+        .text-brand-purple {
+            color: #5d3a9b;
+        }
+
+        .border-brand-purple {
+            border-color: #5d3a9b;
+        }
+
+        .btn-outline-purple {
+            color: #5d3a9b;
+            border: 1px solid #5d3a9b;
+            font-weight: 600;
+            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
+            border-radius: 0.5rem;
+        }
+
+        .btn-outline-purple:hover {
+            background-color: #bde045;
+            color: #333;
+            border-color: #bde045;
+        }
+    </style>
+</head>
+<%- include('../partials/background') %>
+
+    <body class=" text-gray-800">
+
+        <!-- Main Container -->
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+            <!-- Header -->
+            <header class="mb-8">
+                <a href="#" onclick="history.back()" class="text-brand-purple hover:underline mb-4 block">&larr; Back to
+                    Manage Tests</a>
+                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+                    Add New Test
+                </h1>
+                <p class="text-gray-600 mt-1">Create a new test and upload the question paper.</p>
+            </header>
+
+            <!-- Add Test Form Card -->
+            <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
+                <form id="add-test-form" class="space-y-6" action="/teacher/add_test" method="POST"
+                    enctype="multipart/form-data">
+                    <!-- Test Name Input -->
+                    <div>
+                        <label for="test-name" class="block text-sm font-medium text-gray-700">Test Name</label>
+                        <input type="text" id="test-name" name="testName" placeholder="e.g., Class Test 1"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
+                    </div>
+
+                    <!-- Standard Dropdown -->
+                    <div>
+                        <label for="standard" class="block text-sm font-medium text-gray-700">Standard</label>
+                        <select id="standard" name="standard"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+                            required>
+                            <option value="">Select Standard</option>
+                            <% for(let i=0;i<=10;i++){ %>
+                                <option value="<%=i%>">Grade <%= i %>
+                                </option>
+                                <% } %>
+                        </select>
+                    </div>
+
+                    <!-- Subject Dropdown -->
+                    <div>
+                        <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
+                        <select id="subject" name="subject"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+                            required>
+                            <option value="">Select Subject</option>
+                            <option value="English">English</option>
+                            <option value="Maths I">Maths I</option>
+                            <option value="Maths II">Maths II</option>
+                            <option value="Science I">Science I</option>
+                            <option value="Science II">Science II</option>
+                            <option value="History-Civics">History-Civics</option>
+                            <option value="Geography">Geography</option>
+                            <option value="Hindi">Hindi</option>
+                            <option value="Marathi">Marathi</option>
+                        </select>
+                    </div>
+
+
+                    <!-- Topic Input -->
+                    <div>
+                        <label for="topic" class="block text-sm font-medium text-gray-700">Topic</label>
+                        <input type="text" id="topic" name="topic" placeholder="e.g., Chemical Reactions"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
+                    </div>
+
+                    <!-- Total Marks Input -->
+                    <div>
+                        <label for="total-marks" class="block text-sm font-medium text-gray-700">Total Marks</label>
+                        <input type="number" id="total-marks" name="totalMarks" placeholder="e.g., 25"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
+                    </div>
+
+                    <!-- Question Paper Upload -->
+                    <div>
+                        <label for="question-paper" class="block text-sm font-medium text-gray-700">Question Paper
+                            (PDF/DOC)</label>
+                        <input type="file" id="question-paper" name="questionPaper"
+                            class="mt-1 block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-purple file:text-white hover:file:bg-opacity-80">
+                    </div>
+
+                    <!-- Submit Button -->
+                    <button type="submit"
+                        class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
+                        Add Test
+                    </button>
+                </form>
+
+                <!-- Message Box for feedback -->
+                <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+            </div>
+
+        </div>
+
+        <script>
+            document.addEventListener('DOMContentLoaded', () => {
+                const addTestForm = document.getElementById('add-test-form');
+                const messageBox = document.getElementById('message-box');
+
+                // Function to show a message to the user
+                function showMessage(message, type = 'success') {
+                    messageBox.textContent = message;
+                    messageBox.classList.remove('hidden', 'bg-red-100', 'text-red-700', 'bg-green-100', 'text-green-700');
+                    if (type === 'success') {
+                        messageBox.classList.add('bg-green-100', 'text-green-700');
+                    } else if (type === 'error') {
+                        messageBox.classList.add('bg-red-100', 'text-red-700');
+                    }
+                    messageBox.classList.remove('hidden');
+                    setTimeout(() => {
+                        messageBox.classList.add('hidden');
+                    }, 3000); // Hide after 3 seconds
+                }
+
+                // Handle form submission
+                addTestForm.addEventListener('submit', async (e) => {
+                    e.preventDefault();
+                    const formData = new FormData(addTestForm);
+
+                    try {
+                        const res = await fetch('/teacher/add_test', {
+                            method: 'POST',
+                            body: formData
+                        });
+                        const text = await res.text();
+                        showMessage(text.includes('successfully') ? 'Test added successfully!' : 'Failed to add test', text.includes('successfully') ? 'success' : 'error');
+                        addTestForm.reset();
+                    } catch (err) {
+                        showMessage('Error submitting test', 'error');
+                    }
+                });
+
+
+                // Log the data to the console (in a real app, this would be an API call)
+                console.log('Test to add:', testData);
+
+                showMessage('Test added successfully!');
+                addTestForm.reset();
+            });
+
+        </script>
+    </body>
+
+</html>

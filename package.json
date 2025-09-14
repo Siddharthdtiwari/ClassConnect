@@ -1,0 +1,35 @@
+{
+  "name": "miniproject-sem-5",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@tailwindcss/vite": "^4.1.12",
+    "axios": "^1.12.1",
+    "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
+    "canvas": "^3.2.0",
+    "cloudinary": "^2.7.0",
+    "connect-mongo": "^5.1.0",
+    "dotenv": "^17.2.1",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "express-session": "^1.18.2",
+    "googleapis": "^159.0.0",
+    "jspdf": "^3.0.2",
+    "mongoose": "^8.18.0",
+    "multer": "^2.0.2",
+    "pdfkit": "^0.17.2",
+    "razorpay": "^2.9.6",
+    "streamifier": "^0.1.1",
+    "tailwindcss": "^4.1.12"
+  }
+}

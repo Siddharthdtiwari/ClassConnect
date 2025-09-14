@@ -10,13 +10,10 @@ body {
     background-color: white;
     color: #333;
     min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
 }
 
 .content-container {
+    position: relative;
     z-index: 10;
 }
 
@@ -87,6 +84,23 @@ body {
     filter: blur(30px);
 }
 
+@media (max-width: 768px) {
+
+    .sphere-1,
+    .sphere-2,
+    .sphere-3,
+    .sphere-4 {
+        width: 80vw;
+        height: 80vw;
+        filter: blur(50px);
+    }
+
+    .glow {
+        width: 60vw;
+        height: 30vh;
+    }
+}
+
 @keyframes float-1 {
     0% {
         transform: translate(0, 0) scale(1);
@@ -132,7 +146,7 @@ body {
 }
 
 .particles-container {
-    position: absolute;
+    position: fixed;
     top: 0;
     left: 0;
     width: 100%;

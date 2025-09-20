@@ -1,4 +1,3 @@
-const PORT = 3000;
 const express = require("express");
 const mongoose = require("mongoose");
 const path = require("path");
@@ -55,7 +54,7 @@ cloudinary.config({
 const uploadToCloudinary = (fileBuffer, folder = "student-profiles") =>
   new Promise((resolve, reject) => {
     const stream = cloudinary.uploader.upload_stream(
-      { folder, resource_type: resourceType },
+      { folder, resource_type: "auto" },
       (err, result) => (err ? reject(err) : resolve(result))
     );
     streamifier.createReadStream(fileBuffer).pipe(stream);
@@ -68,7 +67,6 @@ mongoose.connect(process.env.MONGODB_URI, {
 })
   .then(() => console.log("MongoDB connected"))
   .catch(err => console.error("MongoDB Connection Error:", err));
-
 
 const requireTeacherLogin = (req, res, next) => {
   if (!req.session.userId) return res.redirect("/teacher/login");
@@ -626,8 +624,8 @@ app.post("/teacher/add_student", requireTeacherLogin, upload.single("profilePhot
 
     let profilePhotoUrl = null;
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, { folder: "student-profiles" });
-      profilePhotoUrl = uploadResult.secure_url;
+      const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
+      profilePhotoUrl = result.secure_url;
     }
 
     const newStudent = new User({
@@ -663,9 +661,7 @@ app.post("/teacher/edit_profile/:id", requireTeacherLogin, upload.single("profil
     const updateData = { studentName, standard, mobileNo };
 
     if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "student-profiles"
-      });
+      const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
       updateData.profilePhoto = result.secure_url;
     }
 
@@ -697,31 +693,28 @@ app.post("/teacher/manage_attendance", requireTeacherLogin, async (req, res) => 
   await attendance.save();
   res.json({ success: true, message: "Attendance saved successfully!" });
 });
-// Defaulter list route
+
 app.get("/teacher/defaulters/:year/:month", requireTeacherLogin, async (req, res) => {
   try {
-    const { year, month } = req.params; // month = "09" for September, year = "2025"
+    const { year, month } = req.params;
     const startDate = new Date(`${year}-${month}-01`);
-    const endDate = new Date(year, parseInt(month), 0); // last day of month
+    const endDate = new Date(year, parseInt(month), 0);
 
-    // Fetch all students
     const students = await User.find().lean();
 
-    // Fetch attendance only for that month
     const attendanceDocs = await Attendance.find({
       date: { $gte: startDate.toISOString().split("T")[0], $lte: endDate.toISOString().split("T")[0] }
     }).lean();
 
-    // Count attendance per student
     const stats = {};
     students.forEach(s => {
       stats[s.studentId] = {
-        studentId: s.studentId,       // ✅ Now included
+        studentId: s.studentId,
         studentName: s.studentName,
         present: 0,
         absent: 0,
         total: 0,
-        percentage: 0                 // ✅ Pre-calc field
+        percentage: 0
       };
     });
 
@@ -757,11 +750,8 @@ app.post("/teacher/add_test", requireTeacherLogin, upload.single("questionPaper"
 
     let questionPaperUrl = null;
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "tests",
-        resource_type: "raw"
-      });
-      questionPaperUrl = uploadResult.secure_url;
+      const result = await uploadToCloudinary(req.file.buffer, "tests");
+      questionPaperUrl = result.secure_url;
     }
 
     const newTest = new Test({
@@ -957,11 +947,8 @@ app.post("/teacher/study_material", requireTeacherLogin, upload.single("file"), 
     let filePath = null;
 
     if (req.file) {
-      const uploadResult = await cloudinary.uploader.upload(req.file.path, {
-        folder: "study-materials",
-        resource_type: "raw"
-      });
-      filePath = uploadResult.secure_url;
+      const result = await uploadToCloudinary(req.file.buffer, "study-materials");
+      filePath = result.secure_url;
     } else if (link) {
       filePath = link;
     }
@@ -987,4 +974,11 @@ app.post("/teacher/study_material", requireTeacherLogin, upload.single("file"), 
   }
 });
 
-app.listen(PORT, () => console.log(`✅ Server listening on http://localhost:${PORT}`));
+if (process.env.NODE_ENV !== "production") {
+  const PORT = process.env.PORT || 3000;
+  app.listen(PORT, () => {
+    console.log(`✅ Server listening on http://localhost:${PORT}`);
+  });
+}
+
+module.exports = app;

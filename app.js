@@ -70,8 +70,6 @@ async function connectDB() {
 
   if (!global.mongoose.promise) {
     const options = {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
       bufferCommands: false,
       serverSelectionTimeoutMS: 5000,
     };

@@ -1,188 +1,255 @@
 <%- include('../partials/background') %>
-    <!DOCTYPE html>
-    <html lang="en">
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Fee</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      body {
+        font-family: "Inter", sans-serif;
+      }
 
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Add Fee</title>
-        <script src="https://cdn.tailwindcss.com"></script>
-        <link rel="preconnect" href="https://fonts.googleapis.com">
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-        <style>
-            body {
-                font-family: 'Inter', sans-serif;
-            }
+      .text-brand-purple {
+        color: #5d3a9b;
+      }
 
-            .text-brand-purple {
-                color: #5d3a9b;
-            }
+      .border-brand-purple {
+        border-color: #5d3a9b;
+      }
 
-            .border-brand-purple {
-                border-color: #5d3a9b;
-            }
+      .btn-outline-purple {
+        color: #5d3a9b;
+        border: 1px solid #5d3a9b;
+        font-weight: 600;
+        border-radius: 0.5rem;
+      }
 
-            .btn-outline-purple {
-                color: #5d3a9b;
-                border: 1px solid #5d3a9b;
-                font-weight: 600;
-                border-radius: 0.5rem;
-            }
+      .btn-outline-purple:hover {
+        background-color: #bde045;
+        color: #333;
+        border-color: #bde045;
+      }
+    </style>
+  </head>
 
-            .btn-outline-purple:hover {
-                background-color: #bde045;
-                color: #333;
-                border-color: #bde045;
-            }
-        </style>
-    </head>
+  <body class="text-gray-800">
+    <div
+      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
+    >
+      <header class="mb-8">
+        <a
+          href="/teacher/manage_fees"
+          class="text-brand-purple hover:underline mb-4 block"
+          >&larr; Back to Manage Fees</a
+        >
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Add Fee</h1>
+        <p class="text-gray-600 mt-1">Enter the fee payment details.</p>
+      </header>
 
-    <body class="text-gray-800">
-        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-            <header class="mb-8">
-                <a href="#" onclick="history.back()" class="text-brand-purple hover:underline mb-4 block">&larr; Back to
-                    Manage Fees</a>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Add Fee</h1>
-                <p class="text-gray-600 mt-1">Enter the fee payment details.</p>
-            </header>
+      <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
+        <form
+          id="add-fee-form"
+          action="/teacher/add_fees"
+          method="POST"
+          class="space-y-6"
+        >
+          <div>
+            <label
+              for="student-id"
+              class="block text-sm font-medium text-gray-700"
+              >Student ID</label
+            >
+            <select
+              id="student-id"
+              name="studentId"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            >
+              <option value="">Select Student ID</option>
+              <% users.forEach(user=> { %>
+              <option
+                value="<%= user.studentId %>"
+                data-name="<%= user.studentName %>"
+                data-standard="<%= user.standard %>"
+              >
+                <%= user.studentId %>
+              </option>
 
-            <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
-                <form id="add-fee-form" action="/teacher/add_fees" method="POST" class="space-y-6">
-                    <!-- Student ID Dropdown -->
-                    <div>
-                        <label for="student-id" class="block text-sm font-medium text-gray-700">Student ID</label>
-                        <select id="student-id" name="studentId"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                            <option value="">Select Student ID</option>
-                            <% users.forEach(user=> { %>
-                                <option value="<%= user.studentId %>" data-name="<%= user.studentName %>"
-                                    data-standard="<%= user.standard %>">
-                                    <%= user.studentId %>
-                                </option>
+              <% }) %>
+            </select>
+          </div>
 
-                                <% }) %>
-                        </select>
-                    </div>
+          <div>
+            <label
+              for="student-name"
+              class="block text-sm font-medium text-gray-700"
+              >Student Name</label
+            >
+            <input
+              type="text"
+              id="student-name"
+              name="studentName"
+              readonly
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+            />
+          </div>
 
-                    <!-- Student Name (Auto-filled) -->
-                    <div>
-                        <label for="student-name" class="block text-sm font-medium text-gray-700">Student Name</label>
-                        <input type="text" id="student-name" name="studentName" readonly
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
-                    </div>
-                    <!-- Student Standard (Auto-filled) -->
-                    <div>
-                        <label for="student-standard" class="block text-sm font-medium text-gray-700">Standard</label>
-                        <input type="text" id="student-standard" name="standard" readonly
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
-                    </div>
+          <div>
+            <label
+              for="student-standard"
+              class="block text-sm font-medium text-gray-700"
+              >Standard</label
+            >
+            <input
+              type="text"
+              id="student-standard"
+              name="standard"
+              readonly
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+            />
+          </div>
 
-                    <!-- Month Dropdown -->
-                    <div>
-                        <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
-                        <select id="month" name="month"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                            <% const
-                                months=["May","June","July","August","September","October","November","December","January","February","March","April"];
-                                %>
-                                <% months.forEach(month=> { %>
-                                    <option value="<%= month %>">
-                                        <%= month %>
-                                    </option>
-                                    <% }) %>
-                        </select>
-                    </div>
+          <div>
+            <label for="month" class="block text-sm font-medium text-gray-700"
+              >Month</label
+            >
+            <select
+              id="month"
+              name="month"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            >
+              <% const
+              months=["May","June","July","August","September","October","November","December","January","February","March","April"];
+              %> <% months.forEach(month=> { %>
+              <option value="<%= month %>"><%= month %></option>
+              <% }) %>
+            </select>
+          </div>
 
-                    <!-- Year -->
-                    <div>
-                        <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
-                        <input type="number" id="year" name="year" value="<%= new Date().getFullYear() %>"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                    </div>
+          <div>
+            <label for="year" class="block text-sm font-medium text-gray-700"
+              >Year</label
+            >
+            <input
+              type="number"
+              id="year"
+              name="year"
+              value="<%= new Date().getFullYear() %>"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            />
+          </div>
 
-                    <!-- Amount -->
-                    <div>
-                        <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
-                        <input type="number" id="amount" name="amount" placeholder="Enter fee amount"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                    </div>
+          <div>
+            <label for="amount" class="block text-sm font-medium text-gray-700"
+              >Amount</label
+            >
+            <input
+              type="number"
+              id="amount"
+              name="amount"
+              placeholder="Enter fee amount"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            />
+          </div>
 
-                    <!-- Payment Method -->
-                    <div>
-                        <label for="method" class="block text-sm font-medium text-gray-700">Payment Method</label>
-                        <select id="method" name="method"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                            <option value="">Select Method</option>
-                            <option value="Cash">Cash</option>
-                            <option value="UPI">UPI</option>
-                            <option value="Razorpay">Razorpay</option>
-                        </select>
-                    </div>
+          <div>
+            <label for="method" class="block text-sm font-medium text-gray-700"
+              >Payment Method</label
+            >
+            <select
+              id="method"
+              name="method"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            >
+              <option value="">Select Method</option>
+              <option value="Cash">Cash</option>
+              <option value="UPI">UPI</option>
+              <option value="Razorpay">Razorpay</option>
+            </select>
+          </div>
 
-                    <!-- Date Paid -->
-                    <div>
-                        <label for="date-paid" class="block text-sm font-medium text-gray-700">Date Paid</label>
-                        <input type="date" id="date-paid" name="datePaid"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            required>
-                    </div>
+          <div>
+            <label
+              for="date-paid"
+              class="block text-sm font-medium text-gray-700"
+              >Date Paid</label
+            >
+            <input
+              type="date"
+              id="date-paid"
+              name="datePaid"
+              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              required
+            />
+          </div>
 
+          <button
+            type="submit"
+            class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg"
+          >
+            Submit Fee
+          </button>
+        </form>
 
-                    <button type="submit"
-                        class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
-                        Submit Fee
-                    </button>
-                </form>
+        <div
+          id="message-box"
+          class="mt-6 p-4 rounded-md text-center hidden"
+        ></div>
+      </div>
+    </div>
 
-                <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
-            </div>
-        </div>
+    <script>
+      document
+        .getElementById("student-id")
+        .addEventListener("change", function () {
+          const selectedOption = this.options[this.selectedIndex];
+          document.getElementById("student-name").value =
+            selectedOption.dataset.name || "";
+          document.getElementById("student-standard").value =
+            selectedOption.dataset.standard || "";
+        });
 
-        <script>
-            // Auto-fill Student Name + Class when selecting ID
-            document.getElementById('student-id').addEventListener('change', function () {
-                const selectedOption = this.options[this.selectedIndex];
-                document.getElementById('student-name').value = selectedOption.dataset.name || '';
-                document.getElementById('student-standard').value = selectedOption.dataset.standard || '';
-            });
+      document
+        .getElementById("add-fee-form")
+        .addEventListener("submit", async function (e) {
+          e.preventDefault();
+          const formData = new FormData(this);
+          const data = Object.fromEntries(formData.entries());
 
+          const res = await fetch("/teacher/add_fees", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data),
+          });
 
-            // Handle form submission
-            document.getElementById('add-fee-form').addEventListener('submit', async function (e) {
-                e.preventDefault();
-                const formData = new FormData(this);
-                const data = Object.fromEntries(formData.entries());
+          const result = await res.json();
+          const messageBox = document.getElementById("message-box");
 
-                const res = await fetch('/teacher/add_fees', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(data)
-                });
-
-                const result = await res.json();
-                const messageBox = document.getElementById('message-box');
-
-                if (result.success) {
-                    messageBox.textContent = result.message;
-                    messageBox.className = "mt-6 p-4 rounded-md text-center bg-green-100 text-green-700";
-                    messageBox.classList.remove("hidden");
-                    this.reset();
-                } else {
-                    messageBox.textContent = result.message;
-                    messageBox.className = "mt-6 p-4 rounded-md text-center bg-red-100 text-red-700";
-                    messageBox.classList.remove("hidden");
-                }
-            });
-        </script>
-
-
-
-    </body>
-
-    </html>
+          if (result.success) {
+            messageBox.textContent = result.message;
+            messageBox.className =
+              "mt-6 p-4 rounded-md text-center bg-green-100 text-green-700";
+            messageBox.classList.remove("hidden");
+            this.reset();
+          } else {
+            messageBox.textContent = result.message;
+            messageBox.className =
+              "mt-6 p-4 rounded-md text-center bg-red-100 text-red-700";
+            messageBox.classList.remove("hidden");
+          }
+        });
+    </script>
+  </body>
+</html>

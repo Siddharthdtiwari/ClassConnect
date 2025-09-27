@@ -1,17 +1,17 @@
-const mongoose = require('mongoose');
+const mongoose = require("mongoose");
 
-
-const feeSchema = new mongoose.Schema({
+const feeSchema = new mongoose.Schema(
+  {
     studentId: {
-        type: String,
-        required: true
+      type: String,
+      required: true,
     },
 
-    studentName: { type: String, required: true },  // duplicate for easy display
+    studentName: { type: String, required: true },
     standard: { type: String, required: true },
 
-    month: { type: String, required: true },   // e.g. "Jun"
-    year: { type: Number, required: true },    // e.g. 2025
+    month: { type: String, required: true },
+    year: { type: Number, required: true },
 
     amount: { type: Number, required: true },
 
@@ -22,8 +22,9 @@ const feeSchema = new mongoose.Schema({
     // only needed if Razorpay
     razorpay_payment_id: { type: String },
 
-    datePaid: { type: Date, default: Date.now }
-}, { timestamps: true });
+    datePaid: { type: Date, default: Date.now },
+  },
+  { timestamps: true }
+);
 
-
-module.exports = mongoose.model('Fee', feeSchema);
+module.exports = mongoose.model("Fee", feeSchema);

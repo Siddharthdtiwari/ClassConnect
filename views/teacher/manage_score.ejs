@@ -1,256 +1,280 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Manage Scores</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
     <style>
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+      body {
+        font-family: "Inter", sans-serif;
+      }
 
-        .text-brand-purple {
-            color: #5d3a9b;
-        }
+      .text-brand-purple {
+        color: #5d3a9b;
+      }
 
-        .border-brand-purple {
-            border-color: #5d3a9b;
-        }
+      .border-brand-purple {
+        border-color: #5d3a9b;
+      }
 
-        .btn-outline-purple {
-            color: #5d3a9b;
-            border: 1px solid #5d3a9b;
-            font-weight: 600;
-            border-radius: 0.5rem;
-            transition: all 0.3s;
-        }
+      .btn-outline-purple {
+        color: #5d3a9b;
+        border: 1px solid #5d3a9b;
+        font-weight: 600;
+        border-radius: 0.5rem;
+        transition: all 0.3s;
+      }
 
-        .btn-outline-purple:hover {
-            background-color: #bde045;
-            color: #333;
-            border-color: #bde045;
-        }
+      .btn-outline-purple:hover {
+        background-color: #bde045;
+        color: #333;
+        border-color: #bde045;
+      }
 
-        .table-auto {
-            width: 100%;
-            border-collapse: collapse;
-        }
+      .table-auto {
+        width: 100%;
+        border-collapse: collapse;
+      }
 
-        .table-auto th,
-        .table-auto td {
-            padding: 1rem;
-            text-align: left;
-            border-bottom: 1px solid #e5e7eb;
-        }
+      .table-auto th,
+      .table-auto td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid #e5e7eb;
+      }
 
-        .table-auto th {
-            background-color: #f9fafb;
-            color: #4b5563;
-            font-weight: 600;
-            text-transform: uppercase;
-            font-size: 0.75rem;
-        }
+      .table-auto th {
+        background-color: #f9fafb;
+        color: #4b5563;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+      }
 
-        .score-input {
-            width: 80px;
-        }
+      .score-input {
+        width: 80px;
+      }
     </style>
-</head>
-<%- include('../partials/background') %>
+  </head>
+  <%- include('../partials/background') %>
 
-    <body class="text-gray-800">
-        <div class="content-container container mx-auto p-6 min-h-screen">
-            <header class="mb-8">
-                <a href="/teacher/dashboard" class="text-brand-purple hover:underline mb-4 block">&larr; Back to
-                    Dashboard</a>
-                <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Manage Scores</h1>
-                <p class="text-gray-600 mt-1">Add and manage student scores by test and standard.</p>
-            </header>
+  <body class="text-gray-800">
+    <div class="content-container container mx-auto p-6 min-h-screen">
+      <header class="mb-8">
+        <a
+          href="/teacher/dashboard"
+          class="text-brand-purple hover:underline mb-4 block"
+          >&larr; Back to Dashboard</a
+        >
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+          Manage Scores
+        </h1>
+        <p class="text-gray-600 mt-1">
+          Add and manage student scores by test and standard.
+        </p>
+      </header>
 
-            <div class="bg-white p-8 rounded-xl shadow-lg">
+      <div class="bg-white p-8 rounded-xl shadow-lg">
+        <div class="mb-6">
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">
+            Add/Edit Test Scores
+          </h3>
+          <div class="flex flex-col sm:flex-row gap-4 mb-6">
+            <select
+              id="standard-filter"
+              class="flex-grow sm:flex-grow-0 sm:w-1/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+            >
+              <option value="">-- Select Standard --</option>
+              <% standards.forEach(s=> { %>
+              <option value="<%= s %>"><%= s %></option>
+              <% }) %>
+            </select>
+            <select
+              id="test-filter"
+              class="flex-grow sm:flex-grow-0 sm:w-2/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
+              disabled
+            >
+              <option value="">-- Select Test --</option>
+            </select>
+          </div>
 
-                <!-- Add/Edit Scores -->
-                <div class="mb-6">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Add/Edit Test Scores</h3>
-                    <div class="flex flex-col sm:flex-row gap-4 mb-6">
-                        <select id="standard-filter"
-                            class="flex-grow sm:flex-grow-0 sm:w-1/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
-                            <option value="">-- Select Standard --</option>
-                            <% standards.forEach(s=> { %>
-                                <option value="<%= s %>">
-                                    <%= s %>
-                                </option>
-                                <% }) %>
-                        </select>
-                        <select id="test-filter"
-                            class="flex-grow sm:flex-grow-0 sm:w-2/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-                            disabled>
-                            <option value="">-- Select Test --</option>
-                        </select>
-                    </div>
-
-                    <div id="student-list-container" class="hidden overflow-x-auto">
-                        <table class="table-auto rounded-lg overflow-hidden">
-                            <thead>
-                                <tr>
-                                    <th>Student Name</th>
-                                    <th>Student ID</th>
-                                    <th>Score</th>
-                                </tr>
-                            </thead>
-                            <tbody id="student-score-list"></tbody>
-                        </table>
-                        <div class="mt-6 text-center">
-                            <button id="save-scores-btn" class="py-2 px-4 btn-outline-purple">Save Scores</button>
-                        </div>
-                    </div>
-
-                    <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
-                </div>
-
-                <!-- Consolidated Scores -->
-                <div id="all-scores-container" class="mt-12">
-                    <h3 class="text-2xl font-bold text-gray-900 mb-4">Consolidated Test Scores</h3>
-                    <div id="classwise-tables" class="space-y-12 overflow-x-auto"></div>
-                </div>
-
+          <div id="student-list-container" class="hidden overflow-x-auto">
+            <table class="table-auto rounded-lg overflow-hidden">
+              <thead>
+                <tr>
+                  <th>Student Name</th>
+                  <th>Student ID</th>
+                  <th>Score</th>
+                </tr>
+              </thead>
+              <tbody id="student-score-list"></tbody>
+            </table>
+            <div class="mt-6 text-center">
+              <button id="save-scores-btn" class="py-2 px-4 btn-outline-purple">
+                Save Scores
+              </button>
             </div>
+          </div>
+
+          <div
+            id="message-box"
+            class="mt-6 p-4 rounded-md text-center hidden"
+          ></div>
         </div>
 
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                const standardFilter = document.getElementById('standard-filter');
-                const testFilter = document.getElementById('test-filter');
-                const studentListContainer = document.getElementById('student-list-container');
-                const studentScoreList = document.getElementById('student-score-list');
-                const saveScoresBtn = document.getElementById('save-scores-btn');
-                const classwiseTables = document.getElementById('classwise-tables');
+        <div id="all-scores-container" class="mt-12">
+          <h3 class="text-2xl font-bold text-gray-900 mb-4">
+            Consolidated Test Scores
+          </h3>
+          <div id="classwise-tables" class="space-y-12 overflow-x-auto"></div>
+        </div>
+      </div>
+    </div>
 
-                // Fetch tests when standard changes
-                standardFilter.addEventListener('change', async () => {
-                    const standard = standardFilter.value;
-                    testFilter.innerHTML = '<option value="">-- Select Test --</option>';
-                    testFilter.disabled = true;
-                    studentListContainer.classList.add('hidden');
+    <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        const standardFilter = document.getElementById("standard-filter");
+        const testFilter = document.getElementById("test-filter");
+        const studentListContainer = document.getElementById(
+          "student-list-container"
+        );
+        const studentScoreList = document.getElementById("student-score-list");
+        const saveScoresBtn = document.getElementById("save-scores-btn");
+        const classwiseTables = document.getElementById("classwise-tables");
 
-                    if (!standard) return;
+        standardFilter.addEventListener("change", async () => {
+          const standard = standardFilter.value;
+          testFilter.innerHTML = '<option value="">-- Select Test --</option>';
+          testFilter.disabled = true;
+          studentListContainer.classList.add("hidden");
 
-                    const res = await fetch(`/api/tests/${standard}`);
-                    const tests = await res.json();
+          if (!standard) return;
 
-                    tests.forEach(t => {
-                        const option = document.createElement('option');
-                        option.value = t._id;
-                        option.textContent = t.testName;
-                        testFilter.appendChild(option);
-                    });
+          const res = await fetch(`/api/tests/${standard}`);
+          const tests = await res.json();
 
-                    testFilter.disabled = false;
-                });
+          tests.forEach((t) => {
+            const option = document.createElement("option");
+            option.value = t._id;
+            option.textContent = t.testName;
+            testFilter.appendChild(option);
+          });
 
-                // Fetch students & scores when test changes
-                testFilter.addEventListener('change', async () => {
-                    const testId = testFilter.value;
-                    const standard = standardFilter.value;
-                    if (!testId || !standard) return;
+          testFilter.disabled = false;
+        });
 
-                    const res = await fetch(`/api/scores/${standard}/${testId}`);
-                    const studentScores = await res.json(); // backend returns array
+        testFilter.addEventListener("change", async () => {
+          const testId = testFilter.value;
+          const standard = standardFilter.value;
+          if (!testId || !standard) return;
 
-                    studentScoreList.innerHTML = '';
-                    studentScores.forEach(s => {
-                        const row = document.createElement('tr');
-                        row.dataset.studentId = s.studentId;
-                        row.innerHTML = `
+          const res = await fetch(`/api/scores/${standard}/${testId}`);
+          const studentScores = await res.json();
+
+          studentScoreList.innerHTML = "";
+          studentScores.forEach((s) => {
+            const row = document.createElement("tr");
+            row.dataset.studentId = s.studentId;
+            row.innerHTML = `
                         <td>${s.studentName}</td>
                         <td>${s.studentId}</td>
                         <td>
-                            <input type="number" value="${s.score || ''}" 
+                            <input type="number" value="${s.score || ""}" 
                                 placeholder="Enter score" 
                                 class="score-input p-2 rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
                         </td>
                     `;
-                        studentScoreList.appendChild(row);
-                    });
+            studentScoreList.appendChild(row);
+          });
 
-                    studentListContainer.classList.remove('hidden');
-                });
+          studentListContainer.classList.remove("hidden");
+        });
 
-                // Save scores
-                saveScoresBtn.addEventListener('click', async () => {
-                    const testId = testFilter.value;
-                    const standard = standardFilter.value;
-                    if (!testId || !standard) return alert('Select standard and test.');
+        saveScoresBtn.addEventListener("click", async () => {
+          const testId = testFilter.value;
+          const standard = standardFilter.value;
+          if (!testId || !standard) return alert("Select standard and test.");
 
-                    const rows = studentScoreList.querySelectorAll('tr');
-                    const scores = Array.from(rows).map(row => {
-                        const val = parseFloat(row.querySelector('input').value);
-                        return { studentId: row.dataset.studentId, score: isNaN(val) ? null : val };
-                    });
+          const rows = studentScoreList.querySelectorAll("tr");
+          const scores = Array.from(rows).map((row) => {
+            const val = parseFloat(row.querySelector("input").value);
+            return {
+              studentId: row.dataset.studentId,
+              score: isNaN(val) ? null : val,
+            };
+          });
 
-                    const res = await fetch('/api/scores/save', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ testId, scores })
-                    });
-                    const data = await res.json();
-                    alert(data.message);
+          const res = await fetch("/api/scores/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ testId, scores }),
+          });
+          const data = await res.json();
+          alert(data.message);
 
-                    renderConsolidatedClasswise();
-                });
+          renderConsolidatedClasswise();
+        });
 
-                // Render consolidated table
-                async function renderConsolidatedClasswise() {
-                    const res = await fetch('/api/scores/consolidated_classwise');
-                    const data = await res.json();
-                    classwiseTables.innerHTML = '';
+        async function renderConsolidatedClasswise() {
+          const res = await fetch("/api/scores/consolidated_classwise");
+          const data = await res.json();
+          classwiseTables.innerHTML = "";
 
-                    for (let cls in data) {
-                        const { tests, students } = data[cls];
-                        if (!tests.length || !students.length) continue;
+          for (let cls in data) {
+            const { tests, students } = data[cls];
+            if (!tests.length || !students.length) continue;
 
-                        const table = document.createElement('table');
-                        table.className = 'table-auto w-full border-collapse rounded-lg overflow-hidden mb-8';
+            const table = document.createElement("table");
+            table.className =
+              "table-auto w-full border-collapse rounded-lg overflow-hidden mb-8";
 
-                        // Headers
-                        let header = '<tr><th rowspan="2" class="p-2 border bg-gray-200">Student Name</th><th rowspan="2" class="p-2 border bg-gray-200">Student ID</th>';
-                        tests.forEach(t => header += `<th class="p-2 border bg-gray-300">${t.testName}</th>`);
-                        header += '</tr>';
+            let header =
+              '<tr><th rowspan="2" class="p-2 border bg-gray-200">Student Name</th><th rowspan="2" class="p-2 border bg-gray-200">Student ID</th>';
+            tests.forEach(
+              (t) =>
+                (header += `<th class="p-2 border bg-gray-300">${t.testName}</th>`)
+            );
+            header += "</tr>";
 
-                        let subHeader = '<tr>';
-                        tests.forEach(t => subHeader += `<th class="p-2 border bg-gray-100">${t.subject}</th>`);
-                        subHeader += '</tr>';
+            let subHeader = "<tr>";
+            tests.forEach(
+              (t) =>
+                (subHeader += `<th class="p-2 border bg-gray-100">${t.subject}</th>`)
+            );
+            subHeader += "</tr>";
 
-                        // Body
-                        let body = '';
-                        students.forEach(st => {
-                            body += `<tr><td class="p-2 border">${st.studentName}</td><td class="p-2 border">${st.studentId}</td>`;
-                            tests.forEach(t => {
-                                let score = st.scores[t._id] !== undefined ? st.scores[t._id] : '-';
-                                const classMissing = score === '-' ? 'bg-red-100 text-red-700' : '';
-                                if (score !== '-') score = parseFloat(score).toFixed(2) + '%';
-                                body += `<td class="p-2 border text-center ${classMissing}">${score}</td>`;
-                            });
-                            body += '</tr>';
-                        });
-
-                        table.innerHTML = header + subHeader + body;
-                        const title = document.createElement('h4');
-                        title.className = 'text-xl font-semibold mb-2';
-                        title.textContent = `Class ${cls}`;
-                        classwiseTables.appendChild(title);
-                        classwiseTables.appendChild(table);
-                    }
-                }
-
-                renderConsolidatedClasswise();
+            let body = "";
+            students.forEach((st) => {
+              body += `<tr><td class="p-2 border">${st.studentName}</td><td class="p-2 border">${st.studentId}</td>`;
+              tests.forEach((t) => {
+                let score =
+                  st.scores[t._id] !== undefined ? st.scores[t._id] : "-";
+                const classMissing =
+                  score === "-" ? "bg-red-100 text-red-700" : "";
+                if (score !== "-") score = parseFloat(score).toFixed(2) + "%";
+                body += `<td class="p-2 border text-center ${classMissing}">${score}</td>`;
+              });
+              body += "</tr>";
             });
-        </script>
-    </body>
 
+            table.innerHTML = header + subHeader + body;
+            const title = document.createElement("h4");
+            title.className = "text-xl font-semibold mb-2";
+            title.textContent = `Class ${cls}`;
+            classwiseTables.appendChild(title);
+            classwiseTables.appendChild(table);
+          }
+        }
+
+        renderConsolidatedClasswise();
+      });
+    </script>
+  </body>
 </html>

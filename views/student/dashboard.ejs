@@ -1,214 +1,252 @@
 <!DOCTYPE html>
 <html lang="en">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Student Dashboard</title>
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Google Fonts: Inter -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
 
     <style>
-        /* Custom styles to extend Tailwind */
-        body {
-            font-family: 'Inter', sans-serif;
-        }
+      body {
+        font-family: "Inter", sans-serif;
+      }
 
-        /* Color palette from login page and logo */
-        .bg-brand-background {
-            background-color: #f3f4f6;
-            /* A light gray as a fallback */
-            background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-        }
+      .bg-brand-background {
+        background-color: #f3f4f6;
+        background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+      }
 
-        .text-brand-purple {
-            color: #5d3a9b;
-        }
+      .text-brand-purple {
+        color: #5d3a9b;
+      }
 
-        .border-brand-purple {
-            border-color: #5d3a9b;
-        }
+      .border-brand-purple {
+        border-color: #5d3a9b;
+      }
 
-        .text-brand-lime {
-            color: #bde045;
-        }
+      .text-brand-lime {
+        color: #bde045;
+      }
 
-        /* Button Styles */
-        .btn-lime {
-            background-color: #bde045;
-            color: #333;
-            font-weight: 700;
-            transition: background-color 0.3s ease;
-            border-radius: 0.5rem;
-        }
+      .btn-lime {
+        background-color: #bde045;
+        color: #333;
+        font-weight: 700;
+        transition: background-color 0.3s ease;
+        border-radius: 0.5rem;
+      }
 
-        .btn-lime:hover {
-            background-color: #a8c93a;
-        }
+      .btn-lime:hover {
+        background-color: #a8c93a;
+      }
 
-        .btn-outline-purple {
-            color: #5d3a9b;
-            border: 1px solid #5d3a9b;
-            font-weight: 600;
-            transition: background-color 0.3s ease, color 0.3s ease, border-color 0.3s ease;
-            border-radius: 0.5rem;
-        }
+      .btn-outline-purple {
+        color: #5d3a9b;
+        border: 1px solid #5d3a9b;
+        font-weight: 600;
+        transition: background-color 0.3s ease, color 0.3s ease,
+          border-color 0.3s ease;
+        border-radius: 0.5rem;
+      }
 
-        .btn-outline-purple:hover {
-            background-color: #bde045;
-            color: #333;
-            border-color: #bde045;
-        }
+      .btn-outline-purple:hover {
+        background-color: #bde045;
+        color: #333;
+        border-color: #bde045;
+      }
     </style>
+  </head>
+  <%- include('../partials/background') %>
 
-</head>
-<%- include('../partials/background') %>
+  <body class="text-gray-800">
+    <div
+      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
+    >
+      <header class="mb-8 flex justify-between items-center">
+        <div>
+          <a
+            href="/"
+            class="text-sm text-brand-purple hover:underline mb-2 block"
+            >&larr; Back to home</a
+          >
+          <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+            Welcome Back,
+            <span class="text-brand-purple"> <%= student.studentName %>! </span>
+          </h1>
+          <p class="text-gray-600 mt-1">Your central hub for success.</p>
+        </div>
+        <div>
+          <button
+            onclick="window.location.href='/student/logout'"
+            class="py-2 px-4 btn-outline-purple text-sm font-semibold"
+          >
+            Logout
+          </button>
+        </div>
+      </header>
 
-    <body class="text-gray-800">
-
-        <!-- Main Container -->
-        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-
-            <!-- Header -->
-            <header class="mb-8 flex justify-between items-center">
-                <div>
-                    <a href="/" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to home</a>
-                    <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-                        Welcome Back, <span class="text-brand-purple">
-                            <%= student.studentName %>!
-                        </span>
-                    </h1>
-                    <p class="text-gray-600 mt-1">Your central hub for success.</p>
-                </div>
-                <div>
-                    <button onclick="window.location.href='/student/logout'"
-                        class="py-2 px-4 btn-outline-purple text-sm font-semibold">Logout</button>
-                </div>
-            </header>
-
-
-            <!-- Main Content Area (Flexbox Layout) -->
-            <div class="flex flex-col lg:flex-row gap-8">
-
-                <!-- Left Column: Student Profile -->
-                <div class="w-full lg:w-2/5 xl:w-1/3">
-                    <div
-                        class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8">
-                        <img src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>"
-                            alt="Student Profile Picture"
-                            class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4">
-                        <h2 class="text-2xl font-bold text-gray-900">
-                            <%= student.studentName %>
-                        </h2>
-                        <p class="text-brand-purple font-mono font-semibold">ID: <%= student.studentId %>
-                        </p>
-                        <div class="w-full border-t border-gray-200 my-6"></div>
-                        <div class="text-left w-full">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Profile Details</h3>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <span class="font-semibold text-gray-700">Mobile No:</span>
-                                <%= student.mobileNo || "Not Provided" %>
-                            </p>
-                            <p class="text-sm text-gray-600 mb-2">
-                                <span class="font-semibold text-gray-700">Class:</span>
-                                Grade <%= student.standard %>
-                            </p>
-
-                        </div>
-                        <button onclick="window.location.href='/student/edit_profile'"
-                            class="w-full py-2 px-4 mt-6 btn-outline-purple">
-                            Edit Profile
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Right Column: Action Cards (Grid Layout) -->
-                <div class="w-full lg:w-3/5 xl:w-2/3">
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                        <!-- Card 2: My Test Scores -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">My Test Scores</h2>
-                                <p class="text-gray-600 text-sm mb-4">Review your performance on previous tests.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/test_score'"
-                                class="w-full py-2 px-4 btn-outline-purple">See Scores</button>
-                        </div>
-
-                        <!-- Card 6: My Attendance -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">My Attendance</h2>
-                                <p class="text-gray-600 text-sm mb-4">Track your attendance record for all classes.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/attendance'"
-                                class="w-full py-2 px-4 btn-outline-purple">View Attendance</button>
-                        </div>
-                        <!-- Card 4: Class Leaderboard -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">Class Leaderboard</h2>
-                                <p class="text-gray-600 text-sm mb-4">See where you stand among your classmates.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/leader_board'"
-                                class="w-full py-2 px-4 btn-outline-purple">View Ranks</button>
-                        </div>
-
-                        <!-- Card 5: Fee Payment -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">Fee Payment</h2>
-                                <p class="text-gray-600 text-sm mb-4">View and pay your outstanding fees.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/fee_payment'"
-                                class="w-full py-2 px-4 btn-outline-purple">Pay Fees</button>
-                        </div>
-
-
-                        <!-- Card 1: Class Content -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">Class Content</h2>
-                                <p class="text-gray-600 text-sm mb-4">Access notes, assignments, and resources.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/content'"
-                                class="w-full py-2 px-4 btn-outline-purple">View Content</button>
-                        </div>
-
-
-
-                        <!-- Card 3: Upcoming Tests -->
-                        <div
-                            class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-                            <div>
-                                <h2 class="text-xl font-semibold mb-2 text-gray-900">Upcoming Tests</h2>
-                                <p class="text-gray-600 text-sm mb-4">Check for new tests and complete them.</p>
-                            </div>
-                            <button onclick="window.location.href='/student/take_test'"
-                                class="w-full py-2 px-4 btn-outline-purple">View Tests</button>
-                        </div>
-
-
-
-                    </div>
-                </div>
-
+      <div class="flex flex-col lg:flex-row gap-8">
+        <div class="w-full lg:w-2/5 xl:w-1/3">
+          <div
+            class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8"
+          >
+            <img
+              src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>"
+              alt="Student Profile Picture"
+              class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4"
+            />
+            <h2 class="text-2xl font-bold text-gray-900">
+              <%= student.studentName %>
+            </h2>
+            <p class="text-brand-purple font-mono font-semibold">
+              ID: <%= student.studentId %>
+            </p>
+            <div class="w-full border-t border-gray-200 my-6"></div>
+            <div class="text-left w-full">
+              <h3 class="text-lg font-semibold text-gray-900 mb-3">
+                Profile Details
+              </h3>
+              <p class="text-sm text-gray-600 mb-2">
+                <span class="font-semibold text-gray-700">Mobile No:</span>
+                <%= student.mobileNo || "Not Provided" %>
+              </p>
+              <p class="text-sm text-gray-600 mb-2">
+                <span class="font-semibold text-gray-700">Class:</span>
+                Grade <%= student.standard %>
+              </p>
             </div>
+            <button
+              onclick="window.location.href='/student/edit_profile'"
+              class="w-full py-2 px-4 mt-6 btn-outline-purple"
+            >
+              Edit Profile
+            </button>
+          </div>
         </div>
 
+        <div class="w-full lg:w-3/5 xl:w-2/3">
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  My Test Scores
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  Review your performance on previous tests.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/test_score'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                See Scores
+              </button>
+            </div>
 
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  My Attendance
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  Track your attendance record for all classes.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/attendance'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                View Attendance
+              </button>
+            </div>
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  Class Leaderboard
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  See where you stand among your classmates.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/leader_board'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                View Ranks
+              </button>
+            </div>
 
-    </body>
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  Fee Payment
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  View and pay your outstanding fees.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/fee_payment'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                Pay Fees
+              </button>
+            </div>
 
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  Class Content
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  Access notes, assignments, and resources.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/content'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                View Content
+              </button>
+            </div>
+
+            <div
+              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
+            >
+              <div>
+                <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                  Upcoming Tests
+                </h2>
+                <p class="text-gray-600 text-sm mb-4">
+                  Check for new tests and complete them.
+                </p>
+              </div>
+              <button
+                onclick="window.location.href='/student/take_test'"
+                class="w-full py-2 px-4 btn-outline-purple"
+              >
+                View Tests
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
 </html>

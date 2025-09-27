@@ -1,689 +1,897 @@
 <!DOCTYPE html>
 <html lang="en" class="scroll-smooth">
-
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>TUITION HUB Education Center - Your Path to Excellence</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
-        rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css"
+    />
     <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    colors: {
-                        'brand-violet': '#6D28D9',
-                        'brand-violet-light': '#8B5CF6',
-                        'brand-green': '#10B981',
-                        'brand-green-light': '#34D399',
-                        'brand-white': '#FFFFFF',
-                        'brand-gray': {
-                            100: '#F3F4F6',
-                            200: '#E5E7EB',
-                            800: '#1F2937',
-                            900: '#111827'
-                        },
-                        'brand-purple': '#5d3a9b',
-                        'brand-lime': '#bde045'
-                    },
-                    fontFamily: {
-                        inter: ['Inter', 'sans-serif'],
-                    },
-                    animation: {
-                        'fade-in-up': 'fadeInUp 1s ease-out forwards',
-                        'pulse-slow': 'pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite',
-                        'background-pan': 'backgroundPan 15s linear infinite',
-                    },
-                    keyframes: {
-                        fadeInUp: {
-                            '0%': { opacity: '0', transform: 'translateY(20px)' },
-                            '100%': { opacity: '1', transform: 'translateY(0)' },
-                        },
-                        backgroundPan: {
-                            '0%': { backgroundPosition: '0% 50%' },
-                            '50%': { backgroundPosition: '100% 50%' },
-                            '100%': { backgroundPosition: '0% 50%' },
-                        }
-                    }
-                }
-            }
-        }
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "brand-violet": "#6D28D9",
+              "brand-violet-light": "#8B5CF6",
+              "brand-green": "#10B981",
+              "brand-green-light": "#34D399",
+              "brand-white": "#FFFFFF",
+              "brand-gray": {
+                100: "#F3F4F6",
+                200: "#E5E7EB",
+                800: "#1F2937",
+                900: "#111827",
+              },
+              "brand-purple": "#5d3a9b",
+              "brand-lime": "#bde045",
+            },
+            fontFamily: {
+              inter: ["Inter", "sans-serif"],
+            },
+            animation: {
+              "fade-in-up": "fadeInUp 1s ease-out forwards",
+              "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+              "background-pan": "backgroundPan 15s linear infinite",
+            },
+            keyframes: {
+              fadeInUp: {
+                "0%": { opacity: "0", transform: "translateY(20px)" },
+                "100%": { opacity: "1", transform: "translateY(0)" },
+              },
+              backgroundPan: {
+                "0%": { backgroundPosition: "0% 50%" },
+                "50%": { backgroundPosition: "100% 50%" },
+                "100%": { backgroundPosition: "0% 50%" },
+              },
+            },
+          },
+        },
+      };
     </script>
     <style>
-        /* Custom styles for specific elements */
-        .hero-bg {
-            background: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-            background-size: 600% 600%;
-            animation: backgroundPan 15s ease infinite;
-        }
+      .hero-bg {
+        background: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+        background-size: 600% 600%;
+        animation: backgroundPan 15s ease infinite;
+      }
 
-        .text-gradient {
-            background-clip: text;
-            -webkit-background-clip: text;
-            color: transparent;
-        }
+      .text-gradient {
+        background-clip: text;
+        -webkit-background-clip: text;
+        color: transparent;
+      }
 
-        .nav-scrolled {
-            background-color: rgba(255, 255, 255, 0.85);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
-        }
+      .nav-scrolled {
+        background-color: rgba(255, 255, 255, 0.85);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
+          0 2px 4px -2px rgb(0 0 0 / 0.1);
+      }
 
+      .testimonial-card {
+        min-width: 80%;
+      }
+
+      @media (min-width: 768px) {
         .testimonial-card {
-            min-width: 80%;
+          min-width: 45%;
         }
+      }
 
-        @media (min-width: 768px) {
-            .testimonial-card {
-                min-width: 45%;
-            }
+      @media (min-width: 1024px) {
+        .testimonial-card {
+          min-width: 30%;
         }
+      }
 
-        @media (min-width: 1024px) {
-            .testimonial-card {
-                min-width: 30%;
-            }
-        }
+      .faq-item .faq-answer {
+        max-height: 0;
+        overflow: hidden;
+        transition: max-height 0.5s ease-in-out;
+      }
 
-        .faq-item .faq-answer {
-            max-height: 0;
-            overflow: hidden;
-            transition: max-height 0.5s ease-in-out;
-        }
+      .faq-item.open .faq-answer {
+        max-height: 500px;
+        /* Adjust as needed */
+      }
 
-        .faq-item.open .faq-answer {
-            max-height: 500px;
-            /* Adjust as needed */
-        }
-
-        .faq-item.open .faq-icon {
-            transform: rotate(180deg);
-        }
+      .faq-item.open .faq-icon {
+        transform: rotate(180deg);
+      }
     </style>
+  </head>
 
-</head>
+  <%- include('./partials/background') %>
 
+  <body class="font-inter text-brand-gray-800">
+    <header
+      id="main-header"
+      class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-md transition-all duration-300"
+    >
+      <div
+        class="container mx-auto px-6 py-4 flex justify-between items-center"
+      >
+        <a href="/" class="flex items-center space-x-2">
+          <img
+            src="/images/logo.png"
+            alt="Tuition Hub Logo"
+            class="w-12 h-12 rounded-full"
+          />
+          <h1 class="text-2xl font-extrabold text-brand-purple">
+            TUITION HUB Education Center
+          </h1>
+        </a>
 
-<%- include('./partials/background') %>
+        <nav class="hidden lg:flex items-center space-x-8">
+          <a
+            href="#features"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Features</a
+          >
+          <a
+            href="#courses"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Courses</a
+          >
+          <a
+            href="#tutors"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Our Tutors</a
+          >
+          <a
+            href="#testimonials"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Testimonials</a
+          >
+          <a
+            href="#faq"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >FAQ</a
+          >
+        </nav>
 
+        <div class="hidden lg:flex items-center space-x-4">
+          <a
+            href="/teacher/login"
+            class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300"
+            >Teacher Login</a
+          >
+          <a
+            href="/student/login"
+            class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300"
+            >Student Login</a
+          >
+        </div>
 
-    <body class="font-inter  text-brand-gray-800">
+        <button
+          id="mobile-menu-button"
+          class="lg:hidden text-brand-purple text-2xl"
+        >
+          <i class="fa-solid fa-bars"></i>
+        </button>
+      </div>
 
-        <!-- Header & Navigation -->
-        <header id="main-header"
-            class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-md transition-all duration-300">
-            <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-                <!-- Logo -->
-                <a href="/" class="flex items-center space-x-2">
-                    <img src="/images/logo.png" alt="Tuition Hub Logo" class="w-12 h-12 rounded-full">
-                    <h1 class="text-2xl font-extrabold text-brand-purple">TUITION HUB Education Center</h1>
-                </a>
+      <div id="mobile-menu" class="hidden lg:hidden bg-white shadow-lg">
+        <div class="flex flex-col items-center space-y-4 py-8">
+          <a
+            href="#features"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Features</a
+          >
+          <a
+            href="#courses"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Courses</a
+          >
+          <a
+            href="#tutors"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Our Tutors</a
+          >
+          <a
+            href="#testimonials"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >Testimonials</a
+          >
+          <a
+            href="#faq"
+            class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium"
+            >FAQ</a
+          >
+          <div class="flex flex-col space-y-4 pt-4">
+            <a
+              href="/teacher/login"
+              class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300"
+              >Teacher Login</a
+            >
+            <a
+              href="/student/login"
+              class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300"
+              >Student Login</a
+            >
+          </div>
+        </div>
+      </div>
+    </header>
 
-                <!-- Desktop Navigation -->
-                <nav class="hidden lg:flex items-center space-x-8">
-                    <a href="#features"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Features</a>
-                    <a href="#courses"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Courses</a>
-                    <a href="#tutors"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Our
-                        Tutors</a>
-                    <a href="#testimonials"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Testimonials</a>
-                    <a href="#faq"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">FAQ</a>
-                </nav>
+    <main class="pt-32" style="z-index: 2">
+      <section class="content-container py-20 text-center px-6">
+        <div class="max-w-4xl mx-auto">
+          <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold">
+            Unlock Your Potential. Master Your Subjects.
+          </h2>
+          <h3
+            class="mt-4 text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-brand-purple to-brand-lime text-transparent bg-clip-text"
+          >
+            <span id="dynamic-text">Growth.</span
+            ><span class="animate-pulse">|</span>
+          </h3>
+          <p class="mt-6 text-base md:text-lg max-w-2xl mx-auto">
+            Personalized one-on-one tutoring from expert educators. We provide
+            the tools and support you need to excel academically and beyond.
+          </p>
+          <div
+            class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4"
+          >
+            <a
+              href="#courses"
+              class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg"
+            >
+              Explore Courses
+            </a>
+            <a
+              href="#tutors"
+              class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg"
+            >
+              Find a Tutor
+            </a>
+          </div>
+        </div>
+      </section>
 
-                <!-- Login Buttons -->
-                <div class="hidden lg:flex items-center space-x-4">
-                    <a href="/teacher/login"
-                        class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Teacher
-                        Login</a>
-                    <a href="/student/login"
-                        class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Student
-                        Login</a>
-                </div>
+      <section class="content-container bg-brand-purple text-white py-12">
+        <div
+          class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center"
+        >
+          <div>
+            <h4 class="text-4xl font-extrabold text-brand-lime" data-target="5">
+              5
+            </h4>
+            <p class="mt-2">Expert Tutors</p>
+          </div>
+          <div>
+            <h4
+              class="text-4xl font-extrabold text-brand-lime"
+              data-target="200"
+            >
+              200
+            </h4>
+            <p class="mt-2">Students Enrolled</p>
+          </div>
+          <div>
+            <h4
+              class="text-4xl font-extrabold text-brand-lime"
+              data-target="12"
+            >
+              12
+            </h4>
+            <p class="mt-2">Courses Offered</p>
+          </div>
+          <div>
+            <h4
+              class="text-4xl font-extrabold text-brand-lime"
+              data-target="98"
+            >
+              98
+            </h4>
+            <p class="mt-2">Success Rate (%)</p>
+          </div>
+        </div>
+      </section>
 
-                <!-- Mobile Menu Button -->
-                <button id="mobile-menu-button" class="lg:hidden text-brand-purple text-2xl">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+      <section id="features" class="content-container py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-16">
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900"
+          >
+            Why Tuition Hub?
+          </h2>
+          <p class="mt-4 text-base md:text-lg text-brand-gray-800">
+            The best learning experience you can imagine.
+          </p>
+        </div>
+
+        <div
+          class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+        >
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6"
+            >
+              <i class="fa-solid fa-user-friends text-2xl"></i>
             </div>
+            <h3 class="text-2xl font-bold mb-3">Expert Tutors</h3>
+            <p>Learn from certified professionals passionate about teaching.</p>
+          </div>
 
-            <!-- Mobile Menu -->
-            <div id="mobile-menu" class="hidden lg:hidden bg-white shadow-lg">
-                <div class="flex flex-col items-center space-y-4 py-8">
-                    <a href="#features"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Features</a>
-                    <a href="#courses"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Courses</a>
-                    <a href="#tutors"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Our
-                        Tutors</a>
-                    <a href="#testimonials"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Testimonials</a>
-                    <a href="#faq"
-                        class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">FAQ</a>
-                    <div class="flex flex-col space-y-4 pt-4">
-                        <a href="/teacher/login"
-                            class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Teacher
-                            Login</a>
-                        <a href="/student/login"
-                            class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Student
-                            Login</a>
-                    </div>
-                </div>
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6"
+            >
+              <i class="fa-solid fa-book-open-reader text-2xl"></i>
             </div>
-        </header>
+            <h3 class="text-2xl font-bold mb-3">Personalized Learning</h3>
+            <p>
+              Customized lesson plans tailored to your needs and learning style.
+            </p>
+          </div>
 
-        <main class="pt-32" style="z-index: 2;">
-            <!-- Hero Section -->
-            <section class="content-container py-20 text-center px-6">
-                <div class="max-w-4xl mx-auto">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold">Unlock Your Potential. Master Your
-                        Subjects.
-                    </h2>
-                    <h3
-                        class="mt-4 text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-brand-purple to-brand-lime text-transparent bg-clip-text">
-                        <span id="dynamic-text">Growth.</span><span class="animate-pulse">|</span>
-                    </h3>
-                    <p class="mt-6 text-base md:text-lg max-w-2xl mx-auto">Personalized one-on-one tutoring from expert
-                        educators. We provide the tools and support you need to excel academically and beyond.</p>
-                    <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-                        <a href="#courses"
-                            class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full 
-                                      hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg">
-                            Explore Courses
-                        </a>
-                        <a href="#tutors"
-                            class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full 
-                                      hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg">
-                            Find a Tutor
-                        </a>
-                    </div>
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6"
+            >
+              <i class="fa-solid fa-laptop-code text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Interactive Platform</h3>
+            <p>
+              Teaching staff ensures overall student development with
+              interactive tools.
+            </p>
+          </div>
 
-                </div>
-            </section>
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6"
+            >
+              <i class="fa-solid fa-calendar-alt text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Perfect Scheduling</h3>
+            <p>Well-scheduled classes for time efficiency and relevance.</p>
+          </div>
 
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6"
+            >
+              <i class="fa-solid fa-chart-line text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">Progress Tracking</h3>
+            <p>
+              Monitor improvement with regular assessments and detailed reports.
+            </p>
+          </div>
 
-            <!-- Stats Section -->
-            <section class="content-container bg-brand-purple text-white py-12">
-                <div class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-                    <div>
-                        <h4 class="text-4xl font-extrabold text-brand-lime" data-target="5">5</h4>
-                        <p class="mt-2">Expert Tutors</p>
-                    </div>
-                    <div>
-                        <h4 class="text-4xl font-extrabold text-brand-lime" data-target="200">200</h4>
-                        <p class="mt-2">Students Enrolled</p>
-                    </div>
-                    <div>
-                        <h4 class="text-4xl font-extrabold text-brand-lime" data-target="12">12</h4>
-                        <p class="mt-2">Courses Offered</p>
-                    </div>
-                    <div>
-                        <h4 class="text-4xl font-extrabold text-brand-lime" data-target="98">98</h4>
-                        <p class="mt-2">Success Rate (%)</p>
-                    </div>
-                </div>
-            </section>
+          <div
+            class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300"
+          >
+            <div
+              class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6"
+            >
+              <i class="fa-solid fa-headset text-2xl"></i>
+            </div>
+            <h3 class="text-2xl font-bold mb-3">24/7 Support</h3>
+            <p>Our team is always available to help with any queries.</p>
+          </div>
+        </div>
+      </section>
 
-            <!-- Features Section -->
-            <section id="features" class="content-container py-20 px-6">
-                <div class="max-w-6xl mx-auto text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">Why Tuition Hub?
-                    </h2>
-                    <p class="mt-4 text-base md:text-lg text-brand-gray-800">The best learning experience you can
-                        imagine.</p>
-                </div>
+      <section id="courses" class="content-container py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-16">
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900"
+          >
+            Our Popular Courses
+          </h2>
+          <p
+            class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto"
+          >
+            Find the perfect course to help you achieve your academic goals.
+          </p>
+        </div>
 
-                <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    <!-- Feature Card 1 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-                            <i class="fa-solid fa-user-friends text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Expert Tutors</h3>
-                        <p>Learn from certified professionals passionate about teaching.</p>
-                    </div>
+        <div
+          class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-6xl mx-auto"
+        >
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
+            <img
+              src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Mathematics"
+              alt="Mathematics Course"
+              class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div class="p-6">
+              <span
+                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300"
+              >
+                Maths</span
+              >
+              <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
+                Mathematics
+              </h3>
+              <p class="text-brand-gray-800 text-sm mb-4">
+                Master topics from algebra, geometry, and arithmetic with ease.
+              </p>
+            </div>
+          </div>
 
-                    <!-- Feature Card 2 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-                            <i class="fa-solid fa-book-open-reader text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Personalized Learning</h3>
-                        <p>Customized lesson plans tailored to your needs and learning style.</p>
-                    </div>
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
+            <img
+              src="https://placehold.co/600x400/10B981/FFFFFF?text=Science"
+              alt="Academic Studies"
+              class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div class="p-6">
+              <span
+                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300"
+              >
+                Academics</span
+              >
+              <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
+                School Studies
+              </h3>
+              <p class="text-brand-gray-800 text-sm mb-4">
+                Covers essential subjects like Science, Social Studies, and
+                more.
+              </p>
+            </div>
+          </div>
 
-                    <!-- Feature Card 3 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-                            <i class="fa-solid fa-laptop-code text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Interactive Platform</h3>
-                        <p>Teaching staff ensures overall student development with interactive tools.</p>
-                    </div>
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
+            <img
+              src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Coding"
+              alt="Coding Course"
+              class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div class="p-6">
+              <span
+                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300"
+              >
+                Coding</span
+              >
+              <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
+                Basic Coding
+              </h3>
+              <p class="text-brand-gray-800 text-sm mb-4">
+                Learn HTML, CSS, C, Java basics with fun hands-on exercises.
+              </p>
+            </div>
+          </div>
 
-                    <!-- Feature Card 4 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-                            <i class="fa-solid fa-calendar-alt text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Perfect Scheduling</h3>
-                        <p>Well-scheduled classes for time efficiency and relevance.</p>
-                    </div>
+          <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
+            <img
+              src="https://placehold.co/600x400/10B981/FFFFFF?text=Languages"
+              alt="Languages Course"
+              class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300"
+            />
+            <div class="p-6">
+              <span
+                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300"
+              >
+                Languages
+              </span>
 
-                    <!-- Feature Card 5 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-                            <i class="fa-solid fa-chart-line text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">Progress Tracking</h3>
-                        <p>Monitor improvement with regular assessments and detailed reports.</p>
-                    </div>
+              <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
+                Languages
+              </h3>
+              <p class="text-brand-gray-800 text-sm mb-4">
+                Develop speaking, reading, and writing skills in multiple
+                languages.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
 
-                    <!-- Feature Card 6 -->
-                    <div
-                        class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-                        <div
-                            class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-                            <i class="fa-solid fa-headset text-2xl"></i>
-                        </div>
-                        <h3 class="text-2xl font-bold mb-3">24/7 Support</h3>
-                        <p>Our team is always available to help with any queries.</p>
-                    </div>
-                </div>
-            </section>
+      <section id="tutors" class="content-container py-20 px-6">
+        <div class="max-w-6xl mx-auto text-center mb-16">
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900"
+          >
+            Meet Our Expert Tutors
+          </h2>
+          <p
+            class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto"
+          >
+            Highly qualified and dedicated professionals ready to guide you.
+          </p>
+        </div>
 
+        <div
+          class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto"
+        >
+          <div class="text-center group">
+            <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
+              <img
+                src="https://placehold.co/200x200/E5E7EB/333333?text=Zeenat+Ahmed"
+                alt="Zeenat Ahmed"
+                class="rounded-full w-full h-full object-cover shadow-lg"
+              />
+              <div
+                class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center"
+              >
+                <i class="fa-solid fa-plus text-white text-3xl"></i>
+              </div>
+            </div>
+            <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
+              Zeenat Ahmed
+            </h3>
+            <p class="text-brand-purple font-semibold">B.Ed</p>
+            <p class="text-sm text-brand-gray-800 mt-2">
+              20+ years of experience in school academics, expert in teaching
+              core subjects.
+            </p>
+          </div>
 
-            <!-- Courses Section -->
-            <section id="courses" class="content-container py-20 px-6">
-                <div class="max-w-6xl mx-auto text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">Our Popular Courses
-                    </h2>
-                    <p class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto">
-                        Find the perfect course to help you achieve your academic goals.
+          <div class="text-center group">
+            <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
+              <img
+                src="https://placehold.co/200x200/E5E7EB/333333?text=Heena+Shaikh"
+                alt="Heena Shaikh"
+                class="rounded-full w-full h-full object-cover shadow-lg"
+              />
+              <div
+                class="absolute inset-0 rounded-full bg-brand-lime opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center"
+              >
+                <i class="fa-solid fa-plus text-white text-3xl"></i>
+              </div>
+            </div>
+            <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
+              Heena Shaikh
+            </h3>
+            <p class="text-brand-lime font-semibold">B.Ed</p>
+            <p class="text-sm text-brand-gray-800 mt-2">
+              30+ years of experience in teaching languages, specializing in
+              communication and literature.
+            </p>
+          </div>
+
+          <div class="text-center group">
+            <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
+              <img
+                src="https://placehold.co/200x200/E5E7EB/333333?text=Siddharth+Tiwari"
+                alt="Siddharth Tiwari"
+                class="rounded-full w-full h-full object-cover shadow-lg"
+              />
+              <div
+                class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center"
+              >
+                <i class="fa-solid fa-plus text-white text-3xl"></i>
+              </div>
+            </div>
+            <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
+              Siddharth Tiwari
+            </h3>
+            <p class="text-brand-purple font-semibold">
+              BE in Computer Engineering
+            </p>
+            <p class="text-sm text-brand-gray-800 mt-2">
+              3+ years of experience teaching mathematics and coding, including
+              Python, Java, and basic programming.
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <section id="testimonials" class="content-container py-20">
+        <div class="content-container container mx-auto px-6">
+          <div class="text-center mb-16">
+            <h2 class="text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
+              What Our Students Say
+            </h2>
+            <p class="mt-4 text-lg text-brand-gray-800 max-w-2xl mx-auto">
+              Real stories from students who achieved their dreams with us.
+            </p>
+          </div>
+
+          <div class="relative">
+            <div
+              id="testimonial-slider"
+              class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-8 pb-8"
+            >
+              <div
+                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg"
+              >
+                <div class="flex items-center mb-4">
+                  <img
+                    src="https://placehold.co/100x100/A78BFA/FFFFFF?text=S"
+                    class="w-12 h-12 rounded-full mr-4"
+                    alt="Student Sarah L."
+                  />
+                  <div>
+                    <h4 class="font-bold text-brand-gray-900">Sara L.</h4>
+                    <p class="text-sm text-brand-gray-800">
+                      10th Grade Student
                     </p>
+                  </div>
                 </div>
+                <p class="text-brand-gray-800">
+                  "My grades in chemistry went from a C to an A+ in just one
+                  semester! My tutor was incredibly patient and explained
+                  complex topics in a way I could finally understand."
+                </p>
+              </div>
 
-                <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-6xl mx-auto">
-                    <!-- Course Card 1 -->
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-                        <img src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Mathematics" alt="Mathematics Course"
-                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="p-6">
-                            <span
-                                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full
-                            hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-                                Maths</span>
-                            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">Mathematics</h3>
-                            <p class="text-brand-gray-800 text-sm mb-4">Master topics from algebra, geometry, and
-                                arithmetic with ease.</p>
-                        </div>
-                    </div>
-
-                    <!-- Course Card 2 -->
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-                        <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Science" alt="Academic Studies"
-                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="p-6">
-                            <span
-                                class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full
-                            hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-                                Academics</span>
-                            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">School Studies</h3>
-                            <p class="text-brand-gray-800 text-sm mb-4">Covers essential subjects like Science, Social
-                                Studies, and more.</p>
-
-                        </div>
-                    </div>
-
-                    <!-- Course Card 3 -->
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-                        <img src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Coding" alt="Coding Course"
-                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="p-6">
-                            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full
-             hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-                                Coding</span>
-                            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">Basic Coding</h3>
-                            <p class="text-brand-gray-800 text-sm mb-4">Learn HTML, CSS, C, Java basics with fun
-                                hands-on exercises.</p>
-
-                        </div>
-                    </div>
-
-                    <!-- Course Card 4 -->
-                    <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-                        <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Languages" alt="Languages Course"
-                            class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300">
-                        <div class="p-6">
-                            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full
-             hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-                                Languages
-                            </span>
-
-                            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">Languages</h3>
-                            <p class="text-brand-gray-800 text-sm mb-4">Develop speaking, reading, and writing skills in
-                                multiple languages.</p>
-
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-
-            <!-- Tutors Section -->
-            <section id="tutors" class="content-container py-20 px-6">
-                <div class="max-w-6xl mx-auto text-center mb-16">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">Meet Our Expert
-                        Tutors</h2>
-                    <p class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto">
-                        Highly qualified and dedicated professionals ready to guide you.
+              <div
+                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg"
+              >
+                <div class="flex items-center mb-4">
+                  <img
+                    src="https://placehold.co/100x100/34D399/FFFFFF?text=M"
+                    class="w-12 h-12 rounded-full mr-4"
+                    alt="Parent Akash T."
+                  />
+                  <div>
+                    <h4 class="font-bold text-brand-gray-900">Akash T.</h4>
+                    <p class="text-sm text-brand-gray-800">
+                      Parent of 8th Grader
                     </p>
+                  </div>
                 </div>
+                <p class="text-brand-gray-800">
+                  "The flexible scheduling and high-quality tutors at Tuition
+                  Hub have been a game-changer for my son's education. He's more
+                  confident and engaged in his studies now."
+                </p>
+              </div>
 
-                <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-                    <!-- Tutor Card 1 -->
-                    <div class="text-center group">
-                        <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-                            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Zeenat+Ahmed" alt="Zeenat Ahmed"
-                                class="rounded-full w-full h-full object-cover shadow-lg">
-                            <div
-                                class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-                                <i class="fa-solid fa-plus text-white text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="mt-6 text-xl font-bold text-brand-gray-900">Zeenat Ahmed</h3>
-                        <p class="text-brand-purple font-semibold">B.Ed</p>
-                        <p class="text-sm text-brand-gray-800 mt-2">20+ years of experience in school academics, expert
-                            in teaching core subjects.</p>
-                    </div>
-
-                    <!-- Tutor Card 2 -->
-                    <div class="text-center group">
-                        <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-                            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Heena+Shaikh" alt="Heena Shaikh"
-                                class="rounded-full w-full h-full object-cover shadow-lg">
-                            <div
-                                class="absolute inset-0 rounded-full bg-brand-lime opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-                                <i class="fa-solid fa-plus text-white text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="mt-6 text-xl font-bold text-brand-gray-900">Heena Shaikh</h3>
-                        <p class="text-brand-lime font-semibold">B.Ed</p>
-                        <p class="text-sm text-brand-gray-800 mt-2">30+ years of experience in teaching languages,
-                            specializing in communication and literature.</p>
-                    </div>
-
-                    <!-- Tutor Card 3 -->
-                    <div class="text-center group">
-                        <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-                            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Siddharth+Tiwari"
-                                alt="Siddharth Tiwari" class="rounded-full w-full h-full object-cover shadow-lg">
-                            <div
-                                class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-                                <i class="fa-solid fa-plus text-white text-3xl"></i>
-                            </div>
-                        </div>
-                        <h3 class="mt-6 text-xl font-bold text-brand-gray-900">Siddharth Tiwari</h3>
-                        <p class="text-brand-purple font-semibold">BE in Computer Engineering</p>
-                        <p class="text-sm text-brand-gray-800 mt-2">3+ years of experience teaching mathematics and
-                            coding, including Python, Java, and basic programming.</p>
-                    </div>
+              <div
+                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg"
+              >
+                <div class="flex items-center mb-4">
+                  <img
+                    src="https://placehold.co/100x100/A78BFA/FFFFFF?text=D"
+                    class="w-12 h-12 rounded-full mr-4"
+                    alt="Student Daksh C."
+                  />
+                  <div>
+                    <h4 class="font-bold text-brand-gray-900">Daksh C.</h4>
+                    <p class="text-sm text-brand-gray-800">10th Student</p>
+                  </div>
                 </div>
-            </section>
+                <p class="text-brand-gray-800">
+                  "I was struggling with my statistics course. The personalized
+                  sessions helped me ace my final exams. Highly recommended!"
+                </p>
+              </div>
 
-            <!-- Testimonials Section -->
-            <section id="testimonials" class="content-container py-20">
-                <div class="content-container container mx-auto px-6">
-                    <div class="text-center mb-16">
-                        <h2 class="text-4xl lg:text-5xl font-extrabold text-brand-gray-900">What Our Students Say</h2>
-                        <p class="mt-4 text-lg text-brand-gray-800 max-w-2xl mx-auto">Real stories from students who
-                            achieved their dreams with us.</p>
-                    </div>
-
-                    <!-- Slider -->
-                    <div class="relative">
-                        <div id="testimonial-slider"
-                            class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-8 pb-8">
-                            <!-- Testimonial Card Template -->
-                            <div
-                                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-                                <div class="flex items-center mb-4">
-                                    <img src="https://placehold.co/100x100/A78BFA/FFFFFF?text=S"
-                                        class="w-12 h-12 rounded-full mr-4" alt="Student Sarah L.">
-                                    <div>
-                                        <h4 class="font-bold text-brand-gray-900">Sara L.</h4>
-                                        <p class="text-sm text-brand-gray-800">10th Grade Student</p>
-                                    </div>
-                                </div>
-                                <p class="text-brand-gray-800">"My grades in chemistry went from a C to an A+ in just
-                                    one semester! My tutor was incredibly patient and explained complex topics in a way
-                                    I could finally understand."</p>
-                            </div>
-
-                            <div
-                                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-                                <div class="flex items-center mb-4">
-                                    <img src="https://placehold.co/100x100/34D399/FFFFFF?text=M"
-                                        class="w-12 h-12 rounded-full mr-4" alt="Parent Akash T.">
-                                    <div>
-                                        <h4 class="font-bold text-brand-gray-900">Akash T.</h4>
-                                        <p class="text-sm text-brand-gray-800">Parent of 8th Grader</p>
-                                    </div>
-                                </div>
-                                <p class="text-brand-gray-800">"The flexible scheduling and high-quality tutors at
-                                    Tuition Hub have been a game-changer for my son's education. He's more confident and
-                                    engaged in his studies now."</p>
-                            </div>
-
-                            <div
-                                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-                                <div class="flex items-center mb-4">
-                                    <img src="https://placehold.co/100x100/A78BFA/FFFFFF?text=D"
-                                        class="w-12 h-12 rounded-full mr-4" alt="Student Daksh C.">
-                                    <div>
-                                        <h4 class="font-bold text-brand-gray-900">Daksh C.</h4>
-                                        <p class="text-sm text-brand-gray-800">10th Student</p>
-                                    </div>
-                                </div>
-                                <p class="text-brand-gray-800">"I was struggling with my statistics course. The
-                                    personalized sessions helped me ace my final exams. Highly recommended!"</p>
-                            </div>
-
-                            <div
-                                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-                                <div class="flex items-center mb-4">
-                                    <img src="https://placehold.co/100x100/34D399/FFFFFF?text=A"
-                                        class="w-12 h-12 rounded-full mr-4" alt="Student Aisha K.">
-                                    <div>
-                                        <h4 class="font-bold text-brand-gray-900">Aisha K.</h4>
-                                        <p class="text-sm text-brand-gray-800">10th Standard Student</p>
-                                    </div>
-                                </div>
-                                <p class="text-brand-gray-800">"Thanks to my 10th prep tutor, I improved my score 96%!
-                                    The strategies and practice tests were incredibly helpful."</p>
-                            </div>
-                        </div>
-                    </div>
+              <div
+                class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg"
+              >
+                <div class="flex items-center mb-4">
+                  <img
+                    src="https://placehold.co/100x100/34D399/FFFFFF?text=A"
+                    class="w-12 h-12 rounded-full mr-4"
+                    alt="Student Aisha K."
+                  />
+                  <div>
+                    <h4 class="font-bold text-brand-gray-900">Aisha K.</h4>
+                    <p class="text-sm text-brand-gray-800">
+                      10th Standard Student
+                    </p>
+                  </div>
                 </div>
-            </section>
-
-
-            <!-- FAQ Section -->
-            <section id="faq" class="content-container py-20 px-6">
-                <div class="text-center max-w-4xl mx-auto mb-16">
-                    <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">Frequently Asked
-                        Questions</h2>
-                    <p class="mt-4 text-base md:text-lg text-brand-gray-800">Have questions? We have answers. If you
-                        can't find it here, feel free to contact us.</p>
-                </div>
-
-                <div class="max-w-4xl mx-auto space-y-4">
-                    <details class="p-6 bg-brand-gray-100 rounded-2xl">
-                        <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">How do I choose a tutor?
-                        </summary>
-                        <p class="mt-2 text-brand-gray-800">You can browse our tutor profiles, which include their
-                            qualifications, experience, and student reviews. You can also contact our support team, and
-                            we'll help match you with the perfect tutor based on your needs and learning style.</p>
-                    </details>
-
-                    <details class="p-6 bg-brand-gray-100 rounded-2xl">
-                        <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">What subjects do you
-                            offer?</summary>
-                        <p class="mt-2 text-brand-gray-800">We offer a wide range of subjects, from K-12 core subjects
-                            like Math, Science, and English, to school academic courses, coding basics (HTML, CSS, C,
-                            Java), and languages. Check our Courses section for a complete list.</p>
-                    </details>
-
-                    <details class="p-6 bg-brand-gray-100 rounded-2xl">
-                        <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">How are the tutoring
-                            sessions conducted?</summary>
-                        <p class="mt-2 text-brand-gray-800">All sessions are conducted offline through our interactive
-                            classroom sessions with expert tutors.</p>
-                    </details>
-
-                    <details class="p-6 bg-brand-gray-100 rounded-2xl">
-                        <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">What if I'm not satisfied
-                            with my tutor?</summary>
-                        <p class="mt-2 text-brand-gray-800">We offer a satisfaction guarantee. If you're not completely
-                            satisfied with your first session, we'll help you find a new tutor at no extra cost or
-                            provide a full refund for that session.</p>
-                    </details>
-                </div>
-            </section>
-
-        </main>
-
-        <!-- Footer -->
-        <footer class="content-container bg-brand-purple text-white py-12 px-6">
-            <div class="max-w-6xl mx-auto grid sm:grid-cols-1 md:grid-cols-3 gap-8">
-                <!-- About Section -->
-                <div>
-                    <h4 class="font-bold text-lg mb-4">TUITION HUB</h4>
-                    <p>Providing quality education and personalized tutoring for all students. Your partner in achieving
-                        academic excellence.</p>
-                </div>
-
-                <!-- Quick Links -->
-                <div>
-                    <h4 class="font-bold text-lg mb-4">Quick Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#courses" class="hover:text-brand-lime transition-colors">Courses</a></li>
-                        <li><a href="#tutors" class="hover:text-brand-lime transition-colors">Tutors</a></li>
-                        <li><a href="#testimonials" class="hover:text-brand-lime transition-colors">Testimonials</a>
-                        </li>
-                        <li><a href="#faq" class="hover:text-brand-lime transition-colors">FAQ</a></li>
-                    </ul>
-                </div>
-
-                <!-- Contact Info -->
-                <div>
-                    <h4 class="font-bold text-lg mb-4">Contact</h4>
-                    <p>Email: tuitionhubeducationcenter@gmail.com</p>
-                    <p>Phone: +91 98765 43210</p>
-                </div>
+                <p class="text-brand-gray-800">
+                  "Thanks to my 10th prep tutor, I improved my score 96%! The
+                  strategies and practice tests were incredibly helpful."
+                </p>
+              </div>
             </div>
+          </div>
+        </div>
+      </section>
 
-            <p class="mt-12 text-center text-sm text-brand-gray-200">© 2025 TUITION HUB Education Center. All rights
-                reserved.</p>
-        </footer>
+      <section id="faq" class="content-container py-20 px-6">
+        <div class="text-center max-w-4xl mx-auto mb-16">
+          <h2
+            class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900"
+          >
+            Frequently Asked Questions
+          </h2>
+          <p class="mt-4 text-base md:text-lg text-brand-gray-800">
+            Have questions? We have answers. If you can't find it here, feel
+            free to contact us.
+          </p>
+        </div>
 
-        <script>
-            // Mobile Menu toggle
-            const btn = document.getElementById("mobile-menu-button");
-            const menu = document.getElementById("mobile-menu");
-            btn.addEventListener("click", () => {
-                menu.classList.toggle("hidden");
-            });
+        <div class="max-w-4xl mx-auto space-y-4">
+          <details class="p-6 bg-brand-gray-100 rounded-2xl">
+            <summary
+              class="font-bold cursor-pointer text-lg text-brand-gray-900"
+            >
+              How do I choose a tutor?
+            </summary>
+            <p class="mt-2 text-brand-gray-800">
+              You can browse our tutor profiles, which include their
+              qualifications, experience, and student reviews. You can also
+              contact our support team, and we'll help match you with the
+              perfect tutor based on your needs and learning style.
+            </p>
+          </details>
 
-            // Sticky Header on Scroll
-            const header = document.getElementById('main-header');
-            window.addEventListener('scroll', () => {
-                if (window.scrollY > 50) {
-                    header.classList.add('nav-scrolled');
-                } else {
-                    header.classList.remove('nav-scrolled');
-                }
-            });
+          <details class="p-6 bg-brand-gray-100 rounded-2xl">
+            <summary
+              class="font-bold cursor-pointer text-lg text-brand-gray-900"
+            >
+              What subjects do you offer?
+            </summary>
+            <p class="mt-2 text-brand-gray-800">
+              We offer a wide range of subjects, from K-12 core subjects like
+              Math, Science, and English, to school academic courses, coding
+              basics (HTML, CSS, C, Java), and languages. Check our Courses
+              section for a complete list.
+            </p>
+          </details>
 
-            // Dynamic Text Typing Effect
-            const dynamicText = document.getElementById('dynamic-text');
-            const words = ["Success.", "Growth.", "Excellence."];
-            let wordIndex = 0;
-            let charIndex = 0;
-            let isDeleting = false;
+          <details class="p-6 bg-brand-gray-100 rounded-2xl">
+            <summary
+              class="font-bold cursor-pointer text-lg text-brand-gray-900"
+            >
+              How are the tutoring sessions conducted?
+            </summary>
+            <p class="mt-2 text-brand-gray-800">
+              All sessions are conducted offline through our interactive
+              classroom sessions with expert tutors.
+            </p>
+          </details>
 
-            function type() {
-                const currentWord = words[wordIndex];
-                if (isDeleting) {
-                    dynamicText.textContent = currentWord.substring(0, charIndex - 1);
-                    charIndex--;
-                } else {
-                    dynamicText.textContent = currentWord.substring(0, charIndex + 1);
-                    charIndex++;
-                }
+          <details class="p-6 bg-brand-gray-100 rounded-2xl">
+            <summary
+              class="font-bold cursor-pointer text-lg text-brand-gray-900"
+            >
+              What if I'm not satisfied with my tutor?
+            </summary>
+            <p class="mt-2 text-brand-gray-800">
+              We offer a satisfaction guarantee. If you're not completely
+              satisfied with your first session, we'll help you find a new tutor
+              at no extra cost or provide a full refund for that session.
+            </p>
+          </details>
+        </div>
+      </section>
+    </main>
 
-                if (!isDeleting && charIndex === currentWord.length) {
-                    setTimeout(() => isDeleting = true, 2000);
-                } else if (isDeleting && charIndex === 0) {
-                    isDeleting = false;
-                    wordIndex = (wordIndex + 1) % words.length;
-                }
+    <footer class="content-container bg-brand-purple text-white py-12 px-6">
+      <div class="max-w-6xl mx-auto grid sm:grid-cols-1 md:grid-cols-3 gap-8">
+        <div>
+          <h4 class="font-bold text-lg mb-4">TUITION HUB</h4>
+          <p>
+            Providing quality education and personalized tutoring for all
+            students. Your partner in achieving academic excellence.
+          </p>
+        </div>
 
-                const typeSpeed = isDeleting ? 100 : 200;
-                setTimeout(type, typeSpeed);
+        <div>
+          <h4 class="font-bold text-lg mb-4">Quick Links</h4>
+          <ul class="space-y-2">
+            <li>
+              <a href="#courses" class="hover:text-brand-lime transition-colors"
+                >Courses</a
+              >
+            </li>
+            <li>
+              <a href="#tutors" class="hover:text-brand-lime transition-colors"
+                >Tutors</a
+              >
+            </li>
+            <li>
+              <a
+                href="#testimonials"
+                class="hover:text-brand-lime transition-colors"
+                >Testimonials</a
+              >
+            </li>
+            <li>
+              <a href="#faq" class="hover:text-brand-lime transition-colors"
+                >FAQ</a
+              >
+            </li>
+          </ul>
+        </div>
+
+        <div>
+          <h4 class="font-bold text-lg mb-4">Contact</h4>
+          <p>Email: tuitionhubeducationcenter@gmail.com</p>
+          <p>Phone: +91 98765 43210</p>
+        </div>
+      </div>
+
+      <p class="mt-12 text-center text-sm text-brand-gray-200">
+        © 2025 TUITION HUB Education Center. All rights reserved.
+      </p>
+    </footer>
+
+    <script>
+      const btn = document.getElementById("mobile-menu-button");
+      const menu = document.getElementById("mobile-menu");
+      btn.addEventListener("click", () => {
+        menu.classList.toggle("hidden");
+      });
+
+      const header = document.getElementById("main-header");
+      window.addEventListener("scroll", () => {
+        if (window.scrollY > 50) {
+          header.classList.add("nav-scrolled");
+        } else {
+          header.classList.remove("nav-scrolled");
+        }
+      });
+
+      const dynamicText = document.getElementById("dynamic-text");
+      const words = ["Success.", "Growth.", "Excellence."];
+      let wordIndex = 0;
+      let charIndex = 0;
+      let isDeleting = false;
+
+      function type() {
+        const currentWord = words[wordIndex];
+        if (isDeleting) {
+          dynamicText.textContent = currentWord.substring(0, charIndex - 1);
+          charIndex--;
+        } else {
+          dynamicText.textContent = currentWord.substring(0, charIndex + 1);
+          charIndex++;
+        }
+
+        if (!isDeleting && charIndex === currentWord.length) {
+          setTimeout(() => (isDeleting = true), 2000);
+        } else if (isDeleting && charIndex === 0) {
+          isDeleting = false;
+          wordIndex = (wordIndex + 1) % words.length;
+        }
+
+        const typeSpeed = isDeleting ? 100 : 200;
+        setTimeout(type, typeSpeed);
+      }
+      type();
+
+      const statsCounters = document.querySelectorAll("[data-target]");
+      const animateCounter = (el) => {
+        const target = +el.getAttribute("data-target");
+        const duration = 2000; // 2 seconds
+        const stepTime = Math.abs(Math.floor(duration / target));
+        let current = 0;
+        const timer = setInterval(() => {
+          current += 1;
+          el.innerText = current;
+          if (current == target) {
+            clearInterval(timer);
+          }
+        }, stepTime);
+      };
+
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              animateCounter(entry.target);
+              observer.unobserve(entry.target);
             }
-            type();
+          });
+        },
+        { threshold: 0.5 }
+      );
 
-            // Stats Counter Animation
-            const statsCounters = document.querySelectorAll('[data-target]');
-            const animateCounter = (el) => {
-                const target = +el.getAttribute('data-target');
-                const duration = 2000; // 2 seconds
-                const stepTime = Math.abs(Math.floor(duration / target));
-                let current = 0;
-                const timer = setInterval(() => {
-                    current += 1;
-                    el.innerText = current;
-                    if (current == target) {
-                        clearInterval(timer);
-                    }
-                }, stepTime);
-            };
-
-            const observer = new IntersectionObserver((entries) => {
-                entries.forEach(entry => {
-                    if (entry.isIntersecting) {
-                        animateCounter(entry.target);
-                        observer.unobserve(entry.target);
-                    }
-                });
-            }, { threshold: 0.5 });
-
-            statsCounters.forEach(counter => {
-                observer.observe(counter);
-            });
-
-        </script>
-
-
-    </body>
-
+      statsCounters.forEach((counter) => {
+        observer.observe(counter);
+      });
+    </script>
+  </body>
 </html>

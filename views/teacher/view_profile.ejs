@@ -13,21 +13,26 @@
       rel="stylesheet"
     />
     <style>
+      /* BASE STYLES & FONT */
       body {
         font-family: "Inter", sans-serif;
         background-color: #f3f4f6;
         background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
       }
 
+      /* THEME COLORS */
       .text-brand-purple {
         color: #5d3a9b;
       }
+
       .border-brand-purple {
         border-color: #5d3a9b;
       }
+
       .bg-brand-purple-light {
         background-color: #f3e8ff;
       }
+
       .text-brand-lime {
         color: #bde045;
       }
@@ -39,6 +44,7 @@
         transition: all 0.3s ease;
         border-radius: 9999px;
       }
+
       .btn-action:hover {
         background-color: #4b2d84;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -47,8 +53,9 @@
       .main-chart-area {
         position: relative;
         height: 0;
-        padding-bottom: 35%;
+        padding-bottom: 48%;
       }
+
       .main-chart-area canvas {
         position: absolute;
         top: 0;
@@ -58,10 +65,9 @@
       }
 
       .latest-score-bar {
-        background-color: #f7f9fc;
+        background-color: #fcfcfc;
         border-radius: 8px;
         padding: 12px 16px;
-        margin-bottom: 20px;
       }
     </style>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -69,10 +75,12 @@
 
   <body class="text-gray-800">
     <div
-      id="chart-data-container"
-      data-score-labels="<%- JSON.stringify(scoreLabels) %>"
-      data-score-data="<%- JSON.stringify(scoreData) %>"
+      id="chart-data-wrapper"
       style="display: none"
+      data-chart-data="<%= JSON.stringify({
+            labels: scoreLabels,
+            data: scoreData
+        }) %>"
     ></div>
 
     <div
@@ -83,7 +91,7 @@
       >
         <div>
           <a
-            href="/teacher/manage_students"
+            href="/teacher/dashboard"
             class="text-brand-purple hover:underline mb-1 block text-sm"
             >&larr; Back to Students</a
           >
@@ -93,8 +101,8 @@
             <%= student.studentName %>
           </h1>
           <p class="text-sm text-gray-500">
-            ID: **<%= student.studentId %>** | Class: **<%= student.standard
-            %>**
+            ID: <%= student.studentId %> | Class: <%= student.standard %> |
+            Mobile: <%= student.mobileNo %>
           </p>
         </div>
 
@@ -115,7 +123,7 @@
               class="flex flex-col items-center text-center pb-4 border-b border-gray-100"
             >
               <img
-                src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>"
+                src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>"
                 alt="Profile Picture"
                 class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md"
               />
@@ -138,9 +146,9 @@
               </div>
               <div class="flex justify-between items-center">
                 <span class="text-gray-600 font-medium">Reward Points:</span>
-                <span class="font-bold text-xl text-brand-lime"
-                  ><%= student.points %> ✨</span
-                >
+                <span class="font-bold text-xl text-brand-lime">
+                  <%= student.points %> ✨
+                </span>
               </div>
             </div>
           </div>
@@ -164,19 +172,19 @@
               <div class="text-sm space-y-1 text-right">
                 <div class="flex justify-between">
                   <span class="font-medium">Present:</span>
-                  <span class="font-bold text-green-600"
-                    ><%= presentDays %></span
-                  >
+                  <span class="font-bold text-green-600">
+                    <%= presentDays %>
+                  </span>
                 </div>
                 <div class="flex justify-between">
                   <span class="font-medium">Absent:</span>
-                  <span class="font-bold text-red-500"
-                    ><%= totalDays - presentDays %></span
-                  >
+                  <span class="font-bold text-red-500">
+                    <%= totalDays - presentDays %>
+                  </span>
                 </div>
                 <div class="flex justify-between pt-1 border-t">
                   <span class="font-medium">Total Days:</span>
-                  <span class="font-bold"><%= totalDays %></span>
+                  <span class="font-bold"> <%= totalDays %> </span>
                 </div>
               </div>
             </div>
@@ -189,12 +197,11 @@
               Recent Fee Payments Log
             </h3>
             <div class="divide-y divide-gray-100">
-              <% if (recentFees.length > 0) { %> <% recentFees.forEach(fee => {
-              %>
+              <% if (recentFees.length> 0) { %> <% recentFees.forEach(fee=> { %>
               <div class="flex justify-between items-center py-3">
                 <div class="flex flex-col">
                   <span class="text-sm font-semibold"
-                    >Fee for **<%= fee.month %>, <%= fee.year %>**</span
+                    >Fee for <%= fee.month %>, <%= fee.year %></span
                   >
                   <span class="text-xs text-gray-500"
                     >Method: <%= fee.method %> | Paid <%= new
@@ -218,42 +225,15 @@
           <div
             class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light"
           >
-            <h3 class="text-xl font-bold mb-4 text-gray-900">
+            <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
               Performance Trend (Score History)
             </h3>
-
-            <% if (recentScores.length > 0) { %>
-            <div class="latest-score-bar mb-6 border border-gray-200">
-              <h4 class="text-base font-semibold mb-1 text-brand-purple">
-                Latest Result: <%= recentScores[0].testName %>
-              </h4>
-              <div class="flex justify-between items-end">
-                <div>
-                  <span class="text-xs text-gray-500"
-                    ><%= recentScores[0].subject %> | <%= new
-                    Date(recentScores[0].createdAt).toLocaleDateString()
-                    %></span
-                  >
-                </div>
-                <div class="flex flex-col items-end">
-                  <span
-                    class="text-2xl font-extrabold <%= recentScores[0].percentage > 70 ? 'text-green-600' : 'text-orange-500' %>"
-                  >
-                    <%= recentScores[0].percentage %>%
-                  </span>
-                  <span class="text-xs text-gray-500"
-                    >Score: <%= recentScores[0].score %></span
-                  >
-                </div>
-              </div>
-            </div>
-            <% } %>
 
             <div class="main-chart-area">
               <canvas id="scoreChart"></canvas>
             </div>
 
-            <% if (scoreLabels.length === 0) { %>
+            <% if (scoreLabels.length===0) { %>
             <p class="text-center text-gray-500 py-4">
               No test scores available for chart history.
             </p>
@@ -267,17 +247,17 @@
               All Test Results Log
             </h3>
             <div class="divide-y divide-gray-100">
-              <% if (recentScores.length > 0) { %> <% recentScores.forEach(score
-              => { %>
+              <% if (recentScores.length> 0) { %> <%
+              recentScores.forEach(score=> { %>
               <div class="flex justify-between items-center py-2">
                 <div class="flex flex-col">
-                  <span class="text-sm font-semibold text-brand-purple"
-                    ><%= score.testName %></span
-                  >
-                  <span class="text-xs text-gray-500"
-                    ><%= score.subject %> | <%= new
-                    Date(score.createdAt).toLocaleDateString() %></span
-                  >
+                  <span class="text-sm font-semibold text-brand-purple">
+                    <%= score.testName %>
+                  </span>
+                  <span class="text-xs text-gray-500">
+                    <%= score.subject %> | <%= new
+                    Date(score.createdAt).toLocaleDateString() %>
+                  </span>
                 </div>
                 <div class="flex flex-col items-end">
                   <span
@@ -302,9 +282,11 @@
     </div>
 
     <script>
-      const dataContainer = document.getElementById("chart-data-container");
-      const scoreLabels = JSON.parse(dataContainer.dataset.scoreLabels);
-      const scoreData = JSON.parse(dataContainer.dataset.scoreData);
+      const dataWrapper = document.getElementById("chart-data-wrapper");
+      const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+
+      const scoreLabels = chartDataObject.labels;
+      const scoreData = chartDataObject.data;
 
       const primaryColor = "#5d3a9b";
 
@@ -331,18 +313,29 @@
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
-              legend: { display: false },
+              legend: {
+                display: false,
+              },
             },
             scales: {
               y: {
                 beginAtZero: true,
                 max: 100,
-                title: { display: true, text: "Percentage (%)" },
-                grid: { color: "#f3f4f6" },
+                title: {
+                  display: true,
+                  text: "Percentage (%)",
+                },
+                grid: {
+                  color: "#f3f4f6",
+                },
               },
               x: {
-                grid: { display: false },
-                ticks: { display: scoreLabels.length > 1 },
+                grid: {
+                  display: false,
+                },
+                ticks: {
+                  display: scoreLabels.length > 1,
+                },
               },
             },
             layout: {

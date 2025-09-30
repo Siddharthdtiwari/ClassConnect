@@ -58,46 +58,39 @@ const uploadToCloudinary = (fileBuffer, folder = "student-profiles") =>
     streamifier.createReadStream(fileBuffer).pipe(stream);
   });
 
-global.mongoose = {
-  conn: null,
-  promise: null,
-};
-
 async function connectDB() {
-  if (global.mongoose.conn) {
-    return global.mongoose.conn;
+  if (mongoose.connection.readyState === 1) {
+    return;
   }
 
-  if (!global.mongoose.promise) {
-    const options = {
-      bufferCommands: false,
-      serverSelectionTimeoutMS: 5000,
-    };
+  const options = {
+    serverSelectionTimeoutMS: 5000,
+  };
 
-    global.mongoose.promise = mongoose
-      .connect(process.env.MONGODB_URI, options)
-      .then((m) => {
-        console.log("MongoDB connection established.");
-        global.mongoose.conn = m.connection;
-        return m.connection;
-      })
-      .catch((err) => {
-        console.error("MongoDB Connection Error:", err);
-        global.mongoose.promise = null;
-        throw err;
-      });
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, options);
+    console.log("MongoDB connection established.");
+  } catch (err) {
+    console.error("MongoDB Connection Error:", err);
+    throw err;
   }
-
-  return global.mongoose.promise;
 }
 
 const ensureDBConnection = async (req, res, next) => {
+  if (mongoose.connection.readyState === 1) {
+    return next();
+  }
+
   try {
     await connectDB();
     next();
   } catch (err) {
-    console.error("Failed to ensure DB connection for request:", err);
-    res.status(503).send("Service Unavailable: Database Connection Error.");
+    console.error("Failed to establish DB connection for request:", err);
+    res
+      .status(503)
+      .send(
+        "Service Unavailable: Database Connection Error. Please check the MongoDB server."
+      );
   }
 };
 
@@ -235,22 +228,30 @@ app.get(
 
       const studentId = student.studentId;
       const attendanceDocs = await Attendance.find().lean();
+
       const attendanceData = { overall: {} };
 
       attendanceDocs.forEach((doc) => {
         const studentRecord = doc.records.find(
           (r) => r.studentId === studentId
         );
+
         if (studentRecord) {
           let status;
           if (studentRecord.status === "P") status = "present";
           else if (studentRecord.status === "A") status = "absent";
           else if (studentRecord.status === "H") status = "holiday";
 
-          attendanceData.overall[doc.date] = status;
+          // ✅ Format the `date` (stored as string) into YYYY-MM-DD
+          const dateObj = new Date(doc.date);
+          const year = dateObj.getFullYear();
+          const month = String(dateObj.getMonth() + 1).padStart(2, "0");
+          const day = String(dateObj.getDate()).padStart(2, "0");
+          const formatted = `${year}-${month}-${day}`;
+
+          attendanceData.overall[formatted] = status;
         }
       });
-
       res.render("student/attendance", { student, attendanceData });
     } catch (err) {
       console.error(err);
@@ -512,7 +513,7 @@ app.post(
           month: dueMonth,
           year: year,
           amount: amount,
-          method: "Online",
+          method: "Razorpay",
           status: "Paid",
           datePaid: new Date(),
           razorpayPaymentId: razorpay_payment_id,
@@ -730,7 +731,7 @@ app.get("/student/logout", (req, res) => {
       console.error("Logout error:", err);
       return res.status(500).send("Logout failed");
     }
-    res.redirect("/student/login");
+    res.redirect("/");
   });
 });
 
@@ -780,7 +781,7 @@ app.get("/teacher/logout", (req, res) => {
       console.error("Logout error:", err);
       return res.status(500).send("Logout failed");
     }
-    res.redirect("/teacher/login");
+    res.redirect("/");
   });
 });
 

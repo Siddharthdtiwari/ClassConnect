@@ -1,244 +1,243 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Test Scores</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
 
-      .bg-brand-background {
-        background-color: #f3f4f6;
-        background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Test Scores</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
 
-      .text-brand-purple {
-        color: #5d3a9b;
-      }
+    .bg-brand-background {
+      background-color: #f3f4f6;
+      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    }
 
-      .border-brand-purple {
-        border-color: #5d3a9b;
-      }
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
 
-      .bg-brand-lime {
-        background-color: #bde045;
-      }
+    .border-brand-purple {
+      border-color: #5d3a9b;
+    }
 
-      .btn-outline-purple {
-        color: #5d3a9b;
-        border: 1px solid #5d3a9b;
-        font-weight: 600;
-        transition: background-color 0.3s ease, color 0.3s ease,
-          border-color 0.3s ease;
-        border-radius: 0.5rem;
-      }
+    .bg-brand-lime {
+      background-color: #bde045;
+    }
 
-      .btn-outline-purple:hover,
-      .btn-outline-purple.active {
-        background-color: #bde045;
-        color: #333;
-        border-color: #bde045;
-      }
+    .btn-outline-purple {
+      color: #5d3a9b;
+      border: 1px solid #5d3a9b;
+      font-weight: 600;
+      transition: background-color 0.3s ease, color 0.3s ease,
+        border-color 0.3s ease;
+      border-radius: 0.5rem;
+    }
 
-      .score-item:hover {
-        background-color: #f9fafb;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      }
+    .btn-outline-purple:hover,
+    .btn-outline-purple.active {
+      background-color: #bde045;
+      color: #333;
+      border-color: #bde045;
+    }
 
-      .progress-bar-good {
-        background-color: #84cc16;
-      }
+    .score-item:hover {
+      background-color: #f9fafb;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
 
-      .progress-bar-average {
-        background-color: #facc15;
-      }
+    .progress-bar-good {
+      background-color: #84cc16;
+    }
 
-      .progress-bar-poor {
-        background-color: #ef4444;
-      }
-    </style>
-  </head>
-  <%- include('../partials/background') %>
+    .progress-bar-average {
+      background-color: #facc15;
+    }
 
-  <body class="text-gray-800">
-    <div
-      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
-    >
-      <header class="mb-8">
-        <a
-          href="/student/dashboard"
-          class="text-sm text-brand-purple hover:underline mb-2 block"
-          >&larr; Back to Dashboard</a
-        >
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-          My Test Scores
-        </h1>
-        <p class="text-gray-600 mt-1">
-          Review your performance and points earned in each subject.
-        </p>
-      </header>
+    .progress-bar-poor {
+      background-color: #ef4444;
+    }
+  </style>
+</head>
+<%- include('../partials/background') %>
 
-      <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
-        <div class="mb-8">
-          <h2 class="text-2xl font-bold text-gray-900 mb-4">Subjects</h2>
-          <div id="subject-tabs" class="flex flex-wrap gap-4">
-            <button
-              class="px-6 py-2 btn-outline-purple active"
-              data-subject="overall"
-            >
-              Overall
-            </button>
-            <button class="px-6 py-2 btn-outline-purple" data-subject="English">
-              English
-            </button>
-            <button class="px-6 py-2 btn-outline-purple" data-subject="Maths I">
-              Maths I
-            </button>
-            <button
-              class="px-6 py-2 btn-outline-purple"
-              data-subject="Maths II"
-            >
-              Maths II
-            </button>
-            <button
-              class="px-6 py-2 btn-outline-purple"
-              data-subject="Science I"
-            >
-              Science I
-            </button>
-            <button
-              class="px-6 py-2 btn-outline-purple"
-              data-subject="Science II"
-            >
-              Science II
-            </button>
-            <button
-              class="px-6 py-2 btn-outline-purple"
-              data-subject="History-Civics"
-            >
-              History-Civics
-            </button>
-            <button
-              class="px-6 py-2 btn-outline-purple"
-              data-subject="Geography"
-            >
-              Geography
-            </button>
-            <button class="px-6 py-2 btn-outline-purple" data-subject="Hindi">
-              Hindi
-            </button>
-            <button class="px-6 py-2 btn-outline-purple" data-subject="Marathi">
-              Marathi
-            </button>
-          </div>
+<body class="text-gray-800">
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+    <header class="mb-8">
+      <a href="/student/dashboard" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Dashboard</a>
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+        My Test Scores
+      </h1>
+      <p class="text-gray-600 mt-1">
+        Review your performance and points earned in each subject.
+      </p>
+    </header>
+
+    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+      <div class="mb-8">
+        <h2 class="text-2xl font-bold text-gray-900 mb-4">Subjects</h2>
+        <div id="subject-tabs" class="flex flex-wrap gap-4">
+          <button class="px-6 py-2 btn-outline-purple active" data-subject="overall">
+            Overall
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="English">
+            English
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Maths I">
+            Maths I
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Maths II">
+            Maths II
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Science I">
+            Science I
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Science II">
+            Science II
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="History-Civics">
+            History-Civics
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Geography">
+            Geography
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Hindi">
+            Hindi
+          </button>
+          <button class="px-6 py-2 btn-outline-purple" data-subject="Marathi">
+            Marathi
+          </button>
         </div>
+      </div>
 
-        <div id="scores-area">
-          <p class="text-gray-500">Select a subject to view scores.</p>
-        </div>
+      <div id="scores-area">
+        <p class="text-gray-500">Select a subject to view scores.</p>
       </div>
     </div>
+  </div>
 
-    <div
-      id="scores-data"
-      data-scores="<%- JSON.stringify(scoresBySubject) %>"
-    ></div>
+  <div id="scores-data" data-scores='<%- JSON.stringify(scoresBySubject) %>'></div>
 
-    <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const tabs = document.getElementById("subject-tabs");
-        const scoresArea = document.getElementById("scores-area");
-        const scoresData = JSON.parse(
-          document.getElementById("scores-data").dataset.scores
-        );
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const tabs = document.getElementById("subject-tabs");
+      const scoresArea = document.getElementById("scores-area");
+      const scoresData = JSON.parse(
+        document.getElementById("scores-data").dataset.scores
+      );
 
-        function getColor(percent) {
-          if (percent >= 80) return "progress-bar-good";
-          if (percent >= 50) return "progress-bar-average";
-          return "progress-bar-poor";
+      function getColor(percent) {
+        if (percent >= 80) return "progress-bar-good";
+        if (percent >= 50) return "progress-bar-average";
+        return "progress-bar-poor";
+      }
+
+      function render(subject) {
+        let tests = [];
+        if (subject === "overall") {
+          for (const key in scoresData) {
+            const arr = scoresData[key] || [];
+            arr.forEach(t => {
+              if (!t.subject) t.subject = key;
+              tests.push(t);
+            });
+          }
+        } else {
+          tests = scoresData[subject] || [];
         }
 
-        function render(subject) {
-          let tests = [];
-          if (subject === "overall") {
-            for (const key in scoresData) tests = tests.concat(scoresData[key]);
-          } else {
-            tests = scoresData[subject] || [];
-          }
-
-          if (!tests.length) {
-            scoresArea.innerHTML = `<p class="text-gray-500">No scores for this subject yet.</p>`;
-            return;
-          }
-
-          const html = `
-      <h3 class="text-xl font-bold mb-4">${
-        subject === "overall" ? "Overall Scores" : subject
-      }</h3>
-      <div class="space-y-4">
-        ${tests
-          .map((test) => {
-            const percent = ((test.score / test.total) * 100).toFixed(2);
-            const colorClass = getColor(percent);
-            return `
-            <div class="score-item bg-white p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-              <div class="md:col-span-2">
-                <p class="font-semibold text-gray-800">${test.testName} - ${
-              test.subject
-            } (${test.topic || "No topic"})</p>
-                ${
-                  test.questionPaper
-                    ? `<a href="${test.questionPaper}" target="_blank" class="text-blue-600 hover:underline text-sm">Download Question Paper</a>`
-                    : ""
-                }
-              </div>
-              <div class="w-full bg-gray-200 rounded-full h-2.5">
-                <div class="${colorClass} progress-bar h-2.5 rounded-full" style="width:0%"></div>
-              </div>
-              <div class="text-right">
-                <p class="text-xl font-bold text-brand-purple">${
-                  test.score
-                } / ${test.total}</p>
-                <p class="text-sm text-gray-500">${percent}%</p>
-              </div>
-            </div>
-          `;
-          })
-          .join("")}
-      </div>
-    `;
-          scoresArea.innerHTML = html;
-
-          scoresArea.querySelectorAll(".progress-bar").forEach((bar, i) => {
-            const test = tests[i];
-            const percent = ((test.score / test.total) * 100).toFixed(2);
-            setTimeout(() => (bar.style.width = `${percent}%`), 100);
-          });
+        if (!tests.length) {
+          scoresArea.innerHTML = `<p class="text-gray-500">No scores for this subject yet.</p>`;
+          return;
         }
 
-        tabs.addEventListener("click", (e) => {
-          if (e.target.tagName === "BUTTON") {
-            tabs
-              .querySelectorAll("button")
-              .forEach((btn) => btn.classList.remove("active"));
-            e.target.classList.add("active");
-            render(e.target.dataset.subject);
-          }
+        // --- SUMMARY ---
+        const totalTests = tests.length;
+        const avgPercent = tests.reduce((sum, t) => {
+          const percent = t.percentage || ((t.score / t.total) * 100);
+          return sum + percent;
+        }, 0) / totalTests;
+        const subjectsAttempted = new Set(tests.map(t => t.subject)).size;
+
+        const summaryHTML = `
+<div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="p-4 bg-purple-50 rounded-lg text-center">
+    <p class="text-sm text-gray-500">Total Tests</p>
+    <p class="text-2xl font-bold text-brand-purple">${totalTests}</p>
+  </div>
+  <div class="p-4 bg-green-50 rounded-lg text-center">
+    <p class="text-sm text-gray-500">Average %</p>
+    <p class="text-2xl font-bold text-green-600">${avgPercent.toFixed(2)}%</p>
+  </div>
+  <div class="p-4 bg-blue-50 rounded-lg text-center">
+    <p class="text-sm text-gray-500">Subjects Attempted</p>
+    <p class="text-2xl font-bold text-blue-600">${subjectsAttempted}</p>
+  </div>
+</div>
+`;
+
+        // --- TEST CARDS ---
+        const testsHTML = `
+<h3 class="text-xl font-bold mb-4">${subject === "overall" ? "Overall Scores" : subject}</h3>
+<div class="space-y-4">
+  ${tests.map(test => {
+  const total = Number(test.total) || 100;
+  const score = Number(test.score) || 0;
+  const percent = ((score / total) * 100).toFixed(2);
+  const colorClass = getColor(percent);
+  return `
+  <div class="score-item bg-white p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
+    <div class="md:col-span-2">
+      <p class="font-semibold text-gray-800">${test.testName} - ${test.subject} (${test.topic || "No topic"})</p>
+      ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="text-blue-600 hover:underline text-sm">Download Question Paper</a>` : ""}
+    </div>
+    <div class="w-full bg-gray-200 rounded-full h-2.5">
+      <div class="${colorClass} progress-bar h-2.5 rounded-full" style="width:0%"></div>
+    </div>
+    <div class="text-right">
+      <p class="text-xl font-bold text-brand-purple">${score} / ${total}</p>
+      <p class="text-sm text-gray-500">${percent}%</p>
+    </div>
+  </div>
+  `;
+  }).join('')}
+</div>
+`;
+
+        scoresArea.innerHTML = summaryHTML + testsHTML;
+
+        // Animate progress bars
+        scoresArea.querySelectorAll(".progress-bar").forEach((bar, i) => {
+          const test = tests[i];
+          const total = Number(test.total) || 100;
+          const score = Number(test.score) || 0;
+          const percent = ((score / total) * 100).toFixed(2);
+          setTimeout(() => (bar.style.width = `${percent}%`), 100);
         });
+      }
 
-        const active = tabs.querySelector("button.active");
-        if (active) render(active.dataset.subject);
+
+      tabs.addEventListener("click", (e) => {
+        if (e.target.tagName === "BUTTON") {
+          tabs
+            .querySelectorAll("button")
+            .forEach((btn) => btn.classList.remove("active"));
+          e.target.classList.add("active");
+          render(e.target.dataset.subject);
+        }
       });
-    </script>
-  </body>
+
+      const active = tabs.querySelector("button.active");
+      if (active) render(active.dataset.subject);
+    });
+  </script>
+</body>
+
 </html>

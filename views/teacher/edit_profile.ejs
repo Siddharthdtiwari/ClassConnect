@@ -1,150 +1,97 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Edit Student Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
 
-      .bg-brand-background {
-        background-color: #f3f4f6;
-        background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Edit Student Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
 
-      .text-brand-purple {
-        color: #5d3a9b;
-      }
+    .bg-brand-background {
+      background-color: #f3f4f6;
+      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    }
 
-      .border-brand-purple {
-        border-color: #5d3a9b;
-      }
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
 
-      .btn-outline-purple {
-        color: #5d3a9b;
-        border: 1px solid #5d3a9b;
-        font-weight: 600;
-        transition: background-color 0.3s ease, color 0.3s ease,
-          border-color 0.3s ease;
-        border-radius: 0.5rem;
-      }
+    .border-brand-purple {
+      border-color: #5d3a9b;
+    }
 
-      .btn-outline-purple:hover {
-        background-color: #bde045;
-        color: #333;
-        border-color: #bde045;
-      }
-    </style>
-  </head>
-  <%- include('../partials/background') %>
+    .btn-outline-purple {
+      color: #5d3a9b;
+      border: 1px solid #5d3a9b;
+      font-weight: 600;
+      transition: background-color 0.3s ease, color 0.3s ease,
+        border-color 0.3s ease;
+      border-radius: 0.5rem;
+    }
 
-  <body class="text-gray-800">
-    <div
-      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
-    >
-      <header class="mb-8">
-        <a
-          href="/teacher/view_profile"
-          class="text-brand-purple hover:underline mb-4 block"
-          >&larr; Back to Profile</a
-        >
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-          Edit Student Profile
-        </h1>
-        <p class="text-gray-600 mt-1">
-          Update student's information and photo.
-        </p>
-      </header>
+    .btn-outline-purple:hover {
+      background-color: #bde045;
+      color: #333;
+      border-color: #bde045;
+    }
+  </style>
+</head>
+<%- include('../partials/background') %>
 
-      <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
-        <form
-          id="edit-profile-form"
-          action="/teacher/edit_profile/<%= student._id %>"
-          method="POST"
-          enctype="multipart/form-data"
-          class="space-y-6"
-        >
-          <div class="text-center">
-            <img
-              id="current-photo"
-              src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>"
-              alt="Current Profile Picture"
-              class="w-32 h-32 rounded-full border-4 border-brand-purple mx-auto mb-4"
-            />
-            <input
-              type="file"
-              id="profile-photo"
-              name="profilePhoto"
-              class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-purple file:text-white hover:file:bg-opacity-80"
-            />
-          </div>
+<body class="text-gray-800">
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+    <header class="mb-8">
+      <a href="/teacher/view_profile/<%= student._id %>" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Profile</a>
+      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+        Edit Student Profile
+      </h1>
+      <p class="text-gray-600 mt-1">
+        Update student's information and photo.
+      </p>
+    </header>
 
-          <div>
-            <label for="student-id">Student ID</label>
-            <input
-              type="text"
-              id="student-id"
-              value="<%= student.studentId %>"
-              disabled
-              class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 cursor-not-allowed shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-            />
-          </div>
+    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
+      <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <div class="text-center">
+          <img id="current-photo" src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Current Profile Picture" class="w-32 h-32 rounded-full border-4 border-brand-purple mx-auto mb-4" />
+          <input type="file" id="profile-photo" name="profilePhoto" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-purple file:text-white hover:file:bg-opacity-80" />
+        </div>
 
-          <div>
-            <label for="student-name">Student Name</label>
-            <input
-              type="text"
-              id="student-name"
-              name="studentName"
-              value="<%= student.studentName %>"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-            />
-          </div>
+        <div>
+          <label for="student-id">Student ID</label>
+          <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 cursor-not-allowed shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        </div>
 
-          <div>
-            <label for="standard">Standard</label>
-            <input
-              type="text"
-              id="standard"
-              name="standard"
-              value="<%= student.standard %>"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-            />
-          </div>
+        <div>
+          <label for="student-name">Student Name</label>
+          <input type="text" id="student-name" name="studentName" value="<%= student.studentName %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        </div>
 
-          <div>
-            <label for="mobile-no">Mobile No</label>
-            <input
-              type="tel"
-              id="mobile-no"
-              name="mobileNo"
-              value="<%= student.mobileNo %>"
-              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50"
-            />
-          </div>
+        <div>
+          <label for="standard">Standard</label>
+          <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        </div>
 
-          <button
-            type="submit"
-            class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg"
-          >
-            Save Changes
-          </button>
-        </form>
+        <div>
+          <label for="mobile-no">Mobile No</label>
+          <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        </div>
 
-        <div
-          id="message-box"
-          class="mt-6 p-4 rounded-md text-center hidden"
-        ></div>
-      </div>
+        <button type="submit" class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
+          Save Changes
+        </button>
+      </form>
+
+      <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

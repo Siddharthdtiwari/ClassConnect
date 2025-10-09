@@ -1,352 +1,302 @@
 <%- include('../partials/background') %>
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title><%= student.studentName %> Profile</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap"
-      rel="stylesheet"
-    />
-    <style>
-      /* BASE STYLES & FONT */
-      body {
-        font-family: "Inter", sans-serif;
-        background-color: #f3f4f6;
-        background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-      }
 
-      /* THEME COLORS */
-      .text-brand-purple {
-        color: #5d3a9b;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title><%= student.studentName %> Profile</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* BASE STYLES & FONT */
+    body {
+      font-family: "Inter", sans-serif;
+      background-color: #f3f4f6;
+      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    }
 
-      .border-brand-purple {
-        border-color: #5d3a9b;
-      }
+    /* THEME COLORS */
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
 
-      .bg-brand-purple-light {
-        background-color: #f3e8ff;
-      }
+    .border-brand-purple {
+      border-color: #5d3a9b;
+    }
 
-      .text-brand-lime {
-        color: #bde045;
-      }
+    .bg-brand-purple-light {
+      background-color: #f3e8ff;
+    }
 
-      .btn-action {
-        background-color: #5d3a9b;
-        color: white;
-        font-weight: 600;
-        transition: all 0.3s ease;
-        border-radius: 9999px;
-      }
+    .text-brand-lime {
+      color: #bde045;
+    }
 
-      .btn-action:hover {
-        background-color: #4b2d84;
-        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      }
+    .btn-action {
+      background-color: #5d3a9b;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 9999px;
+    }
 
-      .main-chart-area {
-        position: relative;
-        height: 0;
-        padding-bottom: 48%;
-      }
+    .btn-action:hover {
+      background-color: #4b2d84;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
 
-      .main-chart-area canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-      }
+    .main-chart-area {
+      position: relative;
+      height: 0;
+      padding-bottom: 48%;
+    }
 
-      .latest-score-bar {
-        background-color: #fcfcfc;
-        border-radius: 8px;
-        padding: 12px 16px;
-      }
-    </style>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  </head>
+    .main-chart-area canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+    }
 
-  <body class="text-gray-800">
-    <div
-      id="chart-data-wrapper"
-      style="display: none"
-      data-chart-data="<%= JSON.stringify({
+    .latest-score-bar {
+      background-color: #fcfcfc;
+      border-radius: 8px;
+      padding: 12px 16px;
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+
+<body class="text-gray-800">
+  <div id="chart-data-wrapper" style="display: none" data-chart-data="<%= JSON.stringify({
             labels: scoreLabels,
             data: scoreData
-        }) %>"
-    ></div>
+        }) %>"></div>
 
-    <div
-      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
-    >
-      <header
-        class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-4"
-      >
-        <div>
-          <a
-            href="/teacher/manage_students"
-            class="text-brand-purple hover:underline mb-1 block text-sm"
-            >&larr; Back to Students</a
-          >
-          <h1
-            class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight"
-          >
-            <%= student.studentName %>
-          </h1>
-          <p class="text-sm text-gray-500">
-            ID: <%= student.studentId %> | Class: <%= student.standard %> |
-            Mobile: <%= student.mobileNo %>
-          </p>
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-4">
+      <div>
+        <a href="/teacher/manage_students" class="text-brand-purple hover:underline mb-1 block text-sm">&larr; Back to Students</a>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+          <%= student.studentName %>
+        </h1>
+        <p class="text-sm text-gray-500">
+          ID: <%= student.studentId %> | Class: <%= student.standard %> |
+          Mobile: <%= student.mobileNo %>
+        </p>
+      </div>
+
+      <button onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'" class="mt-4 sm:mt-0 py-2 px-6 btn-action text-sm shadow-md">
+        ✏️ Edit Profile
+      </button>
+    </header>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-purple">
+          <div class="flex flex-col items-center text-center pb-4 border-b border-gray-100">
+            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md" />
+            <p class="text-xl font-bold text-gray-900">
+              <%= student.studentName %>
+            </p>
+            <p class="text-sm text-gray-600">
+              Mobile: <%= student.mobileNo %>
+            </p>
+          </div>
+
+          <div class="space-y-4 pt-4 text-sm">
+            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
+              <span class="text-gray-600 font-medium">Monthly Fee:</span>
+              <span class="font-bold text-xl text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600 font-medium">Reward Points:</span>
+              <span class="font-bold text-xl text-brand-lime">
+                <%= student.points %> ✨
+              </span>
+            </div>
+          </div>
         </div>
 
-        <button
-          onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'"
-          class="mt-4 sm:mt-0 py-2 px-6 btn-action text-sm shadow-md"
-        >
-          ✏️ Edit Profile
-        </button>
-      </header>
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-lime">
+          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
+            Attendance Summary
+          </h3>
 
-      <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        <div class="lg:col-span-1 space-y-6">
-          <div
-            class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-purple"
-          >
-            <div
-              class="flex flex-col items-center text-center pb-4 border-b border-gray-100"
-            >
-              <img
-                src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>"
-                alt="Profile Picture"
-                class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md"
-              />
-              <p class="text-xl font-bold text-gray-900">
-                <%= student.studentName %>
+          <div class="grid grid-cols-2 gap-4 items-center">
+            <div>
+              <p class="text-5xl font-extrabold text-brand-purple leading-none">
+                <%= attendancePercentage %>%
               </p>
-              <p class="text-sm text-gray-600">
-                Mobile: <%= student.mobileNo %>
-              </p>
+              <p class="text-sm text-gray-600 mt-2">Overall Present</p>
             </div>
-
-            <div class="space-y-4 pt-4 text-sm">
-              <div
-                class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200"
-              >
-                <span class="text-gray-600 font-medium">Monthly Fee:</span>
-                <span class="font-bold text-xl text-brand-purple"
-                  >₹<%= student.monthlyFee.toLocaleString() %></span
-                >
-              </div>
-              <div class="flex justify-between items-center">
-                <span class="text-gray-600 font-medium">Reward Points:</span>
-                <span class="font-bold text-xl text-brand-lime">
-                  <%= student.points %> ✨
+            <div class="text-sm space-y-1 text-right">
+              <div class="flex justify-between">
+                <span class="font-medium">Present:</span>
+                <span class="font-bold text-green-600">
+                  <%= presentDays %>
                 </span>
               </div>
-            </div>
-          </div>
-
-          <div
-            class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-lime"
-          >
-            <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
-              Attendance Summary
-            </h3>
-
-            <div class="grid grid-cols-2 gap-4 items-center">
-              <div>
-                <p
-                  class="text-5xl font-extrabold text-brand-purple leading-none"
-                >
-                  <%= attendancePercentage %>%
-                </p>
-                <p class="text-sm text-gray-600 mt-2">Overall Present</p>
+              <div class="flex justify-between">
+                <span class="font-medium">Absent:</span>
+                <span class="font-bold text-red-500">
+                  <%= totalDays - presentDays %>
+                </span>
               </div>
-              <div class="text-sm space-y-1 text-right">
-                <div class="flex justify-between">
-                  <span class="font-medium">Present:</span>
-                  <span class="font-bold text-green-600">
-                    <%= presentDays %>
-                  </span>
-                </div>
-                <div class="flex justify-between">
-                  <span class="font-medium">Absent:</span>
-                  <span class="font-bold text-red-500">
-                    <%= totalDays - presentDays %>
-                  </span>
-                </div>
-                <div class="flex justify-between pt-1 border-t">
-                  <span class="font-medium">Total Days:</span>
-                  <span class="font-bold"> <%= totalDays %> </span>
-                </div>
+              <div class="flex justify-between pt-1 border-t">
+                <span class="font-medium">Total Days:</span>
+                <span class="font-bold"> <%= totalDays %> </span>
               </div>
-            </div>
-          </div>
-
-          <div
-            class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-green-500"
-          >
-            <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
-              Recent Fee Payments Log
-            </h3>
-            <div class="divide-y divide-gray-100">
-              <% if (recentFees.length> 0) { %> <% recentFees.forEach(fee=> { %>
-              <div class="flex justify-between items-center py-3">
-                <div class="flex flex-col">
-                  <span class="text-sm font-semibold"
-                    >Fee for <%= fee.month %>, <%= fee.year %></span
-                  >
-                  <span class="text-xs text-gray-500"
-                    >Method: <%= fee.method %> | Paid <%= new
-                    Date(fee.datePaid).toLocaleDateString() %></span
-                  >
-                </div>
-                <span class="text-base font-bold text-green-600"
-                  >₹<%= fee.amount.toLocaleString() %></span
-                >
-              </div>
-              <% }) %> <% } else { %>
-              <p class="py-3 text-gray-500 text-sm">
-                No recent fee payments recorded.
-              </p>
-              <% } %>
             </div>
           </div>
         </div>
 
-        <div class="lg:col-span-2 space-y-6">
-          <div
-            class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light"
-          >
-            <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
-              Performance Trend (Score History)
-            </h3>
-
-            <div class="main-chart-area">
-              <canvas id="scoreChart"></canvas>
+        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-green-500">
+          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
+            Recent Fee Payments Log
+          </h3>
+          <div class="divide-y divide-gray-100">
+            <% if (recentFees.length> 0) { %> <% recentFees.forEach(fee=> { %>
+            <div class="flex justify-between items-center py-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold">Fee for <%= fee.month %>, <%= fee.year %></span>
+                <span class="text-xs text-gray-500">Method: <%= fee.method %> | Paid <%= new
+                    Date(fee.datePaid).toLocaleDateString() %></span>
+              </div>
+              <span class="text-base font-bold text-green-600">₹<%= fee.amount.toLocaleString() %></span>
             </div>
-
-            <% if (scoreLabels.length===0) { %>
-            <p class="text-center text-gray-500 py-4">
-              No test scores available for chart history.
+            <% }) %> <% } else { %>
+            <p class="py-3 text-gray-500 text-sm">
+              No recent fee payments recorded.
             </p>
             <% } %>
           </div>
+        </div>
+      </div>
 
-          <div
-            class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime"
-          >
-            <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
-              All Test Results Log
-            </h3>
-            <div class="divide-y divide-gray-100">
-              <% if (recentScores.length> 0) { %> <%
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+            Performance Trend (Score History)
+          </h3>
+
+          <div class="main-chart-area">
+            <canvas id="scoreChart"></canvas>
+          </div>
+
+          <% if (scoreLabels.length===0) { %>
+          <p class="text-center text-gray-500 py-4">
+            No test scores available for chart history.
+          </p>
+          <% } %>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+            All Test Results Log
+          </h3>
+          <div class="divide-y divide-gray-100">
+            <% if (recentScores.length> 0) { %> <%
               recentScores.forEach(score=> { %>
-              <div class="flex justify-between items-center py-2">
-                <div class="flex flex-col">
-                  <span class="text-sm font-semibold text-brand-purple">
-                    <%= score.testName %>
-                  </span>
-                  <span class="text-xs text-gray-500">
-                    <%= score.subject %> | <%= new
+            <div class="flex justify-between items-center py-2">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold text-brand-purple">
+                  <%= score.testName %>
+                </span>
+                <span class="text-xs text-gray-500">
+                  <%= score.subject %> | <%= new
                     Date(score.createdAt).toLocaleDateString() %>
-                  </span>
-                </div>
-                <div class="flex flex-col items-end">
-                  <span
-                    class="text-base font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>"
-                  >
-                    <%= score.percentage %>%
-                  </span>
-                  <span class="text-xs text-gray-500">
-                    Score: <%= score.score %>
-                  </span>
-                </div>
+                </span>
               </div>
-              <% }) %> <% } else { %>
-              <p class="py-2 text-gray-500 text-sm">
-                No test results recorded yet.
-              </p>
-              <% } %>
+              <div class="flex flex-col items-end">
+                <span class="text-base font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">
+                  <%= score.percentage %>%
+                </span>
+                <span class="text-xs text-gray-500">
+                  Score: <%= score.score %>
+                </span>
+              </div>
             </div>
+            <% }) %> <% } else { %>
+            <p class="py-2 text-gray-500 text-sm">
+              No test results recorded yet.
+            </p>
+            <% } %>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <script>
-      const dataWrapper = document.getElementById("chart-data-wrapper");
-      const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+  <script>
+    const dataWrapper = document.getElementById("chart-data-wrapper");
+    const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
 
-      const scoreLabels = chartDataObject.labels;
-      const scoreData = chartDataObject.data;
+    const scoreLabels = chartDataObject.labels;
+    const scoreData = chartDataObject.data;
 
-      const primaryColor = "#5d3a9b";
+    const primaryColor = "#5d3a9b";
 
-      if (scoreData.length > 0) {
-        new Chart(document.getElementById("scoreChart"), {
-          type: "line",
-          data: {
-            labels: scoreLabels,
-            datasets: [
-              {
-                label: "Score Percentage",
-                data: scoreData,
-                borderColor: primaryColor,
-                backgroundColor: "rgba(93, 58, 155, 0.1)",
-                tension: 0.4,
-                fill: true,
-                pointBackgroundColor: primaryColor,
-                pointRadius: 5,
-                pointHoverRadius: 8,
-              },
-            ],
+    if (scoreData.length > 0) {
+      new Chart(document.getElementById("scoreChart"), {
+        type: "line",
+        data: {
+          labels: scoreLabels,
+          datasets: [{
+            label: "Score Percentage",
+            data: scoreData,
+            borderColor: primaryColor,
+            backgroundColor: "rgba(93, 58, 155, 0.1)",
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: primaryColor,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+          }, ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
           },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: "Percentage (%)",
+              },
+              grid: {
+                color: "#f3f4f6",
+              },
+            },
+            x: {
+              grid: {
                 display: false,
               },
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                max: 100,
-                title: {
-                  display: true,
-                  text: "Percentage (%)",
-                },
-                grid: {
-                  color: "#f3f4f6",
-                },
-              },
-              x: {
-                grid: {
-                  display: false,
-                },
-                ticks: {
-                  display: scoreLabels.length > 1,
-                },
-              },
-            },
-            layout: {
-              padding: {
-                top: 10,
-                bottom: 10,
+              ticks: {
+                display: scoreLabels.length > 1,
               },
             },
           },
-        });
-      }
-    </script>
-  </body>
+          layout: {
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
+          },
+        },
+      });
+    }
+  </script>
+</body>
+
 </html>

@@ -1,255 +1,206 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Teacher Dashboard</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
-      rel="stylesheet"
-    />
 
-    <style>
-      body {
-        font-family: "Inter", sans-serif;
-      }
-      .bg-brand-background {
-        background-color: #f3f4f6;
-        background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Teacher Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-      .text-brand-purple {
-        color: #5d3a9b;
-      }
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
 
-      .border-brand-purple {
-        border-color: #5d3a9b;
-      }
+    .bg-brand-background {
+      background-color: #f3f4f6;
+      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    }
 
-      .text-brand-lime {
-        color: #bde045;
-      }
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
 
-      .btn-lime {
-        background-color: #bde045;
-        color: #333;
-        font-weight: 700;
-        transition: background-color 0.3s ease;
-        border-radius: 0.5rem;
-      }
+    .border-brand-purple {
+      border-color: #5d3a9b;
+    }
 
-      .btn-lime:hover {
-        background-color: #a8c93a;
-      }
+    .text-brand-lime {
+      color: #bde045;
+    }
 
-      .btn-outline-purple {
-        color: #5d3a9b;
-        border: 1px solid #5d3a9b;
-        font-weight: 600;
-        transition: background-color 0.3s ease, color 0.3s ease,
-          border-color 0.3s ease;
-        border-radius: 0.5rem;
-      }
+    .btn-lime {
+      background-color: #bde045;
+      color: #333;
+      font-weight: 700;
+      transition: background-color 0.3s ease;
+      border-radius: 0.5rem;
+    }
 
-      .btn-outline-purple:hover {
-        background-color: #bde045;
-        color: #333;
-        border-color: #bde045;
-      }
-    </style>
-  </head>
-  <%- include('../partials/background') %>
+    .btn-lime:hover {
+      background-color: #a8c93a;
+    }
 
-  <body class="text-gray-800">
-    <div
-      class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen"
-    >
-      <header
-        class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4"
-      >
-        <div>
-          <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-            Welcome Back,
-            <span class="text-brand-purple"> <%= teacher.teacherName %> </span>
-          </h1>
-          <p class="text-gray-600 mt-1">Your central hub for success.</p>
-        </div>
-        <div class="flex gap-4 flex-wrap justify-center">
-          <button
-            onclick="window.location.href='/teacher/add_teacher'"
-            class="py-2 px-4 btn-outline-purple"
-          >
-            + Add New Teacher
-          </button>
-          <button
-            onclick="window.location.href='/teacher/logout'"
-            class="py-2 px-4 btn-outline-purple"
-          >
-            Logout
-          </button>
-        </div>
-      </header>
+    .btn-outline-purple {
+      color: #5d3a9b;
+      border: 1px solid #5d3a9b;
+      font-weight: 600;
+      transition: background-color 0.3s ease, color 0.3s ease,
+        border-color 0.3s ease;
+      border-radius: 0.5rem;
+    }
 
-      <div class="flex flex-col lg:flex-row gap-8">
-        <div class="w-full lg:w-2/5 xl:w-1/3">
-          <div
-            class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8"
-          >
-            <img
-              src="https://placehold.co/128x128/ffffff/5d3a9b?text=<%= teacher.teacherName.charAt(0) %>"
-              alt="Teacher Profile Picture"
-              class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4"
-            />
+    .btn-outline-purple:hover {
+      background-color: #bde045;
+      color: #333;
+      border-color: #bde045;
+    }
+  </style>
+</head>
+<%- include('../partials/background') %>
 
-            <h2 class="text-2xl font-bold text-gray-900">
-              <%= teacher.teacherName %>
-            </h2>
-            <p class="text-brand-purple font-mono font-semibold">
-              <%= teacher.teacherId %>
+<body class="text-gray-800">
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+          Welcome Back,
+          <span class="text-brand-purple"> <%= teacher.teacherName %> </span>
+        </h1>
+        <p class="text-gray-600 mt-1">Your central hub for success.</p>
+      </div>
+      <div class="flex gap-4 flex-wrap justify-center">
+        <button onclick="window.location.href='/teacher/add_teacher'" class="py-2 px-4 btn-outline-purple">
+          + Add New Teacher
+        </button>
+        <button onclick="window.location.href='/teacher/logout'" class="py-2 px-4 btn-outline-purple">
+          Logout
+        </button>
+      </div>
+    </header>
+
+    <div class="flex flex-col lg:flex-row gap-8">
+      <div class="w-full lg:w-2/5 xl:w-1/3">
+        <div class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8">
+          <img src="https://placehold.co/128x128/ffffff/5d3a9b?text=<%= teacher.teacherName.charAt(0) %>" alt="Teacher Profile Picture" class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4" />
+
+          <h2 class="text-2xl font-bold text-gray-900">
+            <%= teacher.teacherName %>
+          </h2>
+          <p class="text-brand-purple font-mono font-semibold">
+            <%= teacher.teacherId %>
+          </p>
+          <div class="w-full border-t border-gray-200 my-6"></div>
+          <div class="text-left w-full">
+            <h3 class="text-lg font-semibold text-gray-900 mb-3">
+              Profile Details
+            </h3>
+            <p class="text-sm text-gray-600 mb-2">
+              <span class="font-semibold text-gray-700">Email:</span>
+              <%= teacher.email %>
             </p>
-            <div class="w-full border-t border-gray-200 my-6"></div>
-            <div class="text-left w-full">
-              <h3 class="text-lg font-semibold text-gray-900 mb-3">
-                Profile Details
-              </h3>
-              <p class="text-sm text-gray-600 mb-2">
-                <span class="font-semibold text-gray-700">Email:</span>
-                <%= teacher.email %>
-              </p>
-              <p class="text-sm text-gray-600 mb-2">
-                <span class="font-semibold text-gray-700">Subject:</span>
-                <%= teacher.subjects %>
+            <p class="text-sm text-gray-600 mb-2">
+              <span class="font-semibold text-gray-700">Subject:</span>
+              <%= teacher.subjects %>
+            </p>
+          </div>
+          <button onclick="window.location.href='/teacher/edit_teacher/<%= teacher._id %>'" class="w-full py-2 px-4 mt-6 btn-outline-purple">
+            Edit Profile
+          </button>
+        </div>
+      </div>
+      <div class="w-full lg:w-3/5 xl:w-2/3">
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
+                Manage Students
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                View and edit student profiles and information.
               </p>
             </div>
-            <button
-              onclick="window.location.href='/teacher/edit_teacher/<%= teacher._id %>'"
-              class="w-full py-2 px-4 mt-6 btn-outline-purple"
-            >
-              Edit Profile
+            <button onclick="window.location.href='/teacher/manage_students'" class="w-full py-2 px-4 btn-outline-purple">
+              Manage Students
             </button>
           </div>
-        </div>
-        <div class="w-full lg:w-3/5 xl:w-2/3">
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Manage Students
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  View and edit student profiles and information.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/manage_students'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
-                Manage Students
-              </button>
-            </div>
 
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Manage Fees
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  Track outstanding and paid student fees.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/manage_fees'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
                 Manage Fees
-              </button>
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                Track outstanding and paid student fees.
+              </p>
             </div>
+            <button onclick="window.location.href='/teacher/manage_fees'" class="w-full py-2 px-4 btn-outline-purple">
+              Manage Fees
+            </button>
+          </div>
 
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Manage Tests
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  Create, edit, and assign new tests.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/manage_tests'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
                 Manage Tests
-              </button>
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                Create, edit, and assign new tests.
+              </p>
             </div>
+            <button onclick="window.location.href='/teacher/manage_tests'" class="w-full py-2 px-4 btn-outline-purple">
+              Manage Tests
+            </button>
+          </div>
 
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Manage Scores
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  Review and upload student test and assignment scores.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/manage_score'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
                 Manage Scores
-              </button>
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                Review and upload student test and assignment scores.
+              </p>
             </div>
+            <button onclick="window.location.href='/teacher/manage_score'" class="w-full py-2 px-4 btn-outline-purple">
+              Manage Scores
+            </button>
+          </div>
 
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Upload Study Material
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  Upload and organize notes, resources, and lessons.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/study_material'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
                 Upload Study Material
-              </button>
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                Upload and organize notes, resources, and lessons.
+              </p>
             </div>
+            <button onclick="window.location.href='/teacher/study_material'" class="w-full py-2 px-4 btn-outline-purple">
+              Upload Study Material
+            </button>
+          </div>
 
-            <div
-              class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300"
-            >
-              <div>
-                <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                  Manage Attendance
-                </h2>
-                <p class="text-gray-600 text-sm mb-4">
-                  Record and view student attendance records.
-                </p>
-              </div>
-              <button
-                onclick="window.location.href='/teacher/manage_attendance'"
-                class="w-full py-2 px-4 btn-outline-purple"
-              >
+          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
+            <div>
+              <h2 class="text-xl font-semibold mb-2 text-gray-900">
                 Manage Attendance
-              </button>
+              </h2>
+              <p class="text-gray-600 text-sm mb-4">
+                Record and view student attendance records.
+              </p>
             </div>
+            <button onclick="window.location.href='/teacher/manage_attendance'" class="w-full py-2 px-4 btn-outline-purple">
+              Manage Attendance
+            </button>
           </div>
         </div>
       </div>
     </div>
-  </body>
+  </div>
+</body>
+
 </html>

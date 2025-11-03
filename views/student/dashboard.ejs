@@ -1,25 +1,24 @@
+<%- include('../partials/background') %>
 <!DOCTYPE html>
 <html lang="en">
 
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Student Dashboard</title>
+  <title>Dashboard | <%= student.studentName %></title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    /* BASE STYLES & FONT */
     body {
       font-family: "Inter", sans-serif;
-    }
-
-    .bg-brand-background {
       background-color: #f3f4f6;
       background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
     }
 
+    /* THEME COLORS */
     .text-brand-purple {
       color: #5d3a9b;
     }
@@ -28,175 +27,323 @@
       border-color: #5d3a9b;
     }
 
+    .bg-brand-purple-light {
+      background-color: #f3e8ff;
+    }
+
     .text-brand-lime {
       color: #bde045;
     }
 
-    .btn-lime {
-      background-color: #bde045;
-      color: #333;
-      font-weight: 700;
-      transition: background-color 0.3s ease;
-      border-radius: 0.5rem;
+    .border-brand-lime {
+      border-color: #bde045;
     }
 
-    .btn-lime:hover {
-      background-color: #a8c93a;
+    /* ACTION BUTTON (PURPLE) */
+    .btn-action {
+      background-color: #5d3a9b;
+      color: white;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 9999px;
     }
 
+    .btn-action:hover {
+      background-color: #4b2d84;
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* OUTLINE BUTTON (FOR LOGOUT/LINKS) */
     .btn-outline-purple {
       color: #5d3a9b;
       border: 1px solid #5d3a9b;
       font-weight: 600;
       transition: background-color 0.3s ease, color 0.3s ease,
         border-color 0.3s ease;
-      border-radius: 0.5rem;
+      border-radius: 9999px;
     }
 
     .btn-outline-purple:hover {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+      background-color: #f3e8ff;
+    }
+
+    /* CHART STYLES */
+    .main-chart-area {
+      position: relative;
+      height: 0;
+      padding-bottom: 48%;
+      /* Aspect ratio control */
+    }
+
+    .main-chart-area canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
     }
   </style>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
-<%- include('../partials/background') %>
 
 <body class="text-gray-800">
+  <div id="chart-data-wrapper" style="display: none" data-chart-data="<%= JSON.stringify({
+      labels: scoreLabels,
+      data: scoreData
+    }) %>"></div>
+
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8 flex justify-between items-center">
+    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-200 pb-4">
       <div>
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
           Welcome Back,
           <span class="text-brand-purple"> <%= student.studentName %>! </span>
         </h1>
-        <p class="text-gray-600 mt-1">Your central hub for success.</p>
+        <p class="text-sm text-gray-500 mt-1">
+          Your central hub for success.
+        </p>
       </div>
-      <div>
-        <button onclick="window.location.href='/student/logout'" class="py-2 px-4 btn-outline-purple text-sm font-semibold">
+
+      <div class="flex items-center gap-2 mt-4 sm:mt-0">
+        <button onclick="window.location.href='/student/edit_profile'" class="py-2 px-5 btn-action text-sm shadow-md">
+          ✏️ Edit Profile
+        </button>
+        <button onclick="window.location.href='/student/logout'" class="py-2 px-5 btn-outline-purple text-sm font-semibold">
           Logout
         </button>
       </div>
     </header>
 
-    <div class="flex flex-col lg:flex-row gap-8">
-      <div class="w-full lg:w-2/5 xl:w-1/3">
-        <div class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8">
-          <img src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Student Profile Picture" class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4" />
-          <h2 class="text-2xl font-bold text-gray-900">
-            <%= student.studentName %>
-          </h2>
-          <p class="text-brand-purple font-mono font-semibold">
-            ID: <%= student.studentId %>
-          </p>
-          <div class="w-full border-t border-gray-200 my-6"></div>
-          <div class="text-left w-full">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">
-              Profile Details
-            </h3>
-            <p class="text-sm text-gray-600 mb-2">
-              <span class="font-semibold text-gray-700">Mobile No:</span>
-              <%= student.mobileNo || "Not Provided" %>
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-purple">
+          <div class="flex flex-col items-center text-center pb-4 border-b border-gray-100">
+            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md" />
+            <p class="text-xl font-bold text-gray-900">
+              <%= student.studentName %>
             </p>
-            <p class="text-sm text-gray-600 mb-2">
-              <span class="font-semibold text-gray-700">Class:</span>
-              Grade <%= student.standard %>
+            <p class="text-sm text-gray-600">
+              ID: <%= student.studentId %> | Class: <%= student.standard %>
             </p>
           </div>
-          <button onclick="window.location.href='/student/edit_profile'" class="w-full py-2 px-4 mt-6 btn-outline-purple">
-            Edit Profile
-          </button>
+
+          <div class="space-y-4 pt-4 text-sm">
+            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
+              <span class="text-gray-600 font-medium">Monthly Fee:</span>
+              <span class="font-bold text-xl text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600 font-medium">Reward Points:</span>
+              <span class="font-bold text-xl text-brand-lime">
+                <%= student.points %> ✨
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-lime">
+          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
+            Attendance Summary
+          </h3>
+
+          <div class="grid grid-cols-2 gap-4 items-center">
+            <div>
+              <p class="text-5xl font-extrabold text-brand-purple leading-none">
+                <%= attendancePercentage %>%
+              </p>
+              <p class="text-sm text-gray-600 mt-2">Overall Present</p>
+            </div>
+            <div class="text-sm space-y-1 text-right">
+              <div class="flex justify-between">
+                <span class="font-medium">Present:</span>
+                <span class="font-bold text-green-600">
+                  <%= presentDays %>
+                </span>
+              </div>
+              <div class="flex justify-between">
+                <span class="font-medium">Absent:</span>
+                <span class="font-bold text-red-500">
+                  <%= totalDays - presentDays %>
+                </span>
+              </div>
+              <div class="flex justify-between pt-1 border-t">
+                <span class="font-medium">Total Days:</span>
+                <span class="font-bold"> <%= totalDays %> </span>
+              </div>
+            </div>
+          </div>
+          <a href="/student/attendance" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
+            View Full History
+          </a>
+        </div>
+
+        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-500">
+          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
+            Recent Fee Payments
+          </h3>
+          <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
+            <% if (recentFees.length > 0) { %> <% recentFees.forEach(fee => { %>
+            <div class="flex justify-between items-center py-3">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold">Fee for <%= fee.month %>, <%= fee.year %></span>
+                <span class="text-xs text-gray-500">Method: <%= fee.method %> | Paid <%= new
+                    Date(fee.datePaid).toLocaleDateString() %></span>
+              </div>
+              <span class="text-base font-bold text-green-600">₹<%= fee.amount.toLocaleString() %></span>
+            </div>
+            <% }) %> <% } else { %>
+            <p class="py-3 text-gray-500 text-sm">
+              No recent fee payments recorded.
+            </p>
+            <% } %>
+          </div>
+          <a href="/student/fee_payment" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
+            View Fee History
+          </a>
         </div>
       </div>
 
-      <div class="w-full lg:w-3/5 xl:w-2/3">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                My Test Scores
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Review your performance on previous tests.
-              </p>
-            </div>
-            <button onclick="window.location.href='/student/test_score'" class="w-full py-2 px-4 btn-outline-purple">
-              See Scores
-            </button>
+      <div class="lg:col-span-2 space-y-6">
+        <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+            Performance Trend
+          </h3>
+
+          <div class="main-chart-area">
+            <canvas id="scoreChart"></canvas>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                My Attendance
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Track your attendance record for all classes.
-              </p>
-            </div>
-            <button onclick="window.location.href='/student/attendance'" class="w-full py-2 px-4 btn-outline-purple">
-              View Attendance
-            </button>
-          </div>
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Class Leaderboard
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                See where you stand among your classmates.
-              </p>
-            </div>
-            <button onclick="window.location.href='/student/leader_board'" class="w-full py-2 px-4 btn-outline-purple">
-              View Ranks
-            </button>
-          </div>
+          <% if (scoreLabels.length === 0) { %>
+          <p class="text-center text-gray-500 py-4">
+            No test scores available to show a trend.
+          </p>
+          <% } %>
+        </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Fee Payment
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                View and pay your outstanding fees.
-              </p>
+        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+            Recent Test Results
+          </h3>
+          <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+            <% if (recentScores.length > 0) { %> <%
+              recentScores.forEach(score => { %>
+            <div class="flex justify-between items-center py-2">
+              <div class="flex flex-col">
+                <span class="text-sm font-semibold text-brand-purple">
+                  <%= score.testName %>
+                </span>
+                <span class="text-xs text-gray-500">
+                  <%= score.subject %> | <%= new
+                    Date(score.createdAt).toLocaleDateString() %>
+                </span>
+              </div>
+              <div class="flex flex-col items-end">
+                <span class="text-base font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">
+                  <%= score.percentage %>%
+                </span>
+                <span class="text-xs text-gray-500">
+                  Score: <%= score.score %>
+                </span>
+              </div>
             </div>
-            <button onclick="window.location.href='/student/fee_payment'" class="w-full py-2 px-4 btn-outline-purple">
-              Pay Fees
-            </button>
+            <% }) %> <% } else { %>
+            <p class="py-2 text-gray-500 text-sm">
+              No test results recorded yet.
+            </p>
+            <% } %>
           </div>
+          <a href="/student/test_score" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
+            View All Scores
+          </a>
+        </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Class Content
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Access notes, assignments, and resources.
-              </p>
-            </div>
-            <button onclick="window.location.href='/student/content'" class="w-full py-2 px-4 btn-outline-purple">
-              View Content
-            </button>
-          </div>
-
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Upcoming Tests
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Check for new tests and complete them.
-              </p>
-            </div>
-            <button onclick="window.location.href='/student/take_test'" class="w-full py-2 px-4 btn-outline-purple">
-              View Tests
-            </button>
+        <div class="bg-white p-6 rounded-xl shadow-xl">
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+            Quick Actions
+          </h3>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <a href="/student/leader_board" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
+              🏆 Class Leaderboard
+            </a>
+            <a href="/student/content" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
+              📚 Class Content
+            </a>
+            <a href="/student/take_test" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
+              ✍️ Upcoming Tests
+            </a>
           </div>
         </div>
+
       </div>
     </div>
   </div>
+
+  <script>
+    const dataWrapper = document.getElementById("chart-data-wrapper");
+    const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+
+    const scoreLabels = chartDataObject.labels;
+    const scoreData = chartDataObject.data;
+
+    const primaryColor = "#5d3a9b";
+
+    if (scoreData.length > 0) {
+      new Chart(document.getElementById("scoreChart"), {
+        type: "line",
+        data: {
+          labels: scoreLabels,
+          datasets: [{
+            label: "Score Percentage",
+            data: scoreData,
+            borderColor: primaryColor,
+            backgroundColor: "rgba(93, 58, 155, 0.1)",
+            tension: 0.4,
+            fill: true,
+            pointBackgroundColor: primaryColor,
+            pointRadius: 5,
+            pointHoverRadius: 8,
+          }, ],
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              display: false,
+            },
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: 100,
+              title: {
+                display: true,
+                text: "Percentage (%)",
+              },
+              grid: {
+                color: "#f3f4f6",
+              },
+            },
+            x: {
+              grid: {
+                display: false,
+              },
+              ticks: {
+                // Only display x-axis labels if there's more than one test
+                display: scoreLabels.length > 1,
+              },
+            },
+          },
+          layout: {
+            padding: {
+              top: 10,
+              bottom: 10,
+            },
+          },
+        },
+      });
+    }
+  </script>
 </body>
 
 </html>

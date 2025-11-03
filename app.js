@@ -150,20 +150,55 @@ app.get(
       const student = await User.findById(req.session.userId).lean();
       if (!student) return res.redirect("/student/login");
 
-      const attendanceCount = await Attendance.countDocuments({
-        "records.studentId": student.studentId,
+      
+      const studentId = student.studentId;
+
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
+        .sort({ datePaid: -1 })
+        .limit(6) 
+        .lean();
+
+      const recentScores = await Score.find({ studentId: studentId })
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .lean();
+
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+      }).lean();
+
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
+
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") {
+          presentDays++;
+        }
+        if (record && record.status === "A") {
+          absentDays++;
+        }
       });
-      const testsCount = await Test.countDocuments({
-        standard: student.standard,
-      });
+
+      const attendancePercentage =
+        totalDays > 0 ? ((presentDays / (presentDays+absentDays)) * 100).toFixed(1) : 0;
+
+      const scoreLabels = recentScores.map((score) => score.testName).reverse();
+      const scoreData = recentScores.map((score) => score.percentage).reverse();
 
       res.render("student/dashboard", {
         student,
-        stats: {
-          totalAttendance: attendanceCount,
-          upcomingTests: testsCount,
-        },
+        recentFees,
+        recentScores,
+        attendancePercentage,
+        presentDays,
+        totalDays,
+        scoreLabels,
+        scoreData,
       });
+
     } catch (err) {
       console.error(err);
       res.status(500).send("Error loading dashboard");
@@ -513,7 +548,7 @@ app.post(
           month: dueMonth,
           year: year,
           amount: amount,
-          method: "Razorpay",
+          method: "Online",
           status: "Paid",
           datePaid: new Date(),
           razorpayPaymentId: razorpay_payment_id,
@@ -1077,7 +1112,7 @@ app.get(
 
       const defaulters = Object.values(stats)
         .map((s) => {
-          s.percentage = s.total > 0 ? (s.present / s.total) * 100 : 0;
+          s.percentage = s.total > 0 ? (s.present /( s.present + s.absent)) * 100 : 0;
           return s;
         })
         .filter((s) => s.percentage < 75);
@@ -1091,6 +1126,61 @@ app.get(
 );
 
 app.get(
+  "/teacher/detailed_attendance",
+  ensureDBConnection,
+  async (req, res) => {
+    try {
+    const students = await User.find().lean();
+      const attendanceRecords = await Attendance.find().lean();
+
+      const detailedReport = {};
+      const allAttendanceDates = new Set(); 
+
+      students.forEach(student => {
+        detailedReport[student.studentId] = {
+          studentId: student.studentId,
+          studentName: student.studentName,
+          records: {}, 
+          presentCount: 0,
+          totalRecordedDays: 0, 
+        };
+      });
+
+      attendanceRecords.forEach(record => {
+        const dateKey = record.date;
+        allAttendanceDates.add(dateKey); 
+
+        (record.records || []).forEach(r => {
+          if (detailedReport[r.studentId]) {
+            const studentData = detailedReport[r.studentId];
+            studentData.records[dateKey] = r.status;
+            
+            if (r.status === 'P') {
+              studentData.presentCount++;
+              studentData.totalRecordedDays++;
+            } else if (r.status === 'A') {
+              studentData.totalRecordedDays++;
+            }
+          }
+        });
+      });
+
+      const sortedDates = Array.from(allAttendanceDates).sort();
+      
+      const reportArray = Object.values(detailedReport);
+
+      res.render("teacher/detailed_attendance", { 
+        report: reportArray,
+        allDates: sortedDates,
+      });
+
+    } catch (err) {
+      console.error("Error generating detailed attendance report:", err);
+      res.status(500).send("❌ Failed to generate attendance report.");
+    }
+  }
+);
+app.get(
   "/teacher/add_test",
   ensureDBConnection,
   requireTeacherLogin,
@@ -1101,15 +1191,30 @@ app.post(
   "/teacher/add_test",
   ensureDBConnection,
   requireTeacherLogin,
-  upload.single("questionPaper"),
+  upload.single("questionPaperFile"), 
   async (req, res) => {
     try {
-      const { testName, standard, subject, topic, totalMarks } = req.body;
+      const {
+        testName,
+        standard,
+        subject,
+        topic,
+        totalMarks,
+        questionPaperLink, 
+      } = req.body;
 
       let questionPaperUrl = null;
+
       if (req.file) {
         const result = await uploadToCloudinary(req.file.buffer, "tests");
         questionPaperUrl = result.secure_url;
+      } 
+      else if (questionPaperLink) {
+        questionPaperUrl = questionPaperLink;
+      }
+
+      if (!questionPaperUrl) {
+        return res.status(400).send("❌ Please upload a question paper file or provide a link.");
       }
 
       const newTest = new Test({
@@ -1122,10 +1227,10 @@ app.post(
       });
 
       await newTest.save();
-      res.send("✅ Test created successfully!");
+      res.json({ success: true, message: "✅ Test created successfully!" }); 
     } catch (err) {
       console.error(err);
-      res.status(500).send("❌ Failed to add test");
+      res.status(500).json({ success: false, message: "❌ Failed to add test" });
     }
   }
 );
@@ -1251,6 +1356,70 @@ app.get(
     } catch (err) {
       console.error(err);
       res.send("Error loading fees");
+    }
+  }
+);
+
+app.get(
+  "/teacher/detailed_fees",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const students = await User.find(
+        {},
+        "studentId studentName standard monthlyFee"
+      ).lean();
+      const allFees = await Fee.find().lean();
+
+      const months = [
+        "May", "June", "July", "August", "September", "October",
+        "November", "December", "January", "February", "March", "April",
+      ];
+
+      const report = students.map((student) => {
+        const studentFees = allFees.filter(
+          (f) => f.studentId === student.studentId
+        );
+
+        let totalPaid = 0;
+        const records = {};
+
+        months.forEach((month) => {
+          const feeRecord = studentFees.find((f) => f.month === month);
+
+          if (feeRecord) {
+            records[month] = {
+              status: "Paid",
+              amount: feeRecord.amount,
+              datePaid: new Date(feeRecord.datePaid),
+              method: feeRecord.method,
+            };
+            totalPaid += feeRecord.amount;
+          } else {
+            records[month] = { status: "Unpaid" };
+          }
+        });
+
+        const monthlyFee = student.monthlyFee || 0;
+        const totalDue = monthlyFee * months.length;
+        const balance = totalDue - totalPaid;
+
+        return {
+          studentName: student.studentName,
+          studentId: student.studentId,
+          standard: student.standard,
+          records: records, 
+          totalPaid: totalPaid,
+          totalDue: totalDue,
+          balance: balance,
+        };
+      });
+
+      res.render("teacher/detailed_fees", { report, months });
+    } catch (err) {
+      console.error("Error loading detailed fees report:", err);
+      res.status(500).send("Error generating fees report");
     }
   }
 );

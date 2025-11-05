@@ -281,12 +281,14 @@
   <div class="content-container">
     <img src="/images/logo.png" alt="Tuition Hub Logo" style="max-width: 200px; margin-bottom: 1.5rem" />
     <h3>Welcome back, Teacher <br />Sign in to Your Faculty Account</h3>
+
     <form action="/teacher/login" method="POST">
       <input type="text" name="teacherId" placeholder="ID Number" required />
       <input type="password" name="password" required placeholder="Password" />
       <br />
       <button class="btn" type="submit">Login</button>
     </form>
+
     <% if (typeof error !=='undefined' ) { %>
     <div class="error-message"><%= error %></div>
     <% } %>

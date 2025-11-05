@@ -194,6 +194,7 @@ app.get(
         recentScores,
         attendancePercentage,
         presentDays,
+        absentDays,
         totalDays,
         scoreLabels,
         scoreData,
@@ -964,6 +965,7 @@ app.get(
     }).lean();
 
     let presentDays = 0;
+    let absentDays = 0;
     let totalDays = 0;
 
     allAttendanceRecords.forEach((dayRecord) => {
@@ -972,10 +974,13 @@ app.get(
       if (record && record.status === "P") {
         presentDays++;
       }
+      if (record && record.status === "A") {
+        absentDays++;
+      }
     });
 
     const attendancePercentage =
-      totalDays > 0 ? ((presentDays / totalDays) * 100).toFixed(1) : 0;
+      totalDays > 0 ? ((presentDays / (presentDays+absentDays)) * 100).toFixed(1) : 0;
 
     const scoreLabels = recentScores.map((score) => score.testName).reverse();
     const scoreData = recentScores.map((score) => score.percentage).reverse();
@@ -986,6 +991,7 @@ app.get(
       recentScores,
       attendancePercentage,
       presentDays,
+      absentDays,
       totalDays,
       scoreLabels,
       scoreData,

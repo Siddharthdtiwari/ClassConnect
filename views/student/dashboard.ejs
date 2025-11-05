@@ -163,12 +163,12 @@
               <div class="flex justify-between">
                 <span class="font-medium">Absent:</span>
                 <span class="font-bold text-red-500">
-                  <%= totalDays - presentDays %>
+                  <%= absentDays %>
                 </span>
               </div>
               <div class="flex justify-between pt-1 border-t">
                 <span class="font-medium">Total Days:</span>
-                <span class="font-bold"> <%= totalDays %> </span>
+                <span class="font-bold"> <%= presentDays+absentDays %> </span>
               </div>
             </div>
           </div>

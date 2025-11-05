@@ -19,7 +19,6 @@ const feeSchema = new mongoose.Schema(
 
     status: { type: String, enum: ["Paid", "Failed"], default: "Paid" },
 
-    // only needed if Razorpay
     razorpay_payment_id: { type: String },
 
     datePaid: { type: Date, default: Date.now },

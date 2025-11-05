@@ -184,7 +184,6 @@
   </div>
 
   <script>
-    // === RETRIEVING DATA FROM HIDDEN ELEMENT (FIXED) ===
     const dataContainer = document.getElementById('chart-data-container');
 
     const standardStatsKeys = JSON.parse(dataContainer.dataset.standardKeys);
@@ -196,16 +195,12 @@
     const methodStatsKeys = JSON.parse(dataContainer.dataset.methodKeys);
     const methodStatsValues = JSON.parse(dataContainer.dataset.methodValues);
 
-    // === COLOR PALETTE DEFINITION ===
-    const primaryColor = '#5d3a9b'; // Brand Purple
-    const accentColor = '#bde045'; // Brand Lime
-    const successColor = '#10b981'; // Green-500 for Revenue
-    const warningColor = '#f59e0b'; // Amber-500
-    const neutralColor = '#94a3b8'; // Slate-400
+    const primaryColor = '#5d3a9b';
+    const accentColor = '#bde045';
+    const successColor = '#10b981';
+    const warningColor = '#f59e0b';
+    const neutralColor = '#94a3b8';
 
-    // === CHARTJS CONFIGURATION ===
-
-    // Class Revenue Chart
     new Chart(document.getElementById('classRevenueChart'), {
       type: 'bar',
       data: {
@@ -242,7 +237,6 @@
       }
     });
 
-    // Payment Methods Chart
     new Chart(document.getElementById('methodChart'), {
       type: 'doughnut',
       data: {
@@ -278,7 +272,6 @@
     });
 
 
-    // Monthly Revenue Chart
     new Chart(document.getElementById('monthlyChart'), {
       type: 'line',
       data: {
@@ -287,7 +280,7 @@
           label: 'Revenue (₹)',
           data: chartMonths.map(m => chartMonthlyRevenue[m] || 0),
           borderColor: primaryColor,
-          backgroundColor: 'rgba(93, 58, 155, 0.1)', // Light tint of purple
+          backgroundColor: 'rgba(93, 58, 155, 0.1)',
           tension: 0.35,
           fill: true,
           pointBackgroundColor: primaryColor,

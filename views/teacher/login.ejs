@@ -358,6 +358,18 @@
         setTimeout(() => particle.remove(), 2000);
       }, 10);
     });
+
+    const loginForm = document.querySelector('form');
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', function(e) {
+        const btn = this.querySelector('button[type="submit"]');
+        btn.disabled = true;
+        btn.innerText = "Logging in...";
+        btn.style.opacity = "0.7";
+        btn.style.cursor = "not-allowed";
+      });
+    }
   </script>
 </body>
 

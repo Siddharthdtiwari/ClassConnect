@@ -54,10 +54,9 @@
           <select id="student-id" name="studentId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
             <option value="">Select Student ID</option>
             <% users.forEach(user=> { %>
-            <option value="<%= user.studentId %>" data-name="<%= user.studentName %>" data-standard="<%= user.standard %>">
+            <option value="<%= user.studentId %>" data-name="<%= user.studentName %>" data-standard="<%= user.standard %>" data-monthly-fee="<%= user.monthlyFee %>">
               <%= user.studentId %>
             </option>
-
             <% }) %>
           </select>
         </div>
@@ -71,7 +70,10 @@
           <label for="student-standard" class="block text-sm font-medium text-gray-700">Standard</label>
           <input type="text" id="student-standard" name="standard" readonly class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
         </div>
-
+        <div>
+          <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
+          <input type="number" id="amount" name="amount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        </div>
         <div>
           <label for="month" class="block text-sm font-medium text-gray-700">Month</label>
           <select id="month" name="month" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
@@ -86,11 +88,6 @@
         <div>
           <label for="year" class="block text-sm font-medium text-gray-700">Year</label>
           <input type="number" id="year" name="year" value="<%= new Date().getFullYear() %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required />
-        </div>
-
-        <div>
-          <label for="amount" class="block text-sm font-medium text-gray-700">Amount</label>
-          <input type="number" id="amount" name="amount" placeholder="Enter fee amount" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required />
         </div>
 
         <div>
@@ -124,6 +121,8 @@
         const selectedOption = this.options[this.selectedIndex];
         document.getElementById("student-name").value =
           selectedOption.dataset.name || "";
+        document.getElementById("amount").value =
+          selectedOption.dataset.monthlyFee || "";
         document.getElementById("student-standard").value =
           selectedOption.dataset.standard || "";
       });

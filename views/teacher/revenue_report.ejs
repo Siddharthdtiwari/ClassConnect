@@ -73,13 +73,15 @@
     <header class="mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
       <div>
         <a href="/teacher/manage_fees" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Fee</a>
-        <h1 class="text-4xl font-extrabold text-gray-900 mt-1">Revenue Dashboard</h1>
+        <h1 class="text-4xl font-extrabold text-gray-900 mt-1">Revenue Dashboard (<%= selectedYear %>-<%= parseInt(selectedYear) + 1 %>)</h1>
       </div>
       <form method="GET" action="/teacher/revenue_report" class="max-w-xs">
-        <label for="year" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Data Year</label>
+        <label for="year" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Academic Session</label>
         <select name="year" id="year" onchange="this.form.submit()" class="block w-full rounded-lg border-gray-300 shadow-md text-base py-2 px-3 focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-40 transition-shadow">
           <% years.forEach(y => { %>
-          <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>><%= y %></option>
+          <option value="<%= y %>" <%= y == selectedYear ? 'selected' : '' %>>
+            <%= y %>-<%= (parseInt(y) + 1).toString().slice(-2) %>
+          </option>
           <% }) %>
         </select>
       </form>
@@ -91,7 +93,7 @@
 
         <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div class="bg-white p-6 rounded-xl shadow-xl border-l-4 border-green-500 transform hover:scale-[1.02] transition-transform">
-            <p class="text-sm font-semibold text-green-600 uppercase">Total Revenue (<%= selectedYear %>)</p>
+            <p class="text-sm font-semibold text-green-600 uppercase">Total Revenue (<%= selectedYear %>-<%= selectedYear + 1 %>)</p>
             <p class="text-5xl font-extrabold mt-2 text-gray-900">₹<%= totalRevenue.toLocaleString() %></p>
             <p class="text-xs text-gray-500 mt-2">All fees collected.</p>
           </div>

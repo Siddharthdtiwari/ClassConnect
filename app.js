@@ -1265,7 +1265,7 @@ app.get(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const users = await User.find({}, "studentId studentName standard").sort({
+    const users = await User.find({}, "studentId studentName standard monthlyFee").sort({
       studentId: 1,
     });
     res.render("teacher/add_fees", { users });
@@ -1315,39 +1315,31 @@ app.get(
   requireTeacherLogin,
   async (req, res) => {
     try {
-      const students = await User.find(
-        {},
-        "studentId studentName standard"
-      ).lean();
-
+      const students = await User.find({}, "studentId studentName standard").lean();
       const fees = await Fee.find().lean();
 
       const months = [
-        "May",
-        "June",
-        "July",
-        "August",
-        "September",
-        "October",
-        "November",
-        "December",
-        "January",
-        "February",
-        "March",
-        "April",
+        "May", "June", "July", "August", "September", "October",
+        "November", "December", "January", "February", "March", "April",
       ];
 
       const studentsWithFees = students.map((student) => {
-        const studentFees = fees.filter(
-          (f) => f.studentId === student.studentId
-        );
+        const studentFees = fees.filter((f) => f.studentId === student.studentId);
 
         const feeMap = {};
         months.forEach((month) => {
           const feeRecord = studentFees.find((f) => f.month === month);
-          feeMap[month] = feeRecord
-            ? feeRecord.datePaid.toISOString().split("T")[0]
-            : null;
+          
+          if (feeRecord && feeRecord.datePaid) {
+            const d = new Date(feeRecord.datePaid);
+            const day = String(d.getDate()).padStart(2, '0');
+            const monthNum = String(d.getMonth() + 1).padStart(2, '0');
+            const year = d.getFullYear();
+            
+            feeMap[month] = `${day}-${monthNum}-${year}`;
+          } else {
+            feeMap[month] = null;
+          }
         });
 
         return {
@@ -1436,22 +1428,19 @@ app.get(
   requireTeacherLogin,
   async (req, res) => {
     const selectedYear = parseInt(req.query.year) || new Date().getFullYear();
+    
     const months = [
-      "May",
-      "June",
-      "July",
-      "August",
-      "September",
-      "October",
-      "November",
-      "December",
-      "January",
-      "February",
-      "March",
-      "April",
+      "May", "June", "July", "August", "September", "October",
+      "November", "December", "January", "February", "March", "April"
     ];
 
-    const fees = await Fee.find({ year: selectedYear, status: "Paid" });
+    const fees = await Fee.find({
+      status: "Paid",
+      $or: [
+        { year: selectedYear, month: { $in: ["May", "June", "July", "August", "September", "October", "November", "December"] } },
+        { year: selectedYear + 1, month: { $in: ["January", "February", "March", "April"] } }
+      ]
+    });
 
     const monthlyRevenue = {};
     const standardStats = {};
@@ -1481,14 +1470,14 @@ app.get(
     });
 
     const paymentCount = fees.length;
-    const averageRevenue =
-      paymentCount > 0 ? (totalRevenue / paymentCount).toFixed(2) : 0;
+    const averageRevenue = paymentCount > 0 ? (totalRevenue / paymentCount).toFixed(2) : 0;
 
     const recentPayments = await Fee.find({ status: "Paid" })
       .sort({ datePaid: -1 })
       .limit(10);
 
-    const years = await Fee.distinct("year");
+    const allYears = await Fee.distinct("year");
+    const years = allYears.sort((a, b) => b - a);
 
     res.render("teacher/revenue_report", {
       months,

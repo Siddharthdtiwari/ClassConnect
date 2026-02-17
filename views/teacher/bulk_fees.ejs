@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bulk Fee Entry (<%= selectedYear %>)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: "Inter", sans-serif;
+    }
+
+    .text-brand-purple {
+      color: #5d3a9b;
+    }
+
+    .bg-brand-purple {
+      background-color: #5d3a9b;
+    }
+
+    .report-table {
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 0.875rem;
+    }
+
+    .report-table th,
+    .report-table td {
+      padding: 0;
+      text-align: center;
+      border-bottom: 1px solid #e5e7eb;
+      border-right: 1px solid #f3f4f6;
+      background-color: #ffffff;
+      height: 4.5rem;
+      width: 140px;
+    }
+
+    .sticky-col-left {
+      position: sticky;
+      left: 0;
+      z-index: 35;
+      background-color: #ffffff;
+      box-shadow: 2px 0 5px -2px rgba(0, 0, 0, 0.1);
+      width: 220px;
+      text-align: left;
+    }
+
+    .sticky-col-left .cell-content {
+      padding-left: 1rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      height: 100%;
+    }
+
+    .report-table th {
+      position: sticky;
+      top: 0;
+      z-index: 40;
+      background-color: #f9fafb;
+      font-weight: 600;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      padding: 0.75rem;
+    }
+
+    th.sticky-col-left {
+      z-index: 45;
+    }
+
+    .cell-input-wrapper {
+      padding: 4px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .input-amount {
+      width: 100%;
+      font-weight: 700;
+      color: #374151;
+      text-align: center;
+      border: 1px solid transparent;
+      border-radius: 4px;
+      padding: 2px;
+      font-size: 0.9rem;
+    }
+
+    .input-amount:focus {
+      border-color: #5d3a9b;
+      background-color: #fff;
+      outline: none;
+    }
+
+    .input-amount::placeholder {
+      color: #d1d5db;
+      font-weight: 400;
+    }
+
+    .input-meta-row {
+      display: flex;
+      gap: 2px;
+      justify-content: center;
+    }
+
+    .input-meta {
+      font-size: 0.7rem;
+      color: #6b7280;
+      border: 1px solid #e5e7eb;
+      border-radius: 3px;
+      padding: 1px;
+      width: 50%;
+      background-color: #f9fafb;
+      cursor: pointer;
+    }
+
+    .changed-cell {
+      background-color: #fffbeb !important;
+    }
+
+    .saved-cell {
+      background-color: #ecfdf5 !important;
+    }
+
+    .paid-existing {
+      background-color: #f0fdf4;
+    }
+  </style>
+</head>
+
+<%- include('../partials/background') %>
+
+<body class="text-gray-800">
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+    <header class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
+      <div>
+        <a href="/teacher/manage_fees" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Manage Fees</a>
+        <h1 class="text-3xl font-bold text-gray-900">Bulk Fee Entry</h1>
+        <p class="text-gray-600 mt-1 text-sm">Managing Session: <span class="font-bold text-brand-purple"><%= selectedYear %> - <%= selectedYear + 1 %></span></p>
+      </div>
+
+      <div class="bg-white p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-4 items-end w-full lg:w-auto">
+
+        <div class="flex flex-col w-full sm:w-auto">
+          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Academic Session</label>
+          <select id="year-select" class="text-sm border-2 border-brand-purple bg-purple-50 text-brand-purple font-bold rounded-lg p-2 focus:outline-none shadow-sm cursor-pointer">
+            <% years.forEach(y => { %>
+            <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>>
+              <%= y %> - <%= y + 1 %>
+            </option>
+            <% }) %>
+          </select>
+        </div>
+
+        <div class="flex flex-col w-full sm:w-auto">
+          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Default Date</label>
+          <input type="date" id="global-date" class="text-sm border border-gray-300 rounded-lg p-2 focus:border-brand-purple outline-none shadow-sm" value="<%= new Date().toISOString().split('T')[0] %>">
+        </div>
+
+        <div class="flex flex-col w-full sm:w-auto">
+          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Default Method</label>
+          <select id="global-method" class="text-sm border border-gray-300 rounded-lg p-2 focus:border-brand-purple outline-none shadow-sm bg-white min-w-[100px]">
+            <option value="Cash">Cash</option>
+            <option value="UPI" selected>UPI</option>
+            <option value="Razorpay">Razorpay</option>
+          </select>
+        </div>
+
+        <button onclick="saveAllChanges()" id="save-btn" class="w-full sm:w-auto px-6 py-2 bg-brand-purple text-white rounded-lg font-bold hover:bg-opacity-90 shadow-md transition-all">
+          Save Changes
+        </button>
+      </div>
+    </header>
+
+    <div class="bg-white rounded-xl shadow-xl overflow-hidden border border-gray-200">
+      <div class="overflow-x-auto" style="max-height: 70vh;">
+        <table class="report-table w-full min-w-max">
+          <thead>
+            <tr>
+              <th class="sticky-col-left">Student Details</th>
+              <% months.forEach(month => { %>
+              <th><%= month %></th>
+              <% }) %>
+            </tr>
+          </thead>
+          <tbody>
+            <% users.forEach(user => { %>
+            <tr>
+              <td class="sticky-col-left">
+                <div class="cell-content">
+                  <div class="font-bold text-gray-900"><%= user.studentName %></div>
+                  <div class="text-xs text-brand-purple font-medium"><%= user.studentId %></div>
+                </div>
+              </td>
+
+              <% months.forEach(month => { 
+                 const record = (feeMap[user.studentId] && feeMap[user.studentId][month]) ? feeMap[user.studentId][month] : null;
+                 const isPaid = !!record;
+                 
+                 // LOGIC: If month is Jan, Feb, Mar, Apr, it belongs to NEXT year
+                 const isNextYear = ["January", "February", "March", "April"].includes(month);
+                 const cellYear = isNextYear ? selectedYear + 1 : selectedYear;
+              %>
+              <td id="cell-<%= user.studentId %>-<%= month %>" class="<%= isPaid ? 'paid-existing' : '' %>">
+                <div class="cell-input-wrapper">
+
+                  <input type="hidden" class="data-student-id" value="<%= user.studentId %>">
+                  <input type="hidden" class="data-student-name" value="<%= user.studentName %>">
+                  <input type="hidden" class="data-standard" value="<%= user.standard %>">
+                  <input type="hidden" class="data-month" value="<%= month %>">
+                  <input type="hidden" class="data-year" value="<%= cellYear %>">
+
+                  <div class="relative">
+                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">₹</span>
+                    <input type="number" class="input-amount data-amount" placeholder="<%= user.monthlyFee %>" value="<%= isPaid ? record.amount : '' %>" oninput="markDirty(this)">
+                  </div>
+
+                  <div class="input-meta-row">
+                    <select class="input-meta data-method" onchange="markDirty(this)">
+                      <option value="" disabled <%= !isPaid ? 'selected' : '' %>>Method</option>
+                      <option value="Cash" <%= (isPaid && record.method === 'Cash') ? 'selected' : '' %>>Cash</option>
+                      <option value="UPI" <%= (isPaid && record.method === 'UPI') ? 'selected' : '' %>>UPI</option>
+                      <option value="Razorpay" <%= (isPaid && record.method === 'Razorpay') ? 'selected' : '' %>>Net</option>
+                    </select>
+
+                    <input type="date" class="input-meta data-date" value="<%= isPaid && record.datePaid ? new Date(record.datePaid).toISOString().split('T')[0] : '' %>" onchange="markDirty(this)">
+                  </div>
+
+                </div>
+              </td>
+              <% }) %>
+            </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-lg shadow-2xl transform translate-y-32 transition-transform duration-300 z-50 font-medium">
+    Saving...
+  </div>
+
+  <script>
+    document.getElementById('year-select').addEventListener('change', function() {
+      window.location.href = `/teacher/bulk_fees?year=${this.value}`;
+    });
+
+    function markDirty(element) {
+      const cell = element.closest('td');
+      cell.classList.add('changed-cell');
+      cell.classList.remove('saved-cell');
+
+      const amountInput = cell.querySelector('.data-amount');
+      const dateInput = cell.querySelector('.data-date');
+      const methodInput = cell.querySelector('.data-method');
+
+      const globalDate = document.getElementById('global-date').value;
+      const globalMethod = document.getElementById('global-method').value;
+
+      if (amountInput.value && !dateInput.value) {
+        dateInput.value = globalDate;
+      }
+
+      if (amountInput.value && element === amountInput) {
+        if (!methodInput.value || methodInput.value === "") {
+          methodInput.value = globalMethod;
+        }
+      }
+    }
+
+    async function saveAllChanges() {
+      const changedCells = document.querySelectorAll('.changed-cell');
+      if (changedCells.length === 0) return;
+
+      const saveBtn = document.getElementById('save-btn');
+      const originalText = saveBtn.innerText;
+      saveBtn.innerText = "Saving...";
+      saveBtn.disabled = true;
+
+      const updates = [];
+
+      changedCells.forEach(cell => {
+        const amount = cell.querySelector('.data-amount').value;
+        const method = cell.querySelector('.data-method').value;
+        const date = cell.querySelector('.data-date').value;
+
+        if (!amount) return;
+        if (!method || !date) return;
+
+        updates.push({
+          studentId: cell.querySelector('.data-student-id').value,
+          studentName: cell.querySelector('.data-student-name').value,
+          standard: cell.querySelector('.data-standard').value,
+          month: cell.querySelector('.data-month').value,
+          year: cell.querySelector('.data-year').value,
+          amount: parseInt(amount),
+          method: method,
+          datePaid: date
+        });
+      });
+
+      if (updates.length > 0) {
+        try {
+          const res = await fetch('/teacher/bulk_save', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              updates
+            })
+          });
+
+          const result = await res.json();
+
+          if (result.success) {
+            showToast("Saved Successfully!", "bg-green-600");
+            changedCells.forEach(cell => {
+              cell.classList.remove('changed-cell');
+              cell.classList.add('saved-cell');
+              setTimeout(() => cell.classList.remove('saved-cell'), 2000);
+            });
+          } else {
+            showToast("Error saving.", "bg-red-600");
+          }
+        } catch (e) {
+          console.error(e);
+          showToast("Network Error", "bg-red-600");
+        }
+      }
+
+      saveBtn.innerText = originalText;
+      saveBtn.disabled = false;
+    }
+
+    function showToast(msg, bgClass) {
+      const toast = document.getElementById('toast');
+      toast.textContent = msg;
+      toast.className = `fixed bottom-6 right-6 text-white px-6 py-4 rounded-lg shadow-2xl transform transition-transform duration-300 z-50 font-medium ${bgClass}`;
+      toast.classList.remove('translate-y-32');
+      setTimeout(() => toast.classList.add('translate-y-32'), 3000);
+    }
+  </script>
+</body>
+
+</html>

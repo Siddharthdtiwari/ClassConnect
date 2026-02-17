@@ -1186,6 +1186,88 @@ app.get(
     }
   }
 );
+
+app.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, async (req, res) => {
+  try {
+    const date = new Date();
+    const selectedYear = parseInt(req.query.year) || date.getFullYear();
+    const selectedMonth = parseInt(req.query.month) || (date.getMonth() + 1);
+
+    const students = await User.find({}, "studentId studentName").sort({ studentId: 1 });
+
+    const totalDays = new Date(selectedYear, selectedMonth, 0).getDate();
+    const daysArray = [];
+    const monthStr = String(selectedMonth).padStart(2, '0');
+    
+    for (let d = 1; d <= totalDays; d++) {
+        const dayStr = String(d).padStart(2, '0');
+        daysArray.push(`${selectedYear}-${monthStr}-${dayStr}`);
+    }
+
+    const regex = new RegExp(`^${selectedYear}-${monthStr}-`);
+    const attendanceRecords = await Attendance.find({ date: regex });
+
+    const attendanceMap = {};
+    attendanceRecords.forEach(doc => {
+        attendanceMap[doc.date] = {};
+        doc.records.forEach(r => {
+            attendanceMap[doc.date][r.studentId] = r.status;
+        });
+    });
+
+    const currentYear = new Date().getFullYear();
+    const years = [currentYear - 1, currentYear, currentYear + 1];
+
+    res.render("teacher/bulk_attendance", {
+      students,
+      daysArray,
+      attendanceMap,
+      selectedYear,
+      selectedMonth,
+      years
+    });
+
+  } catch (err) {
+    console.error("Error loading attendance:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+app.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherLogin, async (req, res) => {
+    try {
+        const { attendanceData } = req.body; 
+
+        const operations = [];
+
+        for (const [dateStr, records] of Object.entries(attendanceData)) {
+            if (records.length > 0) {
+                operations.push({
+                    updateOne: {
+                        filter: { date: dateStr },
+                        update: { 
+                            $set: { 
+                                date: dateStr,    
+                                records: records  
+                            } 
+                        },
+                        upsert: true
+                    }
+                });
+            }
+        }
+
+        if (operations.length > 0) {
+            await Attendance.bulkWrite(operations);
+        }
+
+        res.json({ success: true, message: "Attendance saved successfully!" });
+
+    } catch (err) {
+        console.error("Save Error:", err);
+        res.json({ success: false, message: "Failed to save data." });
+    }
+});
+
 app.get(
   "/teacher/add_test",
   ensureDBConnection,
@@ -1265,7 +1347,7 @@ app.get(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const users = await User.find({}, "studentId studentName standard monthlyFee").sort({
+    const users = await User.find({}, "studentId studentName standard").sort({
       studentId: 1,
     });
     res.render("teacher/add_fees", { users });
@@ -1493,6 +1575,109 @@ app.get(
     });
   }
 );
+// --- BULK FEE ENTRY ROUTES ---
+
+// 1. GET: Render the Bulk Edit Grid
+app.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, async (req, res) => {
+  try {
+    // 1. Determine the Academic Year (Default to current year if not selected)
+    const currentYear = new Date().getFullYear();
+    const selectedYear = parseInt(req.query.year) || currentYear;
+
+    // 2. Generate a list of years for the dropdown (e.g., 2024, 2025, 2026)
+    // We'll show a range of 5 years into the future and 1 year back
+    const years = [];
+    for (let y = currentYear - 1; y <= currentYear + 5; y++) {
+        years.push(y);
+    }
+
+    // 3. Fetch all students (Sorted by ID)
+    const users = await User.find({}, "studentId studentName standard monthlyFee").sort({ studentId: 1 });
+    
+    // 4. Fetch fees ONLY for the selected academic year
+    // Note: We fetch May-Dec of selectedYear and Jan-Apr of selectedYear+1
+    const fees = await Fee.find({
+      $or: [
+        { year: selectedYear, month: { $in: ["May", "June", "July", "August", "September", "October", "November", "December"] } },
+        { year: selectedYear + 1, month: { $in: ["January", "February", "March", "April"] } }
+      ]
+    });
+
+    // 5. Create a Map for O(1) lookup: feeMap[studentId][month] = feeRecord
+    const feeMap = {};
+    fees.forEach(fee => {
+      if (!feeMap[fee.studentId]) feeMap[fee.studentId] = {};
+      feeMap[fee.studentId][fee.month] = fee;
+    });
+
+    const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+
+    // 6. Render the view with all necessary data
+    res.render("teacher/bulk_fees", { 
+        users, 
+        feeMap, 
+        months, 
+        selectedYear, 
+        years 
+    });
+
+  } catch (err) {
+    console.error("Error loading bulk fees:", err);
+    res.status(500).send("Server Error");
+  }
+});
+
+// 2. POST: Save Bulk Changes
+app.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, async (req, res) => {
+  try {
+    const updates = req.body.updates; // Expecting an array of fee objects
+
+    if (!updates || updates.length === 0) {
+        return res.json({ success: true, message: "No changes to save." });
+    }
+
+    // Transform the frontend data into MongoDB BulkWrite operations
+    const operations = updates.map(update => {
+      // Create a unique filter (Student + Month + Year)
+      const filter = { 
+        studentId: update.studentId, 
+        month: update.month, 
+        year: update.year 
+      };
+
+      // Prepare the data object
+      const updateData = {
+        studentId: update.studentId,
+        studentName: update.studentName,
+        standard: update.standard,
+        month: update.month,
+        year: update.year,
+        amount: Number(update.amount),
+        method: update.method,
+        datePaid: new Date(update.datePaid),
+        status: "Paid" // Always mark as Paid for manual entry
+      };
+
+      // Upsert: Update if it exists, Insert if it doesn't
+      return {
+        updateOne: {
+          filter: filter,
+          update: { $set: updateData },
+          upsert: true 
+        }
+      };
+    });
+
+    // Execute all updates in one go
+    await Fee.bulkWrite(operations);
+    
+    res.json({ success: true, message: "Fees updated successfully!" });
+
+  } catch (err) {
+    console.error("Bulk Save Error:", err);
+    res.json({ success: false, message: "Error saving fees." });
+  }
+});
 
 app.get(
   "/teacher/manage_score",

@@ -41,12 +41,19 @@
 
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <a href="/teacher/manage_fees" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Manage Fees</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Add Fee</h1>
-      <p class="text-gray-600 mt-1">Enter the fee payment details.</p>
-    </header>
 
+    <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
+      <div>
+        <a href="/teacher/manage_fees" class="text-brand-purple hover:underline mb-2 block">&larr; Back to Manage Fees</a>
+        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
+          Add Fee
+        </h1>
+        <p class="text-gray-600 mt-1">Enter the fee payment details.</p>
+      </div>
+      <button onclick="window.location.href='/teacher/bulk_fees'" class="py-2 px-4 btn-outline-purple">
+        + Bulk Entry Mode
+      </button>
+    </header>
     <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
       <form id="add-fee-form" action="/teacher/add_fees" method="POST" class="space-y-6">
         <div>

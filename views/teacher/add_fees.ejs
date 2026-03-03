@@ -34,6 +34,19 @@
       color: #333;
       border-color: #bde045;
     }
+    .btn-solid-purple {
+      background-color: #5d3a9b;
+      color: #fff;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
+      border: 1px solid #5d3a9b;
+    }
+
+    .btn-solid-purple:hover {
+      background-color: #4b2d84;
+      border-color: #4b2d84;
+    }
   </style>
 </head>
 
@@ -112,7 +125,7 @@
           <input type="date" id="date-paid" name="datePaid" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required />
         </div>
 
-        <button type="submit" class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
+        <button type="submit" class="w-full py-3 px-4 btn-solid-purple shadow-lg mt-4">
           Submit Fee
         </button>
       </form>

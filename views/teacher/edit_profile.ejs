@@ -15,82 +15,149 @@
     }
 
     .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+      background-color: #fafafa;
+    }
+
+    .premium-card {
+      background: #ffffff;
+      border: 1px solid rgba(0, 0, 0, 0.04);
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05),
+                  0 10px 15px -3px rgba(0, 0, 0, 0.02),
+                  0 25px 50px -12px rgba(93, 58, 155, 0.08);
+      border-radius: 1.5rem;
     }
 
     .text-brand-purple {
       color: #5d3a9b;
+    }
+    .bg-brand-purple {
+      background-color: #5d3a9b;
     }
 
     .border-brand-purple {
       border-color: #5d3a9b;
     }
 
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
+    .btn-solid-purple {
+      background-color: #5d3a9b;
+      color: #fff;
       font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
-      border-radius: 0.5rem;
+      transition: all 0.3s ease;
+      border-radius: 0.75rem;
+      border: 1px solid #5d3a9b;
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(93, 58, 155, 0.2);
     }
 
-    .btn-outline-purple:hover {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+    .btn-solid-purple:hover {
+      background-color: #4b2d84;
+      border-color: #4b2d84;
+      box-shadow: 0 10px 15px -3px rgba(93, 58, 155, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .soft-input {
+      background-color: #f8f9fa;
+      border: 1px solid #e5e7eb;
+      transition: all 0.2s ease;
+    }
+    
+    .soft-input:focus {
+      background-color: #ffffff;
+      border-color: #5d3a9b;
+      box-shadow: 0 0 0 4px rgba(93, 58, 155, 0.1);
+    }
+
+    .photo-upload-area {
+      border: 2px dashed #e5e7eb;
+      background-color: #f8f9fa;
+      transition: all 0.2s ease;
+    }
+    .photo-upload-area:hover {
+      border-color: #5d3a9b;
+      background-color: #f3e8ff;
     }
   </style>
 </head>
 
 <%- include('../partials/background') %>
 
-<body class="text-gray-800">
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <a href="/teacher/view_profile/<%= student._id %>" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Profile</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Edit Student Profile
-      </h1>
-      <p class="text-gray-600 mt-1">
-        Update student's information and photo.
-      </p>
-    </header>
-
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto">
-      <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
-        <div class="text-center">
-          <img id="current-photo" src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Current Profile Picture" class="w-32 h-32 rounded-full border-4 border-brand-purple mx-auto mb-4" />
-          <input type="file" id="profile-photo" name="profilePhoto" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-brand-purple file:text-brand-purple hover:file:bg-opacity-80" />
+<body class="bg-brand-background text-gray-800">
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-12 min-h-screen flex flex-col items-center justify-center">
+    
+    <div class="w-full max-w-2xl">
+      <div class="premium-card overflow-hidden">
+        
+        <div class="h-40 bg-[#f8f9fa] border-b border-gray-100 relative overflow-hidden">
+          <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(#5d3a9b 0.5px, transparent 0.5px); background-size: 16px 16px;"></div>
+          
+          <a href="/teacher/view_profile/<%= student._id %>" class="absolute top-6 left-6 text-gray-600 hover:text-brand-purple font-semibold flex items-center gap-2 transition-colors z-10 bg-white px-4 py-2 rounded-full shadow-sm text-sm">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Profile
+          </a>
         </div>
 
-        <div>
-          <label for="student-id">Student ID</label>
-          <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="mt-1 block w-full rounded-md border-gray-300 bg-gray-100 cursor-not-allowed shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
+        <div class="p-8 sm:p-12 pt-0">
+          <div class="mb-10 -mt-20 relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left">
+            <div class="p-2 bg-white rounded-full shadow-md">
+              <img id="current-photo" src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Current Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-white" />
+            </div>
+            <div class="pb-2">
+              <h1 class="text-3xl font-black text-gray-900 tracking-tight">Edit Profile</h1>
+              <p class="text-gray-500 font-medium mt-1">Update <%= student.studentName %>'s information.</p>
+            </div>
+          </div>
+
+          <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+            
+            <div class="photo-upload-area rounded-2xl p-6 text-center cursor-pointer relative group">
+              <input type="file" id="profile-photo" name="profilePhoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+              <div class="flex flex-col items-center gap-2 z-10 relative pointer-events-none">
+                <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-brand-purple group-hover:scale-110 transition-transform">
+                  <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
+                </div>
+                <div>
+                  <span class="text-sm font-bold text-brand-purple">Click to upload new photo</span>
+                  <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+              <div>
+                <label for="student-id" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Student ID</label>
+                <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="soft-input mt-1 block w-full rounded-xl py-3 px-4 text-gray-500 cursor-not-allowed" />
+              </div>
+
+              <div>
+                <label for="student-name" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Student Name</label>
+                <input type="text" id="student-name" name="studentName" value="<%= student.studentName %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+              </div>
+
+              <div>
+                <label for="standard" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Standard</label>
+                <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+              </div>
+
+              <div>
+                <label for="mobile-no" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Mobile No</label>
+                <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+              </div>
+            </div>
+
+            <div class="pt-6 border-t border-gray-100 flex gap-4">
+              <a href="/teacher/view_profile/<%= student._id %>" class="w-full py-4 px-4 rounded-xl text-center font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+                Cancel
+              </a>
+              <button type="submit" class="w-full py-4 px-4 btn-solid-purple text-lg">
+                Save Changes
+              </button>
+            </div>
+          </form>
+
+          <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
         </div>
-
-        <div>
-          <label for="student-name">Student Name</label>
-          <input type="text" id="student-name" name="studentName" value="<%= student.studentName %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
-        </div>
-
-        <div>
-          <label for="standard">Standard</label>
-          <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
-        </div>
-
-        <div>
-          <label for="mobile-no">Mobile No</label>
-          <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" />
-        </div>
-
-        <button type="submit" class="w-full py-3 px-4 rounded-md text-brand-purple font-semibold bg-brand-purple hover:bg-opacity-90 transition duration-150 ease-in-out shadow-lg">
-          Save Changes
-        </button>
-      </form>
-
-      <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+      </div>
     </div>
   </div>
 </body>

@@ -24,39 +24,106 @@
       color: #5d3a9b;
     }
 
+    .bg-brand-purple {
+      background-color: #5d3a9b;
+    }
+
     .border-brand-purple {
       border-color: #5d3a9b;
     }
 
-    .text-brand-lime {
-      color: #bde045;
+    .glass-profile {
+      background: rgba(255, 255, 255, 0.7);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.1);
     }
 
-    .btn-lime {
-      background-color: #bde045;
-      color: #333;
-      font-weight: 700;
-      transition: background-color 0.3s ease;
+    .premium-banner {
+      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
+    }
+
+    .module-card {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid transparent;
+    }
+
+    .module-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15), 0 8px 10px -6px rgba(93, 58, 155, 0.1);
+      border-color: rgba(93, 58, 155, 0.2);
+    }
+
+    .module-card:hover .icon-container {
+      background-color: #5d3a9b;
+      color: white;
+      transform: scale(1.1) rotate(5deg);
+    }
+
+    .icon-container {
+      transition: all 0.3s ease;
+      background-color: #f3e8ff;
+      color: #5d3a9b;
+    }
+
+    .module-card .module-action-btn {
+      transition: all 0.3s ease;
+      background-color: #f9f5ff;
+      color: #5d3a9b;
+    }
+
+    .module-card:hover .module-action-btn {
+      background-color: #5d3a9b;
+      color: white;
+      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
+    }
+
+    .btn-solid-purple {
+      background-color: #5d3a9b;
+      color: #fff;
+      font-weight: 600;
+      transition: all 0.3s ease;
       border-radius: 0.5rem;
+      border: 1px solid #5d3a9b;
+      padding: 0.5rem 1rem;
     }
 
-    .btn-lime:hover {
-      background-color: #a8c93a;
+    .btn-solid-purple:hover {
+      background-color: #4b2d84;
+      border-color: #4b2d84;
+      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
+    }
+
+    .btn-outline-white {
+      color: white;
+      border: 1px solid rgba(255,255,255,0.6);
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.1);
+    }
+
+    .btn-outline-white:hover {
+      background: white;
+      color: #4b2d84;
     }
 
     .btn-outline-purple {
       color: #5d3a9b;
       border: 1px solid #5d3a9b;
       font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
+      transition: all 0.3s ease;
       border-radius: 0.5rem;
+      padding: 0.5rem 1rem;
     }
 
     .btn-outline-purple:hover {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+      background-color: #5d3a9b;
+      color: white;
     }
   </style>
 </head>
@@ -65,139 +132,163 @@
 
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8 flex flex-col md:flex-row justify-between items-center gap-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-          Welcome Back,
-          <span class="text-brand-purple"> <%= teacher.teacherName %> </span>
+    
+    <!-- Premium Welcome Banner -->
+    <header class="mb-8 premium-banner rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-white opacity-10 rounded-full blur-2xl"></div>
+      <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-white opacity-10 rounded-full blur-xl"></div>
+      
+      <div class="relative z-10 text-center md:text-left">
+        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">
+          Welcome Back, <%= teacher.teacherName.split(' ')[0] %>
         </h1>
-        <p class="text-gray-600 mt-1">Your central hub for success.</p>
+        <p class="text-purple-100 text-lg opacity-90 max-w-xl">
+          Your central hub for organizing classes, tracking performance, and empowering students.
+        </p>
       </div>
-      <div class="flex gap-4 flex-wrap justify-center">
-        <button onclick="window.location.href='/teacher/add_teacher'" class="py-2 px-4 btn-outline-purple">
-          + Add New Teacher
+
+      <div class="relative z-10 flex gap-4 flex-wrap justify-center">
+        <button onclick="window.location.href='/teacher/add_teacher'" class="btn-outline-white shadow-sm flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+          Add Teacher
         </button>
-        <button onclick="window.location.href='/teacher/logout'" class="py-2 px-4 btn-outline-purple">
+        <button onclick="window.location.href='/teacher/logout'" class="btn-outline-white bg-opacity-20 flex items-center gap-2">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
           Logout
         </button>
       </div>
     </header>
 
     <div class="flex flex-col lg:flex-row gap-8">
-      <div class="w-full lg:w-2/5 xl:w-1/3">
-        <div class="bg-white p-6 rounded-xl shadow-lg h-full flex flex-col items-center text-center sticky top-8">
-          <img src="https://placehold.co/128x128/ffffff/5d3a9b?text=<%= teacher.teacherName.charAt(0) %>" alt="Teacher Profile Picture" class="w-32 h-32 rounded-full border-4 border-brand-purple mb-4" />
+      
+      <!-- Glassmorphism Profile Sidebar -->
+      <div class="w-full lg:w-1/3 xl:w-1/4 z-10">
+        <div class="glass-profile p-8 rounded-2xl flex flex-col items-center text-center sticky top-8">
+          <div class="relative mb-6">
+            <div class="absolute inset-0 bg-brand-purple rounded-full opacity-20 blur-md transform scale-110"></div>
+            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(teacher.teacherName) %>&background=5d3a9b&color=fff&size=128&font-size=0.4" alt="Teacher Profile" class="relative w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover" />
+            <div class="absolute bottom-1 right-1 bg-green-500 w-6 h-6 rounded-full border-4 border-white"></div>
+          </div>
 
-          <h2 class="text-2xl font-bold text-gray-900">
+          <h2 class="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
             <%= teacher.teacherName %>
           </h2>
-          <p class="text-brand-purple font-mono font-semibold">
-            <%= teacher.teacherId %>
-          </p>
-          <div class="w-full border-t border-gray-200 my-6"></div>
-          <div class="text-left w-full">
-            <h3 class="text-lg font-semibold text-gray-900 mb-3">
-              Profile Details
-            </h3>
-            <p class="text-sm text-gray-600 mb-2">
-              <span class="font-semibold text-gray-700">Email:</span>
-              <%= teacher.email %>
-            </p>
-            <p class="text-sm text-gray-600 mb-2">
-              <span class="font-semibold text-gray-700">Subject:</span>
-              <%= teacher.subjects %>
-            </p>
+          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold leading-5 bg-purple-100 text-brand-purple mb-6 uppercase tracking-wide">
+            ID: <%= teacher.teacherId %>
+          </span>
+          
+          <div class="w-full bg-white bg-opacity-60 rounded-xl p-5 text-left mb-6 border border-white">
+            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Contact & Role</h3>
+            
+            <div class="flex items-start gap-3 mb-4">
+              <div class="p-2 bg-purple-50 rounded-lg text-brand-purple mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase">Email</p>
+                <p class="text-sm text-gray-800 font-medium break-all"><%= teacher.email %></p>
+              </div>
+            </div>
+
+            <div class="flex items-start gap-3">
+              <div class="p-2 bg-purple-50 rounded-lg text-brand-purple mt-0.5">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+              </div>
+              <div>
+                <p class="text-xs text-gray-500 font-semibold uppercase">Subject</p>
+                <p class="text-sm text-gray-800 font-medium"><%= teacher.subjects %></p>
+              </div>
+            </div>
           </div>
-          <button onclick="window.location.href='/teacher/edit_teacher/<%= teacher._id %>'" class="w-full py-2 px-4 mt-6 btn-outline-purple">
+
+          <button onclick="window.location.href='/teacher/edit_teacher/<%= teacher._id %>'" class="w-full btn-solid-purple shadow-md">
             Edit Profile
           </button>
         </div>
       </div>
-      <div class="w-full lg:w-3/5 xl:w-2/3">
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Manage Students
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                View and edit student profiles and information.
-              </p>
+
+      <!-- Action Modules Grid -->
+      <div class="w-full lg:w-2/3 xl:w-3/4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          
+          <!-- Manage Students -->
+          <div onclick="window.location.href='/teacher/manage_students'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/manage_students'" class="w-full py-2 px-4 btn-outline-purple">
-              Manage Students
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Students</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">View, edit, and organize complete student profiles.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Manage Fees
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Track outstanding and paid student fees.
-              </p>
+          <!-- Manage Fees -->
+          <div onclick="window.location.href='/teacher/manage_fees'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/manage_fees'" class="w-full py-2 px-4 btn-outline-purple">
-              Manage Fees
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Fees</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Track outstanding balances and log paid student fees.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Manage Tests
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Create, edit, and assign new tests.
-              </p>
+          <!-- Manage Tests -->
+          <div onclick="window.location.href='/teacher/manage_tests'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/manage_tests'" class="w-full py-2 px-4 btn-outline-purple">
-              Manage Tests
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Tests</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Create and edit assignments and assessment papers.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Manage Scores
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Review and upload student test and assignment scores.
-              </p>
+          <!-- Manage Scores -->
+          <div onclick="window.location.href='/teacher/manage_score'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/manage_score'" class="w-full py-2 px-4 btn-outline-purple">
-              Manage Scores
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Scores</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Upload and analyze student academic performance.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Upload Study Material
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Upload and organize notes, resources, and lessons.
-              </p>
+          <!-- Upload Material -->
+          <div onclick="window.location.href='/teacher/study_material'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/study_material'" class="w-full py-2 px-4 btn-outline-purple">
-              Upload Study Material
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Study Material</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Organize resources, notes, and interactive lessons.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
 
-          <div class="bg-white p-6 rounded-xl shadow-lg flex flex-col justify-between transform hover:-translate-y-1 transition-transform duration-300">
-            <div>
-              <h2 class="text-xl font-semibold mb-2 text-gray-900">
-                Manage Attendance
-              </h2>
-              <p class="text-gray-600 text-sm mb-4">
-                Record and view student attendance records.
-              </p>
+          <!-- Attendance -->
+          <div onclick="window.location.href='/teacher/manage_attendance'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
+            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
+              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
             </div>
-            <button onclick="window.location.href='/teacher/manage_attendance'" class="w-full py-2 px-4 btn-outline-purple">
-              Manage Attendance
-            </button>
+            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Attendance</h3>
+            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Save daily records and analyze presence history.</p>
+            <div class="mt-auto w-full relative z-10">
+              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            </div>
           </div>
+          
         </div>
       </div>
     </div>

@@ -5,6 +5,7 @@ const testSchema = new mongoose.Schema({
   subject: String,
   topic: String,
   totalMarks: Number,
+  testDate: { type: Date, default: Date.now },
   questionPaper: String,
   createdAt: { type: Date, default: Date.now },
 });

@@ -1,5 +1,5 @@
 const particlesContainer = document.getElementById("particles-container");
-const particleCount = 100;
+const particleCount = 200;
 
 for (let i = 0; i < particleCount; i++) createParticle();
 

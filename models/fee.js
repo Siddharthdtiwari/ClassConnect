@@ -6,24 +6,19 @@ const feeSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-
     studentName: { type: String, required: true },
     standard: { type: String, required: true },
-
     month: { type: String, required: true },
     year: { type: Number, required: true },
-
     amount: { type: Number, required: true },
-
     method: { type: String, enum: ["Cash", "UPI", "Razorpay"], required: true },
-
     status: { type: String, enum: ["Paid", "Failed"], default: "Paid" },
-
     razorpay_payment_id: { type: String },
-
     datePaid: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );
+
+feeSchema.index({ razorpay_payment_id: 1 }, { unique: true, sparse: true });
 
 module.exports = mongoose.model("Fee", feeSchema);

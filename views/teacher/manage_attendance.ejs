@@ -27,6 +27,20 @@
       border-color: #5d3a9b;
     }
 
+    .btn-solid-purple {
+      background-color: #5d3a9b;
+      color: #fff;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      border-radius: 0.5rem;
+      border: 1px solid #5d3a9b;
+    }
+
+    .btn-solid-purple:hover {
+      background-color: #4b2d84;
+      border-color: #4b2d84;
+    }
+
     .btn-outline-purple {
       color: #5d3a9b;
       border: 1px solid #5d3a9b;
@@ -41,6 +55,39 @@
       background-color: #bde045;
       color: #333;
       border-color: #bde045;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.875rem;
+    }
+
+    .data-table thead tr {
+      background: #5d3a9b;
+      color: #fff;
+    }
+
+    .data-table th {
+      padding: 0.75rem 1rem;
+      text-align: left;
+      font-weight: 600;
+      border: 1px solid #4b2d84;
+      white-space: nowrap;
+    }
+
+    .data-table td {
+      padding: 0.65rem 1rem;
+      border: 1px solid #d8b4e2;
+      white-space: nowrap;
+    }
+
+    .data-table tbody tr:nth-child(even) {
+      background: #f9f5ff;
+    }
+
+    .data-table tbody tr:hover td {
+      background: #ede9fe;
     }
 
     .calendar-grid {
@@ -201,7 +248,7 @@
               </div>
 
               <div class="flex items-end">
-                <button type="submit" class="bg-blue-600 text-white px-4 py-2 rounded-md shadow hover:bg-blue-700">
+                <button type="submit" class="btn-solid-purple px-4 py-2 mt-1 shadow w-full">
                   Show Defaulters
                 </button>
               </div>
@@ -210,7 +257,7 @@
         </div>
 
         <div class="lg:col-span-1" id="attendance-table-container">
-          <div class="flex items-center justify-between mb-6">
+          <div class="flex items-center justify-between mb-4">
             <button id="prev-day" class="p-2 rounded-full hover:bg-gray-100">
               &larr;
             </button>
@@ -221,8 +268,13 @@
               &rarr;
             </button>
           </div>
-          <div class="overflow-x-auto bg-gray-50 p-6 rounded-xl border">
-            <table class="table-auto rounded-lg overflow-hidden w-full">
+          <div class="flex justify-end gap-3 mb-4">
+            <button id="mark-all-p" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">Mark All P</button>
+            <button id="mark-all-a" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">Mark All A</button>
+            <button id="mark-all-h" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">Mark All H</button>
+          </div>
+          <div class="overflow-x-auto rounded-xl shadow border border-gray-200">
+            <table class="data-table">
               <thead>
                 <tr>
                   <th>Student Name</th>
@@ -233,8 +285,8 @@
               <tbody id="student-attendance-list"></tbody>
             </table>
           </div>
-          <div class="mt-6 text-center">
-            <button id="save-attendance-btn" class="py-2 px-4 btn-outline-purple">
+          <div class="mt-6 text-right">
+            <button id="save-attendance-btn" class="py-2 px-6 btn-solid-purple">
               Save Attendance
             </button>
           </div>
@@ -243,7 +295,7 @@
     </div>
   </div>
 
-  <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+  <div id="message-box" class="fixed bottom-10 right-10 z-[100] p-4 rounded-lg shadow-xl text-center font-bold max-w-sm transition-all duration-300 hidden"></div>
 
   <script id="students-data" type="application/json">
     <%- JSON.stringify(students || []) %>
@@ -271,6 +323,9 @@
         "save-attendance-btn"
       );
       const messageBox = document.getElementById("message-box");
+      const markAllPBtn = document.getElementById("mark-all-p");
+      const markAllABtn = document.getElementById("mark-all-a");
+      const markAllHBtn = document.getElementById("mark-all-h");
 
       let currentDate = new Date();
       let selectedDate = new Date();
@@ -286,10 +341,10 @@
 
       function showMessage(message, type = "success") {
         messageBox.textContent = message;
-        messageBox.className = `mt-6 p-4 rounded-md text-center ${
+        messageBox.className = `fixed bottom-10 right-10 z-[100] p-4 rounded-lg shadow-xl text-center font-bold max-w-sm transition-all duration-300 ${
             type === "success"
-              ? "bg-green-100 text-green-700"
-              : "bg-red-100 text-red-700"
+              ? "bg-green-100 text-green-800 border border-green-200"
+              : "bg-red-100 text-red-800 border border-red-200"
           }`;
         messageBox.classList.remove("hidden");
         setTimeout(() => messageBox.classList.add("hidden"), 3000);
@@ -416,6 +471,19 @@
           e.target.classList.add("active");
         }
       });
+
+      function markAll(status) {
+        const rows = studentAttendanceList.querySelectorAll("tr");
+        rows.forEach((row) => {
+          row.querySelectorAll(".attendance-status-btn").forEach((btn) => btn.classList.remove("active"));
+          const targetBtn = row.querySelector(`.attendance-status-btn[data-status="${status}"]`);
+          if (targetBtn) targetBtn.classList.add("active");
+        });
+      }
+
+      markAllPBtn.addEventListener("click", () => markAll("P"));
+      markAllABtn.addEventListener("click", () => markAll("A"));
+      markAllHBtn.addEventListener("click", () => markAll("H"));
 
       saveAttendanceBtn.addEventListener("click", async () => {
         const dateKey = formatDateKey(selectedDate);

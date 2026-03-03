@@ -10,60 +10,82 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: "Inter", sans-serif;
+    body { font-family: "Inter", sans-serif; }
+
+    .text-brand-purple { color: #5d3a9b; }
+
+    .premium-banner {
+      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
     }
 
-    .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    .glass-profile {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
     }
 
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
+    .tab-pill {
+      padding: 0.4rem 1.1rem;
+      border-radius: 9999px;
       font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
-      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      border: 2px solid #e5e7eb;
+      color: #6b7280;
+      background: white;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+    }
+    .tab-pill:hover {
+      border-color: #5d3a9b;
+      color: #5d3a9b;
+      background: #f3e8ff;
+    }
+    .tab-pill.active {
+      background: #5d3a9b;
+      color: white;
+      border-color: #5d3a9b;
+      box-shadow: 0 4px 12px rgba(93, 58, 155, 0.3);
     }
 
-    .btn-outline-purple:hover,
-    .btn-outline-purple.active {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+    .test-card {
+      transition: all 0.3s ease;
+      border-radius: 14px;
+      border: 1px solid #e5e7eb;
+      background: white;
+    }
+    .test-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 28px -5px rgba(93, 58, 155, 0.14);
+      border-color: rgba(93, 58, 155, 0.25);
     }
 
-    .btn-lime {
-      background-color: #bde045;
-      color: #333;
+    .btn-download {
+      background: linear-gradient(135deg, #5d3a9b, #7c52ca);
+      color: white;
       font-weight: 700;
-      transition: background-color 0.3s ease;
-      border-radius: 0.5rem;
+      font-size: 0.875rem;
+      padding: 0.55rem 1.4rem;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 3px 10px rgba(93, 58, 155, 0.28);
+      white-space: nowrap;
     }
-
-    .btn-lime:hover {
-      background-color: #a8c93a;
+    .btn-download:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(93, 58, 155, 0.35);
     }
-
-    .btn-lime:disabled {
-      background-color: #e5e7eb;
+    .btn-download:disabled {
+      background: #e5e7eb;
       color: #9ca3af;
       cursor: not-allowed;
-    }
-
-    .test-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 15px rgba(0, 0, 0, 0.07);
+      box-shadow: none;
     }
   </style>
 </head>
@@ -71,85 +93,77 @@
 
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <a href="/student/dashboard" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Dashboard</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Upcoming Tests
-      </h1>
-      <p class="text-gray-600 mt-1">
-        Download your test papers for Class <%= studentStandard %>.
-      </p>
+    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+      <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
+      <div class="relative z-10">
+        <div class="flex justify-center sm:justify-start mb-5">
+          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Dashboard
+          </a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
+          ✍️ Class Tests
+        </h1>
+        <p class="text-purple-100 font-medium text-base sm:text-lg">Download test papers for Class <strong><%= studentStandard %></strong>.</p>
+      </div>
     </header>
 
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+    <div class="glass-profile p-6 sm:p-8 rounded-2xl mb-10">
+
+      <!-- Subject Filter Pills -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Subjects</h2>
-        <div id="subject-tabs" class="flex flex-wrap gap-4">
-          <a href="/student/take_test?subject=overall" class="px-6 py-2 btn-outline-purple <%= subject === 'overall' ? 'active' : '' %>">
-            Overall
-          </a>
-          <a href="/student/take_test?subject=English" class="px-6 py-2 btn-outline-purple <%= subject === 'English' ? 'active' : '' %>">
-            English
-          </a>
-          <a href="/student/take_test?subject=Maths I" class="px-6 py-2 btn-outline-purple <%= subject === 'Maths I' ? 'active' : '' %>">
-            Maths I
-          </a>
-          <a href="/student/take_test?subject=Maths II" class="px-6 py-2 btn-outline-purple <%= subject === 'Maths II' ? 'active' : '' %>">
-            Maths II
-          </a>
-          <a href="/student/take_test?subject=Science I" class="px-6 py-2 btn-outline-purple <%= subject === 'Science I' ? 'active' : '' %>">
-            Science I
-          </a>
-          <a href="/student/take_test?subject=Science II" class="px-6 py-2 btn-outline-purple <%= subject === 'Science II' ? 'active' : '' %>">
-            Science II
-          </a>
-          <a href="/student/take_test?subject=History-Civics" class="px-6 py-2 btn-outline-purple <%= subject === 'History-Civics' ? 'active' : '' %>">
-            History-Civics
-          </a>
-          <a href="/student/take_test?subject=Geography" class="px-6 py-2 btn-outline-purple <%= subject === 'Geography' ? 'active' : '' %>">
-            Geography
-          </a>
-          <a href="/student/take_test?subject=Hindi" class="px-6 py-2 btn-outline-purple <%= subject === 'Hindi' ? 'active' : '' %>">
-            Hindi
-          </a>
-          <a href="/student/take_test?subject=Marathi" class="px-6 py-2 btn-outline-purple <%= subject === 'Marathi' ? 'active' : '' %>">
-            Marathi
-          </a>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Filter by Subject</p>
+        <div class="flex flex-wrap gap-2">
+          <a href="/student/take_test?subject=overall" class="tab-pill <%= subject === 'overall' ? 'active' : '' %>">📋 Overall</a>
+          <a href="/student/take_test?subject=English" class="tab-pill <%= subject === 'English' ? 'active' : '' %>">🇬🇧 English</a>
+          <a href="/student/take_test?subject=Maths I" class="tab-pill <%= subject === 'Maths I' ? 'active' : '' %>">🔢 Maths I</a>
+          <a href="/student/take_test?subject=Maths II" class="tab-pill <%= subject === 'Maths II' ? 'active' : '' %>">🔢 Maths II</a>
+          <a href="/student/take_test?subject=Science I" class="tab-pill <%= subject === 'Science I' ? 'active' : '' %>">🔬 Science I</a>
+          <a href="/student/take_test?subject=Science II" class="tab-pill <%= subject === 'Science II' ? 'active' : '' %>">⚗️ Science II</a>
+          <a href="/student/take_test?subject=History-Civics" class="tab-pill <%= subject === 'History-Civics' ? 'active' : '' %>">📜 History-Civics</a>
+          <a href="/student/take_test?subject=Geography" class="tab-pill <%= subject === 'Geography' ? 'active' : '' %>">🌍 Geography</a>
+          <a href="/student/take_test?subject=Hindi" class="tab-pill <%= subject === 'Hindi' ? 'active' : '' %>">🇮🇳 Hindi</a>
+          <a href="/student/take_test?subject=Marathi" class="tab-pill <%= subject === 'Marathi' ? 'active' : '' %>">📚 Marathi</a>
         </div>
       </div>
 
+      <!-- Tests List -->
       <div id="tests-area">
         <% if (tests.length===0) { %>
-        <div class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-          </svg>
-          <h3 class="mt-2 text-sm font-medium text-gray-900">
-            No Tests Found
-          </h3>
-          <p class="mt-1 text-sm text-gray-500">
-            No tests available for <%= subject==='overall' ? ('Class ' +
-              studentStandard) : subject %>.
-          </p>
+        <div class="text-center py-16">
+          <div class="text-6xl mb-4">📭</div>
+          <h3 class="text-xl font-bold text-gray-700">No Tests Found</h3>
+          <p class="mt-2 text-gray-400 text-sm">No tests available for <strong><%= subject==='overall' ? ('Class ' + studentStandard) : subject %></strong> yet.</p>
         </div>
         <% } else { %>
         <div class="space-y-4">
           <% tests.forEach(test => { %>
-          <div class="test-card bg-white p-6 rounded-lg border border-gray-200 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-            <div class="flex-grow">
-              <h4 class="text-lg font-bold text-gray-800">
-                <%= test.testName %>
-              </h4>
-              <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-gray-500 mt-2">
-                <span>Subject: <%= test.subject %></span>
-                <span class="hidden md:inline">|</span>
-                <span>Topic: <%= test.topic || ' N/A' %></span>
-                <span class="hidden md:inline">|</span>
-                <span>Total Marks: <%= test.totalMarks %></span>
+          <div class="test-card p-5 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <!-- Left: Icon + Info -->
+            <div class="flex items-center gap-4 min-w-0">
+              <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-purple-50">
+                <svg class="w-7 h-7 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+              </div>
+              <div class="min-w-0">
+                <h4 class="text-lg font-extrabold text-gray-900 truncate"><%= test.testName %></h4>
+                <div class="flex flex-wrap items-center gap-2 mt-1.5">
+                  <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-brand-purple border border-purple-200"><%= test.subject %></span>
+                  <% if (test.topic) { %><span class="text-xs font-semibold text-gray-400">Topic: <%= test.topic %></span><% } %>
+                  <span class="text-xs font-semibold text-gray-400">• <span class="font-bold text-gray-600"><%= test.totalMarks %></span> Marks</span>
+                  <% if (test.testDate) { %>
+                  <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-blue-50 text-blue-600 border border-blue-200">
+                    📅 <%= new Date(test.testDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                  </span>
+                  <% } %>
+                </div>
               </div>
             </div>
-            <div class="flex items-center gap-4 w-full md:w-auto mt-4 md:mt-0">
-              <a href="<%= test.questionPaper %>" class="w-full md:w-auto px-6 py-2 btn-lime" target="_blank" download>
+            <!-- Right: Download -->
+            <div class="flex-shrink-0">
+              <a href="<%= test.questionPaper %>" class="btn-download" target="_blank" download>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                 Download Paper
               </a>
             </div>

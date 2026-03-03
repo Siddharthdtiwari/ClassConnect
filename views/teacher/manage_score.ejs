@@ -22,18 +22,29 @@
       border-color: #5d3a9b;
     }
 
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
+    .btn-solid-purple {
+      background-color: #5d3a9b;
+      color: #fff;
       font-weight: 600;
-      border-radius: 0.5rem;
-      transition: all 0.3s;
+      transition: all 0.3s ease;
+      border-radius: 0.75rem;
+      border: 1px solid #5d3a9b;
+      padding: 0.75rem 1.5rem;
+      box-shadow: 0 4px 6px -1px rgba(93, 58, 155, 0.2);
     }
 
-    .btn-outline-purple:hover {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+    .btn-solid-purple:hover {
+      background-color: #4b2d84;
+      border-color: #4b2d84;
+      box-shadow: 0 10px 15px -3px rgba(93, 58, 155, 0.3);
+      transform: translateY(-1px);
+    }
+
+    .report-table-wrapper {
+      border: 1px solid #e5e7eb;
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
     .table-auto {
@@ -43,21 +54,43 @@
 
     .table-auto th,
     .table-auto td {
-      padding: 1rem;
+      padding: 1rem 1.25rem;
       text-align: left;
-      border-bottom: 1px solid #e5e7eb;
     }
 
     .table-auto th {
-      background-color: #f9fafb;
-      color: #4b5563;
-      font-weight: 600;
+      background-color: #f8f9fa;
+      color: #6b7280;
+      font-weight: 700;
       text-transform: uppercase;
       font-size: 0.75rem;
+      letter-spacing: 0.05em;
+      border-bottom: 2px solid #e5e7eb;
+    }
+
+    .table-auto tbody tr {
+      border-bottom: 1px solid #f3f4f6;
+      transition: background-color 0.2s ease;
+    }
+
+    .table-auto tbody tr:hover {
+      background-color: #f9fafb;
     }
 
     .score-input {
-      width: 80px;
+      width: 90px;
+      padding: 0.5rem;
+      border: 1px solid #d1d5db;
+      border-radius: 0.5rem;
+      text-align: center;
+      font-weight: 600;
+      color: #374151;
+      transition: all 0.2s;
+    }
+    .score-input:focus {
+      outline: none;
+      border-color: #5d3a9b;
+      box-shadow: 0 0 0 3px rgba(93, 58, 155, 0.1);
     }
   </style>
 </head>
@@ -66,52 +99,67 @@
 
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-6 min-h-screen">
-    <header class="mb-8">
-      <a href="/teacher/dashboard" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Dashboard</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Manage Scores
-      </h1>
-      <p class="text-gray-600 mt-1">
-        Add and manage student scores by test and standard.
-      </p>
+    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between items-start sm:items-end gap-4">
+      <div>
+        <a href="/teacher/dashboard" class="text-brand-purple hover:underline mb-2 block font-medium">&larr; Back to Dashboard</a>
+        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
+          Manage Scores
+        </h1>
+        <p class="text-gray-500 mt-2 text-lg">
+          Add and manage student scores by test and standard.
+        </p>
+      </div>
     </header>
 
-    <div class="bg-white p-8 rounded-xl shadow-lg">
-      <div class="mb-6">
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">
+    <div class="bg-white p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
+      <div class="mb-10">
+        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <svg class="w-6 h-6 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
           Add/Edit Test Scores
         </h3>
-        <div class="flex flex-col sm:flex-row gap-4 mb-6">
-          <select id="standard-filter" class="flex-grow sm:flex-grow-0 sm:w-1/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
-            <option value="">-- Select Standard --</option>
-            <% standards.forEach(s=> { %>
-            <option value="<%= s %>"><%= s %></option>
-            <% }) %>
-          </select>
-          <select id="test-filter" class="flex-grow sm:flex-grow-0 sm:w-2/3 px-4 py-3 rounded-lg border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" disabled>
-            <option value="">-- Select Test --</option>
-          </select>
+        <div class="flex flex-col sm:flex-row gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
+          <div class="flex-grow sm:flex-grow-0 sm:w-1/3">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Standard</label>
+            <select id="standard-filter" class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 appearance-none font-medium">
+              <option value="">-- Select Standard --</option>
+              <% standards.forEach(s=> { %>
+              <option value="<%= s %>"><%= s %></option>
+              <% }) %>
+            </select>
+          </div>
+          <div class="flex-grow sm:flex-grow-0 sm:w-2/3">
+            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Test Name</label>
+            <select id="test-filter" class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 bg-white shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 appearance-none font-medium disabled:bg-gray-100 disabled:text-gray-400" disabled>
+              <option value="">-- Select Test --</option>
+            </select>
+          </div>
         </div>
 
-        <div id="student-list-container" class="hidden overflow-x-auto">
-          <table class="table-auto rounded-lg overflow-hidden">
-            <thead>
-              <tr>
-                <th>Student Name</th>
-                <th>Student ID</th>
-                <th>Score</th>
-              </tr>
-            </thead>
-            <tbody id="student-score-list"></tbody>
-          </table>
-          <div class="mt-6 text-center">
-            <button id="save-scores-btn" class="py-2 px-4 btn-outline-purple">
+        <div id="student-list-container" class="hidden">
+          <div class="report-table-wrapper mb-8">
+            <div class="overflow-x-auto">
+              <table class="table-auto">
+                <thead>
+                  <tr>
+                    <th>Student Name</th>
+                    <th>Student ID</th>
+                    <th class="w-32">Score</th>
+                  </tr>
+                </thead>
+                <tbody id="student-score-list"></tbody>
+              </table>
+            </div>
+          </div>
+          
+          <div class="flex justify-end">
+            <button id="save-scores-btn" class="btn-solid-purple w-full sm:w-auto text-lg flex items-center justify-center gap-2">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
               Save Scores
             </button>
           </div>
         </div>
 
-        <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
+        <div id="message-box" class="mt-6 p-4 rounded-xl text-center hidden font-medium"></div>
       </div>
 
       <div id="all-scores-container" class="mt-12">
@@ -148,7 +196,7 @@
         tests.forEach((t) => {
           const option = document.createElement("option");
           option.value = t._id;
-          option.textContent = t.testName;
+          option.textContent = `${t.testName} — ${t.subject} — ${t.topic}`;
           testFilter.appendChild(option);
         });
 
@@ -218,51 +266,76 @@
         classwiseTables.innerHTML = "";
 
         for (let cls in data) {
-          const {
-            tests,
-            students
-          } = data[cls];
+          const { tests, students } = data[cls];
           if (!tests.length || !students.length) continue;
 
-          const table = document.createElement("table");
-          table.className =
-            "table-auto w-full border-collapse rounded-lg overflow-hidden mb-8";
-
-          let header =
-            '<tr><th rowspan="2" class="p-2 border bg-gray-200">Student Name</th><th rowspan="2" class="p-2 border bg-gray-200">Student ID</th>';
-          tests.forEach(
-            (t) =>
-            (header += `<th class="p-2 border bg-gray-300">${t.testName}</th>`)
-          );
-          header += "</tr>";
-
-          let subHeader = "<tr>";
-          tests.forEach(
-            (t) =>
-            (subHeader += `<th class="p-2 border bg-gray-100">${t.subject}</th>`)
-          );
-          subHeader += "</tr>";
-
-          let body = "";
-          students.forEach((st) => {
-            body += `<tr><td class="p-2 border">${st.studentName}</td><td class="p-2 border">${st.studentId}</td>`;
-            tests.forEach((t) => {
-              let score =
-                st.scores[t._id] !== undefined ? st.scores[t._id] : "-";
-              const classMissing =
-                score === "-" ? "bg-red-100 text-red-700" : "";
-              if (score !== "-") score = parseFloat(score).toFixed(2) + "%";
-              body += `<td class="p-2 border text-center ${classMissing}">${score}</td>`;
-            });
-            body += "</tr>";
-          });
-
-          table.innerHTML = header + subHeader + body;
           const title = document.createElement("h4");
-          title.className = "text-xl font-semibold mb-2";
-          title.textContent = `Class ${cls}`;
+          title.className = "text-xl font-bold text-gray-900 mb-3 mt-4 flex items-center gap-2";
+          title.innerHTML = `<span class="inline-block px-3 py-1 rounded-full text-white text-sm" style="background:#5d3a9b">Class ${cls}</span>`;
           classwiseTables.appendChild(title);
-          classwiseTables.appendChild(table);
+
+          const wrapper = document.createElement("div");
+          wrapper.className = "overflow-x-auto rounded-xl shadow-md mb-10 border border-gray-200";
+
+          const table = document.createElement("table");
+          table.className = "w-full border-collapse text-sm";
+
+          let header = `
+            <thead>
+              <tr style="background:#5d3a9b; color:#fff;">
+                <th class="px-4 py-3 text-left font-semibold whitespace-nowrap" rowspan="2">ID</th>
+                <th class="px-4 py-3 text-left font-semibold whitespace-nowrap" rowspan="2">Student Name</th>`;
+          tests.forEach(t => {
+            header += `<th class="px-4 py-3 text-center font-semibold whitespace-nowrap">${t.testName}</th>`;
+          });
+          header += `<th class="px-4 py-3 text-center font-semibold whitespace-nowrap" rowspan="2" style="background:#4b2d84">Avg %</th></tr>`;
+
+          header += `<tr style="background:#7c4dc0; color:#e9d8fd;">`;
+          tests.forEach(t => {
+            header += `<th class="px-3 py-1 text-center text-xs font-medium">${t.subject} &mdash; ${t.topic}</th>`;
+          });
+          header += `</tr></thead>`;
+
+          let body = "<tbody>";
+          students.forEach((st, idx) => {
+            const rowBg = idx % 2 === 0 ? "background:#fff" : "background:#f9f5ff";
+            body += `<tr style="${rowBg}" class="hover:bg-purple-50 transition-colors">`;
+            body += `<td class="px-4 py-3 font-mono text-gray-500 text-xs whitespace-nowrap border-b border-gray-100">${st.studentId}</td>`;
+            body += `<td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap border-b border-gray-100">${st.studentName}</td>`;
+
+            let totalPct = 0, scoredCount = 0;
+            tests.forEach(t => {
+              const raw = st.scores[t._id];
+              if (raw !== undefined) {
+                const pct = parseFloat(raw);
+                totalPct += pct;
+                scoredCount++;
+                const color = pct >= 75 ? "color:#166534;background:#dcfce7"
+                            : pct >= 50 ? "color:#92400e;background:#fef3c7"
+                            : "color:#991b1b;background:#fee2e2";
+                body += `<td class="px-4 py-3 text-center font-bold border-b border-gray-100" style="${color}">${pct.toFixed(1)}%</td>`;
+              } else {
+                body += `<td class="px-4 py-3 text-center border-b border-gray-100" style="color:#9ca3af">&mdash;</td>`;
+              }
+            });
+
+            if (scoredCount > 0) {
+              const avg = (totalPct / scoredCount).toFixed(1);
+              const avgColor = avg >= 75 ? "color:#166534;background:#dcfce7"
+                             : avg >= 50 ? "color:#92400e;background:#fef3c7"
+                             : "color:#991b1b;background:#fee2e2";
+              body += `<td class="px-4 py-3 text-center font-extrabold border-b border-gray-100" style="${avgColor}">${avg}%</td>`;
+            } else {
+              body += `<td class="px-4 py-3 text-center border-b border-gray-100 text-gray-400">&mdash;</td>`;
+            }
+
+            body += `</tr>`;
+          });
+          body += "</tbody>";
+
+          table.innerHTML = header + body;
+          wrapper.appendChild(table);
+          classwiseTables.appendChild(wrapper);
         }
       }
 

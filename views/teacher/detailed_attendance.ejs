@@ -47,7 +47,14 @@
       font-size: 0.75rem;
     }
 
-    .report-table th,
+    .report-table th {
+      padding: 0;
+      text-align: center;
+      border-bottom: 2px solid #4b2d84;
+      white-space: nowrap;
+      height: 2rem;
+    }
+
     .report-table td {
       padding: 0;
       text-align: center;
@@ -57,7 +64,7 @@
       background-color: #ffffff;
     }
 
-    .cell-content {
+    .cell-content, .header-content {
       padding: 0.5rem 0.75rem;
       height: 100%;
       display: flex;
@@ -106,53 +113,36 @@
       box-shadow: -2px 0 5px -2px rgba(0, 0, 0, 0.1);
     }
 
-    .header-content {
-      padding: 0.5rem 0.75rem;
-    }
-
-    .month-group-header .header-content {
-      background-color: #4a5568;
-      color: white;
-      border-bottom: 2px solid #3d4653;
-    }
-
-    .day-header-row .header-content {
-      background-color: #eef2f6;
-      border-bottom: 2px solid #5d3a9b;
-    }
-
-    .overall-final-col .header-content,
-    .overall-final-col .cell-content {
+    .month-group-header th {
       background-color: #5d3a9b;
       color: white;
-      border-left: 2px solid #5d3a9b;
     }
 
-    .row-1-header .sticky-col-left {
-      z-index: 50;
-      top: 0;
-    }
-
-    .row-1-header .sticky-col-left .header-content {
-      background-color: #4a5568;
-      color: white;
-    }
-
-    .row-2-header .sticky-col-left {
-      z-index: 51;
-    }
-
-    .row-2-header .sticky-col-left .header-content {
-      background-color: #eef2f6;
+    .day-header-row th {
+      background-color: #f9f5ff;
+      border-bottom: 2px solid #5d3a9b;
       color: #374151;
     }
 
-    .row-1-header .sticky-col-right-overall {
-      z-index: 49;
-      top: 0;
+    .overall-final-col th, .overall-final-col.sticky-col-right-overall th, .row-1-header th.overall-final-col {
+      background-color: #5d3a9b !important;
+      color: white !important;
+      border-left: 2px solid #4b2d84;
     }
 
-    .row-2-header .sticky-col-right-overall {
+    .overall-final-col .cell-content {
+      background-color: #5d3a9b;
+      color: white;
+      border-left: 2px solid #4b2d84;
+    }
+
+    .row-1-header th.sticky-col-left {
+      z-index: 50;
+      background-color: #5d3a9b;
+      color: white;
+    }
+
+    .row-1-header th.sticky-col-right-overall {
       z-index: 49;
     }
 
@@ -200,8 +190,8 @@
       </p>
     </header>
 
-    <div class="bg-white p-2 sm:p-4 rounded-xl shadow-xl">
-      <div class="overflow-x-auto">
+    <div class="bg-white p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
+      <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
         <table class="report-table w-full border-collapse min-w-max">
           <thead>
             <% 
@@ -222,7 +212,7 @@
                         %>
 
             <tr class="sticky-header row-1-header month-group-header">
-              <th class="sticky-col-left month-group-header">
+              <th class="sticky-col-left" rowspan="2">
                 <div class="header-content">Student Name / ID</div>
               </th>
 
@@ -234,15 +224,12 @@
               </th>
               <% }) %>
 
-              <th class="sticky-col-right-overall overall-final-col text-sm">
+              <th class="sticky-col-right-overall overall-final-col text-sm" rowspan="2">
                 <div class="header-content">OVERALL</div>
               </th>
             </tr>
 
             <tr class="sticky-header row-2-header day-header-row">
-              <th class="sticky-col-left day-header-row">
-                <div class="header-content"></div>
-              </th>
 
               <% sortedMonthYears.forEach(monthYear => { %>
               <% dateKeys[monthYear].forEach(date => { 
@@ -256,10 +243,6 @@
                 <div class="header-content">%</div>
               </th>
               <% }) %>
-
-              <th class="sticky-col-right-overall overall-final-col">
-                <div class="header-content"></div>
-              </th>
             </tr>
           </thead>
           <tbody>
@@ -336,7 +319,7 @@
           const row1 = document.querySelector('.row-1-header');
           if (!row1) return;
 
-          const row1Height = row1.getBoundingClientRect().height;
+          const row1Height = row1.getBoundingClientRect().height - 1;
 
           const row2Headers = document.querySelectorAll('.row-2-header th');
 
@@ -349,7 +332,7 @@
       }
 
       alignStickyHeaders();
-
+      setTimeout(alignStickyHeaders, 100);
       window.addEventListener('resize', alignStickyHeaders);
     });
   </script>

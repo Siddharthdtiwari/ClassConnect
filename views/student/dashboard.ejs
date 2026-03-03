@@ -11,14 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* BASE STYLES & FONT */
     body {
       font-family: "Inter", sans-serif;
       background-color: #f3f4f6;
       background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
     }
 
-    /* THEME COLORS */
     .text-brand-purple {
       color: #5d3a9b;
     }
@@ -39,40 +37,65 @@
       border-color: #bde045;
     }
 
-    /* ACTION BUTTON (PURPLE) */
     .btn-action {
       background-color: #5d3a9b;
       color: white;
       font-weight: 600;
       transition: all 0.3s ease;
       border-radius: 9999px;
+      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
     }
 
     .btn-action:hover {
       background-color: #4b2d84;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(93, 58, 155, 0.23);
     }
 
-    /* OUTLINE BUTTON (FOR LOGOUT/LINKS) */
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
+    .btn-outline-white {
+      color: white;
+      border: 1px solid rgba(255,255,255,0.6);
       font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
+      transition: all 0.3s ease;
       border-radius: 9999px;
+      background: rgba(255,255,255,0.1);
     }
 
-    .btn-outline-purple:hover {
-      background-color: #f3e8ff;
+    .btn-outline-white:hover {
+      background-color: white;
+      color: #5d3a9b;
     }
 
-    /* CHART STYLES */
+    .glass-profile {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
+    }
+
+    .premium-banner {
+      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
+    }
+
+    .action-card {
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      border: 1px solid transparent;
+      background-color: white;
+    }
+
+    .action-card:hover {
+      transform: translateY(-8px);
+      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15);
+      border-color: rgba(93, 58, 155, 0.2);
+    }
+
     .main-chart-area {
       position: relative;
       height: 0;
       padding-bottom: 48%;
-      /* Aspect ratio control */
     }
 
     .main-chart-area canvas {
@@ -93,22 +116,25 @@
     }) %>"></div>
 
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b border-gray-200 pb-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
+    <header class="mb-8 premium-banner rounded-2xl p-6 sm:p-10 flex flex-col sm:flex-row sm:justify-between sm:items-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+      <div class="absolute bottom-0 right-32 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
+      
+      <div class="relative z-10">
+        <h1 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
           Welcome Back,
-          <span class="text-brand-purple"> <%= student.studentName %>! </span>
+          <span class="text-brand-lime"> <%= student.studentName %>! </span>
         </h1>
-        <p class="text-sm text-gray-500 mt-1">
-          Your central hub for success.
+        <p class="text-sm text-purple-100 mt-2 font-medium">
+          Your central hub for success and learning.
         </p>
       </div>
 
-      <div class="flex items-center gap-2 mt-4 sm:mt-0">
-        <button onclick="window.location.href='/student/edit_profile'" class="py-2 px-5 btn-action text-sm shadow-md">
+      <div class="relative z-10 flex items-center gap-3 mt-6 sm:mt-0">
+        <button onclick="window.location.href='/student/edit_profile'" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg">
           ✏️ Edit Profile
         </button>
-        <button onclick="window.location.href='/student/logout'" class="py-2 px-5 btn-outline-purple text-sm font-semibold">
+        <button onclick="window.location.href='/student/logout'" class="py-2.5 px-6 btn-outline-white text-sm font-bold">
           Logout
         </button>
       </div>
@@ -116,26 +142,37 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-purple">
-          <div class="flex flex-col items-center text-center pb-4 border-b border-gray-100">
-            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md" />
-            <p class="text-xl font-bold text-gray-900">
+        <div class="glass-profile p-8 rounded-2xl relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-24 premium-banner"></div>
+          <div class="relative flex flex-col items-center text-center mt-6">
+            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-28 h-28 rounded-full border-4 border-white object-cover mb-4 shadow-xl bg-white" />
+            <p class="text-2xl font-extrabold text-gray-900">
               <%= student.studentName %>
             </p>
-            <p class="text-sm text-gray-600">
-              ID: <%= student.studentId %> | Class: <%= student.standard %>
+            <span class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-brand-purple">
+              Class <%= student.standard %>
+            </span>
+            <p class="text-sm text-gray-500 mt-2 font-medium">
+              ID: <%= student.studentId %>
             </p>
           </div>
 
-          <div class="space-y-4 pt-4 text-sm">
-            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
-              <span class="text-gray-600 font-medium">Monthly Fee:</span>
-              <span class="font-bold text-xl text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
+          <div class="mt-8 pt-6 border-t border-gray-100 space-y-5">
+            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
+              <span class="text-gray-600 font-semibold text-sm">Monthly Fee</span>
+              <span class="font-extrabold text-lg text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
             </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600 font-medium">Reward Points:</span>
-              <span class="font-bold text-xl text-brand-lime">
-                <%= Math.trunc(student.points) %> ✨
+            <div class="flex justify-between items-center bg-lime-50 p-3 rounded-lg border border-lime-100">
+              <span class="text-gray-700 font-semibold text-sm">Reward Points</span>
+              <span class="font-extrabold text-lg text-green-700 flex items-center gap-1">
+                <%= Math.trunc(student.points) %> 
+                <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+              </span>
+            </div>
+            <div class="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100">
+              <span class="text-gray-700 font-semibold text-sm">Leaderboard Rank</span>
+              <span class="font-extrabold text-lg text-brand-purple flex items-center gap-1">
+                <span class="text-sm text-gray-400 font-normal">#</span><%= studentRank %> 🏆
               </span>
             </div>
           </div>
@@ -181,15 +218,14 @@
           <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
             Recent Fee Payments
           </h3>
-          <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto">
+          <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto pr-3">
             <% if (recentFees.length > 0) { %> <% recentFees.forEach(fee => { %>
-            <div class="flex justify-between items-center py-3">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold">Fee for <%= fee.month %>, <%= fee.year %></span>
-                <span class="text-xs text-gray-500">Method: <%= fee.method %> | Paid <%= new
-                    Date(fee.datePaid).toLocaleDateString() %></span>
+            <div class="flex items-center py-3 gap-2">
+              <div class="flex flex-col flex-1 min-w-0">
+                <span class="text-sm font-semibold truncate">Fee for <%= fee.month %>, <%= fee.year %></span>
+                <span class="text-xs text-gray-500 truncate">Method: <%= fee.method %> | Paid <%= new Date(fee.datePaid).toLocaleDateString() %></span>
               </div>
-              <span class="text-base font-bold text-green-600">₹<%= fee.amount.toLocaleString() %></span>
+              <span class="text-sm font-bold text-green-600 flex-shrink-0">₹<%= fee.amount.toLocaleString() %></span>
             </div>
             <% }) %> <% } else { %>
             <p class="py-3 text-gray-500 text-sm">
@@ -224,26 +260,19 @@
           <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
             Recent Test Results
           </h3>
-          <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto">
+          <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto pr-2">
             <% if (recentScores.length > 0) { %> <%
               recentScores.forEach(score => { %>
-            <div class="flex justify-between items-center py-2">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold text-brand-purple">
-                  <%= score.testName %>
-                </span>
-                <span class="text-xs text-gray-500">
-                  <%= score.subject %> | <%= new
-                    Date(score.createdAt).toLocaleDateString() %>
+            <div class="flex items-center py-2 gap-2">
+              <div class="flex flex-col flex-1 min-w-0">
+                <span class="text-sm font-semibold text-brand-purple truncate"><%= score.testName %></span>
+                <span class="text-xs text-gray-500 truncate">
+                  Test Date: <%= new Date(score.testId?.testDate || score.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
                 </span>
               </div>
-              <div class="flex flex-col items-end">
-                <span class="text-base font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">
-                  <%= score.percentage %>%
-                </span>
-                <span class="text-xs text-gray-500">
-                  Score: <%= score.score %>
-                </span>
+              <div class="flex flex-col items-end flex-shrink-0">
+                <span class="text-sm font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">Score: <%= score.score %>/<%= score.testId?.totalMarks || '?' %></span>
+                <span class="text-xs text-gray-500"><%= score.percentage %>%</span>
               </div>
             </div>
             <% }) %> <% } else { %>
@@ -257,19 +286,22 @@
           </a>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-xl">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+        <div class="glass-profile p-8 rounded-2xl">
+          <h3 class="text-xl font-bold mb-6 text-brand-purple border-b border-purple-100 pb-2">
             Quick Actions
           </h3>
           <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="/student/leader_board" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
-              🏆 Class Leaderboard
+            <a href="/student/leader_board" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
+              <div class="text-3xl mb-3">🏆</div>
+              <span class="font-bold text-sm text-center">Class Leaderboard</span>
             </a>
-            <a href="/student/content" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
-              📚 Class Content
+            <a href="/student/content" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
+              <div class="text-3xl mb-3">📚</div>
+              <span class="font-bold text-sm text-center">Study Materials</span>
             </a>
-            <a href="/student/take_test" class="p-4 text-center rounded-lg border-2 border-brand-purple text-brand-purple font-semibold hover:bg-brand-purple-light transition-colors duration-200">
-              ✍️ Upcoming Tests
+            <a href="/student/take_test" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
+              <div class="text-3xl mb-3">✍️</div>
+              <span class="font-bold text-sm text-center">Class Tests</span>
             </a>
           </div>
         </div>
@@ -329,7 +361,6 @@
                 display: false,
               },
               ticks: {
-                // Only display x-axis labels if there's more than one test
                 display: scoreLabels.length > 1,
               },
             },

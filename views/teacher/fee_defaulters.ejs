@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Fee Defaulters</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    body { font-family: "Inter", sans-serif; }
+    .text-brand-purple { color: #5d3a9b; }
+    .btn-outline-purple {
+      color: #5d3a9b; border: 1px solid #5d3a9b;
+      font-weight: 600; border-radius: 0.5rem; transition: all 0.3s; padding: 0.25rem 0.75rem; font-size: 0.875rem;
+    }
+    .btn-outline-purple:hover { background-color: #bde045; color: #333; border-color: #bde045; }
+
+    .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
+    .data-table thead tr { background: #5d3a9b; color: #fff; }
+    .data-table thead th { padding: 0.75rem 1rem; text-align: left; font-weight: 600; white-space: nowrap; border: 1px solid #4b2d84;}
+    .data-table tbody tr:nth-child(even) { background: #f9f5ff; }
+    .data-table tbody tr:nth-child(odd)  { background: #fff; }
+    .data-table tbody tr:hover td { background: #ede9fe; }
+    .data-table td { padding: 0.65rem 1rem; border: 1px solid #d8b4e2; }
+
+    .unpaid-pill {
+      display: inline-block; padding: 0.15rem 0.5rem;
+      border-radius: 9999px; font-size: 0.65rem; font-weight: 600;
+      background: #fee2e2; color: #991b1b; margin: 1px;
+    }
+    .class-header { background: #5d3a9b; color: #fff; padding: 0.25rem 1rem; border-radius: 9999px; font-weight: bold; }
+    .month-badge {
+      background: #5d3a9b; color: #fff;
+      padding: 0.25rem 0.875rem; border-radius: 9999px;
+      font-size: 0.875rem; font-weight: 700;
+    }
+
+    #print-container { display: none; }
+
+    @media print {
+      body * { visibility: hidden; }
+      #print-container, #print-container * { visibility: visible; }
+      #print-container {
+        display: block; position: absolute;
+        left: 0; top: 0; width: 100%;
+        background: white; padding: 20px; color: black;
+      }
+      * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
+
+      .print-title { font-size: 1.25rem; font-weight: bold; text-align: center; margin-bottom: 20px; text-transform: uppercase; }
+      #print-header-img { display: block; margin: 0 auto 15px auto; max-width: 700px; width: 100%; height: auto; }
+      .print-section-item { page-break-inside: avoid; margin-bottom: 30px; }
+    }
+  </style>
+</head>
+
+<%- include('../partials/background') %>
+
+<body class="text-gray-800">
+
+  <div id="print-container"></div>
+
+  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+    <!-- Header -->
+    <header class="mb-6">
+      <a href="/teacher/manage_fees" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Manage Fees</a>
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <div>
+          <h1 class="text-3xl font-bold text-gray-900">Fee Defaulters</h1>
+          <p class="text-gray-500 mt-1 text-sm">
+            Unpaid fees up to <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %>
+          </p>
+        </div>
+        <form method="GET" action="/teacher/fee_defaulters" class="flex items-center gap-2">
+          <label for="year" class="text-sm font-medium text-gray-600">Academic Year:</label>
+          <select name="year" id="year" onchange="this.form.submit()"
+            class="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200">
+            <% years.forEach(y => { %>
+            <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>><%= y %>–<%= y+1 %></option>
+            <% }) %>
+          </select>
+        </form>
+      </div>
+    </header>
+
+    <% if (defaulters.length === 0) { %>
+      <div class="bg-white rounded-xl shadow p-16 text-center text-gray-400">
+        <p class="text-5xl mb-4">&#127881;</p>
+        <p class="text-xl font-semibold">No defaulters!</p>
+        <p class="text-sm mt-1">All students are up to date for this period.</p>
+      </div>
+    <% } else { %>
+
+    <!-- Tabs/Jump Links -->
+    <div class="flex gap-4 mb-8 border-b border-gray-200 pb-4">
+      <a href="#class-section" class="text-brand-purple font-semibold hover:underline">Class-wise Overview</a>
+      <span class="text-gray-300">|</span>
+      <a href="#month-section" class="text-brand-purple font-semibold hover:underline">Month-wise Breakdown</a>
+    </div>
+
+    <!--  CLASS-WISE SECTION -->
+    <section id="class-section" class="mb-16 printable-section" data-print-title="ALL CLASSES FEE DEFAULTERS">
+      <div class="flex items-center justify-between border-b border-gray-300 pb-2 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Class-wise Defaults</h2>
+        <button type="button" class="btn-outline-purple print-section-btn">&#128438; Print All Classes</button>
+      </div>
+      <%
+        const byClass = {};
+        defaulters.forEach(d => {
+          if (!byClass[d.standard]) byClass[d.standard] = [];
+          byClass[d.standard].push(d);
+        });
+        const sortedClasses = Object.keys(byClass).sort((a, b) => Number(a) - Number(b));
+      %>
+
+      <% sortedClasses.forEach(cls => { %>
+      <div class="mb-10 printable-block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span class="class-header" data-print-title="Class <%= cls %> Fee Defaulters">Class <%= cls %></span>
+            <span class="text-sm text-gray-500 font-medium"><%= byClass[cls].length %> student<%= byClass[cls].length !== 1 ? 's' : '' %></span>
+          </div>
+          <button type="button" class="btn-outline-purple print-btn">&#128438; Print Class <%= cls %></button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl shadow border border-gray-200 print-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Mobile</th>
+                <th>Unpaid <%= selectedYear %>-<%= selectedYear+1 %></th>
+                <th class="text-right">Balance Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% byClass[cls].forEach(d => { %>
+              <tr>
+                <td class="font-mono text-gray-500 text-xs"><%= d.studentId %></td>
+                <td class="font-semibold text-gray-800"><%= d.studentName %></td>
+                <td class="text-gray-600 text-xs"><%= d.mobileNo || '—' %></td>
+                <td>
+                  <% d.unpaidMonths.forEach(m => { %>
+                    <span class="unpaid-pill"><%= m %></span>
+                  <% }) %>
+                </td>
+                <td class="text-right font-extrabold text-red-600">&#8377;<%= d.balance.toLocaleString('en-IN') %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% }) %>
+    </section>
+
+    <!-- MONTH-WISE SECTION -->
+    <section id="month-section" class="mb-12 printable-section" data-print-title="ALL MONTHS FEE DEFAULTERS">
+      <div class="flex items-center justify-between border-b border-gray-300 pb-2 mb-6">
+        <h2 class="text-2xl font-bold text-gray-900">Month-wise Breakdown</h2>
+        <button type="button" class="btn-outline-purple print-section-btn">&#128438; Print All Months</button>
+      </div>
+
+      <% effectiveMonths.forEach(month => {
+           if (!monthData[month]) return;
+           const rows = monthData[month];
+      %>
+      <div class="mb-10 printable-block">
+        <div class="flex items-center justify-between mb-3">
+          <div class="flex items-center gap-3">
+            <span class="month-badge" data-print-title="Month: <%= month %> <%= selectedYear %>-<%= selectedYear+1 %> Defaulters"><%= month %></span>
+            <span class="text-sm text-gray-500 font-medium"><%= rows.length %> student<%= rows.length !== 1 ? 's' : '' %> unpaid</span>
+          </div>
+          <button type="button" class="btn-outline-purple print-btn">&#128438; Print <%= month %></button>
+        </div>
+
+        <div class="overflow-x-auto rounded-xl shadow border border-gray-200 print-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Class</th>
+                <th>ID</th>
+                <th>Student Name</th>
+                <th class="text-right">Amount Due</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% rows.forEach(r => { %>
+              <tr>
+                <td class="font-semibold text-purple-700 text-center"><%= r.standard %></td>
+                <td class="font-mono text-gray-500 text-xs"><%= r.studentId %></td>
+                <td class="font-semibold text-gray-800"><%= r.studentName %></td>
+                <td class="text-right font-bold text-red-600">&#8377;<%= r.balance.toLocaleString('en-IN') %></td>
+              </tr>
+              <% }) %>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      <% }) %>
+    </section>
+
+    <% } %>
+  </div>
+
+  <script>
+    const headerUrl = "<%= headerUrl %>";
+
+    function triggerPrint(titleText, contentHtml) {
+      const printContainer = document.getElementById('print-container');
+      const imgHtml = headerUrl ? `<img src="${headerUrl}" id="print-header-img" alt="Institution Header" />` : '';
+
+      printContainer.innerHTML = `
+        <div style="text-align: center; margin-bottom: 20px;">
+          ${imgHtml}
+          <p style="font-size: 14px; color: #333; font-weight: bold; margin: 10px 0;">Official Fee Defaulters Report</p>
+          <hr style="border: 1px solid #ccc;" />
+        </div>
+        <div class="print-title">${titleText}</div>
+        <div style="margin-bottom: 10px; font-size: 12px; color: #555; text-align: right;">Generated on: ${new Date().toLocaleString()}</div>
+        ${contentHtml}
+      `;
+
+      setTimeout(() => { window.print(); }, 200);
+    }
+
+    // Single Table Print Button
+    document.querySelectorAll('.print-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const block = this.closest('.printable-block');
+        const titleEl = block.querySelector('[data-print-title]');
+        const titleText = titleEl ? titleEl.getAttribute('data-print-title') : 'FEE DEFAULTERS';
+        const tableHtml = block.querySelector('.print-table-wrapper').innerHTML;
+        triggerPrint(titleText, tableHtml);
+      });
+    });
+
+    // Entire Section Print Button
+    document.querySelectorAll('.print-section-btn').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const section = this.closest('.printable-section');
+        const sectionTitle = section.getAttribute('data-print-title') || 'SECTION REPORT';
+        
+        let combinedHtml = '';
+        section.querySelectorAll('.printable-block').forEach(block => {
+          const innerTitleEl = block.querySelector('[data-print-title]');
+          const innerTitle = innerTitleEl ? innerTitleEl.textContent.trim() : '';
+          const tableHtml = block.querySelector('.print-table-wrapper').innerHTML;
+          
+          combinedHtml += `
+            <div class="print-section-item">
+              <h3 style="font-size: 16px; margin-bottom: 8px; color: #5d3a9b;">${innerTitle}</h3>
+              ${tableHtml}
+            </div>
+          `;
+        });
+        
+        triggerPrint(sectionTitle, combinedHtml);
+      });
+    });
+  </script>
+</body>
+</html>

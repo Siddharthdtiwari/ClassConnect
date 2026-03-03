@@ -4,6 +4,7 @@ const path = require("path");
 const bcrypt = require("bcrypt");
 const multer = require("multer");
 const session = require("express-session");
+const MongoStore = require("connect-mongo");
 const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const Razorpay = require("razorpay");
@@ -31,7 +32,8 @@ app.use(
     secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 1000 * 60 * 60 },
+    store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
+    cookie: { maxAge: 1000 * 60 * 60, httpOnly: true, sameSite: "strict" },
   })
 );
 
@@ -41,7 +43,32 @@ const razorpay = new Razorpay({
 });
 
 const storage = multer.memoryStorage();
-const upload = multer({ storage });
+
+const ALLOWED_MIME_TYPES = [
+  "image/jpeg",
+  "image/png",
+  "image/webp",
+  "application/pdf",
+  "application/msword",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (ALLOWED_MIME_TYPES.includes(file.mimetype)) {
+      cb(null, true);
+    } else {
+      cb(
+        new Error(
+          `Invalid file type "${file.mimetype}". Only JPEG, PNG, WebP, and PDF are allowed.`
+        ),
+        false
+      );
+    }
+  },
+});
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -95,12 +122,14 @@ const ensureDBConnection = async (req, res, next) => {
 };
 
 const requireTeacherLogin = (req, res, next) => {
-  if (!req.session.userId) return res.redirect("/teacher/login");
+  if (!req.session.userId || req.session.role !== "teacher")
+    return res.redirect("/teacher/login");
   next();
 };
 
 const requireStudentLogin = async (req, res, next) => {
-  if (!req.session.userId) return res.redirect("/student/login");
+  if (!req.session.userId || req.session.role !== "student")
+    return res.redirect("/student/login");
 
   try {
     const student = await User.findById(req.session.userId).lean();
@@ -114,7 +143,6 @@ const requireStudentLogin = async (req, res, next) => {
   }
 };
 
-// -------- Home --------
 app.get("/", (req, res) => res.render("index"));
 
 // =====================
@@ -131,6 +159,7 @@ app.post("/student/login", ensureDBConnection, async (req, res) => {
     const validPassword = await bcrypt.compare(password, student.password);
     if (validPassword) {
       req.session.userId = student._id;
+      req.session.role = "student";
       res.redirect("/student/dashboard");
     } else {
       res.render("student/login", { error: "Invalid ID or password" });
@@ -150,17 +179,18 @@ app.get(
       const student = await User.findById(req.session.userId).lean();
       if (!student) return res.redirect("/student/login");
 
-      
+
       const studentId = student.studentId;
 
       const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
         .sort({ datePaid: -1 })
-        .limit(6) 
+        .limit(6)
         .lean();
 
       const recentScores = await Score.find({ studentId: studentId })
         .sort({ createdAt: -1 })
         .limit(5)
+        .populate('testId', 'testDate totalMarks subject')
         .lean();
 
       const allAttendanceRecords = await Attendance.find({
@@ -183,10 +213,20 @@ app.get(
       });
 
       const attendancePercentage =
-        totalDays > 0 ? ((presentDays / (presentDays+absentDays)) * 100).toFixed(1) : 0;
+        (presentDays + absentDays) > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
 
       const scoreLabels = recentScores.map((score) => score.testName).reverse();
       const scoreData = recentScores.map((score) => score.percentage).reverse();
+
+      const allStudents = await User.find({})
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
+      }
 
       res.render("student/dashboard", {
         student,
@@ -198,6 +238,7 @@ app.get(
         totalDays,
         scoreLabels,
         scoreData,
+        studentRank,
       });
 
     } catch (err) {
@@ -278,7 +319,6 @@ app.get(
           else if (studentRecord.status === "A") status = "absent";
           else if (studentRecord.status === "H") status = "holiday";
 
-          // ✅ Format the `date` (stored as string) into YYYY-MM-DD
           const dateObj = new Date(doc.date);
           const year = dateObj.getFullYear();
           const month = String(dateObj.getMonth() + 1).padStart(2, "0");
@@ -480,6 +520,20 @@ app.post(
       console.log("Payment is legitimate and verified.");
 
       try {
+        const alreadyProcessed = await Fee.findOne({
+          razorpay_payment_id: razorpay_payment_id,
+        });
+        if (alreadyProcessed) {
+          console.log(
+            `Payment ${razorpay_payment_id} already recorded — skipping duplicate.`
+          );
+          return res.json({
+            status: "success",
+            orderId: razorpay_order_id,
+            paymentId: razorpay_payment_id,
+          });
+        }
+
         const student = await User.findById(req.session.userId);
         if (!student) {
           throw new Error("Student not found for session.");
@@ -523,41 +577,41 @@ app.post(
           studentId: student.studentId,
         }).lean();
         const paidMonths = paidFees.map((f) => f.month);
+        const monthlyFee = student.monthlyFee || 1;
+        const amountPaid = parseInt(amount);
+        const monthsCount = Math.max(1, Math.floor(amountPaid / monthlyFee));
 
-        let dueMonth = null;
-        for (let i = 0; i < monthsElapsed; i++) {
+        const dueMonths = [];
+        for (let i = 0; i < monthsElapsed && dueMonths.length < monthsCount; i++) {
           const monthToCheck = months[i];
           if (!paidMonths.includes(monthToCheck)) {
-            dueMonth = monthToCheck;
-            break;
+            dueMonths.push(monthToCheck);
           }
         }
 
-        if (!dueMonth) {
-          console.log(
-            "No due month found, but payment was made. This could be an advance payment or an error."
-          );
-          dueMonth = months[calendarToAcademic[now.getMonth()]];
+        if (dueMonths.length === 0) {
+          dueMonths.push(months[calendarToAcademic[now.getMonth()]]);
         }
 
         const year = now.getFullYear();
+        const perMonthAmount = Math.floor(amountPaid / dueMonths.length);
 
-        const newFee = new Fee({
-          studentId: student.studentId,
-          studentName: student.studentName,
-          standard: student.standard,
-          month: dueMonth,
-          year: year,
-          amount: amount,
-          method: "Online",
-          status: "Paid",
-          datePaid: new Date(),
-          razorpayPaymentId: razorpay_payment_id,
-        });
-        await newFee.save();
-        console.log(
-          `Fee record created for ${dueMonth} for payment ID: ${razorpay_payment_id}`
-        );
+        for (const dueMonth of dueMonths) {
+          const newFee = new Fee({
+            studentId: student.studentId,
+            studentName: student.studentName,
+            standard: student.standard,
+            month: dueMonth,
+            year: year,
+            amount: perMonthAmount,
+            method: "Razorpay",
+            status: "Paid",
+            datePaid: new Date(),
+            razorpay_payment_id: razorpay_payment_id,
+          });
+          await newFee.save();
+          console.log(`Fee record created for ${dueMonth} — payment ID: ${razorpay_payment_id}`);
+        }
       } catch (dbError) {
         console.error(
           "Error saving fee to DB after payment verification:",
@@ -602,6 +656,125 @@ app.get(
 const PDFDocument = require("pdfkit");
 const axios = require("axios");
 
+async function generateReceiptPDF(fee, student, res, disposition) {
+  const doc = new PDFDocument({ size: "A4", margin: 0 });
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `${disposition}; filename=receipt-${fee._id}.pdf`
+  );
+  doc.pipe(res);
+
+  const W = doc.page.width;
+  const M = 50;
+
+  let headerHeight = 0;
+  const headerUrl = process.env.CLOUDINARY_HEADER_URL;
+
+  if (headerUrl) {
+    try {
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const imgBuffer = Buffer.from(response.data, "binary");
+      doc.rect(0, 0, W, 105).stroke("#d1d5db");
+      doc.image(imgBuffer, 0, 0, { width: W, fit: [W, 105] });
+      headerHeight = 105;
+    } catch (_) {
+      doc.rect(0, 0, W, 110).fill("#4b2d84");
+      headerHeight = 110;
+    }
+  } else {
+    doc.rect(0, 0, W, 110).fill("#4b2d84");
+    doc.fillColor("white").font("Helvetica-Bold").fontSize(22)
+      .text("PAYMENT RECEIPT", M, 36, { width: W - M * 2, align: "center" });
+    doc.fillColor("rgba(255,255,255,0.7)").font("Helvetica").fontSize(10)
+      .text("TUITION HUB EDUCATION CENTRE", M, 66, { width: W - M * 2, align: "center" });
+    headerHeight = 110;
+  }
+
+  doc.rect(0, headerHeight, W, 4).fill("#4b2d84");
+
+  const titleY = headerHeight + 14;
+  doc.fillColor("#4b2d84").font("Helvetica-Bold").fontSize(18)
+    .text("PAYMENT RECEIPT", M, titleY, { width: W - M * 2, align: "center" });
+
+  const titleUnderlineY = titleY + 28;
+  doc.rect(W / 2 - 80, titleUnderlineY, 160, 2).fill("#7c52ca");
+
+
+  const metaY = titleUnderlineY + 12;
+  doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
+    .text(`Receipt ID: ${fee._id}`, M, metaY, { align: "right", width: W - M * 2 });
+  doc.fillColor("#6b7280").fontSize(9)
+    .text(`Generated: ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}`, M, metaY + 14, { align: "right", width: W - M * 2 });
+
+  const stuY = metaY + 42;
+  doc.rect(M, stuY, W - M * 2, 80).fill("#f5f3ff").stroke("#e9d5ff");
+
+  doc.fillColor("#4b2d84").font("Helvetica-Bold").fontSize(11)
+    .text("BILLED TO", M + 16, stuY + 12);
+
+  doc.fillColor("#1f2937").font("Helvetica-Bold").fontSize(13)
+    .text(student.studentName, M + 16, stuY + 28);
+
+  doc.fillColor("#6b7280").font("Helvetica").fontSize(10)
+    .text(`Student ID: ${student.studentId}   •   Class: ${student.standard}`, M + 16, stuY + 48);
+
+  const tableY = stuY + 100;
+  const col1 = M;
+  const col2 = M + 260;
+  const rowH = 36;
+
+  const rows = [
+    ["Month", `${fee.month} ${fee.year}`],
+    ["Amount Paid", `Rs. ${Number(fee.amount).toLocaleString("en-IN")}`],
+    ["Date Paid", new Date(fee.datePaid).toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })],
+    ["Payment Method", fee.method],
+    ["Status", fee.status],
+  ];
+
+  doc.rect(col1, tableY, W - M * 2, rowH).fill("#4b2d84");
+  doc.fillColor("white").font("Helvetica-Bold").fontSize(10)
+    .text("DESCRIPTION", col1 + 14, tableY + 11)
+    .text("DETAILS", col2, tableY + 11);
+
+  rows.forEach((row, i) => {
+    const y = tableY + rowH + i * rowH;
+    const bg = i % 2 === 0 ? "#ffffff" : "#faf5ff";
+    doc.rect(col1, y, W - M * 2, rowH).fill(bg).stroke("#e5e7eb");
+
+    doc.fillColor("#374151").font("Helvetica").fontSize(10)
+      .text(row[0], col1 + 14, y + 11);
+
+    const isStatus = row[0] === "Status";
+    if (isStatus) {
+      doc.rect(col2, y + 7, 52, 18).fill("#d1fae5").stroke("#6ee7b7");
+      doc.fillColor("#065f46").font("Helvetica-Bold").fontSize(10)
+        .text(row[1], col2 + 6, y + 11);
+    } else {
+      doc.fillColor("#111827").font("Helvetica-Bold").fontSize(10)
+        .text(row[1], col2, y + 11);
+    }
+  });
+
+  const totalY = tableY + rowH + rows.length * rowH;
+  doc.rect(col1, totalY, W - M * 2, rowH + 4).fill("#4b2d84");
+  doc.fillColor("white").font("Helvetica-Bold").fontSize(11)
+    .text("TOTAL PAID", col1 + 14, totalY + 12)
+    .text(`Rs. ${Number(fee.amount).toLocaleString("en-IN")}`, col2, totalY + 12);
+
+  const footerY = totalY + rowH + 20;
+  doc.rect(0, footerY + 40, W, 2).fill("#e9d5ff");
+
+  doc.fillColor("#9ca3af").font("Helvetica-Oblique").fontSize(9)
+    .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 50, { align: "center", width: W - M * 2 });
+
+  doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
+    .text("TUITION HUB Education Centre  •  Andheri (East), Mumbai 400059  •  9967466955", M, footerY + 66, { align: "center", width: W - M * 2 });
+
+  doc.end();
+}
+
 app.get(
   "/student/receipt/:feeId",
   ensureDBConnection,
@@ -610,90 +783,32 @@ app.get(
     try {
       const fee = await Fee.findById(req.params.feeId).lean();
       if (!fee) return res.send("Receipt not found");
-
       const student = await User.findOne({ studentId: fee.studentId }).lean();
-
-      const doc = new PDFDocument({ size: "A4", margin: 50 });
-
-      res.setHeader("Content-Type", "application/pdf");
-      res.setHeader(
-        "Content-Disposition",
-        `attachment; filename=receipt-${fee._id}.pdf`
-      );
-      doc.pipe(res);
-
-      const headerUrl = process.env.CLOUDINARY_HEADER_URL;
-      if (headerUrl) {
-        const response = await axios.get(headerUrl, {
-          responseType: "arraybuffer",
-        });
-        const imgBuffer = Buffer.from(response.data, "binary");
-        doc.image(imgBuffer, (doc.page.width - 400) / 2, 30, {
-          fit: [400, 80],
-        });
-      }
-
-      doc.moveDown(5);
-
-      doc
-        .fontSize(20)
-        .font("Helvetica-Bold")
-        .text("PAYMENT RECEIPT", { align: "center", underline: true });
-      doc.moveDown(2);
-
-      doc.fontSize(12);
-
-      doc.font("Helvetica").text("Student Name: ", { continued: true });
-      doc.font("Helvetica-Bold").text(student.studentName);
-
-      doc.font("Helvetica").text("Student ID: ", { continued: true });
-      doc.font("Helvetica-Bold").text(student.studentId);
-
-      doc.font("Helvetica").text("Class: ", { continued: true });
-      doc.font("Helvetica-Bold").text(student.standard);
-
-      doc.moveDown(2);
-
-      doc
-        .font("Helvetica-Bold")
-        .fontSize(14)
-        .text("Payment Details", { underline: true });
-      doc.moveDown(1);
-
-      const labelX = 60;
-      const valueX = 220;
-      let lineY = doc.y;
-
-      function addDetail(label, value) {
-        doc.font("Helvetica").fontSize(12).text(label, labelX, lineY);
-        doc.font("Helvetica-Bold").text(value, valueX, lineY);
-        lineY += 20;
-      }
-
-      addDetail("Month", `${fee.month} ${fee.year}`);
-      addDetail("Amount Paid", `${fee.amount}rs`);
-      addDetail("Date Paid", new Date(fee.datePaid).toDateString());
-      addDetail("Payment Method", fee.method);
-      addDetail("Status", fee.status);
-
-      doc.moveDown(4);
-
-      doc
-        .font("Helvetica-Oblique")
-        .fontSize(10)
-        .fillColor("gray")
-        .text(
-          "This is a computer-generated receipt and does not require a signature.",
-          { align: "center" }
-        );
-
-      doc.end();
+      await generateReceiptPDF(fee, student, res, "attachment");
     } catch (err) {
       console.error(err);
       res.send("Error generating receipt");
     }
   }
 );
+
+app.get(
+  "/student/receipt/:feeId/view",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const fee = await Fee.findById(req.params.feeId).lean();
+      if (!fee) return res.send("Receipt not found");
+      const student = await User.findOne({ studentId: fee.studentId }).lean();
+      await generateReceiptPDF(fee, student, res, "inline");
+    } catch (err) {
+      console.error(err);
+      res.send("Error generating receipt");
+    }
+  }
+);
+
 
 app.get(
   "/student/content",
@@ -790,6 +905,7 @@ app.post("/teacher/login", ensureDBConnection, async (req, res) => {
     const validPassword = await bcrypt.compare(password, teacher.password);
     if (validPassword) {
       req.session.userId = teacher._id;
+      req.session.role = "teacher";
       return res.redirect("/teacher/dashboard");
     } else {
       return res.render("teacher/login", { error: "Invalid ID or password" });
@@ -805,9 +921,14 @@ app.get(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const teacher = await Teacher.findById(req.session.userId);
-    if (!teacher) return res.redirect("/teacher/login");
-    res.render("teacher/dashboard", { teacher });
+    try {
+      const teacher = await Teacher.findById(req.session.userId);
+      if (!teacher) return res.redirect("/teacher/login");
+      res.render("teacher/dashboard", { teacher });
+    } catch (err) {
+      console.error("Teacher dashboard error:", err);
+      res.status(500).send("Error loading dashboard");
+    }
   }
 );
 
@@ -890,6 +1011,89 @@ app.get(
 );
 
 app.get(
+  "/teacher/bulk_add_students",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    const studentsRaw = await User.find({}).lean();
+    const students = studentsRaw.sort((a, b) => {
+      const stdDiff = Number(a.standard) - Number(b.standard);
+      if (stdDiff !== 0) return stdDiff;
+      return String(a.studentId).localeCompare(String(b.studentId), undefined, { numeric: true });
+    });
+    res.render("teacher/bulk_add_students", { students });
+  }
+);
+
+app.post(
+  "/teacher/bulk_save_students",
+  ensureDBConnection,
+  requireTeacherLogin,
+  express.json(),
+  async (req, res) => {
+    try {
+      const studentsData = req.body;
+      if (!Array.isArray(studentsData) || studentsData.length === 0) {
+        return res.status(400).json({ error: "Invalid or empty data provided." });
+      }
+
+      const bulkOps = [];
+      const errors = [];
+      let processed = 0;
+
+      for (let i = 0; i < studentsData.length; i++) {
+        const row = studentsData[i];
+
+        if (!row.studentName || !row.studentId || !row.standard || !row.mobileNo) {
+          errors.push(`Row ${i + 1}: Missing required fields (Name, ID, Standard, or Mobile).`);
+          continue;
+        }
+
+        const updateDoc = {
+          studentName: row.studentName,
+          studentId: row.studentId,
+          standard: row.standard,
+          mobileNo: row.mobileNo,
+          monthlyFee: row.monthlyFee || 0,
+        };
+
+        if (row.password && String(row.password).trim() !== "") {
+          updateDoc.password = await bcrypt.hash(String(row.password).trim(), 12);
+        } else {
+          const existing = await User.findOne({ studentId: row.studentId });
+          if (!existing) {
+            updateDoc.password = await bcrypt.hash(String(row.mobileNo).trim(), 12);
+          }
+        }
+
+        bulkOps.push({
+          updateOne: {
+            filter: { studentId: row.studentId },
+            update: { $set: updateDoc },
+            upsert: true
+          }
+        });
+        processed++;
+      }
+
+      if (bulkOps.length > 0) {
+        await User.bulkWrite(bulkOps);
+      }
+
+      res.json({
+        success: true,
+        inserted: processed,
+        errors: errors,
+      });
+
+    } catch (err) {
+      console.error("Bulk Add Students Error:", err);
+      res.status(500).json({ error: "Server error during bulk save." });
+    }
+  }
+);
+
+app.get(
   "/teacher/add_student",
   ensureDBConnection,
   requireTeacherLogin,
@@ -945,57 +1149,67 @@ app.get(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const student = await User.findById(req.params.id).lean();
-    if (!student) return res.status(404).send("Student not found");
+    try {
+      const student = await User.findById(req.params.id).lean();
+      if (!student) return res.status(404).send("Student not found");
 
-    const studentId = student.studentId;
+      const studentId = student.studentId;
 
-    const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
-      .sort({ datePaid: -1 })
-      .limit(6)
-      .lean();
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
+        .sort({ datePaid: -1 })
+        .lean();
 
-    const recentScores = await Score.find({ studentId: studentId })
-      .sort({ createdAt: -1 })
-      .limit(5)
-      .lean();
+      const recentScores = await Score.find({ studentId: studentId })
+        .sort({ createdAt: -1 })
+        .lean();
 
-    const allAttendanceRecords = await Attendance.find({
-      "records.studentId": studentId,
-    }).lean();
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+      }).lean();
 
-    let presentDays = 0;
-    let absentDays = 0;
-    let totalDays = 0;
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
 
-    allAttendanceRecords.forEach((dayRecord) => {
-      totalDays++;
-      const record = dayRecord.records.find((r) => r.studentId === studentId);
-      if (record && record.status === "P") {
-        presentDays++;
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") presentDays++;
+        if (record && record.status === "A") absentDays++;
+      });
+
+      const attendancePercentage =
+        totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+      const scoreLabels = recentScores.slice(0, 10).map((score) => score.testName).reverse();
+      const scoreData = recentScores.slice(0, 10).map((score) => score.percentage).reverse();
+
+      const allStudents = await User.find({})
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
       }
-      if (record && record.status === "A") {
-        absentDays++;
-      }
-    });
 
-    const attendancePercentage =
-      totalDays > 0 ? ((presentDays / (presentDays+absentDays)) * 100).toFixed(1) : 0;
-
-    const scoreLabels = recentScores.map((score) => score.testName).reverse();
-    const scoreData = recentScores.map((score) => score.percentage).reverse();
-
-    res.render("teacher/view_profile", {
-      student,
-      recentFees,
-      recentScores,
-      attendancePercentage,
-      presentDays,
-      absentDays,
-      totalDays,
-      scoreLabels,
-      scoreData,
-    });
+      res.render("teacher/view_profile", {
+        student,
+        recentFees,
+        recentScores,
+        attendancePercentage,
+        presentDays,
+        absentDays,
+        totalDays,
+        scoreLabels,
+        scoreData,
+        studentRank,
+      });
+    } catch (err) {
+      console.error("Error loading student profile:", err);
+      res.status(500).send("Error loading student profile");
+    }
   }
 );
 
@@ -1065,12 +1279,17 @@ app.post(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const { date, records } = req.body;
-    let attendance = await Attendance.findOne({ date });
-    if (attendance) attendance.records = records;
-    else attendance = new Attendance({ date, records });
-    await attendance.save();
-    res.json({ success: true, message: "Attendance saved successfully!" });
+    try {
+      const { date, records } = req.body;
+      let attendance = await Attendance.findOne({ date });
+      if (attendance) attendance.records = records;
+      else attendance = new Attendance({ date, records });
+      await attendance.save();
+      res.json({ success: true, message: "Attendance saved successfully!" });
+    } catch (err) {
+      console.error("Error saving attendance:", err);
+      res.status(500).json({ success: false, message: "Failed to save attendance." });
+    }
   }
 );
 
@@ -1098,6 +1317,7 @@ app.get(
         stats[s.studentId] = {
           studentId: s.studentId,
           studentName: s.studentName,
+          standard: s.standard,
           mobileNo: s.mobileNo,
           present: 0,
           absent: 0,
@@ -1118,12 +1338,15 @@ app.get(
 
       const defaulters = Object.values(stats)
         .map((s) => {
-          s.percentage = s.total > 0 ? (s.present /( s.present + s.absent)) * 100 : 0;
+          s.percentage = s.total > 0 ? (s.present / (s.present + s.absent)) * 100 : 0;
           return s;
         })
-        .filter((s) => s.percentage < 75);
+        .filter((s) => s.percentage < 75)
+        .sort((a, b) => Number(a.percentage) - Number(b.percentage));
 
-      res.render("teacher/defaulters", { year, month, defaulters });
+      const headerUrl = process.env.CLOUDINARY_HEADER_URL || "";
+
+      res.render("teacher/defaulters", { year, month, defaulters, headerUrl });
     } catch (err) {
       console.error(err);
       res.status(500).send("Error generating defaulter list");
@@ -1134,33 +1357,34 @@ app.get(
 app.get(
   "/teacher/detailed_attendance",
   ensureDBConnection,
+  requireTeacherLogin,
   async (req, res) => {
     try {
-    const students = await User.find().lean();
+      const students = await User.find().lean();
       const attendanceRecords = await Attendance.find().lean();
 
       const detailedReport = {};
-      const allAttendanceDates = new Set(); 
+      const allAttendanceDates = new Set();
 
       students.forEach(student => {
         detailedReport[student.studentId] = {
           studentId: student.studentId,
           studentName: student.studentName,
-          records: {}, 
+          records: {},
           presentCount: 0,
-          totalRecordedDays: 0, 
+          totalRecordedDays: 0,
         };
       });
 
       attendanceRecords.forEach(record => {
         const dateKey = record.date;
-        allAttendanceDates.add(dateKey); 
+        allAttendanceDates.add(dateKey);
 
         (record.records || []).forEach(r => {
           if (detailedReport[r.studentId]) {
             const studentData = detailedReport[r.studentId];
             studentData.records[dateKey] = r.status;
-            
+
             if (r.status === 'P') {
               studentData.presentCount++;
               studentData.totalRecordedDays++;
@@ -1172,10 +1396,10 @@ app.get(
       });
 
       const sortedDates = Array.from(allAttendanceDates).sort();
-      
+
       const reportArray = Object.values(detailedReport);
 
-      res.render("teacher/detailed_attendance", { 
+      res.render("teacher/detailed_attendance", {
         report: reportArray,
         allDates: sortedDates,
       });
@@ -1198,10 +1422,10 @@ app.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, asy
     const totalDays = new Date(selectedYear, selectedMonth, 0).getDate();
     const daysArray = [];
     const monthStr = String(selectedMonth).padStart(2, '0');
-    
+
     for (let d = 1; d <= totalDays; d++) {
-        const dayStr = String(d).padStart(2, '0');
-        daysArray.push(`${selectedYear}-${monthStr}-${dayStr}`);
+      const dayStr = String(d).padStart(2, '0');
+      daysArray.push(`${selectedYear}-${monthStr}-${dayStr}`);
     }
 
     const regex = new RegExp(`^${selectedYear}-${monthStr}-`);
@@ -1209,10 +1433,10 @@ app.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, asy
 
     const attendanceMap = {};
     attendanceRecords.forEach(doc => {
-        attendanceMap[doc.date] = {};
-        doc.records.forEach(r => {
-            attendanceMap[doc.date][r.studentId] = r.status;
-        });
+      attendanceMap[doc.date] = {};
+      doc.records.forEach(r => {
+        attendanceMap[doc.date][r.studentId] = r.status;
+      });
     });
 
     const currentYear = new Date().getFullYear();
@@ -1234,38 +1458,38 @@ app.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, asy
 });
 
 app.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherLogin, async (req, res) => {
-    try {
-        const { attendanceData } = req.body; 
+  try {
+    const { attendanceData } = req.body;
 
-        const operations = [];
+    const operations = [];
 
-        for (const [dateStr, records] of Object.entries(attendanceData)) {
-            if (records.length > 0) {
-                operations.push({
-                    updateOne: {
-                        filter: { date: dateStr },
-                        update: { 
-                            $set: { 
-                                date: dateStr,    
-                                records: records  
-                            } 
-                        },
-                        upsert: true
-                    }
-                });
-            }
-        }
-
-        if (operations.length > 0) {
-            await Attendance.bulkWrite(operations);
-        }
-
-        res.json({ success: true, message: "Attendance saved successfully!" });
-
-    } catch (err) {
-        console.error("Save Error:", err);
-        res.json({ success: false, message: "Failed to save data." });
+    for (const [dateStr, records] of Object.entries(attendanceData)) {
+      if (records.length > 0) {
+        operations.push({
+          updateOne: {
+            filter: { date: dateStr },
+            update: {
+              $set: {
+                date: dateStr,
+                records: records
+              }
+            },
+            upsert: true
+          }
+        });
+      }
     }
+
+    if (operations.length > 0) {
+      await Attendance.bulkWrite(operations);
+    }
+
+    res.json({ success: true, message: "Attendance saved successfully!" });
+
+  } catch (err) {
+    console.error("Save Error:", err);
+    res.json({ success: false, message: "Failed to save data." });
+  }
 });
 
 app.get(
@@ -1279,7 +1503,7 @@ app.post(
   "/teacher/add_test",
   ensureDBConnection,
   requireTeacherLogin,
-  upload.single("questionPaperFile"), 
+  upload.single("questionPaperFile"),
   async (req, res) => {
     try {
       const {
@@ -1288,7 +1512,8 @@ app.post(
         subject,
         topic,
         totalMarks,
-        questionPaperLink, 
+        testDate,
+        questionPaperLink,
       } = req.body;
 
       let questionPaperUrl = null;
@@ -1296,7 +1521,7 @@ app.post(
       if (req.file) {
         const result = await uploadToCloudinary(req.file.buffer, "tests");
         questionPaperUrl = result.secure_url;
-      } 
+      }
       else if (questionPaperLink) {
         questionPaperUrl = questionPaperLink;
       }
@@ -1311,11 +1536,12 @@ app.post(
         subject,
         topic,
         totalMarks,
+        testDate: testDate ? new Date(testDate) : null,
         questionPaper: questionPaperUrl,
       });
 
       await newTest.save();
-      res.json({ success: true, message: "✅ Test created successfully!" }); 
+      res.json({ success: true, message: "✅ Test created successfully!" });
     } catch (err) {
       console.error(err);
       res.status(500).json({ success: false, message: "❌ Failed to add test" });
@@ -1339,6 +1565,38 @@ app.post(
   async (req, res) => {
     await Test.findByIdAndDelete(req.params.id);
     res.redirect("/teacher/manage_tests");
+  }
+);
+
+app.post(
+  "/teacher/edit_test/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  upload.single("questionPaperFile"),
+  async (req, res) => {
+    try {
+      const { testName, subject, topic, totalMarks, testDate, questionPaperLink } = req.body;
+      const updateData = {
+        testName,
+        subject,
+        topic,
+        totalMarks: Number(totalMarks),
+        testDate: testDate ? new Date(testDate) : null,
+      };
+
+      if (req.file) {
+        const result = await uploadToCloudinary(req.file.buffer, "tests");
+        updateData.questionPaper = result.secure_url;
+      } else if (questionPaperLink && questionPaperLink.trim() !== '') {
+        updateData.questionPaper = questionPaperLink.trim();
+      }
+
+      await Test.findByIdAndUpdate(req.params.id, updateData);
+      res.redirect("/teacher/manage_tests");
+    } catch (err) {
+      console.error("Error updating test:", err);
+      res.redirect("/teacher/manage_tests?error=edit_failed");
+    }
   }
 );
 
@@ -1397,7 +1655,12 @@ app.get(
   requireTeacherLogin,
   async (req, res) => {
     try {
-      const students = await User.find({}, "studentId studentName standard").lean();
+      const studentsRaw = await User.find({}, "studentId studentName standard").lean();
+      const students = studentsRaw.sort((a, b) => {
+        const stdDiff = Number(a.standard) - Number(b.standard);
+        if (stdDiff !== 0) return stdDiff;
+        return String(a.studentId).localeCompare(String(b.studentId), undefined, { numeric: true });
+      });
       const fees = await Fee.find().lean();
 
       const months = [
@@ -1411,13 +1674,13 @@ app.get(
         const feeMap = {};
         months.forEach((month) => {
           const feeRecord = studentFees.find((f) => f.month === month);
-          
+
           if (feeRecord && feeRecord.datePaid) {
             const d = new Date(feeRecord.datePaid);
             const day = String(d.getDate()).padStart(2, '0');
             const monthNum = String(d.getMonth() + 1).padStart(2, '0');
             const year = d.getFullYear();
-            
+
             feeMap[month] = `${day}-${monthNum}-${year}`;
           } else {
             feeMap[month] = null;
@@ -1489,7 +1752,7 @@ app.get(
           studentName: student.studentName,
           studentId: student.studentId,
           standard: student.standard,
-          records: records, 
+          records: records,
           totalPaid: totalPaid,
           totalDue: totalDue,
           balance: balance,
@@ -1505,12 +1768,120 @@ app.get(
 );
 
 app.get(
+  "/teacher/fee_defaulters",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const today = new Date();
+      const currentCalYear = today.getFullYear();
+      const currentMonthNum = today.getMonth() + 1; // 1-12
+
+      const currentYear = currentCalYear;
+      const selectedYear = parseInt(req.query.year) || currentYear;
+
+      const allMonths = [
+        "May", "June", "July", "August", "September", "October",
+        "November", "December", "January", "February", "March", "April",
+      ];
+
+      const monthNum = {
+        May: 5, June: 6, July: 7, August: 8, September: 9, October: 10,
+        November: 11, December: 12, January: 1, February: 2, March: 3, April: 4,
+      };
+
+      const effectiveMonths = allMonths.filter((m) => {
+        const calYear = monthNum[m] >= 5 ? selectedYear : selectedYear + 1;
+        if (calYear < currentCalYear) return true;
+        if (calYear === currentCalYear && monthNum[m] <= currentMonthNum) return true;
+        return false;
+      });
+
+      const studentsRaw = await User.find(
+        {},
+        "studentId studentName standard mobileNo monthlyFee"
+      ).lean();
+
+      const students = studentsRaw.sort((a, b) => {
+        const stdDiff = Number(a.standard) - Number(b.standard);
+        if (stdDiff !== 0) return stdDiff;
+        return String(a.studentId).localeCompare(String(b.studentId), undefined, { numeric: true });
+      });
+
+      const allFees = await Fee.find({
+        $or: [
+          { year: selectedYear, month: { $in: ["May", "June", "July", "August", "September", "October", "November", "December"] } },
+          { year: selectedYear + 1, month: { $in: ["January", "February", "March", "April"] } },
+        ],
+        status: "Paid",
+      }).lean();
+
+      const feeMap = {};
+      allFees.forEach((f) => { feeMap[`${f.studentId}-${f.month}`] = f; });
+
+      const defaulters = [];
+      students.forEach((s) => {
+        const monthlyFee = s.monthlyFee || 0;
+        const unpaidMonths = [];
+        let totalPaid = 0;
+
+        effectiveMonths.forEach((month) => {
+          const key = `${s.studentId}-${month}`;
+          if (feeMap[key]) { totalPaid += feeMap[key].amount; }
+          else { unpaidMonths.push(month); }
+        });
+
+        const totalDue = monthlyFee * effectiveMonths.length;
+        const balance = totalDue - totalPaid;
+
+        if (unpaidMonths.length > 0) {
+          defaulters.push({
+            studentId: s.studentId, studentName: s.studentName,
+            standard: s.standard, mobileNo: s.mobileNo,
+            monthlyFee, totalPaid, totalDue, balance,
+            unpaidMonths, unpaidCount: unpaidMonths.length,
+          });
+        }
+      });
+
+      defaulters.sort((a, b) => b.balance - a.balance);
+
+      const monthData = {};
+      effectiveMonths.forEach((month) => {
+        const unpaid = [];
+        students.forEach((s) => {
+          if (!feeMap[`${s.studentId}-${month}`]) {
+            unpaid.push({
+              standard: s.standard,
+              studentId: s.studentId,
+              studentName: s.studentName,
+              balance: s.monthlyFee || 0,
+            });
+          }
+        });
+        if (unpaid.length > 0) monthData[month] = unpaid;
+      });
+
+      const years = [currentYear - 1, currentYear, currentYear + 1];
+      const headerUrl = process.env.CLOUDINARY_HEADER_URL || "";
+      res.render("teacher/fee_defaulters", {
+        defaulters, effectiveMonths, monthData, selectedYear, years, headerUrl
+      });
+    } catch (err) {
+      console.error("Error loading fee defaulters:", err);
+      res.status(500).send("Error generating fee defaulters report");
+    }
+  }
+);
+
+
+app.get(
   "/teacher/revenue_report",
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
     const selectedYear = parseInt(req.query.year) || new Date().getFullYear();
-    
+
     const months = [
       "May", "June", "July", "August", "September", "October",
       "November", "December", "January", "February", "March", "April"
@@ -1575,27 +1946,19 @@ app.get(
     });
   }
 );
-// --- BULK FEE ENTRY ROUTES ---
 
-// 1. GET: Render the Bulk Edit Grid
 app.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, async (req, res) => {
   try {
-    // 1. Determine the Academic Year (Default to current year if not selected)
     const currentYear = new Date().getFullYear();
     const selectedYear = parseInt(req.query.year) || currentYear;
 
-    // 2. Generate a list of years for the dropdown (e.g., 2024, 2025, 2026)
-    // We'll show a range of 5 years into the future and 1 year back
     const years = [];
     for (let y = currentYear - 1; y <= currentYear + 5; y++) {
-        years.push(y);
+      years.push(y);
     }
 
-    // 3. Fetch all students (Sorted by ID)
     const users = await User.find({}, "studentId studentName standard monthlyFee").sort({ studentId: 1 });
-    
-    // 4. Fetch fees ONLY for the selected academic year
-    // Note: We fetch May-Dec of selectedYear and Jan-Apr of selectedYear+1
+
     const fees = await Fee.find({
       $or: [
         { year: selectedYear, month: { $in: ["May", "June", "July", "August", "September", "October", "November", "December"] } },
@@ -1603,7 +1966,6 @@ app.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, async (re
       ]
     });
 
-    // 5. Create a Map for O(1) lookup: feeMap[studentId][month] = feeRecord
     const feeMap = {};
     fees.forEach(fee => {
       if (!feeMap[fee.studentId]) feeMap[fee.studentId] = {};
@@ -1612,13 +1974,12 @@ app.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, async (re
 
     const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
 
-    // 6. Render the view with all necessary data
-    res.render("teacher/bulk_fees", { 
-        users, 
-        feeMap, 
-        months, 
-        selectedYear, 
-        years 
+    res.render("teacher/bulk_fees", {
+      users,
+      feeMap,
+      months,
+      selectedYear,
+      years
     });
 
   } catch (err) {
@@ -1627,25 +1988,21 @@ app.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, async (re
   }
 });
 
-// 2. POST: Save Bulk Changes
 app.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, async (req, res) => {
   try {
-    const updates = req.body.updates; // Expecting an array of fee objects
+    const updates = req.body.updates;
 
     if (!updates || updates.length === 0) {
-        return res.json({ success: true, message: "No changes to save." });
+      return res.json({ success: true, message: "No changes to save." });
     }
 
-    // Transform the frontend data into MongoDB BulkWrite operations
     const operations = updates.map(update => {
-      // Create a unique filter (Student + Month + Year)
-      const filter = { 
-        studentId: update.studentId, 
-        month: update.month, 
-        year: update.year 
+      const filter = {
+        studentId: update.studentId,
+        month: update.month,
+        year: update.year
       };
 
-      // Prepare the data object
       const updateData = {
         studentId: update.studentId,
         studentName: update.studentName,
@@ -1655,22 +2012,20 @@ app.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, async (r
         amount: Number(update.amount),
         method: update.method,
         datePaid: new Date(update.datePaid),
-        status: "Paid" // Always mark as Paid for manual entry
+        status: "Paid"
       };
 
-      // Upsert: Update if it exists, Insert if it doesn't
       return {
         updateOne: {
           filter: filter,
           update: { $set: updateData },
-          upsert: true 
+          upsert: true
         }
       };
     });
 
-    // Execute all updates in one go
     await Fee.bulkWrite(operations);
-    
+
     res.json({ success: true, message: "Fees updated successfully!" });
 
   } catch (err) {
@@ -1685,7 +2040,7 @@ app.get(
   requireTeacherLogin,
   async (req, res) => {
     const users = await User.find({});
-    const standards = [...new Set(users.map((u) => u.standard))].sort();
+    const standards = [...new Set(users.map((u) => u.standard))].sort((a, b) => Number(a) - Number(b));
     res.render("teacher/manage_score", { standards });
   }
 );
@@ -1705,26 +2060,30 @@ app.get(
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
-    const { standard, testId } = req.params;
-    const students = await User.find({ standard }).lean();
+    try {
+      const { standard, testId } = req.params;
 
-    const studentScores = await Promise.all(
-      students.map(async (s) => {
-        const scoreDoc = await Score.findOne({
-          studentId: s.studentId,
-          testId,
-        });
-        return {
-          _id: s._id,
-          studentId: s.studentId,
-          studentName: s.studentName,
-          score: scoreDoc ? scoreDoc.score : "",
-          percentage: scoreDoc ? scoreDoc.percentage : "-",
-        };
-      })
-    );
+      const [students, allScores] = await Promise.all([
+        User.find({ standard }).lean(),
+        Score.find({ testId, standard }).lean(),
+      ]);
 
-    res.json(studentScores);
+      const scoreMap = {};
+      allScores.forEach((sc) => (scoreMap[sc.studentId] = sc));
+
+      const studentScores = students.map((s) => ({
+        _id: s._id,
+        studentId: s.studentId,
+        studentName: s.studentName,
+        score: scoreMap[s.studentId]?.score ?? "",
+        percentage: scoreMap[s.studentId]?.percentage ?? "-",
+      }));
+
+      res.json(studentScores);
+    } catch (err) {
+      console.error("Error fetching scores:", err);
+      res.status(500).json({ error: "Failed to load scores" });
+    }
   }
 );
 
@@ -1740,7 +2099,10 @@ app.post(
       if (s.score === undefined || s.score === null) continue;
 
       const student = await User.findOne({ studentId: s.studentId });
-      const percent = ((s.score / test.totalMarks) * 100).toFixed(2);
+      const newPercent = parseFloat(((s.score / test.totalMarks) * 100).toFixed(2));
+
+      const existingScore = await Score.findOne({ studentId: s.studentId, testId });
+      const oldPoints = existingScore ? parseFloat(existingScore.percentage) : 0;
 
       await Score.findOneAndUpdate(
         { studentId: s.studentId, testId },
@@ -1751,15 +2113,18 @@ app.post(
           testId,
           testName: test.testName,
           score: s.score,
-          percentage: percent,
+          percentage: newPercent,
         },
         { upsert: true, new: true }
       );
-      const additionalPoints = parseFloat(percent);
-      await User.findOneAndUpdate(
-        { studentId: s.studentId },
-        { $inc: { points: additionalPoints } }
-      );
+
+      const pointDelta = newPercent - oldPoints;
+      if (pointDelta !== 0) {
+        await User.findOneAndUpdate(
+          { studentId: s.studentId },
+          { $inc: { points: pointDelta } }
+        );
+      }
     }
 
     res.json({ message: "Scores saved successfully!" });
@@ -1776,7 +2141,7 @@ app.get(
 
     for (let cls of classes) {
       const students = await User.find({ standard: cls }).sort({
-        studentName: 1,
+        studentId: 1,
       });
       const tests = await Test.find({ standard: cls }).sort({ createdAt: 1 });
       const scores = await Score.find({ standard: cls });
@@ -1797,6 +2162,7 @@ app.get(
           _id: t._id,
           testName: t.testName,
           subject: t.subject,
+          topic: t.topic,
         })),
         students: studentRows,
       };
@@ -1862,6 +2228,62 @@ app.post(
     } catch (err) {
       console.error(err);
       res.json({ success: false, message: "❌ Failed to upload material" });
+    }
+  }
+);
+
+app.put(
+  "/api/materials/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  upload.single("file"),
+  async (req, res) => {
+    try {
+      const material = await StudyMaterial.findById(req.params.id);
+      if (!material) {
+        return res.status(404).json({ success: false, message: "Material not found" });
+      }
+
+      const { standard, subject, materialType, description, link } = req.body;
+
+      material.standard = standard || material.standard;
+      material.subject = subject || material.subject;
+      material.materialType = materialType || material.materialType;
+      material.description = description || "";
+
+      if (req.file) {
+        const result = await uploadToCloudinary(req.file.buffer, "study-materials");
+        material.filePath = result.secure_url;
+      } else if (link && link.trim() !== "") {
+        material.filePath = link;
+      }
+
+      await material.save();
+
+      res.json({ success: true, message: "✏️ Material updated successfully!" });
+    } catch (err) {
+      console.error("Error updating material:", err);
+      res.status(500).json({ success: false, message: "❌ Failed to update material" });
+    }
+  }
+);
+
+app.delete(
+  "/api/materials/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const material = await StudyMaterial.findByIdAndDelete(req.params.id);
+
+      if (!material) {
+        return res.status(404).json({ error: "Material not found" });
+      }
+
+      res.json({ success: true, message: "Material deleted successfully" });
+    } catch (err) {
+      console.error("Error deleting material:", err);
+      res.status(500).json({ error: "Failed to delete material" });
     }
   }
 );

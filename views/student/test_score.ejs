@@ -8,62 +8,110 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    body {
-      font-family: "Inter", sans-serif;
+    body { font-family: "Inter", sans-serif; }
+    .text-brand-purple { color: #5d3a9b; }
+
+    .premium-banner {
+      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
     }
 
-    .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    .glass-card {
+      background: rgba(255, 255, 255, 0.9);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      box-shadow: 0 8px 32px rgba(93, 58, 155, 0.08);
     }
 
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .bg-brand-lime {
-      background-color: #bde045;
-    }
-
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
+    .tab-pill {
+      padding: 0.4rem 1.1rem;
+      border-radius: 9999px;
       font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
-      border-radius: 0.5rem;
+      font-size: 0.8rem;
+      border: 2px solid #e5e7eb;
+      color: #6b7280;
+      background: white;
+      transition: all 0.25s ease;
+      white-space: nowrap;
+      cursor: pointer;
+    }
+    .tab-pill:hover {
+      border-color: #5d3a9b;
+      color: #5d3a9b;
+      background: #f3e8ff;
+    }
+    .tab-pill.active {
+      background: #5d3a9b;
+      color: white;
+      border-color: #5d3a9b;
+      box-shadow: 0 4px 12px rgba(93, 58, 155, 0.3);
     }
 
-    .btn-outline-purple:hover,
-    .btn-outline-purple.active {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
+    .stat-card {
+      border-radius: 16px;
+      padding: 1.25rem;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 10px 24px rgba(93, 58, 155, 0.12);
     }
 
-    .score-item:hover {
-      background-color: #f9fafb;
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    .score-card {
+      background: white;
+      border: 1px solid #f3f4f6;
+      border-radius: 14px;
+      transition: all 0.3s ease;
+    }
+    .score-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 28px rgba(93, 58, 155, 0.1);
+      border-color: rgba(93, 58, 155, 0.2);
     }
 
-    .progress-bar-good {
-      background-color: #84cc16;
+    .progress-track {
+      background: #f3f4f6;
+      border-radius: 9999px;
+      height: 8px;
+      overflow: hidden;
+    }
+    .progress-bar {
+      height: 8px;
+      border-radius: 9999px;
+      width: 0%;
+      transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .progress-bar-good    { background: linear-gradient(90deg, #34d399, #10b981); }
+    .progress-bar-average { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
+    .progress-bar-poor    { background: linear-gradient(90deg, #f87171, #ef4444); }
+
+    .grade-badge {
+      display: inline-flex;
+      align-items: center;
+      font-weight: 800;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.65rem;
+      border-radius: 9999px;
     }
 
-    .progress-bar-average {
-      background-color: #facc15;
+    .qp-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.3rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+      padding: 0.3rem 0.75rem;
+      border-radius: 9999px;
+      background: #ede9fe;
+      color: #5d3a9b;
+      transition: all 0.2s ease;
+      white-space: nowrap;
     }
-
-    .progress-bar-poor {
-      background-color: #ef4444;
-    }
+    .qp-btn:hover { background: #5d3a9b; color: white; }
   </style>
 </head>
 <%- include('../partials/background') %>
@@ -71,55 +119,47 @@
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-    <header class="mb-8">
-      <a href="/student/dashboard" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Dashboard</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        My Test Scores
-      </h1>
-      <p class="text-gray-600 mt-1">
-        Review your performance and points earned in each subject.
-      </p>
+    <!-- Premium Banner Header -->
+    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-10 text-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+      <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
+      <div class="relative z-10">
+        <div class="flex justify-center sm:justify-start mb-5">
+          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Dashboard
+          </a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
+          📊 My Test Scores
+        </h1>
+        <p class="text-purple-100 font-medium text-base sm:text-lg">Review your performance and points earned in each subject.</p>
+      </div>
     </header>
 
-    <div class="bg-white p-6 sm:p-8 rounded-xl shadow-lg">
+    <!-- Main Glass Container -->
+    <div class="glass-card p-6 sm:p-8 rounded-2xl">
+
+      <!-- Subject Filter Pills -->
       <div class="mb-8">
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">Subjects</h2>
-        <div id="subject-tabs" class="flex flex-wrap gap-4">
-          <button class="px-6 py-2 btn-outline-purple active" data-subject="overall">
-            Overall
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="English">
-            English
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Maths I">
-            Maths I
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Maths II">
-            Maths II
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Science I">
-            Science I
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Science II">
-            Science II
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="History-Civics">
-            History-Civics
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Geography">
-            Geography
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Hindi">
-            Hindi
-          </button>
-          <button class="px-6 py-2 btn-outline-purple" data-subject="Marathi">
-            Marathi
-          </button>
+        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Filter by Subject</p>
+        <div id="subject-tabs" class="flex flex-wrap gap-2">
+          <button class="tab-pill active" data-subject="overall">📋 Overall</button>
+          <button class="tab-pill" data-subject="English">🇬🇧 English</button>
+          <button class="tab-pill" data-subject="Maths I">🔢 Maths I</button>
+          <button class="tab-pill" data-subject="Maths II">🔢 Maths II</button>
+          <button class="tab-pill" data-subject="Science I">🔬 Science I</button>
+          <button class="tab-pill" data-subject="Science II">⚗️ Science II</button>
+          <button class="tab-pill" data-subject="History-Civics">📜 History-Civics</button>
+          <button class="tab-pill" data-subject="Geography">🌍 Geography</button>
+          <button class="tab-pill" data-subject="Hindi">🇮🇳 Hindi</button>
+          <button class="tab-pill" data-subject="Marathi">📚 Marathi</button>
         </div>
       </div>
 
+      <!-- Scores Area (JS-rendered) -->
       <div id="scores-area">
-        <p class="text-gray-500">Select a subject to view scores.</p>
+        <p class="text-gray-400 text-center py-10">Select a subject to view your scores.</p>
       </div>
     </div>
   </div>
@@ -130,9 +170,7 @@
     document.addEventListener("DOMContentLoaded", () => {
       const tabs = document.getElementById("subject-tabs");
       const scoresArea = document.getElementById("scores-area");
-      const scoresData = JSON.parse(
-        document.getElementById("scores-data").dataset.scores
-      );
+      const scoresData = JSON.parse(document.getElementById("scores-data").dataset.scores);
 
       function getColor(percent) {
         if (percent >= 80) return "progress-bar-good";
@@ -140,102 +178,127 @@
         return "progress-bar-poor";
       }
 
+      function getGrade(percent) {
+        if (percent >= 90) return { label: "A+", bg: "bg-green-100", text: "text-green-700" };
+        if (percent >= 80) return { label: "A",  bg: "bg-green-100", text: "text-green-700" };
+        if (percent >= 70) return { label: "B+", bg: "bg-blue-100",  text: "text-blue-700"  };
+        if (percent >= 60) return { label: "B",  bg: "bg-blue-100",  text: "text-blue-700"  };
+        if (percent >= 50) return { label: "C",  bg: "bg-yellow-100",text: "text-yellow-700"};
+        return { label: "D", bg: "bg-red-100", text: "text-red-700" };
+      }
+
       function render(subject) {
         let tests = [];
         if (subject === "overall") {
           for (const key in scoresData) {
             const arr = scoresData[key] || [];
-            arr.forEach(t => {
-              if (!t.subject) t.subject = key;
-              tests.push(t);
-            });
+            arr.forEach(t => { if (!t.subject) t.subject = key; tests.push(t); });
           }
+          tests.sort((a, b) => {
+            const numA = parseInt((a.testName || "").match(/\d+/)?.[0] ?? 0);
+            const numB = parseInt((b.testName || "").match(/\d+/)?.[0] ?? 0);
+            return numA - numB;
+          });
         } else {
           tests = scoresData[subject] || [];
         }
 
         if (!tests.length) {
-          scoresArea.innerHTML = `<p class="text-gray-500">No scores for this subject yet.</p>`;
+          scoresArea.innerHTML = `
+            <div class="text-center py-16">
+              <div class="text-6xl mb-4">📝</div>
+              <h3 class="text-xl font-bold text-gray-700">No Scores Yet</h3>
+              <p class="text-gray-400 text-sm mt-2">No test scores available for <strong>${subject === 'overall' ? 'any subject' : subject}</strong> yet.</p>
+            </div>`;
           return;
         }
 
-        // --- SUMMARY ---
+        // ── Summary Stats ──
         const totalTests = tests.length;
         const avgPercent = tests.reduce((sum, t) => {
-          const percent = t.percentage || ((t.score / t.total) * 100);
-          return sum + percent;
+          return sum + ((Number(t.score) / (Number(t.total) || 100)) * 100);
         }, 0) / totalTests;
         const subjectsAttempted = new Set(tests.map(t => t.subject)).size;
+        const avgColor = avgPercent >= 80 ? "#10b981" : avgPercent >= 50 ? "#f59e0b" : "#ef4444";
 
         const summaryHTML = `
-<div class="mb-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-  <div class="p-4 bg-purple-50 rounded-lg text-center">
-    <p class="text-sm text-gray-500">Total Tests</p>
-    <p class="text-2xl font-bold text-brand-purple">${totalTests}</p>
-  </div>
-  <div class="p-4 bg-green-50 rounded-lg text-center">
-    <p class="text-sm text-gray-500">Average %</p>
-    <p class="text-2xl font-bold text-green-600">${avgPercent.toFixed(2)}%</p>
-  </div>
-  <div class="p-4 bg-blue-50 rounded-lg text-center">
-    <p class="text-sm text-gray-500">Subjects Attempted</p>
-    <p class="text-2xl font-bold text-blue-600">${subjectsAttempted}</p>
-  </div>
-</div>
-`;
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
+            <div class="stat-card" style="background: linear-gradient(135deg,#f5f3ff,#ede9fe); border:1.5px solid #ddd6fe;">
+              <p class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-1">Tests Taken</p>
+              <p class="text-4xl font-extrabold text-brand-purple">${totalTests}</p>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg,#f0fdf4,#dcfce7); border:1.5px solid #bbf7d0;">
+              <p class="text-xs font-bold uppercase tracking-widest text-green-500 mb-1">Average Score</p>
+              <p class="text-4xl font-extrabold" style="color:${avgColor}">${avgPercent.toFixed(1)}%</p>
+            </div>
+            <div class="stat-card" style="background: linear-gradient(135deg,#eff6ff,#dbeafe); border:1.5px solid #bfdbfe;">
+              <p class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-1">Subjects</p>
+              <p class="text-4xl font-extrabold text-blue-600">${subjectsAttempted}</p>
+            </div>
+          </div>`;
 
-        // --- TEST CARDS ---
-        const testsHTML = `
-<h3 class="text-xl font-bold mb-4">${subject === "overall" ? "Overall Scores" : subject}</h3>
-<div class="space-y-4">
-  ${tests.map(test => {
-  const total = Number(test.total) || 100;
-  const score = Number(test.score) || 0;
-  const percent = ((score / total) * 100).toFixed(2);
-  const colorClass = getColor(percent);
-  return `
-  <div class="score-item bg-white p-4 rounded-lg border border-gray-200 grid grid-cols-1 md:grid-cols-4 gap-4 items-center">
-    <div class="md:col-span-2">
-      <p class="font-semibold text-gray-800">${test.testName} - ${test.subject} (${test.topic || "No topic"})</p>
-      ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="text-blue-600 hover:underline text-sm">Download Question Paper</a>` : ""}
-    </div>
-    <div class="w-full bg-gray-200 rounded-full h-2.5">
-      <div class="${colorClass} progress-bar h-2.5 rounded-full" style="width:0%"></div>
-    </div>
-    <div class="text-right">
-      <p class="text-xl font-bold text-brand-purple">${score} / ${total}</p>
-      <p class="text-sm text-gray-500">${percent}%</p>
-    </div>
-  </div>
-  `;
-  }).join('')}
-</div>
-`;
+        // ── Score Cards ──
+        const cardsHTML = `
+          <h3 class="text-lg font-extrabold text-gray-900 mb-4">
+            ${subject === "overall" ? "All Test Results" : subject + " — Test Results"}
+          </h3>
+          <div class="space-y-4">
+            ${tests.map(test => {
+              const total   = Number(test.total) || 100;
+              const score   = Number(test.score) || 0;
+              const percent = ((score / total) * 100);
+              const colorClass = getColor(percent);
+              const grade = getGrade(percent);
+              return `
+                <div class="score-card p-5">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <!-- Left: icon + info -->
+                    <div class="flex items-center gap-4 min-w-0">
+                      <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${grade.bg}">
+                        <span class="font-extrabold text-lg ${grade.text}">${grade.label}</span>
+                      </div>
+                      <div class="min-w-0">
+                        <p class="font-bold text-gray-900 text-base truncate">${test.testName || "Test"}</p>
+                        <div class="flex flex-wrap items-center gap-2 mt-0.5">
+                          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-brand-purple border border-purple-200">${test.subject}</span>
+                          ${test.topic ? `<span class="text-xs text-gray-400">Topic: ${test.topic}</span>` : ""}
+                        </div>
+                      </div>
+                    </div>
+                    <!-- Right: score + Q.Paper -->
+                    <div class="flex-shrink-0 flex flex-col items-end gap-1">
+                      <div class="flex items-center gap-2">
+                        ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
+                        <p class="text-2xl font-extrabold text-brand-purple leading-none">${score}<span class="text-base font-semibold text-gray-400"> / ${total}</span></p>
+                      </div>
+                      <p class="text-sm font-semibold" style="color: ${percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444'}">${percent.toFixed(1)}%</p>
+                    </div>
+                  </div>
+                  <!-- Progress bar -->
+                  <div class="progress-track mt-4">
+                    <div class="${colorClass} progress-bar" data-width="${percent.toFixed(2)}"></div>
+                  </div>
+                </div>`;
+            }).join("")}
+          </div>`;
 
-        scoresArea.innerHTML = summaryHTML + testsHTML;
+        scoresArea.innerHTML = summaryHTML + cardsHTML;
 
-        // Animate progress bars
         scoresArea.querySelectorAll(".progress-bar").forEach((bar, i) => {
-          const test = tests[i];
-          const total = Number(test.total) || 100;
-          const score = Number(test.score) || 0;
-          const percent = ((score / total) * 100).toFixed(2);
-          setTimeout(() => (bar.style.width = `${percent}%`), 100);
+          setTimeout(() => bar.style.width = `${bar.dataset.width}%`, 80 + i * 60);
         });
       }
 
-
       tabs.addEventListener("click", (e) => {
-        if (e.target.tagName === "BUTTON") {
-          tabs
-            .querySelectorAll("button")
-            .forEach((btn) => btn.classList.remove("active"));
-          e.target.classList.add("active");
-          render(e.target.dataset.subject);
+        const btn = e.target.closest(".tab-pill");
+        if (btn) {
+          tabs.querySelectorAll(".tab-pill").forEach(b => b.classList.remove("active"));
+          btn.classList.add("active");
+          render(btn.dataset.subject);
         }
       });
 
-      const active = tabs.querySelector("button.active");
+      const active = tabs.querySelector(".tab-pill.active");
       if (active) render(active.dataset.subject);
     });
   </script>

@@ -40,39 +40,57 @@
     }
 
     .rank-card {
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-      position: relative;
+      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      background: white;
+      border: 1px solid transparent;
+      border-top-width: 6px;
     }
 
     .rank-card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15);
+      border-color: rgba(93, 58, 155, 0.2);
     }
 
     .rank-1 {
-      border-top: 4px solid #f59e0b;
+      border-top-color: #f59e0b;
     }
 
     .rank-2 {
-      border-top: 4px solid #a8a29e;
+      border-top-color: #a8a29e;
     }
 
     .rank-3 {
-      border-top: 4px solid #a16207;
+      border-top-color: #a16207;
+    }
+
+    .student-row {
+      transition: all 0.3s ease;
     }
 
     .student-row:hover {
       background-color: #f9fafb;
+      transform: translateX(4px);
     }
 
     .highlight-user {
       background-color: #f3e8ff;
       border-left: 4px solid #5d3a9b;
+      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
     }
 
-    .bg-pattern {
-      background-color: #ffffff;
-      background-image: url("data:image/svg+xml,%3Csvg width='20' height='20' viewBox='0 0 20 20' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23f3e8ff' fill-opacity='0.4' fill-rule='evenodd'%3E%3Ccircle cx='3' cy='3' r='3'/%3E%3Ccircle cx='13' cy='13' r='3'/%3E%3C/g%3E%3C/svg%3E");
+    .glass-profile {
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
+    }
+
+    .premium-banner {
+      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      color: white;
+      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
     }
   </style>
 </head>
@@ -81,69 +99,87 @@
 
 <body class="text-gray-800">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <a href="/student/dashboard" class="text-sm text-brand-purple hover:underline mb-2 block">&larr; Back to Dashboard</a>
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Class Leaderboard
-      </h1>
-      <p class="text-gray-600 mt-1">See where you stand among your peers!</p>
+    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+      <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
+      
+      <div class="relative z-10">
+        <div class="flex justify-center sm:justify-start mb-5">
+          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Back to Dashboard
+          </a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
+          Class Leaderboard
+        </h1>
+        <p class="text-purple-100 font-medium text-base sm:text-lg">See where you stand among your peers!</p>
+      </div>
     </header>
 
-    <div class="bg-pattern p-6 sm:p-8 rounded-xl shadow-lg">
+    <div class="glass-profile p-6 sm:p-8 rounded-2xl mb-10">
       <div class="mb-12">
-        <h2 class="text-2xl font-bold text-gray-900 mb-6 text-center">
-          Top Performers
+        <h2 class="text-2xl font-extrabold text-brand-purple mb-10 text-center flex items-center justify-center gap-2">
+          <span class="text-3xl">🌟</span> Top Performers
         </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-center">
-          <% topThree.forEach((student, index)=> { let rankClass = index === 0
-            ? 'rank-1' : index === 1 ? 'rank-2' : 'rank-3'; let sizeClass =
-            index === 0 ? 'w-24 h-24' : 'w-20 h-20'; let borderColor = index ===
-            0 ? 'border-amber-400' : index === 1 ? 'border-stone-300' :
-            'border-yellow-800'; let textColor = index === 0 ? 'text-gold' :
-            index === 1 ? 'text-silver' : 'text-bronze'; %>
-          <div class="rank-card <%= rankClass %> bg-white p-6 rounded-lg border-t-4 border-gray-200 shadow-md md:mt-6 relative">
-            <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="<%= sizeClass %> rounded-full mx-auto mb-4 border-4 <%= borderColor %>" />
-            <h3 class="text-xl font-bold text-gray-800">
-              <%= student.name %> (<span class="text-sm text-gray-500">
-                <%= student.studentId %> </span>)
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
+          <% topThree.forEach((student, index)=> { 
+            let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : 'rank-3'; 
+            let sizeClass = index === 0 ? 'w-28 h-28' : 'w-24 h-24'; 
+            let borderColor = index === 0 ? 'border-amber-400' : index === 1 ? 'border-stone-300' : 'border-amber-700'; 
+            let textColor = index === 0 ? 'text-amber-500' : index === 1 ? 'text-gray-400' : 'text-amber-700';
+            let crownIcon = index === 0 ? '👑' : '';
+          %>
+          <div class="rank-card <%= rankClass %> rounded-2xl shadow-xl md:mt-2 relative overflow-visible p-8 pt-10 flex flex-col items-center">
+            <div class="absolute -top-6 w-full flex justify-center">
+              <div class="bg-white rounded-full p-2 shadow-sm <%= textColor %>">
+                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 2L9.18 8.5L2 9.27L7.5 14.14L5.82 21L12 17.27L18.18 21L16.5 14.14L22 9.27L14.82 8.5L12 2Z"></path>
+                 </svg>
+              </div>
+            </div>
+            <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="<%= sizeClass %> rounded-full object-cover mb-4 border-4 <%= borderColor %> shadow-md bg-gray-50 mt-2 z-10 relative" />
+            <h3 class="text-xl font-bold text-gray-900 mb-1 flex items-center gap-1 justify-center">
+              <%= student.name %> <span class="text-2xl"><%= crownIcon %></span>
             </h3>
+            <span class="text-xs font-semibold bg-gray-100 text-gray-500 px-3 py-1 rounded-full mb-3 inline-block">ID: <%= student.studentId %></span>
 
-            <p class="text-gray-500 font-semibold">
+            <p class="text-gray-500 font-bold text-sm uppercase tracking-wide">
               Rank <%= student.rank %>
             </p>
-            <p class="text-2xl font-bold text-brand-purple mt-2">
-              <%= Math.trunc(student.score) %> Points
+            <p class="text-3xl font-extrabold text-brand-purple mt-2">
+              <%= Math.trunc(student.score) %> <span class="text-sm font-semibold text-gray-400">pts</span>
             </p>
-            <div class="absolute top-4 right-4 <%= textColor %>">
-              <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12 2L9.18 8.5L2 9.27L7.5 14.14L5.82 21L12 17.27L18.18 21L16.5 14.14L22 9.27L14.82 8.5L12 2Z"></path>
-              </svg>
-            </div>
           </div>
           <% }) %>
         </div>
       </div>
 
       <div>
-        <h2 class="text-2xl font-bold text-gray-900 mb-4">All Rankings</h2>
-        <div class="bg-white border border-gray-200 rounded-lg overflow-hidden">
-          <div id="leaderboard-list">
-            <% rest.forEach(student=> { const isCurrentUser = student.name ===
-              currentUser; %>
-            <div class="student-row flex items-center p-3 border-b border-gray-200 transition-colors duration-200 <%= isCurrentUser ? 'highlight-user' : '' %>">
-              <div class="w-12 text-center text-lg font-bold text-gray-500">
-                <%= student.rank %>
+        <h2 class="text-2xl font-extrabold text-brand-purple mb-6 flex items-center gap-2">
+          <span class="text-3xl">📊</span> All Rankings
+        </h2>
+        <div class="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
+          <div id="leaderboard-list" class="divide-y divide-gray-100">
+            <% rest.forEach(student=> { const isCurrentUser = student.name === currentUser; %>
+            <div class="student-row flex items-center gap-2 p-3 sm:p-4 <%= isCurrentUser ? 'highlight-user' : '' %>">
+              <!-- Rank -->
+              <div class="flex-shrink-0 w-10 sm:w-14 text-center text-base sm:text-lg font-extrabold <%= isCurrentUser ? 'text-brand-purple' : 'text-gray-400' %>">
+                #<%= student.rank %>
               </div>
-              <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="w-10 h-10 rounded-full mx-4" />
-
-              <div class="flex-grow">
-                <p class="font-semibold text-gray-800">
-                  <%= student.name %> (<span class="text-sm text-gray-500">
-                    <%= student.studentId %> </span>) <%= isCurrentUser ? '(You)' : '' %>
+              <!-- Avatar -->
+              <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-gray-200 object-cover" />
+              <!-- Name and ID -->
+              <div class="flex-grow min-w-0">
+                <p class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1 flex-wrap">
+                  <span class="truncate"><%= student.name %></span>
+                  <%- isCurrentUser ? '<span class="bg-brand-purple text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">You</span>' : '' %>
                 </p>
+                <p class="text-xs text-gray-400 font-medium truncate">ID: <%= student.studentId %></p>
               </div>
-              <div class="w-24 text-right font-bold text-brand-purple">
-                <%= Math.trunc(student.score) %> pts
+              <!-- Points -->
+              <div class="flex-shrink-0 text-right font-extrabold text-base sm:text-lg text-brand-purple pl-2">
+                <%= Math.trunc(student.score) %><span class="text-xs font-semibold text-gray-400 ml-1">pts</span>
               </div>
             </div>
             <% }) %>

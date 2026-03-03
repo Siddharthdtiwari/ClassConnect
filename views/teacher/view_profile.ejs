@@ -11,14 +11,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* BASE STYLES & FONT */
     body {
       font-family: "Inter", sans-serif;
       background-color: #f3f4f6;
       background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
     }
 
-    /* THEME COLORS */
     .text-brand-purple {
       color: #5d3a9b;
     }
@@ -113,10 +111,16 @@
               <span class="text-gray-600 font-medium">Monthly Fee:</span>
               <span class="font-bold text-xl text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
             </div>
-            <div class="flex justify-between items-center">
+            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
               <span class="text-gray-600 font-medium">Reward Points:</span>
               <span class="font-bold text-xl text-brand-lime">
                 <%= Math.trunc(student.points) %> ✨
+              </span>
+            </div>
+            <div class="flex justify-between items-center">
+              <span class="text-gray-600 font-medium">Leaderboard Rank:</span>
+              <span class="font-bold text-xl text-amber-500">
+                #<%= studentRank %> 🏆
               </span>
             </div>
           </div>
@@ -157,9 +161,9 @@
 
         <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-green-500">
           <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
-            Recent Fee Payments Log
+            Fee Payments Log
           </h3>
-          <div class="divide-y divide-gray-100">
+          <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
             <% if (recentFees.length> 0) { %> <% recentFees.forEach(fee=> { %>
             <div class="flex justify-between items-center py-3">
               <div class="flex flex-col">
@@ -196,10 +200,11 @@
         </div>
 
         <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
-            All Test Results Log
+          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900 flex justify-between items-center">
+            <span>All Test Results Log</span>
+            <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><%= recentScores.length %> Records</span>
           </h3>
-          <div class="divide-y divide-gray-100">
+          <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
             <% if (recentScores.length> 0) { %> <%
               recentScores.forEach(score=> { %>
             <div class="flex justify-between items-center py-2">

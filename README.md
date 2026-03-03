@@ -5,6 +5,7 @@ A full-stack class management web application for teachers and students, built w
 ## Features
 
 ### Student Portal
+
 - 📊 **Dashboard** — Attendance summary, recent test scores, fee payment history, quick actions
 - 📅 **Attendance** — Monthly calendar view with present/absent/holiday tracking
 - 📝 **Test Scores** — View scores by subject with question paper links
@@ -14,6 +15,7 @@ A full-stack class management web application for teachers and students, built w
 - ✍️ **Class Tests** — Browse and download question papers
 
 ### Teacher Portal
+
 - 📋 **Student Management** — Add, edit, bulk-import students
 - 🎯 **Attendance Management** — Mark and manage daily attendance
 - 📝 **Test Management** — Add/edit/delete tests with question paper uploads
@@ -23,20 +25,21 @@ A full-stack class management web application for teachers and students, built w
 
 ## Tech Stack
 
-| Layer | Technology |
-|-------|-----------|
-| Backend | Node.js, Express 5 |
-| Database | MongoDB (Mongoose) |
-| Templating | EJS |
-| File Uploads | Multer + Cloudinary |
-| Payments | Razorpay |
-| Auth | bcrypt, express-session (MongoStore) |
-| PDF Generation | PDFKit |
-| Styling | Tailwind CSS (CDN) |
+| Layer          | Technology                           |
+| -------------- | ------------------------------------ |
+| Backend        | Node.js, Express 5                   |
+| Database       | MongoDB (Mongoose)                   |
+| Templating     | EJS                                  |
+| File Uploads   | Multer + Cloudinary                  |
+| Payments       | Razorpay                             |
+| Auth           | bcrypt, express-session (MongoStore) |
+| PDF Generation | PDFKit                               |
+| Styling        | Tailwind CSS (CDN)                   |
 
 ## Getting Started
 
 ### Prerequisites
+
 - Node.js v18+
 - MongoDB Atlas account (or local MongoDB)
 - Cloudinary account
@@ -46,7 +49,7 @@ A full-stack class management web application for teachers and students, built w
 
 ```bash
 # 1. Clone the repository
-git clone https://github.com/your-username/ClassConnect.git
+git clone https://github.com/Siddharthdtiwari/ClassConnect.git
 cd ClassConnect/CODE
 
 # 2. Install dependencies
@@ -66,16 +69,16 @@ The app will be available at `http://localhost:3000`.
 
 Copy `.env.example` to `.env` and fill in the following:
 
-| Variable | Description |
-|----------|-------------|
-| `MONGODB_URI` | MongoDB connection string |
-| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name |
-| `CLOUDINARY_API_KEY` | Cloudinary API key |
-| `CLOUDINARY_API_SECRET` | Cloudinary API secret |
-| `CLOUDINARY_HEADER_URL` | URL of the header image used in PDF receipts |
-| `RAZORPAY_KEY_ID` | Razorpay key ID (use `rzp_test_...` for testing) |
-| `RAZORPAY_KEY_SECRET` | Razorpay key secret |
-| `SESSION_SECRET` | A long random string for session encryption |
+| Variable                | Description                                      |
+| ----------------------- | ------------------------------------------------ |
+| `MONGODB_URI`           | MongoDB connection string                        |
+| `CLOUDINARY_CLOUD_NAME` | Your Cloudinary cloud name                       |
+| `CLOUDINARY_API_KEY`    | Cloudinary API key                               |
+| `CLOUDINARY_API_SECRET` | Cloudinary API secret                            |
+| `CLOUDINARY_HEADER_URL` | URL of the header image used in PDF receipts     |
+| `RAZORPAY_KEY_ID`       | Razorpay key ID (use `rzp_test_...` for testing) |
+| `RAZORPAY_KEY_SECRET`   | Razorpay key secret                              |
+| `SESSION_SECRET`        | A long random string for session encryption      |
 
 ## Project Structure
 
@@ -103,9 +106,9 @@ CODE/
 
 ## Scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm start` | Start production server |
+| Command       | Description                   |
+| ------------- | ----------------------------- |
+| `npm start`   | Start production server       |
 | `npm run dev` | Start dev server with nodemon |
 
 ## Security Notes

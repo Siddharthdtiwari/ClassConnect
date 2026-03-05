@@ -410,7 +410,13 @@ app.get(
       const now = new Date();
       const currentMonthIndex = now.getMonth();
       const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
-      const monthsElapsed = currentAcademicIndex + 1;
+      // Fees for the current month become Due only on/after the 10th.
+      // Before the 10th, only previous months are counted as due.
+      const FEE_DUE_DAY = 10;
+      const monthsElapsed =
+        now.getDate() >= FEE_DUE_DAY
+          ? currentAcademicIndex + 1   // current month is now due
+          : currentAcademicIndex;       // current month not yet due
 
       const academicStartYear =
         currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
@@ -571,7 +577,11 @@ app.post(
         const now = new Date();
         const currentMonthIndex = now.getMonth();
         const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
-        const monthsElapsed = currentAcademicIndex + 1;
+        const FEE_DUE_DAY = 10;
+        const monthsElapsed =
+          now.getDate() >= FEE_DUE_DAY
+            ? currentAcademicIndex + 1
+            : currentAcademicIndex;
 
         const paidFees = await Fee.find({
           studentId: student.studentId,

@@ -596,8 +596,9 @@ app.post(
         const year = now.getFullYear();
         const perMonthAmount = Math.floor(amountPaid / dueMonths.length);
 
-        for (const dueMonth of dueMonths) {
-          const newFee = new Fee({
+        for (let i = 0; i < dueMonths.length; i++) {
+          const dueMonth = dueMonths[i];
+          const feeData = {
             studentId: student.studentId,
             studentName: student.studentName,
             standard: student.standard,
@@ -607,8 +608,15 @@ app.post(
             method: "Razorpay",
             status: "Paid",
             datePaid: new Date(),
-            razorpay_payment_id: razorpay_payment_id,
-          });
+          };
+          // Single-month payment → plain ID. Multi-month payment → every
+          // record gets "-1", "-2", … so you can immediately tell it was
+          // a bulk payment just by looking at any record.
+          feeData.razorpay_payment_id =
+            dueMonths.length > 1
+              ? `${razorpay_payment_id}-${i + 1}`
+              : razorpay_payment_id;
+          const newFee = new Fee(feeData);
           await newFee.save();
           console.log(`Fee record created for ${dueMonth} — payment ID: ${razorpay_payment_id}`);
         }

@@ -18,6 +18,7 @@ const Score = require("./models/score");
 const Fee = require("./models/fee");
 const Attendance = require("./models/attendance");
 const StudyMaterial = require("./models/StudyMaterial");
+const ExamTimetable = require("./models/examTimetable");
 
 const app = express();
 app.set("view engine", "ejs");
@@ -2302,6 +2303,303 @@ app.delete(
     } catch (err) {
       console.error("Error deleting material:", err);
       res.status(500).json({ error: "Failed to delete material" });
+    }
+  }
+);
+
+app.get(
+  "/student/timetable",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = req.user;
+      const entries = await ExamTimetable.find({ standard: student.standard })
+        .sort({ examDate: 1 })
+        .lean();
+      res.render("student/timetable", { student, entries, success: req.query.success, error: req.query.error });
+    } catch (err) {
+      console.error("Timetable load error:", err);
+      res.status(500).send("Error loading timetable");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = req.user;
+      const { examType, subject, examDate, chapters } = req.body;
+      if (!examType || !subject || !examDate || !chapters) {
+        return res.redirect("/student/timetable?error=All+fields+are+required");
+      }
+      await ExamTimetable.create({
+        standard: student.standard,
+        examType,
+        subject: subject.trim(),
+        examDate: new Date(examDate),
+        chapters: chapters.trim(),
+        addedBy: "student",
+        addedById: student.studentId,
+        addedByName: student.studentName,
+      });
+      res.redirect("/student/timetable?success=Exam+added+successfully");
+    } catch (err) {
+      console.error("Timetable add error:", err);
+      res.redirect("/student/timetable?error=Failed+to+add+exam");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable/edit/:id",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const { examType, subject, examDate, chapters } = req.body;
+      await ExamTimetable.findByIdAndUpdate(req.params.id, {
+        examType,
+        subject: subject.trim(),
+        examDate: new Date(examDate),
+        chapters: chapters.trim(),
+      });
+      res.redirect("/student/timetable?success=Entry+updated");
+    } catch (err) {
+      console.error("Timetable edit error:", err);
+      res.redirect("/student/timetable?error=Failed+to+update");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable/delete/:id",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      await ExamTimetable.findByIdAndDelete(req.params.id);
+      res.redirect("/student/timetable?success=Entry+deleted");
+    } catch (err) {
+      console.error("Timetable delete error:", err);
+      res.redirect("/student/timetable?error=Failed+to+delete");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable/bulk",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = req.user;
+
+      const examType = req.body.examType;
+      let subjects = req.body.subjects || req.body["subjects[]"] || [];
+      let dates = req.body.dates || req.body["dates[]"] || [];
+      let chapters = req.body.chapters || req.body["chapters[]"] || [];
+
+      subjects = Array.isArray(subjects) ? subjects : [subjects];
+      dates = Array.isArray(dates) ? dates : [dates];
+      chapters = Array.isArray(chapters) ? chapters : [chapters];
+
+      subjects = subjects.filter(Boolean);
+
+      if (!examType || subjects.length === 0) {
+        return res.redirect("/student/timetable?error=Please+fill+all+fields");
+      }
+
+      const docs = subjects.map((subj, i) => ({
+        standard: student.standard,
+        examType,
+        subject: subj.trim(),
+        examDate: new Date(dates[i] || Date.now()),
+        chapters: (chapters[i] || "").trim(),
+        addedBy: "student",
+        addedById: student.studentId,
+        addedByName: student.studentName,
+      })).filter(d => d.subject);
+
+      await ExamTimetable.insertMany(docs);
+      res.redirect(`/student/timetable?success=${docs.length}+exam(s)+added+successfully`);
+    } catch (err) {
+      console.error("Bulk timetable add error:", err);
+      res.redirect("/student/timetable?error=Failed+to+add+exams");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable/edit/:id",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = req.user;
+      const { examType, subject, examDate, chapters } = req.body;
+      await ExamTimetable.findOneAndUpdate(
+        { _id: req.params.id, addedById: student.studentId },
+        {
+          examType,
+          subject: subject.trim(),
+          examDate: new Date(examDate),
+          chapters: chapters.trim(),
+        }
+      );
+      res.redirect("/student/timetable?success=Entry+updated");
+    } catch (err) {
+      console.error("Student timetable edit error:", err);
+      res.redirect("/student/timetable?error=Failed+to+update");
+    }
+  }
+);
+
+app.post(
+  "/student/timetable/delete/:id",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = req.user;
+      await ExamTimetable.findOneAndDelete({ _id: req.params.id, addedById: student.studentId });
+      res.redirect("/student/timetable?success=Entry+deleted");
+    } catch (err) {
+      console.error("Student timetable delete error:", err);
+      res.redirect("/student/timetable?error=Failed+to+delete");
+    }
+  }
+);
+
+app.get(
+  "/teacher/timetable",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const standard = req.query.standard || "";
+      const query = standard ? { standard } : {};
+      const entries = await ExamTimetable.find(query).sort({ examDate: 1 }).lean();
+      const allStandards = await ExamTimetable.distinct("standard");
+      const teacher = await Teacher.findById(req.session.userId).lean();
+      res.render("teacher/timetable", { teacher, entries, selectedStandard: standard, allStandards, success: req.query.success, error: req.query.error });
+    } catch (err) {
+      console.error("Teacher timetable load error:", err);
+      res.status(500).send("Error loading timetable");
+    }
+  }
+);
+
+app.post(
+  "/teacher/timetable",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const teacher = await Teacher.findById(req.session.userId).lean();
+      const { standard, examType, subject, examDate, chapters } = req.body;
+      if (!standard || !examType || !subject || !examDate || !chapters) {
+        return res.redirect("/teacher/timetable?error=All+fields+are+required");
+      }
+      await ExamTimetable.create({
+        standard,
+        examType,
+        subject: subject.trim(),
+        examDate: new Date(examDate),
+        chapters: chapters.trim(),
+        addedBy: "teacher",
+        addedById: teacher.teacherId,
+        addedByName: teacher.teacherName,
+      });
+      res.redirect("/teacher/timetable?success=Exam+added+successfully");
+    } catch (err) {
+      console.error("Teacher timetable add error:", err);
+      res.redirect("/teacher/timetable?error=Failed+to+add+exam");
+    }
+  }
+);
+
+app.post(
+  "/teacher/timetable/edit/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const { standard, examType, subject, examDate, chapters } = req.body;
+      await ExamTimetable.findByIdAndUpdate(req.params.id, {
+        standard,
+        examType,
+        subject: subject.trim(),
+        examDate: new Date(examDate),
+        chapters: chapters.trim(),
+      });
+      res.redirect("/teacher/timetable?success=Entry+updated");
+    } catch (err) {
+      console.error("Teacher timetable edit error:", err);
+      res.redirect("/teacher/timetable?error=Failed+to+update");
+    }
+  }
+);
+
+app.post(
+  "/teacher/timetable/delete/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      await ExamTimetable.findByIdAndDelete(req.params.id);
+      res.redirect("/teacher/timetable?success=Entry+deleted");
+    } catch (err) {
+      console.error("Teacher timetable delete error:", err);
+      res.redirect("/teacher/timetable?error=Failed+to+delete");
+    }
+  }
+);
+
+app.post(
+  "/teacher/timetable/bulk",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      console.log("---- TEACHER BULK ADD BODY ----", JSON.stringify(req.body, null, 2));
+      const teacher = await Teacher.findById(req.session.userId).lean();
+
+      const standard = req.body.standard;
+      const examType = req.body.examType;
+      let subjects = req.body.subjects || req.body["subjects[]"] || [];
+      let dates = req.body.dates || req.body["dates[]"] || [];
+      let chapters = req.body.chapters || req.body["chapters[]"] || [];
+
+      subjects = Array.isArray(subjects) ? subjects : [subjects];
+      dates = Array.isArray(dates) ? dates : [dates];
+      chapters = Array.isArray(chapters) ? chapters : [chapters];
+
+      subjects = subjects.filter(Boolean);
+
+      if (!standard || !examType || subjects.length === 0) {
+        return res.redirect("/teacher/timetable?error=Please+fill+all+fields");
+      }
+
+      const docs = subjects.map((subj, i) => ({
+        standard,
+        examType,
+        subject: subj.trim(),
+        examDate: new Date(dates[i] || Date.now()),
+        chapters: (chapters[i] || "").trim(),
+        addedBy: "teacher",
+        addedById: teacher.teacherId,
+        addedByName: teacher.teacherName,
+      })).filter(d => d.subject);
+
+      await ExamTimetable.insertMany(docs);
+      res.redirect(`/teacher/timetable?success=${docs.length}+exam(s)+added+successfully`);
+    } catch (err) {
+      console.error("Teacher bulk timetable add error:", err);
+      res.redirect("/teacher/timetable?error=Failed+to+add+exams");
     }
   }
 );

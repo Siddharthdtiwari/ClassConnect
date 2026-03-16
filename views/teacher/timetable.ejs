@@ -129,68 +129,79 @@
         </div>
       </div>
 
-      <% if (entries.length === 0) { %>
+      <% const standards = Object.keys(groupedEntriesByStandard).sort(); %>
+      <% if (standards.length === 0) { %>
       <div class="flex flex-col items-center justify-center py-16 text-center">
         <div class="text-5xl mb-4">📋</div>
         <p class="text-lg font-bold text-gray-700 mb-2">No Exam Entries Yet</p>
         <p class="text-gray-400 text-sm">Click <strong>"+ Add Exams"</strong> to schedule.</p>
       </div>
       <% } else { %>
-      <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
-        <table class="data-table" id="timetable-table">
-          <thead>
-            <tr>
-              <th>Class</th>
-              <th>Subject</th>
-              <th>Exam Type</th>
-              <th>Date</th>
-              <th>Chapters / Portions</th>
-              <th>Added By</th>
-              <th class="text-center">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            <% entries.forEach(entry => {
-              const typeMap = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
-              const badgeClass = typeMap[entry.examType] || 'badge-ct';
-              const formattedDate = new Date(entry.examDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-              const inputDate = new Date(entry.examDate).toISOString().split('T')[0];
-              const isPast = new Date(entry.examDate) < new Date();
-            %>
-            <tr class="exam-row <%= isPast ? 'opacity-60' : '' %>" data-type="<%= entry.examType %>">
-              <td><span class="font-medium text-gray-600"><%= entry.standard %></span></td>
-              <td class="font-bold text-gray-900 search-subject"><%= entry.subject %></td>
-              <td><span class="badge <%= badgeClass %>"><%= entry.examType %></span></td>
-              <td class="font-semibold <%= isPast ? 'text-gray-400' : 'text-brand-purple' %>">
-                <%= formattedDate %><% if (isPast) { %> <span class="text-xs text-gray-400">(Past)</span><% } %>
-              </td>
-              <td class="text-gray-600"><%= entry.chapters %></td>
-              <td>
-                <span class="text-xs font-semibold <%= entry.addedBy === 'teacher' ? 'text-purple-700' : 'text-blue-700' %>">
-                  <%= entry.addedBy === 'teacher' ? '👩‍🏫' : '🎓' %> <%= entry.addedByName %>
-                </span>
-              </td>
-              <td class="text-center">
-                <div class="flex items-center justify-center gap-2">
-                  <button onclick="openEditModal(this)"
-                    data-id="<%= entry._id %>"
-                    data-standard="<%= entry.standard %>"
-                    data-examtype="<%= entry.examType %>"
-                    data-subject="<%= entry.subject %>"
-                    data-date="<%= inputDate %>"
-                    data-chapters="<%= entry.chapters %>"
-                    class="py-1 px-3 text-xs font-bold rounded-md btn-outline-purple">✏️ Edit</button>
-                  <form method="POST" action="/teacher/timetable/delete/<%= entry._id %>" onsubmit="return confirm('Delete this entry?')">
-                    <button type="submit" class="py-1 px-3 text-xs font-bold rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-all">🗑️</button>
-                  </form>
-                </div>
-              </td>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-      <div id="no-results-msg" class="hidden p-6 text-center text-gray-500 bg-gray-50 border border-t-0 border-gray-200 rounded-b-xl italic">No entries found.</div>
+      <% standards.forEach(std => { %>
+        <div class="mb-10 last:mb-0">
+          <div class="flex items-center gap-3 mb-4 pl-1">
+            <span class="text-xl">🏫</span>
+            <h3 class="text-xl font-bold text-gray-800">Class <span class="text-brand-purple"><%= std %></span></h3>
+            <div class="flex-grow h-px bg-gray-200 ml-4"></div>
+          </div>
+          <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
+            <table class="data-table" id="timetable-table-<%= std.replace(/\s+/g, '-') %>">
+              <thead>
+                <tr>
+                  <th>Subject</th>
+                  <th>Exam Type</th>
+                  <th>Date</th>
+                  <th>Chapters / Portions</th>
+                  <th>Added By</th>
+                  <th class="text-center">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% groupedEntriesByStandard[std].forEach(group => {
+                  const typeMap = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
+                  const badgeClass = typeMap[group.examType] || 'badge-ct';
+                  const formattedDate = new Date(group.examDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+                  const inputDate = new Date(group.examDate).toISOString().split('T')[0];
+                  const isPast = new Date(group.examDate) < new Date();
+                %>
+                <tr class="exam-row <%= isPast ? 'opacity-60' : '' %>" data-type="<%= group.examType %>">
+                  <td class="font-bold text-gray-900 search-subject"><%= group.subject %></td>
+                  <td><span class="badge <%= badgeClass %>"><%= group.examType %></span></td>
+                  <td class="font-semibold <%= isPast ? 'text-gray-400' : 'text-brand-purple' %>">
+                    <%= formattedDate %><% if (isPast) { %> <span class="text-xs text-gray-400">(Past)</span><% } %>
+                  </td>
+                  <td class="text-gray-600"><%= group.chapters %></td>
+                  <td>
+                    <span class="text-xs font-semibold <%= group.isTeacherAdded ? 'text-purple-700' : 'text-blue-700' %>">
+                      <%= group.isTeacherAdded ? '👩‍🏫 Teacher' : '🎓 ' + group.studentNames.join(', ') %>
+                    </span>
+                    <% if (group.ids.length > 1) { %>
+                    <div class="mt-1"><span class="text-[0.65rem] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm"><%= group.ids.length %> students grouped</span></div>
+                    <% } %>
+                  </td>
+                  <td class="text-center">
+                    <div class="flex items-center justify-center gap-2">
+                      <button onclick="openEditModal(this)"
+                        data-id="<%= group.ids.join(',') %>"
+                        data-standard="<%= std %>"
+                        data-examtype="<%= group.examType %>"
+                        data-subject="<%= group.subject %>"
+                        data-date="<%= inputDate %>"
+                        data-chapters="<%= group.chapters %>"
+                        class="py-1 px-3 text-xs font-bold rounded-md btn-outline-purple">✏️ Edit</button>
+                      <form method="POST" action="/teacher/timetable/delete/<%= group.ids.join(',') %>" onsubmit="return confirm('Delete this exam layout for all associated students?')">
+                        <button type="submit" class="py-1 px-3 text-xs font-bold rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-all">🗑️</button>
+                      </form>
+                    </div>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      <% }) %>
+      <div id="no-results-msg" class="hidden p-6 text-center text-gray-500 bg-gray-50 border border-t-0 border-gray-200 rounded-b-xl italic">No entries found for this search.</div>
       <% } %>
     </div>
   </div>
@@ -226,6 +237,7 @@
               <% [['Unit Test 1','🧪'],['Unit Test 2','🧫'],['Semester 1','📘'],['Semester 2','📗'],['Class Test','✍️']].forEach(([t,icon]) => { %>
               <button type="button" class="etype-pill" data-val="<%= t %>" onclick="selectEtype(this)"><%= icon %> <%= t %></button>
               <% }) %>
+            </div>
             <input type="hidden" name="examType" id="hidden-examType" />
           </div>
           <!-- Subjects -->
@@ -242,26 +254,48 @@
 
   <!-- =================== EDIT MODAL =================== -->
   <div class="modal-overlay" id="edit-modal">
-    <div class="modal-box">
+    <div class="modal-box p-6 sm:p-8">
       <div class="flex justify-between items-center mb-6">
         <h2 class="text-xl font-extrabold text-brand-purple">✏️ Edit Exam Entry</h2>
         <button onclick="closeModal('edit-modal')" class="text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
       </div>
-      <form method="POST" id="edit-form" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
-          <div><label>Class / Standard</label><input id="edit-standard" name="standard" type="text" required /></div>
+      <form method="POST" id="edit-form" class="space-y-5">
+        <div class="grid grid-cols-2 gap-5">
           <div>
-            <label>Exam Type</label>
-            <select id="edit-examType" name="examType" required>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Class / Standard</label>
+            <input id="edit-standard" name="standard" type="text" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required />
+          </div>
+          <div>
+            <label class="block text-sm font-bold text-gray-700 mb-1">Exam Type</label>
+            <select id="edit-examType" name="examType" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required>
               <option>Unit Test 1</option><option>Unit Test 2</option>
               <option>Semester 1</option><option>Semester 2</option><option>Class Test</option>
             </select>
           </div>
         </div>
-        <div><label>Subject</label><input id="edit-subject" name="subject" type="text" required /></div>
-        <div><label>Exam Date</label><input id="edit-examDate" name="examDate" type="date" required /></div>
-        <div><label>Chapters / Portions</label><textarea id="edit-chapters" name="chapters" rows="2" required></textarea></div>
-        <button type="submit" class="w-full py-3 btn-solid-purple rounded-xl font-bold">Update Exam ✓</button>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Subject</label>
+          <select id="edit-subject" name="subject" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required>
+            <option value="English">English</option>
+            <option value="Maths I">Maths I</option>
+            <option value="Maths II">Maths II</option>
+            <option value="Science I">Science I</option>
+            <option value="Science II">Science II</option>
+            <option value="History-Civics">History-Civics</option>
+            <option value="Geography">Geography</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Marathi">Marathi</option>
+          </select>
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Exam Date</label>
+          <input id="edit-examDate" name="examDate" type="date" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required />
+        </div>
+        <div>
+          <label class="block text-sm font-bold text-gray-700 mb-1">Chapters / Portions</label>
+          <textarea id="edit-chapters" name="chapters" rows="2" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required></textarea>
+        </div>
+        <button type="submit" class="w-full py-3 mt-4 btn-solid-purple rounded-xl font-bold shadow-md hover:shadow-lg transition-all text-lg tracking-wide">Update Exam ✓</button>
       </form>
     </div>
   </div>

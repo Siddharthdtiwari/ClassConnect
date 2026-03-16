@@ -2483,9 +2483,46 @@ app.get(
       const standard = req.query.standard || "";
       const query = standard ? { standard } : {};
       const entries = await ExamTimetable.find(query).sort({ examDate: 1 }).lean();
+      
+      const groupedEntriesByStandard = {};
+      entries.forEach(entry => {
+        const std = entry.standard;
+        if (!groupedEntriesByStandard[std]) {
+          groupedEntriesByStandard[std] = [];
+        }
+
+        const dateStr = new Date(entry.examDate).toISOString();
+        const key = `${entry.examType}_${entry.subject}_${dateStr}_${entry.chapters}`;
+        
+        let group = groupedEntriesByStandard[std].find(g => g.key === key);
+        if (!group) {
+          group = {
+            key,
+            ids: [],
+            examType: entry.examType,
+            subject: entry.subject,
+            examDate: entry.examDate,
+            chapters: entry.chapters,
+            studentNames: [],
+            isTeacherAdded: false,
+            standard: std
+          };
+          groupedEntriesByStandard[std].push(group);
+        }
+        
+        group.ids.push(entry._id.toString());
+        if (entry.addedBy === 'teacher') {
+          group.isTeacherAdded = true;
+        } else {
+          if (!group.studentNames.includes(entry.addedByName)) {
+            group.studentNames.push(entry.addedByName);
+          }
+        }
+      });
+
       const allStandards = await ExamTimetable.distinct("standard");
       const teacher = await Teacher.findById(req.session.userId).lean();
-      res.render("teacher/timetable", { teacher, entries, selectedStandard: standard, allStandards, success: req.query.success, error: req.query.error });
+      res.render("teacher/timetable", { teacher, groupedEntriesByStandard, selectedStandard: standard, allStandards, success: req.query.success, error: req.query.error });
     } catch (err) {
       console.error("Teacher timetable load error:", err);
       res.status(500).send("Error loading timetable");
@@ -2523,19 +2560,23 @@ app.post(
 );
 
 app.post(
-  "/teacher/timetable/edit/:id",
+  "/teacher/timetable/edit/:ids",
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
     try {
+      const ids = req.params.ids.split(',');
       const { standard, examType, subject, examDate, chapters } = req.body;
-      await ExamTimetable.findByIdAndUpdate(req.params.id, {
-        standard,
-        examType,
-        subject: subject.trim(),
-        examDate: new Date(examDate),
-        chapters: chapters.trim(),
-      });
+      await ExamTimetable.updateMany(
+        { _id: { $in: ids } },
+        {
+          standard,
+          examType,
+          subject: subject.trim(),
+          examDate: new Date(examDate),
+          chapters: chapters.trim(),
+        }
+      );
       res.redirect("/teacher/timetable?success=Entry+updated");
     } catch (err) {
       console.error("Teacher timetable edit error:", err);
@@ -2545,12 +2586,13 @@ app.post(
 );
 
 app.post(
-  "/teacher/timetable/delete/:id",
+  "/teacher/timetable/delete/:ids",
   ensureDBConnection,
   requireTeacherLogin,
   async (req, res) => {
     try {
-      await ExamTimetable.findByIdAndDelete(req.params.id);
+      const ids = req.params.ids.split(',');
+      await ExamTimetable.deleteMany({ _id: { $in: ids } });
       res.redirect("/teacher/timetable?success=Entry+deleted");
     } catch (err) {
       console.error("Teacher timetable delete error:", err);

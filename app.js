@@ -1310,16 +1310,16 @@ async function drawStudentReport(doc, student, stats) {
   const M = 40;
 
   // Background color for the whole page
-  doc.rect(0, 0, W, H).fill("#fafafa"); 
+  doc.rect(0, 0, W, H).fill("#fafafa");
 
   const primaryGrad = doc.linearGradient(0, 0, W, 120);
   primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
 
   // Header
   let headerHeight = 150;
-  
+
   doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
-  
+
   doc.save();
   doc.fillOpacity(0.1);
   doc.circle(W - 40, 40, 80).fill("white");
@@ -1333,7 +1333,7 @@ async function drawStudentReport(doc, student, stats) {
     try {
       const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
       const imgBuffer = Buffer.from(response.data, "binary");
-      doc.image(imgBuffer, M, 20, { fit: [W - 2*M, 80], align: 'center' });
+      doc.image(imgBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
     } catch (_) {
       console.error("Header image failed to load");
     }
@@ -1342,7 +1342,7 @@ async function drawStudentReport(doc, student, stats) {
   // Header Text - placed cleanly below the image area
   doc.fillColor("white").font("Times-Bold").fontSize(24)
     .text("STUDENT REPORT", M, 110, { align: "left", characterSpacing: 1 });
-    
+
   doc.fillColor("white").font("Times-Bold").fontSize(10)
     .text(`Date: ${new Date().toLocaleDateString('en-IN')}`, W - M - 150, 115, { align: "right", width: 150 });
   doc.fillColor("#e9d5ff").font("Times-Bold").fontSize(10)
@@ -1351,10 +1351,10 @@ async function drawStudentReport(doc, student, stats) {
   let cursorY = headerHeight + 30;
 
   // Student Profile Card
-  const cardW = W - 2*M;
+  const cardW = W - 2 * M;
   doc.roundedRect(M, cursorY, cardW, 110, 8).fill("white");
   doc.roundedRect(M, cursorY, cardW, 110, 8).stroke("#e5e7eb");
-  
+
   doc.save();
   doc.roundedRect(M, cursorY, cardW, 110, 8).clip();
   doc.rect(M, cursorY, 6, 110).fill("#bde045");
@@ -1362,10 +1362,10 @@ async function drawStudentReport(doc, student, stats) {
 
   doc.fillColor("#4b2d84").font("Times-Bold").fontSize(11)
     .text("STUDENT PROFILE", M + 25, cursorY + 15, { characterSpacing: 1 });
-  
+
   doc.fillColor("#111827").font("Times-Bold").fontSize(22)
     .text(student.studentName, M + 25, cursorY + 35);
-  
+
   // Data items
   const dataY = cursorY + 65;
   doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
@@ -1392,30 +1392,30 @@ async function drawStudentReport(doc, student, stats) {
   cursorY += 25;
 
   doc.roundedRect(M, cursorY, cardW, 80, 8).fill("white").stroke("#e5e7eb");
-  
+
   const boxW = cardW / 4;
-  
+
   // Box 1: Total Days
   doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Total Days", M, cursorY + 20, { width: boxW, align: "center" });
   doc.fillColor("#111827").font("Times-Bold").fontSize(22).text(stats.totalDays, M, cursorY + 35, { width: boxW, align: "center" });
-  
+
   doc.rect(M + boxW, cursorY + 15, 1, 50).fill("#f3f4f6");
 
   // Box 2: Present
   doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Present", M + boxW, cursorY + 20, { width: boxW, align: "center" });
   doc.fillColor("#059669").font("Times-Bold").fontSize(22).text(stats.presentDays, M + boxW, cursorY + 35, { width: boxW, align: "center" });
 
-  doc.rect(M + boxW*2, cursorY + 15, 1, 50).fill("#f3f4f6");
+  doc.rect(M + boxW * 2, cursorY + 15, 1, 50).fill("#f3f4f6");
 
   // Box 3: Absent
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Absent", M + boxW*2, cursorY + 20, { width: boxW, align: "center" });
-  doc.fillColor("#dc2626").font("Times-Bold").fontSize(22).text(stats.absentDays, M + boxW*2, cursorY + 35, { width: boxW, align: "center" });
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Absent", M + boxW * 2, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#dc2626").font("Times-Bold").fontSize(22).text(stats.absentDays, M + boxW * 2, cursorY + 35, { width: boxW, align: "center" });
 
-  doc.rect(M + boxW*3, cursorY + 15, 1, 50).fill("#f3f4f6");
+  doc.rect(M + boxW * 3, cursorY + 15, 1, 50).fill("#f3f4f6");
 
   // Box 4: Percentage
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Percentage", M + boxW*3, cursorY + 20, { width: boxW, align: "center" });
-  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(22).text(`${stats.attendancePercentage}%`, M + boxW*3, cursorY + 35, { width: boxW, align: "center" });
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Percentage", M + boxW * 3, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(22).text(`${stats.attendancePercentage}%`, M + boxW * 3, cursorY + 35, { width: boxW, align: "center" });
 
   cursorY += 110;
 
@@ -1423,26 +1423,26 @@ async function drawStudentReport(doc, student, stats) {
     if (cursorY + heightNeeded > doc.page.height - 60) {
       doc.addPage();
       doc.rect(0, 0, W, doc.page.height).fill("#fafafa");
-      
+
       doc.rect(0, 0, W, 40).fill(primaryGrad);
       doc.fillColor("white").font("Times-Bold").fontSize(14)
         .text("STUDENT REPORT", M, 13);
       doc.fillColor("#e9d5ff").font("Times-Roman").fontSize(10)
         .text(student.studentName, W - M - 200, 15, { align: "right", width: 200 });
-        
+
       cursorY = 70;
     }
   }
 
   function drawTableHeader(title, columns, widths) {
     checkPageAdd(80);
-    
+
     doc.fillColor("#4b2d84").font("Times-Bold").fontSize(12)
       .text(title.toUpperCase(), M, cursorY, { characterSpacing: 1 });
     cursorY += 20;
 
     doc.roundedRect(M, cursorY, cardW, 25, 4).fill("#ede9fe");
-    
+
     doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
     let curX = M + 15;
     columns.forEach((col, i) => {
@@ -1455,13 +1455,13 @@ async function drawStudentReport(doc, student, stats) {
   // Academic Performance Table
   const academicCols = ["Date", "Test Name", "Subject", "Score", "Percentage"];
   const academicWidths = [80, 170, 120, 60, 80];
-  
+
   drawTableHeader("Academic Performance", academicCols, academicWidths);
 
   if (stats.recentScores && stats.recentScores.length > 0) {
     stats.recentScores.forEach((score, i) => {
       checkPageAdd(35);
-      
+
       const isEven = i % 2 === 0;
       if (!isEven) {
         doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
@@ -1469,29 +1469,29 @@ async function drawStudentReport(doc, student, stats) {
         doc.rect(M, cursorY, cardW, 25).fill("white");
       }
       doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
-      
+
       let curX = M + 15;
-      
+
       doc.fillColor("#4b5563").font("Times-Roman").fontSize(9);
       doc.text(new Date(score.createdAt).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: academicWidths[0] });
       curX += academicWidths[0];
-      
+
       doc.fillColor("#111827").font("Times-Bold");
       doc.text(score.testName, curX, cursorY + 8, { width: academicWidths[1] });
       curX += academicWidths[1];
-      
+
       doc.fillColor("#4b5563").font("Times-Roman");
       doc.text(score.testId?.subject || score.subject || "-", curX, cursorY + 8, { width: academicWidths[2] });
       curX += academicWidths[2];
-      
+
       doc.fillColor("#4b5563").font("Times-Bold");
       doc.text(score.score, curX, cursorY + 8, { width: academicWidths[3] });
       curX += academicWidths[3];
-      
+
       let pColor = score.percentage >= 75 ? "#059669" : (score.percentage < 40 ? "#dc2626" : "#d97706");
       doc.fillColor(pColor).font("Times-Bold");
       doc.text(`${score.percentage}%`, curX, cursorY + 8, { width: academicWidths[4] });
-      
+
       cursorY += 26;
     });
   } else {
@@ -1500,58 +1500,82 @@ async function drawStudentReport(doc, student, stats) {
       .text("No test results recorded yet.", M, cursorY + 15, { align: "center", width: cardW });
     cursorY += 50;
   }
-  
+
   cursorY += 30;
 
-  // Fee Payments Table
+  // Fee Payments Table (Academic Year: May to April)
   const feeCols = ["For Month", "Date Paid", "Method", "Amount", "Status"];
   const feeWidths = [140, 100, 100, 100, 70];
-  
+
   drawTableHeader("Fee Payment History", feeCols, feeWidths);
 
-  if (stats.recentFees && stats.recentFees.length > 0) {
-    stats.recentFees.forEach((fee, i) => {
-      checkPageAdd(35);
-      
-      const isEven = i % 2 === 0;
-      if (!isEven) {
-        doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
-      } else {
-        doc.rect(M, cursorY, cardW, 25).fill("white");
-      }
-      doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
-      
-      let curX = M + 15;
-      
-      doc.fillColor("#111827").font("Times-Bold").fontSize(9);
-      doc.text(`${fee.month} ${fee.year}`, curX, cursorY + 8, { width: feeWidths[0] });
-      curX += feeWidths[0];
-      
+  const monthsList = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+  const now = new Date();
+  let startYear = now.getFullYear();
+  if (now.getMonth() < 5) startYear--; // If currently Jan-Apr, academic year started last year
+
+  const academicFees = monthsList.map((m, idx) => {
+    const year = idx < 8 ? startYear : startYear + 1;
+    const record = stats.recentFees.find(f => f.month === m && Number(f.year) === year);
+    return { month: m, year, record };
+  });
+
+  academicFees.forEach((item, i) => {
+    checkPageAdd(35);
+
+    const isEven = i % 2 === 0;
+    if (!isEven) {
+      doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
+    } else {
+      doc.rect(M, cursorY, cardW, 25).fill("white");
+    }
+    doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
+
+    let curX = M + 15;
+
+    // Month & Year
+    doc.fillColor("#111827").font("Times-Bold").fontSize(9);
+    doc.text(`${item.month} ${item.year}`, curX, cursorY + 8, { width: feeWidths[0] });
+    curX += feeWidths[0];
+
+    if (item.record) {
+      // Paid Case
       doc.fillColor("#4b5563").font("Times-Roman");
-      doc.text(new Date(fee.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: feeWidths[1] });
+      doc.text(new Date(item.record.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: feeWidths[1] });
       curX += feeWidths[1];
-      
+
       doc.fillColor("#6b7280").font("Times-Roman");
-      doc.text(fee.method || "-", curX, cursorY + 8, { width: feeWidths[2] });
+      doc.text(item.record.method || "-", curX, cursorY + 8, { width: feeWidths[2] });
       curX += feeWidths[2];
-      
+
       doc.fillColor("#4b2d84").font("Times-Bold");
-      doc.text(`Rs. ${Number(fee.amount).toLocaleString("en-IN")}`, curX, cursorY + 8, { width: feeWidths[3] });
+      doc.text(`Rs. ${Number(item.record.amount).toLocaleString("en-IN")}`, curX, cursorY + 8, { width: feeWidths[3] });
       curX += feeWidths[3];
-      
-      // Status Badge
+
+      // Status Badge (Paid)
       doc.roundedRect(curX, cursorY + 5, 45, 14, 7).fill("#d1fae5");
       doc.fillColor("#065f46").font("Times-Bold").fontSize(8);
       doc.text("PAID", curX, cursorY + 9, { width: 45, align: "center" });
-      
-      cursorY += 26;
-    });
-  } else {
-    doc.roundedRect(M, cursorY, cardW, 40, 4).fill("white").stroke("#e5e7eb");
-    doc.fillColor("#6b7280").font("Times-Italic").fontSize(10)
-      .text("No fee payments recorded.", M, cursorY + 15, { align: "center", width: cardW });
-    cursorY += 50;
-  }
+    } else {
+      // Pending Case
+      doc.fillColor("#9ca3af").font("Times-Italic");
+      doc.text("-", curX, cursorY + 8, { width: feeWidths[1] });
+      curX += feeWidths[1];
+
+      doc.text("-", curX, cursorY + 8, { width: feeWidths[2] });
+      curX += feeWidths[2];
+
+      doc.text("-", curX, cursorY + 8, { width: feeWidths[3] });
+      curX += feeWidths[3];
+
+      // Status Badge (Pending)
+      doc.roundedRect(curX, cursorY + 5, 55, 14, 7).fill("#fee2e2");
+      doc.fillColor("#991b1b").font("Times-Bold").fontSize(7);
+      doc.text("PENDING", curX, cursorY + 9, { width: 55, align: "center" });
+    }
+
+    cursorY += 26;
+  });
 
   // Global Footer for all pages
   const range = doc.bufferedPageRange();
@@ -1559,10 +1583,10 @@ async function drawStudentReport(doc, student, stats) {
     doc.switchToPage(i);
     const footerY = doc.page.height - 40;
     doc.rect(M, footerY, cardW, 1).fill("#e5e7eb");
-    
+
     doc.fillColor("#9ca3af").font("Times-Bold").fontSize(8)
       .text("TUITION HUB EDUCATION CENTRE", M, footerY + 10, { align: "left", characterSpacing: 1 });
-      
+
     doc.fillColor("#9ca3af").font("Times-Roman").fontSize(8)
       .text(`Page ${i + 1} of ${range.count}`, M, footerY + 10, { align: "right", width: cardW });
   }
@@ -1570,10 +1594,10 @@ async function drawStudentReport(doc, student, stats) {
 
 async function generateStudentReportPDF(student, stats, res, options = {}) {
   const { disposition = "inline", setHeaders = false } = options;
-  const doc = new PDFDocument({ 
-    size: "A4", 
+  const doc = new PDFDocument({
+    size: "A4",
     margins: { top: 40, left: 40, right: 40, bottom: 0 },
-    bufferPages: true 
+    bufferPages: true
   });
 
   if (setHeaders && res.setHeader) {
@@ -1597,7 +1621,7 @@ app.get(
   async (req, res) => {
     try {
       const students = await User.find({ role: { $ne: "teacher" } }).lean();
-      
+
       res.setHeader("Content-Type", "application/zip");
       res.setHeader("Content-Disposition", "attachment; filename=all-student-reports.zip");
 
@@ -1642,14 +1666,14 @@ app.get(
           studentRank = rankIndex + 1;
         }
 
-        const doc = new PDFDocument({ 
-          size: "A4", 
+        const doc = new PDFDocument({
+          size: "A4",
           margins: { top: 40, left: 40, right: 40, bottom: 0 },
-          bufferPages: true 
+          bufferPages: true
         });
 
         const safeName = `${student.standard}-${student.studentName}-${student.studentId}`.replace(/[^a-zA-Z0-9- ]/g, "").replace(/\s+/g, "-");
-        
+
         archive.append(doc, { name: `${safeName}.pdf` });
         await drawStudentReport(doc, student, {
           recentFees,
@@ -2990,7 +3014,7 @@ app.get(
       const standard = req.query.standard || "";
       const query = standard ? { standard } : {};
       const entries = await ExamTimetable.find(query).sort({ examDate: 1 }).lean();
-      
+
       const groupedEntriesByStandard = {};
       entries.forEach(entry => {
         const std = entry.standard;
@@ -3000,7 +3024,7 @@ app.get(
 
         const dateStr = new Date(entry.examDate).toISOString();
         const key = `${entry.examType}_${entry.subject}_${dateStr}_${entry.chapters}`;
-        
+
         let group = groupedEntriesByStandard[std].find(g => g.key === key);
         if (!group) {
           group = {
@@ -3016,7 +3040,7 @@ app.get(
           };
           groupedEntriesByStandard[std].push(group);
         }
-        
+
         group.ids.push(entry._id.toString());
         if (entry.addedBy === 'teacher') {
           group.isTeacherAdded = true;

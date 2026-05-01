@@ -47,11 +47,14 @@
           <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Manage Students</h1>
           <p class="text-gray-600 mt-1">View, search, and manage all enrolled students.</p>
         </div>
-        <div class="flex gap-3">
-          <button onclick="window.location.href='/teacher/bulk_add_students'" class="btn-outline-purple">
+        <div class="flex flex-wrap gap-3">
+          <button onclick="window.location.href='/teacher/bulk_student_reports'" class="btn-outline-purple flex items-center gap-2">
+            📥 Download All Reports
+          </button>
+          <button onclick="window.location.href='/teacher/bulk_add_students'" class="btn-outline-purple flex items-center gap-2">
             &#8645; Bulk Import
           </button>
-          <button onclick="window.location.href='/teacher/add_student'" class="btn-solid-purple">
+          <button onclick="window.location.href='/teacher/add_student'" class="btn-solid-purple flex items-center gap-2">
             + Add New Student
           </button>
         </div>

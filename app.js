@@ -9,6 +9,7 @@ const cloudinary = require("cloudinary").v2;
 const streamifier = require("streamifier");
 const Razorpay = require("razorpay");
 const crypto = require("crypto");
+const archiver = require("archiver");
 require("dotenv").config();
 
 const User = require("./models/user");
@@ -308,7 +309,8 @@ app.get(
           totalDays,
           studentRank,
         },
-        res
+        res,
+        { setHeaders: true }
       );
     } catch (err) {
       console.error("Error generating student report:", err);
@@ -1302,22 +1304,7 @@ app.get(
   }
 );
 
-async function generateStudentReportPDF(student, stats, res, disposition = "inline") {
-  const doc = new PDFDocument({ 
-    size: "A4", 
-    margins: { top: 40, left: 40, right: 40, bottom: 0 },
-    bufferPages: true 
-  });
-
-  const safeName = `${student.standard}-${student.studentName}-${student.studentId}`.replace(/[^a-zA-Z0-9- ]/g, "").replace(/\s+/g, "-");
-
-  res.setHeader("Content-Type", "application/pdf");
-  res.setHeader(
-    "Content-Disposition",
-    `${disposition}; filename=${safeName}.pdf`
-  );
-  doc.pipe(res);
-
+async function drawStudentReport(doc, student, stats) {
   const W = doc.page.width;
   const H = doc.page.height;
   const M = 40;
@@ -1346,7 +1333,6 @@ async function generateStudentReportPDF(student, stats, res, disposition = "inli
     try {
       const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
       const imgBuffer = Buffer.from(response.data, "binary");
-      // Embed image with proportional scaling (no stretching)
       doc.image(imgBuffer, M, 20, { fit: [W - 2*M, 80], align: 'center' });
     } catch (_) {
       console.error("Header image failed to load");
@@ -1580,9 +1566,112 @@ async function generateStudentReportPDF(student, stats, res, disposition = "inli
     doc.fillColor("#9ca3af").font("Times-Roman").fontSize(8)
       .text(`Page ${i + 1} of ${range.count}`, M, footerY + 10, { align: "right", width: cardW });
   }
+}
 
+async function generateStudentReportPDF(student, stats, res, options = {}) {
+  const { disposition = "inline", setHeaders = false } = options;
+  const doc = new PDFDocument({ 
+    size: "A4", 
+    margins: { top: 40, left: 40, right: 40, bottom: 0 },
+    bufferPages: true 
+  });
+
+  if (setHeaders && res.setHeader) {
+    const safeName = `${student.standard}-${student.studentName}-${student.studentId}`.replace(/[^a-zA-Z0-9- ]/g, "").replace(/\s+/g, "-");
+    res.setHeader("Content-Type", "application/pdf");
+    res.setHeader(
+      "Content-Disposition",
+      `${disposition}; filename=${safeName}.pdf`
+    );
+  }
+
+  doc.pipe(res);
+  await drawStudentReport(doc, student, stats);
   doc.end();
 }
+
+app.get(
+  "/teacher/bulk_student_reports",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const students = await User.find({ role: { $ne: "teacher" } }).lean();
+      
+      res.setHeader("Content-Type", "application/zip");
+      res.setHeader("Content-Disposition", "attachment; filename=all-student-reports.zip");
+
+      const archive = archiver("zip", { zlib: { level: 9 } });
+      archive.pipe(res);
+
+      const allStudentsData = await User.find({}).sort({ points: -1 }).lean();
+
+      for (const student of students) {
+        const studentId = student.studentId;
+
+        const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
+          .sort({ datePaid: 1 })
+          .lean();
+
+        const recentScores = await Score.find({ studentId: studentId })
+          .populate("testId", "subject")
+          .sort({ createdAt: 1 })
+          .lean();
+
+        const allAttendanceRecords = await Attendance.find({
+          "records.studentId": studentId,
+        }).lean();
+
+        let presentDays = 0;
+        let absentDays = 0;
+        let totalDays = 0;
+
+        allAttendanceRecords.forEach((dayRecord) => {
+          totalDays++;
+          const record = dayRecord.records.find((r) => r.studentId === studentId);
+          if (record && record.status === "P") presentDays++;
+          if (record && record.status === "A") absentDays++;
+        });
+
+        const attendancePercentage =
+          totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+        let studentRank = "-";
+        const rankIndex = allStudentsData.findIndex(s => s._id.toString() === student._id.toString());
+        if (rankIndex !== -1) {
+          studentRank = rankIndex + 1;
+        }
+
+        const doc = new PDFDocument({ 
+          size: "A4", 
+          margins: { top: 40, left: 40, right: 40, bottom: 0 },
+          bufferPages: true 
+        });
+
+        const safeName = `${student.standard}-${student.studentName}-${student.studentId}`.replace(/[^a-zA-Z0-9- ]/g, "").replace(/\s+/g, "-");
+        
+        archive.append(doc, { name: `${safeName}.pdf` });
+        await drawStudentReport(doc, student, {
+          recentFees,
+          recentScores,
+          attendancePercentage,
+          presentDays,
+          absentDays,
+          totalDays,
+          studentRank,
+        });
+        doc.end();
+      }
+
+      await archive.finalize();
+    } catch (err) {
+      console.error("Error generating bulk student reports:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error generating bulk reports");
+      }
+    }
+  }
+);
 
 app.get(
   "/teacher/student_report/:id",
@@ -1642,7 +1731,7 @@ app.get(
         studentRank
       };
 
-      await generateStudentReportPDF(student, stats, res, "inline");
+      await generateStudentReportPDF(student, stats, res, { disposition: "inline", setHeaders: true });
     } catch (err) {
       console.error("Error generating student report:", err);
       res.status(500).send("Error generating student report");

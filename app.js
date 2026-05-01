@@ -250,6 +250,76 @@ app.get(
 );
 
 app.get(
+  "/student/report",
+  ensureDBConnection,
+  requireStudentLogin,
+  async (req, res) => {
+    try {
+      const student = await User.findById(req.session.userId).lean();
+      if (!student) return res.redirect("/student/login");
+
+      const studentId = student.studentId;
+
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
+        .sort({ datePaid: 1 })
+        .lean();
+
+      const recentScores = await Score.find({ studentId: studentId })
+        .populate("testId", "subject")
+        .sort({ createdAt: 1 })
+        .lean();
+
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+      }).lean();
+
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
+
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") presentDays++;
+        if (record && record.status === "A") absentDays++;
+      });
+
+      const attendancePercentage =
+        totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+      const allStudents = await User.find({})
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
+      }
+
+      await generateStudentReportPDF(
+        student,
+        {
+          recentFees,
+          recentScores,
+          attendancePercentage,
+          presentDays,
+          absentDays,
+          totalDays,
+          studentRank,
+        },
+        res
+      );
+    } catch (err) {
+      console.error("Error generating student report:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Server Error");
+      }
+    }
+  }
+);
+
+app.get(
   "/student/edit_profile",
   ensureDBConnection,
   requireStudentLogin,
@@ -704,9 +774,9 @@ async function generateReceiptPDF(fee, student, res, disposition) {
     }
   } else {
     doc.rect(0, 0, W, 110).fill("#4b2d84");
-    doc.fillColor("white").font("Helvetica-Bold").fontSize(22)
+    doc.fillColor("white").font("Times-Bold").fontSize(22)
       .text("PAYMENT RECEIPT", M, 36, { width: W - M * 2, align: "center" });
-    doc.fillColor("rgba(255,255,255,0.7)").font("Helvetica").fontSize(10)
+    doc.fillColor("rgba(255,255,255,0.7)").font("Times-Roman").fontSize(10)
       .text("TUITION HUB EDUCATION CENTRE", M, 66, { width: W - M * 2, align: "center" });
     headerHeight = 110;
   }
@@ -714,7 +784,7 @@ async function generateReceiptPDF(fee, student, res, disposition) {
   doc.rect(0, headerHeight, W, 4).fill("#4b2d84");
 
   const titleY = headerHeight + 14;
-  doc.fillColor("#4b2d84").font("Helvetica-Bold").fontSize(18)
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(18)
     .text("PAYMENT RECEIPT", M, titleY, { width: W - M * 2, align: "center" });
 
   const titleUnderlineY = titleY + 28;
@@ -722,7 +792,7 @@ async function generateReceiptPDF(fee, student, res, disposition) {
 
 
   const metaY = titleUnderlineY + 12;
-  doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(9)
     .text(`Receipt ID: ${fee._id}`, M, metaY, { align: "right", width: W - M * 2 });
   doc.fillColor("#6b7280").fontSize(9)
     .text(`Generated: ${new Date().toLocaleDateString("en-IN", { day: "numeric", month: "long", year: "numeric" })}`, M, metaY + 14, { align: "right", width: W - M * 2 });
@@ -730,13 +800,13 @@ async function generateReceiptPDF(fee, student, res, disposition) {
   const stuY = metaY + 42;
   doc.rect(M, stuY, W - M * 2, 80).fill("#f5f3ff").stroke("#e9d5ff");
 
-  doc.fillColor("#4b2d84").font("Helvetica-Bold").fontSize(11)
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(11)
     .text("BILLED TO", M + 16, stuY + 12);
 
-  doc.fillColor("#1f2937").font("Helvetica-Bold").fontSize(13)
+  doc.fillColor("#1f2937").font("Times-Bold").fontSize(13)
     .text(student.studentName, M + 16, stuY + 28);
 
-  doc.fillColor("#6b7280").font("Helvetica").fontSize(10)
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
     .text(`Student ID: ${student.studentId}   •   Class: ${student.standard}`, M + 16, stuY + 48);
 
   const tableY = stuY + 100;
@@ -753,7 +823,7 @@ async function generateReceiptPDF(fee, student, res, disposition) {
   ];
 
   doc.rect(col1, tableY, W - M * 2, rowH).fill("#4b2d84");
-  doc.fillColor("white").font("Helvetica-Bold").fontSize(10)
+  doc.fillColor("white").font("Times-Bold").fontSize(10)
     .text("DESCRIPTION", col1 + 14, tableY + 11)
     .text("DETAILS", col2, tableY + 11);
 
@@ -762,33 +832,33 @@ async function generateReceiptPDF(fee, student, res, disposition) {
     const bg = i % 2 === 0 ? "#ffffff" : "#faf5ff";
     doc.rect(col1, y, W - M * 2, rowH).fill(bg).stroke("#e5e7eb");
 
-    doc.fillColor("#374151").font("Helvetica").fontSize(10)
+    doc.fillColor("#374151").font("Times-Roman").fontSize(10)
       .text(row[0], col1 + 14, y + 11);
 
     const isStatus = row[0] === "Status";
     if (isStatus) {
       doc.rect(col2, y + 7, 52, 18).fill("#d1fae5").stroke("#6ee7b7");
-      doc.fillColor("#065f46").font("Helvetica-Bold").fontSize(10)
+      doc.fillColor("#065f46").font("Times-Bold").fontSize(10)
         .text(row[1], col2 + 6, y + 11);
     } else {
-      doc.fillColor("#111827").font("Helvetica-Bold").fontSize(10)
+      doc.fillColor("#111827").font("Times-Bold").fontSize(10)
         .text(row[1], col2, y + 11);
     }
   });
 
   const totalY = tableY + rowH + rows.length * rowH;
   doc.rect(col1, totalY, W - M * 2, rowH + 4).fill("#4b2d84");
-  doc.fillColor("white").font("Helvetica-Bold").fontSize(11)
+  doc.fillColor("white").font("Times-Bold").fontSize(11)
     .text("TOTAL PAID", col1 + 14, totalY + 12)
     .text(`Rs. ${Number(fee.amount).toLocaleString("en-IN")}`, col2, totalY + 12);
 
   const footerY = totalY + rowH + 20;
   doc.rect(0, footerY + 40, W, 2).fill("#e9d5ff");
 
-  doc.fillColor("#9ca3af").font("Helvetica-Oblique").fontSize(9)
+  doc.fillColor("#9ca3af").font("Times-Italic").fontSize(9)
     .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 50, { align: "center", width: W - M * 2 });
 
-  doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(9)
     .text("TUITION HUB Education Centre  •  Andheri (East), Mumbai 400059  •  9967466955", M, footerY + 66, { align: "center", width: W - M * 2 });
 
   doc.end();
@@ -1228,6 +1298,354 @@ app.get(
     } catch (err) {
       console.error("Error loading student profile:", err);
       res.status(500).send("Error loading student profile");
+    }
+  }
+);
+
+async function generateStudentReportPDF(student, stats, res, disposition = "inline") {
+  const doc = new PDFDocument({ 
+    size: "A4", 
+    margins: { top: 40, left: 40, right: 40, bottom: 0 },
+    bufferPages: true 
+  });
+
+  const safeName = `${student.standard}-${student.studentName}-${student.studentId}`.replace(/[^a-zA-Z0-9- ]/g, "").replace(/\s+/g, "-");
+
+  res.setHeader("Content-Type", "application/pdf");
+  res.setHeader(
+    "Content-Disposition",
+    `${disposition}; filename=${safeName}.pdf`
+  );
+  doc.pipe(res);
+
+  const W = doc.page.width;
+  const H = doc.page.height;
+  const M = 40;
+
+  // Background color for the whole page
+  doc.rect(0, 0, W, H).fill("#fafafa"); 
+
+  const primaryGrad = doc.linearGradient(0, 0, W, 120);
+  primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
+
+  // Header
+  let headerHeight = 150;
+  
+  doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
+  
+  doc.save();
+  doc.fillOpacity(0.1);
+  doc.circle(W - 40, 40, 80).fill("white");
+  doc.circle(W - 80, 100, 50).fill("white");
+  doc.circle(40, 20, 60).fill("white");
+  doc.restore();
+
+  const headerUrl = process.env.CLOUDINARY_HEADER_URL;
+
+  if (headerUrl) {
+    try {
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const imgBuffer = Buffer.from(response.data, "binary");
+      // Embed image with proportional scaling (no stretching)
+      doc.image(imgBuffer, M, 20, { fit: [W - 2*M, 80], align: 'center' });
+    } catch (_) {
+      console.error("Header image failed to load");
+    }
+  }
+
+  // Header Text - placed cleanly below the image area
+  doc.fillColor("white").font("Times-Bold").fontSize(24)
+    .text("STUDENT REPORT", M, 110, { align: "left", characterSpacing: 1 });
+    
+  doc.fillColor("white").font("Times-Bold").fontSize(10)
+    .text(`Date: ${new Date().toLocaleDateString('en-IN')}`, W - M - 150, 115, { align: "right", width: 150 });
+  doc.fillColor("#e9d5ff").font("Times-Bold").fontSize(10)
+    .text(`Student ID: ${student.studentId}`, W - M - 150, 130, { align: "right", width: 150 });
+
+  let cursorY = headerHeight + 30;
+
+  // Student Profile Card
+  const cardW = W - 2*M;
+  doc.roundedRect(M, cursorY, cardW, 110, 8).fill("white");
+  doc.roundedRect(M, cursorY, cardW, 110, 8).stroke("#e5e7eb");
+  
+  doc.save();
+  doc.roundedRect(M, cursorY, cardW, 110, 8).clip();
+  doc.rect(M, cursorY, 6, 110).fill("#bde045");
+  doc.restore();
+
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(11)
+    .text("STUDENT PROFILE", M + 25, cursorY + 15, { characterSpacing: 1 });
+  
+  doc.fillColor("#111827").font("Times-Bold").fontSize(22)
+    .text(student.studentName, M + 25, cursorY + 35);
+  
+  // Data items
+  const dataY = cursorY + 65;
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
+    .text("Standard", M + 25, dataY)
+    .fillColor("#111827").font("Times-Bold").text(student.standard, M + 25, dataY + 15);
+
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
+    .text("Mobile No", M + 140, dataY)
+    .fillColor("#111827").font("Times-Bold").text(student.mobileNo, M + 140, dataY + 15);
+
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
+    .text("Class Rank", M + 260, dataY)
+    .fillColor("#d97706").font("Times-Bold").text(`#${stats.studentRank}`, M + 260, dataY + 15);
+
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
+    .text("Reward Points", M + 360, dataY)
+    .fillColor("#10b981").font("Times-Bold").text(`${Math.trunc(student.points || 0)} pts`, M + 360, dataY + 15);
+
+  cursorY += 140;
+
+  // Attendance Summary Card
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(12)
+    .text("ATTENDANCE OVERVIEW", M, cursorY, { characterSpacing: 1 });
+  cursorY += 25;
+
+  doc.roundedRect(M, cursorY, cardW, 80, 8).fill("white").stroke("#e5e7eb");
+  
+  const boxW = cardW / 4;
+  
+  // Box 1: Total Days
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Total Days", M, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#111827").font("Times-Bold").fontSize(22).text(stats.totalDays, M, cursorY + 35, { width: boxW, align: "center" });
+  
+  doc.rect(M + boxW, cursorY + 15, 1, 50).fill("#f3f4f6");
+
+  // Box 2: Present
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Present", M + boxW, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#059669").font("Times-Bold").fontSize(22).text(stats.presentDays, M + boxW, cursorY + 35, { width: boxW, align: "center" });
+
+  doc.rect(M + boxW*2, cursorY + 15, 1, 50).fill("#f3f4f6");
+
+  // Box 3: Absent
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Absent", M + boxW*2, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#dc2626").font("Times-Bold").fontSize(22).text(stats.absentDays, M + boxW*2, cursorY + 35, { width: boxW, align: "center" });
+
+  doc.rect(M + boxW*3, cursorY + 15, 1, 50).fill("#f3f4f6");
+
+  // Box 4: Percentage
+  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10).text("Percentage", M + boxW*3, cursorY + 20, { width: boxW, align: "center" });
+  doc.fillColor("#4b2d84").font("Times-Bold").fontSize(22).text(`${stats.attendancePercentage}%`, M + boxW*3, cursorY + 35, { width: boxW, align: "center" });
+
+  cursorY += 110;
+
+  function checkPageAdd(heightNeeded) {
+    if (cursorY + heightNeeded > doc.page.height - 60) {
+      doc.addPage();
+      doc.rect(0, 0, W, doc.page.height).fill("#fafafa");
+      
+      doc.rect(0, 0, W, 40).fill(primaryGrad);
+      doc.fillColor("white").font("Times-Bold").fontSize(14)
+        .text("STUDENT REPORT", M, 13);
+      doc.fillColor("#e9d5ff").font("Times-Roman").fontSize(10)
+        .text(student.studentName, W - M - 200, 15, { align: "right", width: 200 });
+        
+      cursorY = 70;
+    }
+  }
+
+  function drawTableHeader(title, columns, widths) {
+    checkPageAdd(80);
+    
+    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(12)
+      .text(title.toUpperCase(), M, cursorY, { characterSpacing: 1 });
+    cursorY += 20;
+
+    doc.roundedRect(M, cursorY, cardW, 25, 4).fill("#ede9fe");
+    
+    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+    let curX = M + 15;
+    columns.forEach((col, i) => {
+      doc.text(col.toUpperCase(), curX, cursorY + 8, { width: widths[i], characterSpacing: 0.5 });
+      curX += widths[i];
+    });
+    cursorY += 25;
+  }
+
+  // Academic Performance Table
+  const academicCols = ["Date", "Test Name", "Subject", "Score", "Percentage"];
+  const academicWidths = [80, 170, 120, 60, 80];
+  
+  drawTableHeader("Academic Performance", academicCols, academicWidths);
+
+  if (stats.recentScores && stats.recentScores.length > 0) {
+    stats.recentScores.forEach((score, i) => {
+      checkPageAdd(35);
+      
+      const isEven = i % 2 === 0;
+      if (!isEven) {
+        doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
+      } else {
+        doc.rect(M, cursorY, cardW, 25).fill("white");
+      }
+      doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
+      
+      let curX = M + 15;
+      
+      doc.fillColor("#4b5563").font("Times-Roman").fontSize(9);
+      doc.text(new Date(score.createdAt).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: academicWidths[0] });
+      curX += academicWidths[0];
+      
+      doc.fillColor("#111827").font("Times-Bold");
+      doc.text(score.testName, curX, cursorY + 8, { width: academicWidths[1] });
+      curX += academicWidths[1];
+      
+      doc.fillColor("#4b5563").font("Times-Roman");
+      doc.text(score.testId?.subject || score.subject || "-", curX, cursorY + 8, { width: academicWidths[2] });
+      curX += academicWidths[2];
+      
+      doc.fillColor("#4b5563").font("Times-Bold");
+      doc.text(score.score, curX, cursorY + 8, { width: academicWidths[3] });
+      curX += academicWidths[3];
+      
+      let pColor = score.percentage >= 75 ? "#059669" : (score.percentage < 40 ? "#dc2626" : "#d97706");
+      doc.fillColor(pColor).font("Times-Bold");
+      doc.text(`${score.percentage}%`, curX, cursorY + 8, { width: academicWidths[4] });
+      
+      cursorY += 26;
+    });
+  } else {
+    doc.roundedRect(M, cursorY, cardW, 40, 4).fill("white").stroke("#e5e7eb");
+    doc.fillColor("#6b7280").font("Times-Italic").fontSize(10)
+      .text("No test results recorded yet.", M, cursorY + 15, { align: "center", width: cardW });
+    cursorY += 50;
+  }
+  
+  cursorY += 30;
+
+  // Fee Payments Table
+  const feeCols = ["For Month", "Date Paid", "Method", "Amount", "Status"];
+  const feeWidths = [140, 100, 100, 100, 70];
+  
+  drawTableHeader("Fee Payment History", feeCols, feeWidths);
+
+  if (stats.recentFees && stats.recentFees.length > 0) {
+    stats.recentFees.forEach((fee, i) => {
+      checkPageAdd(35);
+      
+      const isEven = i % 2 === 0;
+      if (!isEven) {
+        doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
+      } else {
+        doc.rect(M, cursorY, cardW, 25).fill("white");
+      }
+      doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
+      
+      let curX = M + 15;
+      
+      doc.fillColor("#111827").font("Times-Bold").fontSize(9);
+      doc.text(`${fee.month} ${fee.year}`, curX, cursorY + 8, { width: feeWidths[0] });
+      curX += feeWidths[0];
+      
+      doc.fillColor("#4b5563").font("Times-Roman");
+      doc.text(new Date(fee.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: feeWidths[1] });
+      curX += feeWidths[1];
+      
+      doc.fillColor("#6b7280").font("Times-Roman");
+      doc.text(fee.method || "-", curX, cursorY + 8, { width: feeWidths[2] });
+      curX += feeWidths[2];
+      
+      doc.fillColor("#4b2d84").font("Times-Bold");
+      doc.text(`Rs. ${Number(fee.amount).toLocaleString("en-IN")}`, curX, cursorY + 8, { width: feeWidths[3] });
+      curX += feeWidths[3];
+      
+      // Status Badge
+      doc.roundedRect(curX, cursorY + 5, 45, 14, 7).fill("#d1fae5");
+      doc.fillColor("#065f46").font("Times-Bold").fontSize(8);
+      doc.text("PAID", curX, cursorY + 9, { width: 45, align: "center" });
+      
+      cursorY += 26;
+    });
+  } else {
+    doc.roundedRect(M, cursorY, cardW, 40, 4).fill("white").stroke("#e5e7eb");
+    doc.fillColor("#6b7280").font("Times-Italic").fontSize(10)
+      .text("No fee payments recorded.", M, cursorY + 15, { align: "center", width: cardW });
+    cursorY += 50;
+  }
+
+  // Global Footer for all pages
+  const range = doc.bufferedPageRange();
+  for (let i = range.start; i < range.start + range.count; i++) {
+    doc.switchToPage(i);
+    const footerY = doc.page.height - 40;
+    doc.rect(M, footerY, cardW, 1).fill("#e5e7eb");
+    
+    doc.fillColor("#9ca3af").font("Times-Bold").fontSize(8)
+      .text("TUITION HUB EDUCATION CENTRE", M, footerY + 10, { align: "left", characterSpacing: 1 });
+      
+    doc.fillColor("#9ca3af").font("Times-Roman").fontSize(8)
+      .text(`Page ${i + 1} of ${range.count}`, M, footerY + 10, { align: "right", width: cardW });
+  }
+
+  doc.end();
+}
+
+app.get(
+  "/teacher/student_report/:id",
+  ensureDBConnection,
+  requireTeacherLogin,
+  async (req, res) => {
+    try {
+      const student = await User.findById(req.params.id).lean();
+      if (!student) return res.status(404).send("Student not found");
+
+      const studentId = student.studentId;
+
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid" })
+        .sort({ datePaid: 1 })
+        .lean();
+
+      const recentScores = await Score.find({ studentId: studentId })
+        .populate("testId", "subject")
+        .sort({ createdAt: 1 })
+        .lean();
+
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+      }).lean();
+
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
+
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") presentDays++;
+        if (record && record.status === "A") absentDays++;
+      });
+
+      const attendancePercentage =
+        totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+      const allStudents = await User.find({})
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
+      }
+
+      const stats = {
+        recentFees,
+        recentScores,
+        attendancePercentage,
+        presentDays,
+        absentDays,
+        totalDays,
+        studentRank
+      };
+
+      await generateStudentReportPDF(student, stats, res, "inline");
+    } catch (err) {
+      console.error("Error generating student report:", err);
+      res.status(500).send("Error generating student report");
     }
   }
 );

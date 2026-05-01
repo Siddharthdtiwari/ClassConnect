@@ -130,8 +130,11 @@
         </p>
       </div>
 
-      <div class="relative z-10 flex items-center gap-3 mt-6 sm:mt-0">
-        <button onclick="window.location.href='/student/edit_profile'" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg">
+      <div class="relative z-10 flex flex-wrap items-center gap-3 mt-6 sm:mt-0">
+        <button onclick="window.open('/student/report', '_blank')" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+          🖨️ Print Report
+        </button>
+        <button onclick="window.location.href='/student/edit_profile'" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
           ✏️ Edit Profile
         </button>
         <button onclick="window.location.href='/student/logout'" class="py-2.5 px-6 btn-outline-white text-sm font-bold">

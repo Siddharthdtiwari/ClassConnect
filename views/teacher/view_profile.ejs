@@ -88,9 +88,14 @@
         </p>
       </div>
 
-      <button onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'" class="mt-4 sm:mt-0 py-2 px-6 btn-action text-sm shadow-md">
-        ✏️ Edit Profile
-      </button>
+      <div class="flex gap-3 mt-4 sm:mt-0">
+        <button onclick="window.open('/teacher/student_report/<%= student._id %>', '_blank')" class="py-2 px-6 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-full transition-all shadow-sm text-sm flex items-center gap-2">
+          🖨️ Print Report
+        </button>
+        <button onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'" class="py-2 px-6 btn-action text-sm shadow-md flex items-center gap-2">
+          ✏️ Edit Profile
+        </button>
+      </div>
     </header>
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">

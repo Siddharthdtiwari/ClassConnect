@@ -1309,8 +1309,31 @@ async function drawStudentReport(doc, student, stats) {
   const H = doc.page.height;
   const M = 40;
 
+  function drawWatermark() {
+    doc.save();
+    doc.fillOpacity(0.1);
+    doc.fillColor("#4b2d84");
+    doc.font("Times-Bold").fontSize(10);
+
+    const watermarkText = `TUITION HUB EDU CENTER - ${student.studentName.toUpperCase()} (${student.studentId})    `;
+    const stepX = 180;
+    const stepY = 80;
+
+    for (let y = -50; y < doc.page.height + 100; y += stepY) {
+      for (let x = -50; x < doc.page.width + 100; x += stepX) {
+        doc.save();
+        doc.translate(x, y);
+        doc.rotate(-30);
+        doc.text(watermarkText, 0, 0);
+        doc.restore();
+      }
+    }
+    doc.restore();
+  }
+
   // Background color for the whole page
   doc.rect(0, 0, W, H).fill("#fafafa");
+  drawWatermark();
 
   const primaryGrad = doc.linearGradient(0, 0, W, 120);
   primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
@@ -1366,25 +1389,22 @@ async function drawStudentReport(doc, student, stats) {
   doc.fillColor("#111827").font("Times-Bold").fontSize(22)
     .text(student.studentName, M + 25, cursorY + 35);
 
-  // Data items
+  // Data items with small icons
   const dataY = cursorY + 65;
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
-    .text("Standard", M + 25, dataY)
-    .fillColor("#111827").font("Times-Bold").text(student.standard, M + 25, dataY + 15);
+  doc.fontSize(10);
+  doc.fillColor("#6b7280").font("Times-Roman").text("Standard", M + 25, dataY)
+    .fillColor("#111827").font("Times-Bold").text(`Grade ${student.standard}`, M + 25, dataY + 15);
 
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
-    .text("Mobile No", M + 140, dataY)
-    .fillColor("#111827").font("Times-Bold").text(student.mobileNo, M + 140, dataY + 15);
+  doc.fillColor("#6b7280").font("Times-Roman").text("Mobile No", M + 140, dataY)
+    .fillColor("#111827").font("Times-Bold").text(`+91 ${student.mobileNo}`, M + 140, dataY + 15);
 
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
-    .text("Class Rank", M + 260, dataY)
-    .fillColor("#d97706").font("Times-Bold").text(`#${stats.studentRank}`, M + 260, dataY + 15);
+  doc.fillColor("#6b7280").font("Times-Roman").text("Class Rank", M + 260, dataY)
+    .fillColor("#d97706").font("Times-Bold").text(`Rank #${stats.studentRank}`, M + 260, dataY + 15);
 
-  doc.fillColor("#6b7280").font("Times-Roman").fontSize(10)
-    .text("Reward Points", M + 360, dataY)
-    .fillColor("#10b981").font("Times-Bold").text(`${Math.trunc(student.points || 0)} pts`, M + 360, dataY + 15);
+  doc.fillColor("#6b7280").font("Times-Roman").text("Reward Points", M + 360, dataY)
+    .fillColor("#10b981").font("Times-Bold").text(`${Math.trunc(student.points || 0)} Points`, M + 360, dataY + 15);
 
-  cursorY += 140;
+  cursorY += 135;
 
   // Attendance Summary Card
   doc.fillColor("#4b2d84").font("Times-Bold").fontSize(12)
@@ -1423,6 +1443,7 @@ async function drawStudentReport(doc, student, stats) {
     if (cursorY + heightNeeded > doc.page.height - 60) {
       doc.addPage();
       doc.rect(0, 0, W, doc.page.height).fill("#fafafa");
+      drawWatermark();
 
       doc.rect(0, 0, W, 40).fill(primaryGrad);
       doc.fillColor("white").font("Times-Bold").fontSize(14)
@@ -1452,58 +1473,7 @@ async function drawStudentReport(doc, student, stats) {
     cursorY += 25;
   }
 
-  // Academic Performance Table
-  const academicCols = ["Date", "Test Name", "Subject", "Score", "Percentage"];
-  const academicWidths = [80, 170, 120, 60, 80];
-
-  drawTableHeader("Academic Performance", academicCols, academicWidths);
-
-  if (stats.recentScores && stats.recentScores.length > 0) {
-    stats.recentScores.forEach((score, i) => {
-      checkPageAdd(35);
-
-      const isEven = i % 2 === 0;
-      if (!isEven) {
-        doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
-      } else {
-        doc.rect(M, cursorY, cardW, 25).fill("white");
-      }
-      doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
-
-      let curX = M + 15;
-
-      doc.fillColor("#4b5563").font("Times-Roman").fontSize(9);
-      doc.text(new Date(score.createdAt).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: academicWidths[0] });
-      curX += academicWidths[0];
-
-      doc.fillColor("#111827").font("Times-Bold");
-      doc.text(score.testName, curX, cursorY + 8, { width: academicWidths[1] });
-      curX += academicWidths[1];
-
-      doc.fillColor("#4b5563").font("Times-Roman");
-      doc.text(score.testId?.subject || score.subject || "-", curX, cursorY + 8, { width: academicWidths[2] });
-      curX += academicWidths[2];
-
-      doc.fillColor("#4b5563").font("Times-Bold");
-      doc.text(score.score, curX, cursorY + 8, { width: academicWidths[3] });
-      curX += academicWidths[3];
-
-      let pColor = score.percentage >= 75 ? "#059669" : (score.percentage < 40 ? "#dc2626" : "#d97706");
-      doc.fillColor(pColor).font("Times-Bold");
-      doc.text(`${score.percentage}%`, curX, cursorY + 8, { width: academicWidths[4] });
-
-      cursorY += 26;
-    });
-  } else {
-    doc.roundedRect(M, cursorY, cardW, 40, 4).fill("white").stroke("#e5e7eb");
-    doc.fillColor("#6b7280").font("Times-Italic").fontSize(10)
-      .text("No test results recorded yet.", M, cursorY + 15, { align: "center", width: cardW });
-    cursorY += 50;
-  }
-
-  cursorY += 30;
-
-  // Fee Payments Table (Academic Year: May to April)
+  // Fee Payments Table (Move this up to Page 1)
   const feeCols = ["For Month", "Date Paid", "Method", "Amount", "Status"];
   const feeWidths = [140, 100, 100, 100, 70];
 
@@ -1512,7 +1482,7 @@ async function drawStudentReport(doc, student, stats) {
   const monthsList = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
   const now = new Date();
   let startYear = now.getFullYear();
-  if (now.getMonth() < 5) startYear--; // If currently Jan-Apr, academic year started last year
+  if (now.getMonth() < 5) startYear--;
 
   const academicFees = monthsList.map((m, idx) => {
     const year = idx < 8 ? startYear : startYear + 1;
@@ -1521,61 +1491,80 @@ async function drawStudentReport(doc, student, stats) {
   });
 
   academicFees.forEach((item, i) => {
-    checkPageAdd(35);
-
     const isEven = i % 2 === 0;
-    if (!isEven) {
-      doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
-    } else {
-      doc.rect(M, cursorY, cardW, 25).fill("white");
-    }
-    doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
+    if (!isEven) doc.rect(M, cursorY, cardW, 20).fill("#f3f4f6");
+    else doc.rect(M, cursorY, cardW, 20).fill("white");
+    doc.rect(M, cursorY + 20, cardW, 0.5).fill("#e5e7eb");
 
     let curX = M + 15;
-
-    // Month & Year
-    doc.fillColor("#111827").font("Times-Bold").fontSize(9);
-    doc.text(`${item.month} ${item.year}`, curX, cursorY + 8, { width: feeWidths[0] });
+    doc.fillColor("#111827").font("Times-Bold").fontSize(8).text(`${item.month} ${item.year}`, curX, cursorY + 6, { width: feeWidths[0] });
     curX += feeWidths[0];
 
     if (item.record) {
-      // Paid Case
-      doc.fillColor("#4b5563").font("Times-Roman");
-      doc.text(new Date(item.record.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: feeWidths[1] });
+      doc.fillColor("#4b5563").font("Times-Roman").fontSize(8);
+      doc.text(new Date(item.record.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 6, { width: feeWidths[1] });
       curX += feeWidths[1];
-
-      doc.fillColor("#6b7280").font("Times-Roman");
-      doc.text(item.record.method || "-", curX, cursorY + 8, { width: feeWidths[2] });
+      doc.text(item.record.method || "-", curX, cursorY + 6, { width: feeWidths[2] });
       curX += feeWidths[2];
-
-      doc.fillColor("#4b2d84").font("Times-Bold");
-      doc.text(`Rs. ${Number(item.record.amount).toLocaleString("en-IN")}`, curX, cursorY + 8, { width: feeWidths[3] });
+      doc.fillColor("#4b2d84").font("Times-Bold").text(`Rs. ${Number(item.record.amount).toLocaleString("en-IN")}`, curX, cursorY + 6, { width: feeWidths[3] });
       curX += feeWidths[3];
-
-      // Status Badge (Paid)
-      doc.roundedRect(curX, cursorY + 5, 45, 14, 7).fill("#d1fae5");
-      doc.fillColor("#065f46").font("Times-Bold").fontSize(8);
-      doc.text("PAID", curX, cursorY + 9, { width: 45, align: "center" });
+      doc.roundedRect(curX, cursorY + 4, 40, 12, 6).fill("#d1fae5");
+      doc.fillColor("#065f46").fontSize(7).text("PAID", curX, cursorY + 7, { width: 40, align: "center" });
     } else {
-      // Pending Case
-      doc.fillColor("#9ca3af").font("Times-Italic");
-      doc.text("-", curX, cursorY + 8, { width: feeWidths[1] });
+      doc.fillColor("#9ca3af").font("Times-Italic").fontSize(8);
+      doc.text("-", curX, cursorY + 6, { width: feeWidths[1] });
       curX += feeWidths[1];
-
-      doc.text("-", curX, cursorY + 8, { width: feeWidths[2] });
+      doc.text("-", curX, cursorY + 6, { width: feeWidths[2] });
       curX += feeWidths[2];
-
-      doc.text("-", curX, cursorY + 8, { width: feeWidths[3] });
+      doc.text("-", curX, cursorY + 6, { width: feeWidths[3] });
       curX += feeWidths[3];
-
-      // Status Badge (Pending)
-      doc.roundedRect(curX, cursorY + 5, 55, 14, 7).fill("#fee2e2");
-      doc.fillColor("#991b1b").font("Times-Bold").fontSize(7);
-      doc.text("PENDING", curX, cursorY + 9, { width: 55, align: "center" });
+      doc.roundedRect(curX, cursorY + 4, 50, 12, 6).fill("#fee2e2");
+      doc.fillColor("#991b1b").fontSize(6.5).text("PENDING", curX, cursorY + 7, { width: 50, align: "center" });
     }
-
-    cursorY += 26;
+    cursorY += 21;
   });
+
+  // Force Academic Performance to Page 2
+  doc.addPage();
+  doc.rect(0, 0, W, doc.page.height).fill("#fafafa");
+  drawWatermark();
+  doc.rect(0, 0, W, 40).fill(primaryGrad);
+  doc.fillColor("white").font("Times-Bold").fontSize(14).text("STUDENT PERFORMANCE REPORT", M, 13);
+  doc.fillColor("#e9d5ff").font("Times-Roman").fontSize(10).text(student.studentName, W - M - 200, 15, { align: "right", width: 200 });
+  cursorY = 70;
+
+  // Academic Performance Table
+  const academicCols = ["Date", "Test Name", "Subject", "Score", "Percentage"];
+  const academicWidths = [80, 170, 120, 60, 80];
+
+  drawTableHeader("Detailed Academic Performance", academicCols, academicWidths);
+
+  if (stats.recentScores && stats.recentScores.length > 0) {
+    stats.recentScores.forEach((score, i) => {
+      checkPageAdd(35);
+      const isEven = i % 2 === 0;
+      if (!isEven) doc.rect(M, cursorY, cardW, 25).fill("#f3f4f6");
+      else doc.rect(M, cursorY, cardW, 25).fill("white");
+      doc.rect(M, cursorY + 25, cardW, 1).fill("#e5e7eb");
+
+      let curX = M + 15;
+      doc.fillColor("#4b5563").font("Times-Roman").fontSize(9).text(new Date(score.createdAt).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: academicWidths[0] });
+      curX += academicWidths[0];
+      doc.fillColor("#111827").font("Times-Bold").text(score.testName, curX, cursorY + 8, { width: academicWidths[1] });
+      curX += academicWidths[1];
+      doc.fillColor("#4b5563").font("Times-Roman").text(score.testId?.subject || score.subject || "-", curX, cursorY + 8, { width: academicWidths[2] });
+      curX += academicWidths[2];
+      doc.fillColor("#4b5563").font("Times-Bold").text(score.score, curX, cursorY + 8, { width: academicWidths[3] });
+      curX += academicWidths[3];
+      let pColor = score.percentage >= 75 ? "#059669" : (score.percentage < 40 ? "#dc2626" : "#d97706");
+      doc.fillColor(pColor).font("Times-Bold").text(`${score.percentage}%`, curX, cursorY + 8, { width: academicWidths[4] });
+      cursorY += 26;
+    });
+  } else {
+    doc.roundedRect(M, cursorY, cardW, 40, 4).fill("white").stroke("#e5e7eb");
+    doc.fillColor("#6b7280").font("Times-Italic").fontSize(10).text("No test results recorded yet.", M, cursorY + 15, { align: "center", width: cardW });
+    cursorY += 50;
+  }
 
   // Global Footer for all pages
   const range = doc.bufferedPageRange();

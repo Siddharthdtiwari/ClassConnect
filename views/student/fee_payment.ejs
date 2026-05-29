@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <%- include('../partials/background') %>
+
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -26,11 +27,13 @@
       color: #166534;
       border: 1px solid rgba(34, 197, 94, 0.3);
     }
+
     .status-due {
       background: rgba(239, 68, 68, 0.1);
       color: #991b1b;
       border: 1px solid rgba(239, 68, 68, 0.3);
     }
+
     .status-upcoming {
       background: rgba(59, 130, 246, 0.1);
       color: #1e3a8a;
@@ -43,6 +46,7 @@
       border: 1px solid var(--b);
       background: var(--bgc);
     }
+
     .fee-row:hover {
       transform: translateX(4px);
       box-shadow: 0 6px 20px var(--pg);
@@ -66,16 +70,19 @@
       transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       border: 1px solid transparent;
     }
+
     .receipt-btn:hover {
       transform: translateY(-2px);
       box-shadow: 0 4px 12px var(--pg);
       background: var(--pm);
     }
+
     .receipt-btn-outline {
       background: transparent;
       color: var(--pt);
       border: 1px solid var(--p);
     }
+
     .receipt-btn-outline:hover {
       background: var(--p);
       color: white;
@@ -92,7 +99,9 @@
       <div class="relative z-10">
         <div class="flex justify-center sm:justify-start mb-6">
           <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+            </svg>
             Dashboard
           </a>
         </div>
@@ -129,19 +138,17 @@
 
           <!-- Pay Button -->
           <% if (totalDue > 0) { %>
-          <button id="pay-button"
-            class="btn-primary w-full py-4 text-base flex justify-center shadow-xl"
-            data-key="<%= razorpayKeyId %>"
-            data-amount="<%= totalDue %>"
-            data-name="<%= student.studentName %>"
-            data-email="student@example.com"
-            data-contact="<%= student.mobileNo %>">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path></svg>
+          <button id="pay-button" class="btn-primary w-full py-4 text-base flex justify-center shadow-xl" data-key="<%= razorpayKeyId %>" data-amount="<%= totalDue %>" data-name="<%= student.studentName %>" data-email="<%= student.email || '' %>" data-contact="<%= student.mobileNo %>">
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z"></path>
+            </svg>
             Pay ₹<%= totalDue.toLocaleString() %> Now
           </button>
           <% } else { %>
           <button class="btn-outline w-full py-4 text-base flex justify-center cursor-not-allowed opacity-50" disabled>
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
+            </svg>
             All Fees Cleared
           </button>
           <% } %>
@@ -187,7 +194,9 @@
               <!-- Left: Month Info -->
               <div class="flex items-center gap-5 min-w-0">
                 <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner border border-white/20 <%= f.status === 'Paid' ? 'bg-emerald-500/10' : f.status === 'Due' ? 'bg-red-500/10' : 'bg-blue-500/10' %>">
-                  <svg class="w-6 h-6 <%= f.status === 'Paid' ? 'text-emerald-500' : f.status === 'Due' ? 'text-red-500' : 'text-blue-500' %> drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path></svg>
+                  <svg class="w-6 h-6 <%= f.status === 'Paid' ? 'text-emerald-500' : f.status === 'Due' ? 'text-red-500' : 'text-blue-500' %> drop-shadow-sm" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"></path>
+                  </svg>
                 </div>
                 <div class="min-w-0">
                   <p class="font-unbounded font-bold text-theme-fg text-lg">Tuition Fee — <span class="text-theme-pt"><%= f.month %></span></p>
@@ -195,11 +204,16 @@
                   <p class="text-xs font-mono uppercase tracking-widest text-theme-fdd mt-2">Paid on: <span class="font-bold text-theme-fd"><%= new Date(f.datePaid).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %></span></p>
                   <div class="flex flex-wrap gap-3 mt-4">
                     <a href="/student/receipt/<%= f._id %>/view" target="_blank" class="receipt-btn receipt-btn-outline">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                      </svg>
                       View
                     </a>
                     <a href="/student/receipt/<%= f._id %>" target="_blank" download class="receipt-btn">
-                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                      <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                      </svg>
                       Download
                     </a>
                   </div>

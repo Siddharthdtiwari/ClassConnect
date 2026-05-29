@@ -22,6 +22,7 @@ const feeSchema = new mongoose.Schema(
       required: true,
     },
     studentName: { type: String, required: true },
+    studentEmail: { type: String, trim: true, lowercase: true },
     userRef: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     batch: {
       type: mongoose.Schema.Types.ObjectId,

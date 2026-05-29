@@ -199,6 +199,8 @@ exports.verifyPayment = async (req, res) => {
         const feeData = {
           studentId: student.studentId,
           studentName: student.studentName,
+          studentEmail: student.email || "",
+          userRef: student._id,
           month: dueMonth,
           year: feeYear,
           amount: perMonthAmount,
@@ -211,11 +213,14 @@ exports.verifyPayment = async (req, res) => {
         feeData.razorpay_payment_id = dueMonths.length > 1 ? `${razorpay_payment_id}-${i + 1}` : razorpay_payment_id;
         
         const newFee = new Fee(feeData);
-        await newFee.save();
+        const savedFee = await newFee.save();
         console.log(`Fee record created for ${dueMonth} — payment ID: ${razorpay_payment_id}`);
         
         if (student.email) {
-          sendFeeReceipt(student.email, student.studentName, dueMonth, year, perMonthAmount)
+          sendFeeReceipt(student.email, student.studentName, dueMonth, feeYear, perMonthAmount, {
+            fee: savedFee.toObject(),
+            student: student,
+          })
             .catch(err => console.error("Fee receipt email failed:", err));
         }
       }
@@ -237,7 +242,9 @@ exports.downloadReceipt = async (req, res) => {
   try {
     const fee = await Fee.findById(req.params.feeId).lean();
     if (!fee) return res.send("Receipt not found");
-    const student = await User.findOne({ studentId: fee.studentId }).lean();
+    const student = fee.userRef
+      ? await User.findById(fee.userRef).populate('batch').lean()
+      : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
     await generateReceiptPDF(fee, student, res, "attachment");
   } catch (err) {
     console.error(err);
@@ -249,7 +256,9 @@ exports.viewReceipt = async (req, res) => {
   try {
     const fee = await Fee.findById(req.params.feeId).lean();
     if (!fee) return res.send("Receipt not found");
-    const student = await User.findOne({ studentId: fee.studentId }).lean();
+    const student = fee.userRef
+      ? await User.findById(fee.userRef).populate('batch').lean()
+      : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
     await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error(err);

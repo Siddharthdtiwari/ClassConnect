@@ -1,5 +1,7 @@
 const nodemailer = require("nodemailer");
 require("dotenv").config();
+const path = require("path");
+const { buildReceiptPDFBuffer } = require("./pdfUtils");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -25,26 +27,68 @@ const sendEmail = async (to, subject, htmlContent, attachments = []) => {
   }
 };
 
-const sendFeeReceipt = async (studentEmail, studentName, month, year, amount) => {
+const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, receiptData = null) => {
   const subject = `Fee Receipt: ${month} ${year} - Tuition Hub Education Centre`;
   const htmlContent = `
-    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
-      <div style="background-color: #5d3a9b; padding: 20px; text-align: center;">
-        <h1 style="color: #ffffff; margin: 0;">Tuition Hub Education Centre</h1>
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 680px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; color: #334155; background: #ffffff;">
+      <div style="background: linear-gradient(135deg, #4b2d84 0%, #6b46c1 100%); padding: 28px 30px; text-align: center;">
+        <img src="cid:tuitionhublogo" alt="Tuition Hub Logo" style="height: 58px; margin-bottom: 14px; background: white; padding: 8px; border-radius: 14px; display: inline-block;">
+        <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700; letter-spacing: -0.4px;">Tuition Hub Education Centre</h1>
+        <p style="margin: 10px 0 0; color: rgba(255,255,255,0.82); font-size: 12px; text-transform: uppercase; letter-spacing: 0.18em;">Payment receipt</p>
       </div>
-      <div style="padding: 30px;">
-        <h2 style="color: #5d3a9b; margin-top: 0;">Fee Payment Receipt</h2>
-        <p style="font-size: 16px;">Hello <strong>${studentName}</strong>,</p>
-        <p style="font-size: 16px; line-height: 1.5;">This is to confirm that we have successfully received your fee payment for the month of <strong>${month} ${year}</strong>.</p>
-        <div style="background-color: #f8f9fa; padding: 15px; border-radius: 6px; margin: 20px 0;">
-          <p style="margin: 5px 0; font-size: 16px;"><strong>Amount Paid:</strong> <span style="color: #27ae60;">₹${amount}</span></p>
+      <div style="padding: 32px 30px;">
+        <h2 style="color: #1e293b; margin-top: 0; font-size: 22px; font-weight: 700;">Dear ${studentName},</h2>
+        <p style="font-size: 16px; line-height: 1.7; margin-bottom: 20px; color: #475569;">Thank you for your payment for <strong>${month} ${year}</strong>. Your receipt is attached to this email for your records.</p>
+
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
+          <table style="width: 100%; border-collapse: collapse; font-size: 15px; color: #334155;">
+            <tr>
+              <td style="padding: 8px 0; width: 36%; color: #64748b;">Student</td>
+              <td style="padding: 8px 0; font-weight: 700;">${studentName}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Period</td>
+              <td style="padding: 8px 0; font-weight: 700;">${month} ${year}</td>
+            </tr>
+            <tr>
+              <td style="padding: 8px 0; color: #64748b;">Amount Paid</td>
+              <td style="padding: 8px 0; font-weight: 700; color: #16a34a;">₹${amount}</td>
+            </tr>
+          </table>
         </div>
-        <p style="font-size: 16px;">Thank you for your prompt payment.</p>
-        <p style="font-size: 16px; color: #666; margin-bottom: 0;">Best regards,<br>Tuition Hub Education Centre Administration</p>
+
+        <p style="font-size: 15px; line-height: 1.7; margin-bottom: 24px; color: #475569;">If you have any questions, please reply to this email or contact the office during working hours.</p>
+
+        <p style="font-size: 15px; line-height: 1.7; margin-bottom: 0; color: #334155;">Regards,<br><strong>Tuition Hub Education Centre Administration</strong></p>
+      </div>
+      <div style="background: #f8fafc; padding: 16px 30px; border-top: 1px solid #e2e8f0; text-align: center;">
+        <p style="margin: 0; font-size: 12px; color: #94a3b8;">This is an automated message. Please keep the attached receipt for your records.</p>
       </div>
     </div>
   `;
-  await sendEmail(studentEmail, subject, htmlContent);
+
+  const attachments = [
+    {
+      filename: "logo.png",
+      path: path.join(__dirname, "..", "public", "images", "logo.png"),
+      cid: "tuitionhublogo",
+    },
+  ];
+
+  if (receiptData) {
+    try {
+      const receiptPdf = await buildReceiptPDFBuffer(receiptData.fee, receiptData.student);
+      attachments.push({
+        filename: `receipt-${receiptData.fee._id || `${month}-${year}`}.pdf`,
+        content: receiptPdf,
+        contentType: "application/pdf",
+      });
+    } catch (error) {
+      console.error("Failed to generate receipt PDF attachment:", error);
+    }
+  }
+
+  await sendEmail(studentEmail, subject, htmlContent, attachments);
 };
 
 const sendTestMarks = async (studentEmail, studentName, testName, subjectName, score, maxMarks, percentage) => {

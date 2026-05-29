@@ -1,149 +1,136 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>My Test Scores</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <title>My Test Scores | Tuition Hub</title>
   <style>
-    body { font-family: "Inter", sans-serif; }
-    .text-brand-purple { color: #5d3a9b; }
-
     .premium-banner {
-      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
-      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
-    }
-
-    .glass-card {
-      background: rgba(255, 255, 255, 0.9);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.6);
-      box-shadow: 0 8px 32px rgba(93, 58, 155, 0.08);
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
+      box-shadow: 0 10px 30px var(--pg);
     }
 
     .tab-pill {
-      padding: 0.4rem 1.1rem;
+      padding: 0.5rem 1.25rem;
       border-radius: 9999px;
-      font-weight: 600;
-      font-size: 0.8rem;
-      border: 2px solid #e5e7eb;
-      color: #6b7280;
-      background: white;
-      transition: all 0.25s ease;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: 1px solid var(--b);
+      color: var(--fd);
+      background: var(--bgc);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       white-space: nowrap;
       cursor: pointer;
     }
     .tab-pill:hover {
-      border-color: #5d3a9b;
-      color: #5d3a9b;
-      background: #f3e8ff;
+      border-color: var(--p);
+      color: var(--pt);
+      background: var(--bgch);
+      transform: translateY(-2px);
     }
     .tab-pill.active {
-      background: #5d3a9b;
+      background: var(--p);
       color: white;
-      border-color: #5d3a9b;
-      box-shadow: 0 4px 12px rgba(93, 58, 155, 0.3);
+      border-color: var(--p);
+      box-shadow: 0 4px 15px var(--pg);
     }
 
     .stat-card {
       border-radius: 16px;
-      padding: 1.25rem;
+      padding: 1.5rem;
       text-align: center;
       transition: all 0.3s ease;
+      background: var(--bgc);
+      border: 1px solid var(--b);
     }
     .stat-card:hover {
       transform: translateY(-4px);
-      box-shadow: 0 10px 24px rgba(93, 58, 155, 0.12);
+      box-shadow: 0 12px 30px var(--pg);
+      border-color: var(--p);
+      background: var(--bgch);
     }
 
     .score-card {
-      background: white;
-      border: 1px solid #f3f4f6;
-      border-radius: 14px;
+      background: var(--bgc);
+      border: 1px solid var(--b);
+      border-radius: 16px;
       transition: all 0.3s ease;
     }
     .score-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 28px rgba(93, 58, 155, 0.1);
-      border-color: rgba(93, 58, 155, 0.2);
+      box-shadow: 0 10px 25px var(--pg);
+      border-color: var(--p);
+      background: var(--bgch);
     }
 
     .progress-track {
-      background: #f3f4f6;
+      background: var(--bg);
       border-radius: 9999px;
-      height: 8px;
+      height: 6px;
       overflow: hidden;
+      border: 1px solid var(--b);
     }
     .progress-bar {
-      height: 8px;
+      height: 6px;
       border-radius: 9999px;
       width: 0%;
-      transition: width 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: width 1s cubic-bezier(0.34, 1.56, 0.64, 1);
     }
-    .progress-bar-good    { background: linear-gradient(90deg, #34d399, #10b981); }
-    .progress-bar-average { background: linear-gradient(90deg, #fbbf24, #f59e0b); }
-    .progress-bar-poor    { background: linear-gradient(90deg, #f87171, #ef4444); }
-
-    .grade-badge {
-      display: inline-flex;
-      align-items: center;
-      font-weight: 800;
-      font-size: 0.75rem;
-      padding: 0.2rem 0.65rem;
-      border-radius: 9999px;
-    }
+    .progress-bar-good    { background: linear-gradient(90deg, #10b981, #059669); }
+    .progress-bar-average { background: linear-gradient(90deg, #f59e0b, #d97706); }
+    .progress-bar-poor    { background: linear-gradient(90deg, #ef4444, #dc2626); }
 
     .qp-btn {
       display: inline-flex;
       align-items: center;
       gap: 0.3rem;
-      font-size: 0.75rem;
+      font-size: 0.65rem;
+      font-family: 'Space Mono', monospace;
       font-weight: 700;
       padding: 0.3rem 0.75rem;
       border-radius: 9999px;
-      background: #ede9fe;
-      color: #5d3a9b;
+      background: var(--bg);
+      color: var(--pt);
+      border: 1px solid var(--b);
       transition: all 0.2s ease;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
       white-space: nowrap;
     }
-    .qp-btn:hover { background: #5d3a9b; color: white; }
+    .qp-btn:hover { background: var(--p); color: white; border-color: var(--p); transform: translateY(-1px); box-shadow: 0 2px 8px var(--pg); }
   </style>
 </head>
-<%- include('../partials/background') %>
 
-<body class="text-gray-800">
+<body class="text-theme-fg wrap">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-
     <!-- Premium Banner Header -->
-    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-10 text-center relative overflow-hidden">
+    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
       <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
       <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
       <div class="relative z-10">
-        <div class="flex justify-center sm:justify-start mb-5">
-          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+        <div class="flex justify-center sm:justify-start mb-6">
+          <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to Dashboard
+            Dashboard
           </a>
         </div>
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
-          📊 My Test Scores
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight mb-2 tracking-tight">
+          Test <span class="text-theme-lt">Scores</span>
         </h1>
-        <p class="text-purple-100 font-medium text-base sm:text-lg">Review your performance and points earned in each subject.</p>
+        <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4">Review your performance and points earned</p>
       </div>
     </header>
 
     <!-- Main Glass Container -->
-    <div class="glass-card p-6 sm:p-8 rounded-2xl">
-
+    <div class="glass-card p-6 sm:p-10 rounded-2xl mb-10">
       <!-- Subject Filter Pills -->
-      <div class="mb-8">
-        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Filter by Subject</p>
-        <div id="subject-tabs" class="flex flex-wrap gap-2">
+      <div class="mb-10">
+        <p class="text-xs font-mono font-bold uppercase tracking-widest text-theme-fdd mb-4 border-b border-theme-bd pb-2">Filter by Subject</p>
+        <div id="subject-tabs" class="flex flex-wrap gap-3">
           <button class="tab-pill active" data-subject="overall">📋 Overall</button>
           <button class="tab-pill" data-subject="English">🇬🇧 English</button>
           <button class="tab-pill" data-subject="Maths I">🔢 Maths I</button>
@@ -159,7 +146,7 @@
 
       <!-- Scores Area (JS-rendered) -->
       <div id="scores-area">
-        <p class="text-gray-400 text-center py-10">Select a subject to view your scores.</p>
+        <div class="p-8 text-center text-theme-fdd border-2 border-dashed border-theme-bd rounded-2xl font-mono text-sm uppercase tracking-widest">Select a subject to view your scores.</div>
       </div>
     </div>
   </div>
@@ -179,12 +166,12 @@
       }
 
       function getGrade(percent) {
-        if (percent >= 90) return { label: "A+", bg: "bg-green-100", text: "text-green-700" };
-        if (percent >= 80) return { label: "A",  bg: "bg-green-100", text: "text-green-700" };
-        if (percent >= 70) return { label: "B+", bg: "bg-blue-100",  text: "text-blue-700"  };
-        if (percent >= 60) return { label: "B",  bg: "bg-blue-100",  text: "text-blue-700"  };
-        if (percent >= 50) return { label: "C",  bg: "bg-yellow-100",text: "text-yellow-700"};
-        return { label: "D", bg: "bg-red-100", text: "text-red-700" };
+        if (percent >= 90) return { label: "A+", bg: "bg-emerald-500/10 border border-emerald-500/30", text: "text-emerald-500" };
+        if (percent >= 80) return { label: "A",  bg: "bg-emerald-500/10 border border-emerald-500/30", text: "text-emerald-500" };
+        if (percent >= 70) return { label: "B+", bg: "bg-blue-500/10 border border-blue-500/30",  text: "text-blue-500"  };
+        if (percent >= 60) return { label: "B",  bg: "bg-blue-500/10 border border-blue-500/30",  text: "text-blue-500"  };
+        if (percent >= 50) return { label: "C",  bg: "bg-amber-500/10 border border-amber-500/30",text: "text-amber-500"};
+        return { label: "D", bg: "bg-red-500/10 border border-red-500/30", text: "text-red-500" };
       }
 
       function render(subject) {
@@ -205,10 +192,10 @@
 
         if (!tests.length) {
           scoresArea.innerHTML = `
-            <div class="text-center py-16">
-              <div class="text-6xl mb-4">📝</div>
-              <h3 class="text-xl font-bold text-gray-700">No Scores Yet</h3>
-              <p class="text-gray-400 text-sm mt-2">No test scores available for <strong>${subject === 'overall' ? 'any subject' : subject}</strong> yet.</p>
+            <div class="text-center py-16 border-2 border-dashed border-theme-bd rounded-2xl">
+              <div class="text-5xl mb-4 drop-shadow-md">📝</div>
+              <h3 class="text-lg font-unbounded font-bold text-theme-fg">No Scores Yet</h3>
+              <p class="mt-2 text-theme-fdd font-mono text-xs uppercase tracking-widest">No test scores available for <strong class="text-theme-fd">${subject === 'overall' ? 'any subject' : subject}</strong> yet.</p>
             </div>`;
           return;
         }
@@ -222,27 +209,27 @@
         const avgColor = avgPercent >= 80 ? "#10b981" : avgPercent >= 50 ? "#f59e0b" : "#ef4444";
 
         const summaryHTML = `
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-            <div class="stat-card" style="background: linear-gradient(135deg,#f5f3ff,#ede9fe); border:1.5px solid #ddd6fe;">
-              <p class="text-xs font-bold uppercase tracking-widest text-purple-400 mb-1">Tests Taken</p>
-              <p class="text-4xl font-extrabold text-brand-purple">${totalTests}</p>
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <div class="stat-card shadow-inner" style="background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(124,58,237,0.02)); border-color: rgba(124,58,237,0.2);">
+              <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-pt mb-2">Tests Taken</p>
+              <p class="text-5xl font-unbounded font-extrabold text-theme-fg drop-shadow-sm">${totalTests}</p>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg,#f0fdf4,#dcfce7); border:1.5px solid #bbf7d0;">
-              <p class="text-xs font-bold uppercase tracking-widest text-green-500 mb-1">Average Score</p>
-              <p class="text-4xl font-extrabold" style="color:${avgColor}">${avgPercent.toFixed(1)}%</p>
+            <div class="stat-card shadow-inner" style="background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(16,185,129,0.02)); border-color: rgba(16,185,129,0.2);">
+              <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-emerald-500 mb-2">Average Score</p>
+              <p class="text-5xl font-unbounded font-extrabold drop-shadow-sm" style="color:${avgColor}">${avgPercent.toFixed(1)}<span class="text-2xl">%</span></p>
             </div>
-            <div class="stat-card" style="background: linear-gradient(135deg,#eff6ff,#dbeafe); border:1.5px solid #bfdbfe;">
-              <p class="text-xs font-bold uppercase tracking-widest text-blue-400 mb-1">Subjects</p>
-              <p class="text-4xl font-extrabold text-blue-600">${subjectsAttempted}</p>
+            <div class="stat-card shadow-inner" style="background: linear-gradient(135deg, rgba(59,130,246,0.1), rgba(59,130,246,0.02)); border-color: rgba(59,130,246,0.2);">
+              <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-blue-500 mb-2">Subjects</p>
+              <p class="text-5xl font-unbounded font-extrabold text-theme-fg drop-shadow-sm">${subjectsAttempted}</p>
             </div>
           </div>`;
 
         // ── Score Cards ──
         const cardsHTML = `
-          <h3 class="text-lg font-extrabold text-gray-900 mb-4">
+          <h3 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-6 border-b border-theme-bd pb-4 drop-shadow-sm">
             ${subject === "overall" ? "All Test Results" : subject + " — Test Results"}
           </h3>
-          <div class="space-y-4">
+          <div class="space-y-5">
             ${tests.map(test => {
               const total   = Number(test.total) || 100;
               const score   = Number(test.score) || 0;
@@ -250,32 +237,34 @@
               const colorClass = getColor(percent);
               const grade = getGrade(percent);
               return `
-                <div class="score-card p-5">
-                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div class="score-card p-5 sm:p-6 shadow-sm">
+                  <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
                     <!-- Left: icon + info -->
-                    <div class="flex items-center gap-4 min-w-0">
-                      <div class="flex-shrink-0 w-12 h-12 rounded-xl flex items-center justify-center ${grade.bg}">
-                        <span class="font-extrabold text-lg ${grade.text}">${grade.label}</span>
+                    <div class="flex items-center gap-5 min-w-0">
+                      <div class="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center shadow-inner ${grade.bg}">
+                        <span class="font-unbounded font-extrabold text-xl ${grade.text}">${grade.label}</span>
                       </div>
                       <div class="min-w-0">
-                        <p class="font-bold text-gray-900 text-base truncate">${test.testName || "Test"}</p>
-                        <div class="flex flex-wrap items-center gap-2 mt-0.5">
-                          <span class="text-xs font-bold px-2 py-0.5 rounded-full bg-purple-50 text-brand-purple border border-purple-200">${test.subject}</span>
-                          ${test.topic ? `<span class="text-xs text-gray-400">Topic: ${test.topic}</span>` : ""}
+                        <p class="font-unbounded font-bold text-theme-fg text-lg truncate mb-2">${test.testName || "Test"}</p>
+                        <div class="flex flex-wrap items-center gap-3">
+                          <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-theme-p/10 text-theme-pt border border-theme-p/30 uppercase tracking-widest">${test.subject}</span>
+                          ${test.topic ? `<span class="text-xs font-mono text-theme-fd uppercase tracking-wide">TOPIC: <span class="font-bold text-theme-fg">${test.topic}</span></span>` : ""}
                         </div>
                       </div>
                     </div>
                     <!-- Right: score + Q.Paper -->
-                    <div class="flex-shrink-0 flex flex-col items-end gap-1">
-                      <div class="flex items-center gap-2">
-                        ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
-                        <p class="text-2xl font-extrabold text-brand-purple leading-none">${score}<span class="text-base font-semibold text-gray-400"> / ${total}</span></p>
+                    <div class="flex-shrink-0 flex flex-col sm:items-end items-start gap-2 sm:mt-0 mt-4 border-t sm:border-t-0 border-theme-bd pt-4 sm:pt-0">
+                      <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
+                        ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
+                        <div class="text-right">
+                           <p class="text-3xl font-unbounded font-extrabold text-theme-fg leading-none drop-shadow-sm">${score}<span class="text-sm font-mono font-bold text-theme-fd uppercase tracking-widest ml-1">/ ${total}</span></p>
+                           <p class="text-xs font-mono font-bold uppercase tracking-widest mt-1" style="color: ${percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444'}">${percent.toFixed(1)}% SCORE</p>
+                        </div>
                       </div>
-                      <p class="text-sm font-semibold" style="color: ${percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444'}">${percent.toFixed(1)}%</p>
                     </div>
                   </div>
                   <!-- Progress bar -->
-                  <div class="progress-track mt-4">
+                  <div class="progress-track mt-6">
                     <div class="${colorClass} progress-bar" data-width="${percent.toFixed(2)}"></div>
                   </div>
                 </div>`;
@@ -285,7 +274,7 @@
         scoresArea.innerHTML = summaryHTML + cardsHTML;
 
         scoresArea.querySelectorAll(".progress-bar").forEach((bar, i) => {
-          setTimeout(() => bar.style.width = `${bar.dataset.width}%`, 80 + i * 60);
+          setTimeout(() => bar.style.width = `${bar.dataset.width}%`, 50 + i * 50);
         });
       }
 

@@ -1,126 +1,88 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Class Content</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Study Materials | Tuition Hub</title>
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-
-    .text-brand-purple { color: #5d3a9b; }
-    .border-brand-purple { border-color: #5d3a9b; }
-    .bg-brand-purple-light { background-color: #f3e8ff; }
-
     .premium-banner {
-      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
-      color: white;
-      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
-    }
-
-    .glass-profile {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
+      box-shadow: 0 10px 30px var(--pg);
     }
 
     .tab-btn {
-      padding: 0.5rem 1.5rem;
+      padding: 0.6rem 1.75rem;
       border-radius: 9999px;
-      font-weight: 600;
-      font-size: 0.875rem;
-      border: 2px solid #e5e7eb;
-      color: #6b7280;
-      background: white;
-      transition: all 0.25s ease;
+      font-weight: 700;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      border: 1px solid var(--b);
+      color: var(--fd);
+      background: var(--bgc);
+      transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       cursor: pointer;
     }
-
     .tab-btn:hover {
-      border-color: #5d3a9b;
-      color: #5d3a9b;
-      background: #f3e8ff;
+      border-color: var(--p);
+      color: var(--pt);
+      background: var(--bgch);
+      transform: translateY(-2px);
     }
-
     .tab-btn.active {
-      background: #5d3a9b;
+      background: var(--p);
       color: white;
-      border-color: #5d3a9b;
-      box-shadow: 0 4px 14px rgba(93, 58, 155, 0.35);
+      border-color: var(--p);
+      box-shadow: 0 4px 15px var(--pg);
     }
 
     .content-card {
       transition: all 0.3s ease;
       border-radius: 12px;
-      border: 1px solid #e5e7eb;
-      background: white;
+      border: 1px solid var(--b);
+      background: var(--bgc);
     }
-
     .content-card:hover {
       transform: translateY(-3px);
-      box-shadow: 0 10px 24px -5px rgba(93, 58, 155, 0.12);
-      border-color: rgba(93, 58, 155, 0.25);
+      box-shadow: 0 10px 25px var(--pg);
+      border-color: var(--p);
+      background: var(--bgch);
     }
-
-    .btn-download {
-      background: #5d3a9b;
-      color: white;
-      font-weight: 600;
-      font-size: 0.8rem;
-      padding: 0.45rem 1.1rem;
-      border-radius: 9999px;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.35rem;
-      transition: all 0.2s ease;
-      box-shadow: 0 2px 8px rgba(93, 58, 155, 0.25);
-      white-space: nowrap;
-    }
-
-    .btn-download:hover {
-      background: #4b2d84;
-      transform: translateY(-1px);
-      box-shadow: 0 4px 14px rgba(93, 58, 155, 0.3);
+    .icon-wrapper {
+      background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(124,58,237,0.05));
+      border: 1px solid rgba(124,58,237,0.2);
     }
   </style>
 </head>
 
-<%- include('../partials/background') %>
-
-<body class="text-gray-800">
+<body class="text-theme-fg wrap">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <!-- Premium Banner Header -->
     <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
       <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
       <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
       <div class="relative z-10">
-        <div class="flex justify-center sm:justify-start mb-5">
-          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+        <div class="flex justify-center sm:justify-start mb-6">
+          <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to Dashboard
+            Dashboard
           </a>
         </div>
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
-          📚 Study Materials
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight mb-2 tracking-tight">
+          Study <span class="text-theme-lt">Materials</span>
         </h1>
-        <p class="text-purple-100 font-medium text-base sm:text-lg">Browse textbooks, notes, and question papers.</p>
+        <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4">Browse textbooks, notes, and question papers</p>
       </div>
     </header>
 
     <!-- Glass Container -->
-    <div class="glass-profile p-6 sm:p-8 rounded-2xl mb-10">
+    <div class="glass-card p-6 sm:p-10 mb-10">
       <!-- Tab Buttons -->
-      <div class="mb-8">
-        <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">Filter by Type</p>
-        <div id="subject-tabs" class="flex flex-wrap gap-3">
+      <div class="mb-10">
+        <p class="text-xs font-mono font-bold uppercase tracking-widest text-theme-fdd mb-4 border-b border-theme-bd pb-2">Filter by Type</p>
+        <div id="subject-tabs" class="flex flex-wrap gap-4">
           <button class="tab-btn active" data-subject="textbook">📖 Textbooks</button>
           <button class="tab-btn" data-subject="notes">📝 Notes</button>
           <button class="tab-btn" data-subject="questionPaper">📄 Question Papers</button>
@@ -187,7 +149,7 @@
       function renderContent(tabKey) {
         const data = contentData[tabKey];
         if (!data || !data.items.length) {
-          contentArea.innerHTML = `<p class="text-gray-500">No content available for this type yet.</p>`;
+          contentArea.innerHTML = `<div class="p-8 text-center text-theme-fdd border-2 border-dashed border-theme-bd rounded-2xl font-mono text-sm uppercase tracking-widest">No content available for this type yet.</div>`;
           return;
         }
 
@@ -199,57 +161,60 @@
 
             if (item.type.toLowerCase() === "test") {
               mainTitle = item.testName || "Unnamed Test";
-              infoHtml = `<p class="text-sm text-gray-400 mt-0.5">Subject: <span class="font-semibold text-gray-600">${item.subject}</span> &bull; Topic: ${item.topic}</p>`;
-              typeBadge = `<span class="text-xs font-bold px-2 py-0.5 rounded-full bg-amber-50 text-amber-600 border border-amber-200">Question Paper</span>`;
+              infoHtml = `<p class="text-xs font-mono text-theme-fd mt-1 uppercase tracking-wide">SUB: <span class="font-bold text-theme-fg">${item.subject}</span> &bull; TOPIC: ${item.topic}</p>`;
+              typeBadge = `<span class="text-xs font-mono font-bold px-3 py-1 rounded-full bg-amber-500/10 text-amber-500 border border-amber-500/30 uppercase tracking-widest">Question Paper</span>`;
             } else {
               mainTitle = item.topic || item.subject;
-              infoHtml = `<p class="text-sm text-gray-400 mt-0.5">Subject: <span class="font-semibold text-gray-600">${item.subject}</span></p>`;
-              const typeLabels = { textbook: { bg: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200', label: 'Textbook' }, notes: { bg: 'bg-green-50', text: 'text-green-600', border: 'border-green-200', label: 'Notes' } };
-              const t = typeLabels[item.type] || { bg: 'bg-purple-50', text: 'text-brand-purple', border: 'border-purple-200', label: item.type };
-              typeBadge = `<span class="text-xs font-bold px-2 py-0.5 rounded-full ${t.bg} ${t.text} border ${t.border}">${t.label}</span>`;
+              infoHtml = `<p class="text-xs font-mono text-theme-fd mt-1 uppercase tracking-wide">SUB: <span class="font-bold text-theme-fg">${item.subject}</span></p>`;
+              const typeLabels = { 
+                textbook: { bg: 'bg-blue-500/10', text: 'text-blue-500', border: 'border-blue-500/30', label: 'Textbook' }, 
+                notes: { bg: 'bg-green-500/10', text: 'text-green-500', border: 'border-green-500/30', label: 'Notes' } 
+              };
+              const t = typeLabels[item.type] || { bg: 'bg-theme-p/10', text: 'text-theme-pt', border: 'border-theme-p/30', label: item.type };
+              typeBadge = `<span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full ${t.bg} ${t.text} border ${t.border} uppercase tracking-widest">${t.label}</span>`;
             }
 
             return `
-    <div class="content-card p-4 sm:p-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-        <div class="flex items-center gap-4 min-w-0">
-            <div class="flex-shrink-0 w-12 h-12 flex items-center justify-center rounded-xl bg-purple-50">${getIcon(item.type)}</div>
-            <div class="min-w-0">
-                <div class="flex items-center gap-2 flex-wrap mb-1">${typeBadge}</div>
-                <p class="font-bold text-gray-900 text-base leading-snug truncate">${mainTitle}</p>
+    <div class="content-card w-full p-4 sm:p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-5 min-w-0">
+        <div class="flex items-center gap-4 sm:gap-5 w-full min-w-0">
+            <div class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 flex items-center justify-center rounded-xl sm:rounded-2xl icon-wrapper shadow-inner">${getIcon(item.type)}</div>
+            <div class="min-w-0 flex-1">
+                <div class="flex items-center gap-2 flex-wrap mb-2">${typeBadge}</div>
+                <p class="font-unbounded font-bold text-theme-fg text-base sm:text-lg leading-snug break-words">${mainTitle}</p>
                 ${infoHtml}
             </div>
         </div>
-        <div class="flex-shrink-0">
+        <div class="flex-shrink-0 w-full sm:w-auto mt-2 sm:mt-0">
             ${
               item.filePath
-                ? `<a href="${item.filePath}" target="_blank" class="btn-download"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Download</a>`
-                : `<span class="text-xs text-gray-400 italic">No file</span>`
+                ? `<a href="${item.filePath}" target="_blank" class="btn-primary w-full sm:w-auto text-xs py-2.5 px-5 shadow-lg flex items-center justify-center gap-2 font-bold uppercase tracking-wider"><svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Download</a>`
+                : `<span class="text-xs text-theme-fdd italic font-mono bg-theme-bg/50 px-3 py-1.5 rounded border border-theme-bd flex items-center justify-center">No file attached</span>`
             }
         </div>
     </div>`;
           })
           .join("");
 
-        contentArea.innerHTML = `<div class="flex flex-col gap-3">${itemsHtml}</div>`;
+        contentArea.innerHTML = `<div class="flex flex-col gap-4">${itemsHtml}</div>`;
       }
 
       function getIcon(type) {
-        const iconClasses = "w-10 h-10 flex-shrink-0";
+        const iconClasses = "w-7 h-7 flex-shrink-0 drop-shadow-sm";
         switch (type.toLowerCase()) {
           case "pdf":
             return `
-            <svg class="${iconClasses} text-red-600" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="${iconClasses} text-red-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zM13 3.5L18.5 9H13V3.5zM8 13h8v2H8v-2zm0 4h8v2H8v-2zm0-8h8v2H8V9z"/>
             </svg>`;
           case "docx":
           case "doc":
             return `
-            <svg class="${iconClasses} text-blue-600" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="${iconClasses} text-blue-500" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zM13 3.5L18.5 9H13V3.5zM8 9h8v2H8V9zm0 4h8v2H8v-2zm0 4h5v2H8v-2z"/>
             </svg>`;
           default:
             return `
-            <svg class="${iconClasses} text-brand-purple" fill="currentColor" viewBox="0 0 24 24">
+            <svg class="${iconClasses} text-theme-pt" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M4 2a2 2 0 00-2 2v16a2 2 0 002 2h16a2 2 0 002-2V8l-6-6H4zM14 3.5L19.5 9H14V3.5zM6 8h5v1H6V8zm0 3h12v1H6v-1zm0 3h12v1H6v-1zm0 3h8v1H6v-1z"/>
             </svg>`;
         }

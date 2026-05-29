@@ -1,0 +1,60 @@
+<!-- Academic Year Selector for Teachers -->
+<% if (typeof isTeacher !== 'undefined' && isTeacher) { %>
+<div class="academic-year-selector">
+  <div class="flex items-center gap-2 px-3 py-1.5 rounded-lg hover:bg-purple-50 transition">
+    <svg class="w-5 h-5 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
+    </svg>
+    <div class="flex flex-col">
+      <span class="text-[10px] uppercase tracking-wider text-gray-500 font-bold leading-none mb-1">Academic Year</span>
+      <select id="academic-year-selector" onchange="switchAcademicYear(this.value)" class="text-sm font-bold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 cursor-pointer p-0 leading-none">
+        <% if (typeof availableYears !== 'undefined' && availableYears.length > 0) { %>
+        <% availableYears.forEach(year => { %>
+        <option value="<%= year %>" <%= viewingYear === year ? 'selected' : '' %>>
+          <%= year %> <%= currentAcademicYear === year ? '(Current)' : '' %>
+        </option>
+        <% }) %>
+        <% } else { %>
+        <option value="<%= typeof viewingYear !== 'undefined' ? viewingYear : '' %>">
+          <%= typeof viewingYear !== 'undefined' ? viewingYear : 'N/A' %>
+        </option>
+        <% } %>
+      </select>
+    </div>
+  </div>
+</div>
+
+<script>
+  function switchAcademicYear(year) {
+    // Get current URL and update year parameter
+    const url = new URL(window.location.href);
+    url.searchParams.set('year', year);
+    window.location.href = url.toString();
+  }
+</script>
+
+<style>
+  .academic-year-selector select {
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%235d3a9b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0 center;
+    background-size: 1.25rem;
+    padding-right: 1.5rem;
+  }
+
+  .academic-year-selector:hover {
+    box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.2);
+  }
+
+  .text-brand-purple {
+    color: #5d3a9b;
+  }
+
+  .border-purple-200 {
+    border-color: #e9d5ff;
+  }
+</style>
+<% } %>

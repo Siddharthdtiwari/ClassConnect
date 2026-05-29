@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Page Not Found - Tuition Hub Education Centre</title>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    /* ══════════════════════════════════════════
+   THEME TOKENS
+══════════════════════════════════════════ */
+    :root {
+      --purple: #7c3aed;
+      --purple-mid: #5d3a9b;
+      --purple-glow: rgba(124, 58, 237, .32);
+      --purple-glow2: rgba(93, 58, 155, .18);
+      --lime: #bde045;
+      --lime-glow: rgba(189, 224, 69, .22);
+      --red: #FF3B3B;
+      --transition: background .4s ease, color .4s ease, border-color .3s ease, box-shadow .3s ease;
+    }
+
+    [data-theme="dark"] {
+      --bg: #05050a;
+      --bg-mid: #0a0a12;
+      --bg-card: rgba(255, 255, 255, .03);
+      --bg-card-h: rgba(124, 58, 237, .06);
+      --fg: #F0EBE0;
+      --fg-dim: rgba(240, 235, 224, .40);
+      --fg-dimmer: rgba(240, 235, 224, .18);
+      --border: rgba(240, 235, 224, .09);
+      --border-dim: rgba(240, 235, 224, .055);
+      --canvas-op: .55;
+      --nav-bg: rgba(5, 5, 10, .3);
+      --shadow: none;
+      --code-bg: #07070f;
+      --stroke-color: var(--fg);
+      --purple-text: var(--purple);
+      --lime-text: var(--lime);
+      --ticker-stroke: rgba(240, 235, 224, .22);
+    }
+
+    [data-theme="light"] {
+      --bg: #F4F0F9;
+      --bg-mid: #EBE6F2;
+      --bg-card: rgba(255, 255, 255, .72);
+      --bg-card-h: rgba(255, 255, 255, .95);
+      --fg: #0C0C0C;
+      --fg-dim: rgba(12, 12, 12, .50);
+      --fg-dimmer: rgba(12, 12, 12, .2);
+      --border: rgba(12, 12, 12, .12);
+      --border-dim: rgba(12, 12, 12, .07);
+      --canvas-op: .15;
+      --nav-bg: rgba(244, 240, 249, .75);
+      --shadow: 0 2px 20px rgba(0, 0, 0, .06);
+      --code-bg: #1a1a1a;
+      --stroke-color: var(--fg);
+      --purple-text: #5d3a9b;
+      --lime-text: #7a9c00;
+      --ticker-stroke: rgba(92, 90, 90, .18);
+    }
+
+    /* ══════════════════════════════════════════
+   BASE
+══════════════════════════════════════════ */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--fg);
+      font-family: 'Inter', sans-serif;
+      overflow-x: hidden;
+      cursor: none;
+      transition: var(--transition);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* CURSOR */
+    #cur {
+      position: fixed;
+      z-index: 9999;
+      width: 10px;
+      height: 10px;
+      background: var(--purple);
+      border-radius: 50%;
+      pointer-events: none;
+      transform: translate(-50%, -50%);
+      transition: width .22s cubic-bezier(.34, 1.56, .64, 1), height .22s cubic-bezier(.34, 1.56, .64, 1), opacity .2s;
+      mix-blend-mode: difference;
+    }
+
+    [data-theme="light"] #cur {
+      mix-blend-mode: multiply;
+      background: #5d3a9b;
+    }
+
+    #cur.big {
+      width: 58px;
+      height: 58px;
+    }
+
+    #cur.link {
+      width: 40px;
+      height: 40px;
+      background: var(--lime);
+    }
+
+
+
+    /* GRAIN */
+    .grain {
+      position: fixed;
+      inset: -50%;
+      z-index: 1;
+      width: 200%;
+      height: 200%;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.06'/%3E%3C/svg%3E");
+      pointer-events: none;
+      animation: grain .5s steps(1) infinite;
+    }
+
+    @keyframes grain {
+      0%, 100% { transform: translate(0, 0) }
+      10% { transform: translate(-2%, -3%) }
+      20% { transform: translate(3%, 1%) }
+      30% { transform: translate(-1%, 4%) }
+      40% { transform: translate(2%, -2%) }
+      50% { transform: translate(-3%, 2%) }
+      60% { transform: translate(1%, -1%) }
+      70% { transform: translate(-2%, 3%) }
+      80% { transform: translate(2%, 1%) }
+      90% { transform: translate(-1%, -2%) }
+    }
+
+    [data-theme="light"] .grain {
+      opacity: .35;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 18px 40px;
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      z-index: 100;
+      border-bottom: 1px solid var(--border);
+    }
+    
+    .theme-toggle {
+      position: relative;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      background: var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: none;
+      color: var(--fg);
+      overflow: hidden;
+      border: 1px solid var(--border-dim);
+    }
+    .tt-btn {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      background: transparent;
+      border: none;
+      color: inherit;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform .4s, opacity .4s;
+    }
+    [data-theme="dark"] .tt-btn[data-t="dark"] { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    [data-theme="dark"] .tt-btn[data-t="light"] { opacity: 0; transform: translateY(20px); pointer-events: none; }
+    [data-theme="light"] .tt-btn[data-t="light"] { opacity: 1; transform: translateY(0); pointer-events: auto; }
+    [data-theme="light"] .tt-btn[data-t="dark"] { opacity: 0; transform: translateY(-20px); pointer-events: none; }
+
+    /* LAYOUT */
+    .page {
+      position: relative;
+      z-index: 2;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: 40px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <div id="cur"></div>
+
+  <div class="grain"></div>
+
+  <!-- NAV -->
+  <nav>
+    <a href="/" style="display: flex; align-items: center; gap: 10px; text-decoration: none;">
+      <img src="/images/logo.png" alt="Tuition Hub Logo" style="height: 48px; width: auto; object-fit: contain;">
+      <div style="font-family: 'Unbounded', sans-serif; font-weight: 700; text-transform: uppercase; font-size: 1.2rem; color: var(--fg); letter-spacing: 1px; text-align: left;">
+        Tuition Hub <span style="color: var(--purple-text); display: block; font-size: 0.7rem; letter-spacing: 2px;">Education Centre</span>
+      </div>
+    </a>
+    <div style="display: flex; align-items: center; gap: 15px;">
+      <div class="theme-toggle" onclick="toggleTheme()" title="Toggle theme">
+        <button class="tt-btn" data-t="dark" onclick="setTheme('dark',event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+          </svg>
+        </button>
+        <button class="tt-btn" data-t="light" onclick="setTheme('light',event)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5" />
+            <line x1="12" y1="1" x2="12" y2="3" />
+            <line x1="12" y1="21" x2="12" y2="23" />
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64" />
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78" />
+            <line x1="1" y1="12" x2="3" y2="12" />
+            <line x1="21" y1="12" x2="23" y2="12" />
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36" />
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22" />
+          </svg>
+        </button>
+      </div>
+    </div>
+  </nav>
+
+  <div class="page">
+    <h1 style="font-family: 'Unbounded', sans-serif; font-size: clamp(6rem, 15vw, 12rem); font-weight: 900; background: linear-gradient(135deg, var(--purple) 0%, var(--lime) 100%); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent; line-height: 1;">404</h1>
+    <h2 style="font-family: 'Unbounded', sans-serif; font-size: 2.5rem; margin-bottom: 20px;">Page Not Found</h2>
+    <p style="color: var(--fg-dim); font-size: 1.2rem; margin-bottom: 10px; max-width: 500px;">The page you're looking for doesn't exist.</p>
+    <p style="color: var(--fg-dimmer); font-size: 1rem; margin-bottom: 50px; font-family: 'Space Mono', monospace;">URL: <%= url %></p>
+    
+    <div style="display: flex; gap: 20px; justify-content: center;">
+      <button onclick="history.back()" style="padding: 15px 30px; background: transparent; color: var(--fg); border: 1px solid var(--border); border-radius: 100px; font-family: 'Unbounded', sans-serif; font-weight: 700; text-transform: uppercase; cursor: none; transition: transform 0.3s, border-color 0.3s;" onmouseenter="this.style.transform='scale(1.05)'; this.style.borderColor='var(--fg)';" onmouseleave="this.style.transform='scale(1)'; this.style.borderColor='var(--border)';">← Go Back</button>
+      <a href="/" style="padding: 15px 30px; background: var(--purple); color: #fff; border-radius: 100px; font-family: 'Unbounded', sans-serif; text-decoration: none; font-weight: 700; text-transform: uppercase; transition: transform 0.3s, background 0.3s;" onmouseenter="this.style.transform='scale(1.05)'; this.style.background='var(--lime)'; this.style.color='#000';" onmouseleave="this.style.transform='scale(1)'; this.style.background='var(--purple)'; this.style.color='#fff';">Go to Home</a>
+    </div>
+  </div>
+
+  <script>
+    // ── THEME ──────────────────────────────────────────
+    function setTheme(t, e) {
+      if (e) e.stopPropagation()
+      document.documentElement.setAttribute('data-theme', t)
+      localStorage.setItem('tuitionhub-theme', t)
+    }
+
+    function toggleTheme() {
+      const cur = document.documentElement.getAttribute('data-theme')
+      setTheme(cur === 'dark' ? 'light' : 'dark')
+    }
+    const saved = localStorage.getItem('tuitionhub-theme')
+    if (saved) document.documentElement.setAttribute('data-theme', saved)
+
+    // ── CURSOR ──────────────────────────────────────────
+    const curEl = document.getElementById('cur')
+    document.addEventListener('mousemove', e => {
+      curEl.style.left = e.clientX + 'px'
+      curEl.style.top = e.clientY + 'px'
+    })
+    document.querySelectorAll('a,button,.theme-toggle').forEach(el => {
+      el.addEventListener('mouseenter', () => curEl.classList.add('big'))
+      el.addEventListener('mouseleave', () => curEl.classList.remove('big'))
+    })
+
+    // Keyboard shortcut
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') history.back();
+    });
+
+
+  </script>
+</body>
+</html>

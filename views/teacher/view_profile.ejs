@@ -1,6 +1,6 @@
 <%- include('../partials/background') %>
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
   <meta charset="UTF-8" />
@@ -10,67 +10,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-    }
-
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .bg-brand-purple-light {
-      background-color: #f3e8ff;
-    }
-
-    .text-brand-lime {
-      color: #bde045;
-    }
-
-    .btn-action {
-      background-color: #5d3a9b;
-      color: white;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 9999px;
-    }
-
-    .btn-action:hover {
-      background-color: #4b2d84;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .main-chart-area {
-      position: relative;
-      height: 0;
-      padding-bottom: 48%;
-    }
-
-    .main-chart-area canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-    }
-
-    .latest-score-bar {
-      background-color: #fcfcfc;
-      border-radius: 8px;
-      padding: 12px 16px;
-    }
-  </style>
+  
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="text-gray-800">
-  <div id="chart-data-wrapper" style="display: none" data-chart-data="<%= JSON.stringify({
+
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div id="chart-data-wrapper" style="display: none" data-chart-data="<%= JSON.stringify({
             labels: scoreLabels,
             data: scoreData
         }) %>"></div>
@@ -78,18 +29,18 @@
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <header class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-4">
       <div>
-        <a href="/teacher/manage_students" class="text-brand-purple hover:underline mb-1 block text-sm">&larr; Back to Students</a>
         <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
           <%= student.studentName %>
         </h1>
         <p class="text-sm text-gray-500">
-          ID: <%= student.studentId %> | Class: <%= student.standard %> |
+          ID: <%= student.studentId %> | Batch: <%= student.batch ? student.batch.name : 'Unassigned' %> |
           Mobile: <%= student.mobileNo %>
+          <% if (student.email) { %> | Email: <%= student.email %> <% } %>
         </p>
       </div>
 
       <div class="flex gap-3 mt-4 sm:mt-0">
-        <button onclick="window.open('/teacher/student_report/<%= student._id %>', '_blank')" class="py-2 px-6 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-full transition-all shadow-sm text-sm flex items-center gap-2">
+        <button onclick="window.open('/teacher/student_report/<%= student._id %>', '_blank')" class="py-2 px-6 glass-card border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-full transition-all shadow-sm text-sm flex items-center gap-2">
           🖨️ Print Report
         </button>
         <button onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'" class="py-2 px-6 btn-action text-sm shadow-md flex items-center gap-2">
@@ -100,7 +51,7 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-1 space-y-6">
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-purple">
+        <div class="glass-card p-6 border-t-8 border-brand-purple">
           <div class="flex flex-col items-center text-center pb-4 border-b border-gray-100">
             <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md" />
             <p class="text-xl font-bold text-gray-900">
@@ -108,13 +59,14 @@
             </p>
             <p class="text-sm text-gray-600">
               Mobile: <%= student.mobileNo %>
+              <% if (student.email) { %><br>Email: <%= student.email %><% } %>
             </p>
           </div>
 
           <div class="space-y-4 pt-4 text-sm">
             <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
               <span class="text-gray-600 font-medium">Monthly Fee:</span>
-              <span class="font-bold text-xl text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
+              <span class="font-bold text-xl text-brand-purple">₹<%= (student.monthlyFee || 0).toLocaleString() %></span>
             </div>
             <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
               <span class="text-gray-600 font-medium">Reward Points:</span>
@@ -131,7 +83,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-lime">
+        <div class="glass-card p-6 border-t-8 border-brand-lime">
           <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
             Attendance Summary
           </h3>
@@ -164,7 +116,7 @@
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-green-500">
+        <div class="glass-card p-6 rounded-xl shadow-xl border-t-8 border-green-500">
           <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
             Fee Payments Log
           </h3>
@@ -188,7 +140,7 @@
       </div>
 
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
+        <div class="glass-card p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
           <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
             Performance Trend (Score History)
           </h3>
@@ -204,7 +156,7 @@
           <% } %>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
+        <div class="glass-card p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
           <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900 flex justify-between items-center">
             <span>All Test Results Log</span>
             <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><%= recentScores.length %> Records</span>
@@ -307,6 +259,10 @@
       });
     }
   </script>
+      </main>
+    </div>
+  </div>
 </body>
+
 
 </html>

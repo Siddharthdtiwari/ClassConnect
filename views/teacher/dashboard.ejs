@@ -1,311 +1,302 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Teacher Dashboard</title>
+  <title>Faculty Dashboard | Tuition Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    body {
-      font-family: "Inter", sans-serif;
+    /* Dashboard-specific styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
     }
-
-    .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
     }
-
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .bg-brand-purple {
-      background-color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .glass-profile {
-      background: rgba(255, 255, 255, 0.7);
+    .stat-card {
+      background: var(--bgc);
       backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.1);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 28px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
     }
-
-    .premium-banner {
-      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
-      color: white;
-      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
     }
-
-    .module-card {
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border: 1px solid transparent;
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
     }
-
-    .module-card:hover {
-      transform: translateY(-8px);
-      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15), 0 8px 10px -6px rgba(93, 58, 155, 0.1);
-      border-color: rgba(93, 58, 155, 0.2);
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
     }
-
-    .module-card:hover .icon-container {
-      background-color: #5d3a9b;
-      color: white;
-      transform: scale(1.1) rotate(5deg);
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
     }
-
-    .icon-container {
-      transition: all 0.3s ease;
-      background-color: #f3e8ff;
-      color: #5d3a9b;
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0.15;
+      z-index: 0;
     }
-
-    .module-card .module-action-btn {
-      transition: all 0.3s ease;
-      background-color: #f9f5ff;
-      color: #5d3a9b;
+    .quick-link {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 20px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--fg);
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      backdrop-filter: blur(12px);
+      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
     }
-
-    .module-card:hover .module-action-btn {
-      background-color: #5d3a9b;
-      color: white;
-      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
+    .quick-link:hover {
+      border-color: var(--p);
+      transform: translateX(6px);
+      background: var(--bgch);
+      box-shadow: 0 6px 20px var(--pg2);
     }
-
-    .btn-solid-purple {
-      background-color: #5d3a9b;
-      color: #fff;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 0.5rem;
-      border: 1px solid #5d3a9b;
-      padding: 0.5rem 1rem;
+    .quick-link:hover .ql-arrow {
+      opacity: 1;
+      transform: translateX(0);
     }
-
-    .btn-solid-purple:hover {
-      background-color: #4b2d84;
-      border-color: #4b2d84;
-      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
+    .ql-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      background: rgba(124,58,237,0.08);
+      border: 1px solid rgba(124,58,237,0.12);
+      color: var(--pt);
     }
-
-    .btn-outline-white {
-      color: white;
-      border: 1px solid rgba(255,255,255,0.6);
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
-      background: rgba(255,255,255,0.1);
+    .ql-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 0.78rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.02em;
     }
-
-    .btn-outline-white:hover {
-      background: white;
-      color: #4b2d84;
+    .ql-desc {
+      font-size: 0.72rem;
+      color: var(--fdd);
+      margin-top: 2px;
     }
-
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 0.5rem;
-      padding: 0.5rem 1rem;
-    }
-
-    .btn-outline-purple:hover {
-      background-color: #5d3a9b;
-      color: white;
+    .ql-arrow {
+      margin-left: auto;
+      opacity: 0;
+      transform: translateX(-8px);
+      transition: all 0.3s;
+      color: var(--pt);
     }
   </style>
 </head>
 
 <%- include('../partials/background') %>
 
-<body class="text-gray-800">
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
     
-    <!-- Premium Welcome Banner -->
-    <header class="mb-8 premium-banner rounded-2xl p-8 flex flex-col md:flex-row justify-between items-center gap-6 relative overflow-hidden">
-      <div class="absolute top-0 right-0 -mt-16 -mr-16 w-64 h-64 bg-white opacity-10 rounded-full blur-2xl"></div>
-      <div class="absolute bottom-0 left-0 -mb-16 -ml-16 w-48 h-48 bg-white opacity-10 rounded-full blur-xl"></div>
-      
-      <div class="relative z-10 text-center md:text-left">
-        <h1 class="text-3xl md:text-5xl font-extrabold tracking-tight mb-2">
-          Welcome Back, <%= teacher.teacherName.split(' ')[0] %>
-        </h1>
-        <p class="text-purple-100 text-lg opacity-90 max-w-xl">
-          Your central hub for organizing classes, tracking performance, and empowering students.
-        </p>
-      </div>
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
 
-      <div class="relative z-10 flex gap-4 flex-wrap justify-center">
-        <button onclick="window.location.href='/teacher/add_teacher'" class="btn-outline-white shadow-sm flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
-          Add Teacher
-        </button>
-        <button onclick="window.location.href='/teacher/logout'" class="btn-outline-white bg-opacity-20 flex items-center gap-2">
-          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
-          Logout
-        </button>
-      </div>
-    </header>
+        <!-- Greeting -->
+        <div style="margin-bottom: 40px;">
+          <h1 class="dash-greeting">
+            Welcome back, <span style="color: var(--pt);"><%= teacher.teacherName.split(' ')[0] %></span>
+          </h1>
+          <p class="dash-sub">Faculty Command Center · Tuition Hub Education Centre</p>
+        </div>
 
-    <div class="flex flex-col lg:flex-row gap-8">
-      
-      <!-- Glassmorphism Profile Sidebar -->
-      <div class="w-full lg:w-1/3 xl:w-1/4 z-10">
-        <div class="glass-profile p-8 rounded-2xl flex flex-col items-center text-center sticky top-8">
-          <div class="relative mb-6">
-            <div class="absolute inset-0 bg-brand-purple rounded-full opacity-20 blur-md transform scale-110"></div>
-            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(teacher.teacherName) %>&background=5d3a9b&color=fff&size=128&font-size=0.4" alt="Teacher Profile" class="relative w-32 h-32 rounded-full border-4 border-white shadow-lg object-cover" />
-            <div class="absolute bottom-1 right-1 bg-green-500 w-6 h-6 rounded-full border-4 border-white"></div>
+        <!-- Stats Row -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+            </div>
+            <div class="stat-value" style="color: var(--pt);"><%= typeof metrics !== 'undefined' ? metrics.totalStudents : 0 %></div>
+            <div class="stat-label">Active Students</div>
           </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+            </div>
+            <div class="stat-value" style="color: var(--lt);">₹<%= typeof metrics !== 'undefined' ? metrics.totalRevenue.toLocaleString() : 0 %></div>
+            <div class="stat-label">Total Revenue</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">
+              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            </div>
+            <div class="stat-value" style="color: var(--pt);"><%= typeof metrics !== 'undefined' ? metrics.upcomingTests : 0 %></div>
+            <div class="stat-label">Upcoming Tests</div>
+          </div>
+        </div>
 
-          <h2 class="text-2xl font-bold text-gray-900 mb-1 tracking-tight">
-            <%= teacher.teacherName %>
+        <!-- Quick Actions -->
+        <div style="margin-bottom: 16px;">
+          <h2 style="font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fdd); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
+            <span style="width: 20px; height: 1px; background: var(--pt);"></span>
+            Quick Actions
           </h2>
-          <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold leading-5 bg-purple-100 text-brand-purple mb-6 uppercase tracking-wide">
-            ID: <%= teacher.teacherId %>
-          </span>
-          
-          <div class="w-full bg-white bg-opacity-60 rounded-xl p-5 text-left mb-6 border border-white">
-            <h3 class="text-sm font-bold text-gray-500 uppercase tracking-wider mb-4">Contact & Role</h3>
-            
-            <div class="flex items-start gap-3 mb-4">
-              <div class="p-2 bg-purple-50 rounded-lg text-brand-purple mt-0.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase">Email</p>
-                <p class="text-sm text-gray-800 font-medium break-all"><%= teacher.email %></p>
-              </div>
-            </div>
-
-            <div class="flex items-start gap-3">
-              <div class="p-2 bg-purple-50 rounded-lg text-brand-purple mt-0.5">
-                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-              </div>
-              <div>
-                <p class="text-xs text-gray-500 font-semibold uppercase">Subject</p>
-                <p class="text-sm text-gray-800 font-medium"><%= teacher.subjects %></p>
-              </div>
-            </div>
-          </div>
-
-          <button onclick="window.location.href='/teacher/edit_teacher/<%= teacher._id %>'" class="w-full btn-solid-purple shadow-md">
-            Edit Profile
-          </button>
         </div>
-      </div>
 
-      <!-- Action Modules Grid -->
-      <div class="w-full lg:w-2/3 xl:w-3/4">
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
           
-          <!-- Manage Students -->
-          <div onclick="window.location.href='/teacher/manage_students'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+          <a href="/teacher/manage_students" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Students</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">View, edit, and organize complete student profiles.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Manage Students</div>
+              <div class="ql-desc">View, edit, and organize profiles</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Manage Fees -->
-          <div onclick="window.location.href='/teacher/manage_fees'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+          <a href="/teacher/manage_attendance" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Fees</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Track outstanding balances and log paid student fees.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Attendance</div>
+              <div class="ql-desc">Record & analyze daily presence</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Manage Tests -->
-          <div onclick="window.location.href='/teacher/manage_tests'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+          <a href="/teacher/manage_tests" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Tests</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Create and edit assignments and assessment papers.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Assessments</div>
+              <div class="ql-desc">Create tests & assignments</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Manage Scores -->
-          <div onclick="window.location.href='/teacher/manage_score'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+          <a href="/teacher/manage_score" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Manage Scores</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Upload and analyze student academic performance.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Performance</div>
+              <div class="ql-desc">Upload & analyze scores</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Upload Material -->
-          <div onclick="window.location.href='/teacher/study_material'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          <a href="/teacher/manage_fees" class="quick-link">
+            <div class="ql-icon" style="background: rgba(189,224,69,0.08); border-color: rgba(189,224,69,0.15); color: var(--lt);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Study Material</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Organize resources, notes, and interactive lessons.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Fee Tracking</div>
+              <div class="ql-desc">Track balances & payments</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Attendance -->
-          <div onclick="window.location.href='/teacher/manage_attendance'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+          <a href="/teacher/revenue_report" class="quick-link">
+            <div class="ql-icon" style="background: rgba(189,224,69,0.08); border-color: rgba(189,224,69,0.15); color: var(--lt);">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Attendance</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Save daily records and analyze presence history.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Analytics</div>
+              <div class="ql-desc">Revenue trends & reports</div>
             </div>
-          </div>
+            <span class="ql-arrow">→</span>
+          </a>
 
-          <!-- Exam Timetable -->
-          <div onclick="window.location.href='/teacher/timetable'" class="module-card cursor-pointer bg-white p-6 rounded-2xl shadow-sm flex flex-col items-center text-center relative overflow-hidden group">
-            <div class="absolute inset-0 bg-gradient-to-br from-purple-50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-            <div class="icon-container w-16 h-16 rounded-2xl flex items-center justify-center mb-5 relative z-10 shadow-sm">
-              <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"></path></svg>
+          <a href="/teacher/study_material" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
             </div>
-            <h3 class="text-xl font-bold text-gray-900 mb-2 relative z-10">Exam Timetable</h3>
-            <p class="text-gray-500 text-sm mb-6 relative z-10 leading-relaxed">Schedule and manage exam dates, types and portions.</p>
-            <div class="mt-auto w-full relative z-10">
-              <span class="module-action-btn flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-bold rounded-xl w-full">Open Module <svg class="w-4 h-4 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg></span>
+            <div>
+              <div class="ql-title">Study Material</div>
+              <div class="ql-desc">Upload resources & lessons</div>
             </div>
-          </div>
-          
+            <span class="ql-arrow">→</span>
+          </a>
+
+          <a href="/teacher/manage_batches" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            </div>
+            <div>
+              <div class="ql-title">Manage Batches</div>
+              <div class="ql-desc">Configure academic year batches</div>
+            </div>
+            <span class="ql-arrow">→</span>
+          </a>
+
+          <a href="/teacher/timetable" class="quick-link">
+            <div class="ql-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div>
+              <div class="ql-title">Exam Timetable</div>
+              <div class="ql-desc">Schedule exam dates</div>
+            </div>
+            <span class="ql-arrow">→</span>
+          </a>
+
+          <a href="/teacher/add_student" class="quick-link">
+            <div class="ql-icon" style="background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.15); color: #34d399;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            </div>
+            <div>
+              <div class="ql-title">Add Student</div>
+              <div class="ql-desc">Enroll a new student</div>
+            </div>
+            <span class="ql-arrow">→</span>
+          </a>
+
         </div>
-      </div>
+
+      </main>
     </div>
   </div>
 </body>
-
 </html>

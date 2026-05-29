@@ -1,192 +1,199 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Class Leaderboard</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Class Leaderboard | Tuition Hub</title>
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-
-    .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-    }
-
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .text-gold {
-      color: #f59e0b;
-    }
-
-    .text-silver {
-      color: #a8a29e;
-    }
-
-    .text-bronze {
-      color: #a16207;
+    .premium-banner {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
+      box-shadow: 0 10px 30px var(--pg);
     }
 
     .rank-card {
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      background: white;
+      background: var(--bgc);
       border: 1px solid transparent;
       border-top-width: 6px;
     }
 
     .rank-card:hover {
       transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15);
-      border-color: rgba(93, 58, 155, 0.2);
+      box-shadow: 0 20px 30px var(--pg);
+      border-color: var(--p);
     }
 
-    .rank-1 {
-      border-top-color: #f59e0b;
-    }
-
-    .rank-2 {
-      border-top-color: #a8a29e;
-    }
-
-    .rank-3 {
-      border-top-color: #a16207;
-    }
+    .rank-1 { border-top-color: #f59e0b; }
+    .rank-2 { border-top-color: #a8a29e; }
+    .rank-3 { border-top-color: #a16207; }
 
     .student-row {
       transition: all 0.3s ease;
+      border-bottom: 1px solid var(--b);
     }
 
     .student-row:hover {
-      background-color: #f9fafb;
+      background-color: var(--bgch);
       transform: translateX(4px);
+      border-color: transparent;
+    }
+    
+    .student-row:last-child {
+      border-bottom: none;
     }
 
     .highlight-user {
-      background-color: #f3e8ff;
-      border-left: 4px solid #5d3a9b;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.02);
+      background-color: var(--p);
+      background-image: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
+      border-left: 4px solid var(--lt);
     }
 
-    .glass-profile {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
+    .tab-btn {
+      transition: all 0.2s ease;
     }
-
-    .premium-banner {
-      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+    .tab-btn.active {
+      background-color: var(--p);
       color: white;
-      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
+      box-shadow: 0 4px 10px var(--pg);
+    }
+    .tab-btn:not(.active) {
+      color: var(--fd);
+    }
+    .tab-btn:not(.active):hover {
+      background-color: var(--bgch);
+      color: var(--pt);
     }
   </style>
+  <script>
+    function switchTab(tabName) {
+      document.querySelectorAll('.leaderboard-content').forEach(el => el.classList.add('hidden'));
+      document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active', 'bg-theme-p', 'text-white'));
+      
+      document.getElementById('content-' + tabName).classList.remove('hidden');
+      document.getElementById('tab-' + tabName).classList.add('active');
+    }
+  </script>
 </head>
 
-<%- include('../partials/background') %>
-
-<body class="text-gray-800">
+<body class="text-theme-fg wrap">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
       <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
       <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
       
       <div class="relative z-10">
-        <div class="flex justify-center sm:justify-start mb-5">
-          <a href="/student/dashboard" class="inline-flex items-center text-sm font-bold text-white py-2 px-4 rounded-full shadow-sm transition-all" style="border: 1px solid rgba(255,255,255,0.4); background: rgba(255,255,255,0.12);" onmouseover="this.style.background='white';this.style.color='#5d3a9b';" onmouseout="this.style.background='rgba(255,255,255,0.12)';this.style.color='white';">
+        <div class="flex justify-center sm:justify-start mb-6">
+          <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
             <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to Dashboard
+            Dashboard
           </a>
         </div>
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-extrabold text-white leading-tight mb-2 tracking-tight">
-          Class Leaderboard
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight mb-2 tracking-tight">
+          Class <span class="text-theme-lt">Leaderboard</span>
         </h1>
-        <p class="text-purple-100 font-medium text-base sm:text-lg">See where you stand among your peers!</p>
+        <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4">See where you stand among your peers</p>
       </div>
     </header>
 
-    <div class="glass-profile p-6 sm:p-8 rounded-2xl mb-10">
-      <div class="mb-12">
-        <h2 class="text-2xl font-extrabold text-brand-purple mb-10 text-center flex items-center justify-center gap-2">
-          <span class="text-3xl">🌟</span> Top Performers
-        </h2>
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
-          <% topThree.forEach((student, index)=> { 
-            let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : 'rank-3'; 
-            let sizeClass = index === 0 ? 'w-28 h-28' : 'w-24 h-24'; 
-            let borderColor = index === 0 ? 'border-amber-400' : index === 1 ? 'border-stone-300' : 'border-amber-700'; 
-            let textColor = index === 0 ? 'text-amber-500' : index === 1 ? 'text-gray-400' : 'text-amber-700';
-            let crownIcon = index === 0 ? '👑' : '';
-          %>
-          <div class="rank-card <%= rankClass %> rounded-2xl shadow-xl md:mt-2 relative overflow-visible p-8 pt-10 flex flex-col items-center">
-            <div class="absolute -top-6 w-full flex justify-center">
-              <div class="bg-white rounded-full p-2 shadow-sm <%= textColor %>">
-                 <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                  <path d="M12 2L9.18 8.5L2 9.27L7.5 14.14L5.82 21L12 17.27L18.18 21L16.5 14.14L22 9.27L14.82 8.5L12 2Z"></path>
-                 </svg>
-              </div>
-            </div>
-            <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="<%= sizeClass %> rounded-full object-cover mb-4 border-4 <%= borderColor %> shadow-md bg-gray-50 mt-2 z-10 relative" />
-            <h3 class="text-xl font-bold text-gray-900 mb-1 flex items-center gap-1 justify-center">
-              <%= student.name %> <span class="text-2xl"><%= crownIcon %></span>
-            </h3>
-            <span class="text-xs font-semibold bg-gray-100 text-gray-500 px-3 py-1 rounded-full mb-3 inline-block">ID: <%= student.studentId %></span>
-
-            <p class="text-gray-500 font-bold text-sm uppercase tracking-wide">
-              Rank <%= student.rank %>
-            </p>
-            <p class="text-3xl font-extrabold text-brand-purple mt-2">
-              <%= Math.trunc(student.score) %> <span class="text-sm font-semibold text-gray-400">pts</span>
-            </p>
-          </div>
-          <% }) %>
-        </div>
-      </div>
-
-      <div>
-        <h2 class="text-2xl font-extrabold text-brand-purple mb-6 flex items-center gap-2">
-          <span class="text-3xl">📊</span> All Rankings
-        </h2>
-        <div class="bg-white border border-gray-100 shadow-sm rounded-xl overflow-hidden">
-          <div id="leaderboard-list" class="divide-y divide-gray-100">
-            <% rest.forEach(student=> { const isCurrentUser = student.name === currentUser; %>
-            <div class="student-row flex items-center gap-2 p-3 sm:p-4 <%= isCurrentUser ? 'highlight-user' : '' %>">
-              <!-- Rank -->
-              <div class="flex-shrink-0 w-10 sm:w-14 text-center text-base sm:text-lg font-extrabold <%= isCurrentUser ? 'text-brand-purple' : 'text-gray-400' %>">
-                #<%= student.rank %>
-              </div>
-              <!-- Avatar -->
-              <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="flex-shrink-0 w-10 h-10 sm:w-12 sm:h-12 rounded-full border border-gray-200 object-cover" />
-              <!-- Name and ID -->
-              <div class="flex-grow min-w-0">
-                <p class="font-bold text-gray-900 text-sm sm:text-base flex items-center gap-1 flex-wrap">
-                  <span class="truncate"><%= student.name %></span>
-                  <%- isCurrentUser ? '<span class="bg-brand-purple text-white text-xs px-2 py-0.5 rounded-full flex-shrink-0">You</span>' : '' %>
-                </p>
-                <p class="text-xs text-gray-400 font-medium truncate">ID: <%= student.studentId %></p>
-              </div>
-              <!-- Points -->
-              <div class="flex-shrink-0 text-right font-extrabold text-base sm:text-lg text-brand-purple pl-2">
-                <%= Math.trunc(student.score) %><span class="text-xs font-semibold text-gray-400 ml-1">pts</span>
-              </div>
-            </div>
-            <% }) %>
-          </div>
-        </div>
+    <!-- TABS -->
+    <div class="flex justify-center mb-10">
+      <div class="bg-theme-bgc p-1.5 rounded-full shadow-inner border border-theme-b inline-flex">
+        <button id="tab-global" onclick="switchTab('global')" class="tab-btn active px-8 py-3 rounded-full text-xs font-mono font-bold tracking-widest uppercase outline-none">Overall (<%= viewingYear %>)</button>
+        <button id="tab-batch" onclick="switchTab('batch')" class="tab-btn px-8 py-3 rounded-full text-xs font-mono font-bold tracking-widest uppercase outline-none">My Batch</button>
       </div>
     </div>
+
+    <!-- MACRO FOR RENDERING A LEADERBOARD -->
+    <% function renderLeaderboardSection(leaderboardData, type) { 
+        const topThree = leaderboardData.slice(0, 3);
+        const rest = leaderboardData.slice(3);
+    %>
+    <div id="content-<%= type %>" class="leaderboard-content <%= type === 'batch' ? 'hidden' : '' %>">
+      <div class="glass-card p-6 sm:p-10 mb-10">
+        
+        <% if(leaderboardData.length === 0) { %>
+          <div class="text-center py-16 border-2 border-dashed border-theme-bd rounded-2xl">
+            <p class="text-theme-fdd font-mono text-sm uppercase tracking-widest">No students found in this ranking.</p>
+          </div>
+        <% } else { %>
+          <!-- TOP 3 -->
+          <div class="mb-16">
+            <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-12 text-center flex items-center justify-center gap-3">
+              <span class="text-3xl drop-shadow-md">🌟</span> Top Performers
+            </h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
+              <% topThree.forEach((student, index)=> { 
+                let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : 'rank-3'; 
+                let sizeClass = index === 0 ? 'w-32 h-32' : 'w-24 h-24'; 
+                let borderColor = index === 0 ? 'border-amber-400' : index === 1 ? 'border-stone-400' : 'border-amber-700'; 
+                let textColor = index === 0 ? 'text-amber-500' : index === 1 ? 'text-stone-400' : 'text-amber-700';
+                let crownIcon = index === 0 ? '👑' : '';
+              %>
+              <div class="rank-card <%= rankClass %> rounded-2xl shadow-lg relative overflow-visible p-8 pt-12 flex flex-col items-center mt-4">
+                <div class="absolute -top-7 w-full flex justify-center">
+                  <div class="bg-theme-bgc rounded-full p-2.5 shadow-md border border-theme-b <%= textColor %>">
+                     <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
+                      <path d="M12 2L9.18 8.5L2 9.27L7.5 14.14L5.82 21L12 17.27L18.18 21L16.5 14.14L22 9.27L14.82 8.5L12 2Z"></path>
+                     </svg>
+                  </div>
+                </div>
+                <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="<%= sizeClass %> rounded-full object-cover mb-5 border-4 <%= borderColor %> shadow-lg bg-theme-bg mt-2 z-10 relative" />
+                <h3 class="text-xl font-unbounded font-bold text-theme-fg mb-1 flex items-center gap-2 justify-center leading-tight">
+                  <%= student.name %> <span class="text-2xl drop-shadow-sm"><%= crownIcon %></span>
+                </h3>
+                <span class="text-[10px] font-mono font-bold bg-theme-bd text-theme-fd px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-widest">ID: <%= student.studentId %></span>
+
+                <p class="text-theme-pt font-mono font-bold text-xs uppercase tracking-widest bg-theme-p/10 px-3 py-1 rounded border border-theme-p/20">
+                  Rank <%= student.rank %>
+                </p>
+                <p class="text-4xl font-unbounded font-extrabold text-theme-fg mt-4 drop-shadow-sm">
+                  <%= Math.trunc(student.score) %> <span class="text-sm font-mono font-semibold text-theme-fd uppercase tracking-widest">pts</span>
+                </p>
+              </div>
+              <% }) %>
+            </div>
+          </div>
+
+          <!-- ALL RANKINGS -->
+          <% if(rest.length > 0) { %>
+          <div>
+            <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-6 flex items-center gap-3 border-b border-theme-bd pb-4">
+              <span class="text-3xl drop-shadow-md">📊</span> All Rankings
+            </h2>
+            <div class="bg-theme-bgc border border-theme-b shadow-sm rounded-2xl overflow-hidden">
+              <div class="flex flex-col">
+                <% rest.forEach(student=> { const isCurrentUser = student.name === currentUser; %>
+                <div class="student-row flex items-center gap-4 p-4 sm:p-5 <%= isCurrentUser ? 'highlight-user' : '' %>">
+                  <div class="flex-shrink-0 w-12 sm:w-16 text-center text-lg sm:text-xl font-unbounded font-extrabold <%= isCurrentUser ? 'text-white drop-shadow-md' : 'text-theme-fd' %>">
+                    #<%= student.rank %>
+                  </div>
+                  <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-theme-bd object-cover shadow-sm" />
+                  <div class="flex-grow min-w-0">
+                    <p class="font-unbounded font-bold text-sm sm:text-base flex items-center gap-2 flex-wrap <%= isCurrentUser ? 'text-white' : 'text-theme-fg' %>">
+                      <span class="truncate"><%= student.name %></span>
+                      <%- isCurrentUser ? '<span class="bg-theme-lt text-theme-bgc text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 uppercase tracking-widest font-bold">You</span>' : '' %>
+                    </p>
+                    <p class="text-xs font-mono tracking-widest uppercase mt-1 truncate <%= isCurrentUser ? 'text-white/70' : 'text-theme-fdd' %>">ID: <%= student.studentId %></p>
+                  </div>
+                  <div class="flex-shrink-0 text-right font-unbounded font-extrabold text-lg sm:text-xl pl-2 <%= isCurrentUser ? 'text-white' : 'text-theme-pt' %>">
+                    <%= Math.trunc(student.score) %><span class="text-[10px] font-mono font-bold ml-1 uppercase tracking-widest <%= isCurrentUser ? 'text-white/70' : 'text-theme-fd' %>">pts</span>
+                  </div>
+                </div>
+                <% }) %>
+              </div>
+            </div>
+          </div>
+          <% } %>
+        <% } %>
+      </div>
+    </div>
+    <% } %>
+
+    <!-- Render both tabs using the macro -->
+    <% renderLeaderboardSection(globalLeaderboard, 'global') %>
+    <% renderLeaderboardSection(batchLeaderboard, 'batch') %>
+
   </div>
 </body>
 

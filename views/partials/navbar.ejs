@@ -1,0 +1,64 @@
+<!-- Global Navigation Bar for Teachers -->
+<% if (typeof isTeacher !== 'undefined' && isTeacher && (typeof hideNavbar === 'undefined' || !hideNavbar)) { %>
+<nav class="glass-card/80 backdrop-blur-md border-b border-purple-100 sticky top-0 z-50 shadow-sm relative">
+  <div class="container mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between items-center h-16">
+      
+      <!-- Logo & Home Link -->
+      <a href="/teacher/dashboard" class="nav-logo">
+        <img src="/images/logo.png" alt="Tuition Hub">
+        <div class="nav-logo-text">
+          <span class="nav-logo-name">Tuition Hub <span class="edu-text">Education Centre</span></span>
+          <span class="nav-logo-sub">Andheri East, Mumbai</span>
+        </div>
+      </a>
+
+      <!-- Right Side Actions -->
+      <div class="flex items-center gap-4 sm:gap-6">
+        
+        <!-- Academic Year Selector -->
+        <%- include('./yearSelector') %>
+        
+        <!-- Profile Dropdown (Hover) -->
+        <div class="relative group">
+          <button class="flex items-center gap-2 hover:bg-purple-50 p-2 rounded-lg transition">
+            <img src="https://ui-avatars.com/api/?name=<%= encodeURIComponent(typeof teacher !== 'undefined' ? teacher.teacherName : 'Teacher') %>&background=5d3a9b&color=fff&size=32" alt="Profile" class="w-8 h-8 rounded-full border border-purple-200">
+            <span class="text-sm font-semibold text-gray-700 hidden sm:block"><%= typeof teacher !== 'undefined' ? teacher.teacherName.split(' ')[0] : 'Menu' %></span>
+            <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+          </button>
+          
+          <!-- Dropdown Menu -->
+          <div class="absolute right-0 mt-2 w-48 glass-card rounded-xl shadow-lg border border-purple-100 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 transform origin-top-right overflow-hidden">
+            <div class="py-1">
+              <% if (typeof teacher !== 'undefined' && teacher._id) { %>
+              <a href="/teacher/edit_teacher/<%= teacher._id %>" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-brand-purple">⚙️ Edit Profile</a>
+              <% } %>
+              <a href="/teacher/add_teacher" class="block px-4 py-2.5 text-sm text-gray-700 hover:bg-purple-50 hover:text-brand-purple">👤 Add Teacher</a>
+              <div class="border-t border-gray-100 my-1"></div>
+              <a href="/teacher/logout" class="block px-4 py-2.5 text-sm text-red-600 hover:bg-red-50">🚪 Logout</a>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</nav>
+
+<style>
+  .text-brand-purple { color: #5d3a9b; }
+  .bg-brand-purple { background-color: #5d3a9b; }
+  .nav-logo { display: flex; align-items: center; gap: 12px; text-decoration: none; }
+  .nav-logo img { height: 40px; width: auto; object-fit: contain; }
+  .nav-logo-text { line-height: 1; }
+  .nav-logo-name { font-family: 'Unbounded', sans-serif; font-size: 0.78rem; font-weight: 900; letter-spacing: 0.04em; text-transform: uppercase; color: #111827; display: block; }
+  .nav-logo-name span { color: #7c3aed; }
+  .edu-text { font-size: 0.62em; opacity: 0.8; font-weight: 700; margin-left: 4px; }
+  .nav-logo-sub { font-family: 'Space Mono', monospace; font-size: 0.42rem; letter-spacing: 0.16em; color: #6b7280; text-transform: uppercase; display: block; margin-top: 3px; }
+  @media(max-width:560px) {
+    .edu-text { display: block; margin-top: 2px; margin-left: 0; }
+    .nav-logo-name { font-size: 0.65rem; }
+    .nav-logo-sub { font-size: 0.38rem; }
+  }
+</style>
+<% } %>

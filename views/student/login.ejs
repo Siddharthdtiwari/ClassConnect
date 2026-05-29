@@ -1,193 +1,66 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Tuition Hub - Login</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap" rel="stylesheet" />
+  <title>Student Portal | Tuition Hub</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
-    body {
-      font-family: "Inter", "Helvetica Neue", sans-serif;
-      overflow-x: hidden;
-      background-color: white;
-      color: #333;
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .content-container {
-      position: relative;
-      z-index: 10;
-      text-align: center;
-      max-width: 600px;
-      padding: 2rem 1rem;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      width: 90%;
-      margin: 0 auto;
-    }
-
-    h3 {
-      font-size: 2rem;
-      font-weight: 800;
-      margin-bottom: 1.2rem;
-      color: #6d2d91;
-    }
-
-    p {
-      font-size: 1.1rem;
-      color: #444;
-    }
-
-    .btn {
-      background: linear-gradient(90deg, #6d2d91, #a3c600);
-      color: white;
-      font-weight: 600;
-      font-size: 1rem;
-      padding: 0.8rem 2rem;
-      border: none;
-      border-radius: 50px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      box-shadow: 0 4px 20px rgba(109, 45, 145, 0.3);
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 6px 25px rgba(109, 45, 145, 0.4);
-    }
-
-    input {
-      padding: 0.8rem;
-      width: 100%;
-      max-width: 400px;
-      margin: 0.5rem auto;
-      border-radius: 30px;
-      border: 1px solid #ccc;
-      outline: none;
-    }
-
-    .error-message {
-      background: linear-gradient(90deg, #ff4d6d, #ff8c42);
-      color: white;
-      padding: 0.8rem 1.2rem;
-      border-radius: 25px;
-      margin: 1rem 0;
-      font-weight: 600;
-      text-align: center;
-      box-shadow: 0 4px 15px rgba(255, 77, 109, 0.3);
-      animation: shake 0.3s ease-in-out;
-    }
-
-    .home-link {
-      position: absolute;
-      top: 1rem;
-      left: 1rem;
-      text-decoration: none;
-      color: #6d2d91;
-      font-weight: 600;
-      font-size: 0.9rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      padding: 0.5rem 1rem;
-      border-radius: 50px;
-      background: white;
-      box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-      transition: all 0.3s ease;
-      z-index: 20;
-    }
-
-    .home-link:hover {
-      transform: translateX(-3px);
-      box-shadow: 0 4px 15px rgba(109, 45, 145, 0.15);
-    }
-
     @keyframes shake {
-      0% {
-        transform: translateX(0);
-      }
-
-      25% {
-        transform: translateX(-5px);
-      }
-
-      50% {
-        transform: translateX(5px);
-      }
-
-      75% {
-        transform: translateX(-5px);
-      }
-
-      100% {
-        transform: translateX(0);
-      }
+      0%, 100% { transform: translateX(0); }
+      25%, 75% { transform: translateX(-5px); }
+      50% { transform: translateX(5px); }
     }
-
-    @media (max-width: 768px) {
-      .content-container {
-        padding: 1rem;
-      }
-
-      h1 {
-        font-size: 2rem;
-        margin-bottom: 1rem;
-      }
-
-      p {
-        font-size: 1rem;
-      }
-
-      .btn {
-        padding: 0.7rem 1.5rem;
-        font-size: 0.9rem;
-      }
-
-      input {
-        padding: 0.7rem;
-      }
+    .animate-shake {
+      animation: shake 0.3s ease-in-out;
     }
   </style>
 </head>
 
-<body>
-  <%- include('../partials/background') %>
+<body class="text-theme-fg wrap min-h-screen flex flex-col items-center justify-center relative overflow-hidden">
   
-  <a href="/" class="home-link">
-    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+  <a href="/" class="absolute top-6 left-6 inline-flex items-center gap-2 font-mono text-xs uppercase tracking-widest text-theme-fd hover:text-theme-pt transition-colors z-20 bg-theme-bgc border border-theme-b px-4 py-2 rounded-full backdrop-blur-md">
+    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
     Home
   </a>
 
-  <div class="content-container">
-    <img src="/images/logo.png" alt="Tuition Hub Logo" style="max-width: 200px; margin-bottom: 1.5rem" />
-    <h3>Welcome back, Student <br />Sign in to Your Learning Dashboard</h3>
+  <div class="content-container w-full max-w-md px-4 relative z-10">
+    <div class="glass-card p-8 sm:p-12 flex flex-col items-center relative overflow-hidden text-center">
+      <div class="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-theme-p to-theme-lt"></div>
+      
+      <img src="/images/logo.png" alt="Tuition Hub Logo" class="h-16 w-auto mb-6 drop-shadow-md" />
+      
+      <h3 class="text-2xl font-unbounded font-extrabold text-theme-fg mb-2 leading-tight">
+        Student <span class="text-theme-pt">Portal</span>
+      </h3>
+      <p class="text-sm font-mono text-theme-fd uppercase tracking-wide mb-8">
+        Sign in to your learning dashboard
+      </p>
 
-    <form action="/student/login" method="POST">
-      <input type="text" id="studentId" name="studentId" placeholder="ID Number" required />
-      <input type="password" id="password" name="password" placeholder="Password" required />
-      <br />
-      <button class="btn" type="submit">Login</button>
-    </form>
+      <form action="/student/login" method="POST" class="w-full flex flex-col gap-4">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+        
+        <div class="flex flex-col gap-1 text-left">
+          <label class="font-mono text-xs text-theme-fdd uppercase tracking-widest">ID Number</label>
+          <input type="text" id="studentId" name="studentId" placeholder="e.g. STU12345" required 
+            class="bg-theme-bgc border border-theme-b rounded-lg px-4 py-3 text-sm text-theme-fg outline-none transition-colors focus:border-theme-p focus:bg-theme-bgch placeholder-theme-fdd" />
+        </div>
+        
+        <div class="flex flex-col gap-1 text-left mb-4">
+          <label class="font-mono text-xs text-theme-fdd uppercase tracking-widest">Password</label>
+          <input type="password" id="password" name="password" placeholder="••••••••" required 
+            class="bg-theme-bgc border border-theme-b rounded-lg px-4 py-3 text-sm text-theme-fg outline-none transition-colors focus:border-theme-p focus:bg-theme-bgch placeholder-theme-fdd" />
+        </div>
+        
+        <button class="btn-primary w-full py-4 text-sm mt-2" type="submit">Access Dashboard</button>
+      </form>
 
-    <% if (typeof error !=='undefined' ) { %>
-    <div class="error-message"><%= error %></div>
-    <% } %>
+      <% if (typeof error !=='undefined' ) { %>
+      <div class="mt-6 bg-red-500/10 border border-red-500/30 text-red-500 text-xs font-mono p-3 rounded-lg w-full animate-shake">
+        <%= error %>
+      </div>
+      <% } %>
+    </div>
   </div>
 
   <script>
@@ -197,7 +70,7 @@
       loginForm.addEventListener('submit', function(e) {
         const btn = this.querySelector('button[type="submit"]');
         btn.disabled = true;
-        btn.innerText = "Logging in...";
+        btn.innerHTML = "Authenticating...";
         btn.style.opacity = "0.7";
         btn.style.cursor = "not-allowed";
       });

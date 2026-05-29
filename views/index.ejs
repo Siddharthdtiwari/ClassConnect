@@ -1,682 +1,1185 @@
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth">
-
+<html lang="en" data-theme="dark">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TUITION HUB Education Center - Your Path to Excellence</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          colors: {
-            "brand-violet": "#6D28D9",
-            "brand-violet-light": "#8B5CF6",
-            "brand-green": "#10B981",
-            "brand-green-light": "#34D399",
-            "brand-white": "#FFFFFF",
-            "brand-gray": {
-              100: "#F3F4F6",
-              200: "#E5E7EB",
-              800: "#1F2937",
-              900: "#111827",
-            },
-            "brand-purple": "#5d3a9b",
-            "brand-lime": "#bde045",
-          },
-          fontFamily: {
-            inter: ["Inter", "sans-serif"],
-          },
-          animation: {
-            "fade-in-up": "fadeInUp 1s ease-out forwards",
-            "pulse-slow": "pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite",
-            "background-pan": "backgroundPan 15s linear infinite",
-          },
-          keyframes: {
-            fadeInUp: {
-              "0%": {
-                opacity: "0",
-                transform: "translateY(20px)"
-              },
-              "100%": {
-                opacity: "1",
-                transform: "translateY(0)"
-              },
-            },
-            backgroundPan: {
-              "0%": {
-                backgroundPosition: "0% 50%"
-              },
-              "50%": {
-                backgroundPosition: "100% 50%"
-              },
-              "100%": {
-                backgroundPosition: "0% 50%"
-              },
-            },
-          },
-        },
-      },
-    };
-  </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tuition Hub Education Centre — Andheri East, Mumbai</title>
+  <meta name="description" content="Expert tuition for Nursery to Class X in Andheri East, Mumbai. Small batches, expert teachers, and a smart digital platform for students, parents and teachers.">
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    .hero-bg {
-      background: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-      background-size: 600% 600%;
-      animation: backgroundPan 15s ease infinite;
-    }
+/* ────────────────────────────────────────────
+   TOKENS
+──────────────────────────────────────────── */
+:root {
+  --p: #7c3aed; --pm: #5d3a9b;
+  --pg: rgba(124,58,237,.32); --pg2: rgba(93,58,155,.18);
+  --l: #bde045; --lg: rgba(189,224,69,.22);
+  --ease: cubic-bezier(.34,1.56,.64,1);
+  --trans: background .4s,color .4s,border-color .3s,box-shadow .3s;
+}
+[data-theme="dark"] {
+  --bg:#05050a; --bg2:#0b0b14; --bgc:rgba(255,255,255,.03); --bgch:rgba(124,58,237,.07);
+  --fg:#F0EBE0; --fd:rgba(240,235,224,.75); --fdd:rgba(240,235,224,.55);
+  --b:rgba(240,235,224,.09); --bd:rgba(240,235,224,.055);
+  --nav:rgba(5,5,10,.25); --cop:.55;
+  --pt:var(--p); --lt:var(--l);
+  --tks:rgba(240,235,224,.18);
+}
+[data-theme="light"] {
+  --bg:#F5F1FC; --bg2:#EDE8F5; --bgc:rgba(255,255,255,.8); --bgch:rgba(255,255,255,.98);
+  --fg:#0C0C0C; --fd:rgba(12,12,12,.80); --fdd:rgba(12,12,12,.60);
+  --b:rgba(12,12,12,.12); --bd:rgba(12,12,12,.07);
+  --nav:rgba(245,241,252,.8); --cop:.12;
+  --pt:#5d3a9b; --lt:#6e8e00;
+  --tks:rgba(100,90,90,.16);
+}
 
-    .text-gradient {
-      background-clip: text;
-      -webkit-background-clip: text;
-      color: transparent;
-    }
+/* ── BASE ── */
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--fg);font-family:'Inter',sans-serif;overflow-x:hidden;cursor:none;transition:var(--trans)}
 
-    .nav-scrolled {
-      background-color: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(10px);
-      box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1),
-        0 2px 4px -2px rgb(0 0 0 / 0.1);
-    }
+/* ── CURSOR ── */
+#cur{position:fixed;z-index:9999;width:10px;height:10px;background:var(--p);border-radius:50%;pointer-events:none;transform:translate(-50%,-50%);transition:width .2s var(--ease),height .2s var(--ease);mix-blend-mode:difference}
+[data-theme="light"] #cur{mix-blend-mode:multiply;background:#5d3a9b}
+#cur.xl{width:56px;height:56px}
 
-    .testimonial-card {
-      min-width: 80%;
-    }
+/* ── BACKGROUND ── */
+.grain{position:fixed;inset:-50%;z-index:1;width:200%;height:200%;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.055'/%3E%3C/svg%3E");pointer-events:none;animation:grain .5s steps(1) infinite}
+@keyframes grain{0%,100%{transform:translate(0,0)}10%{transform:translate(-2%,-3%)}20%{transform:translate(3%,1%)}30%{transform:translate(-1%,4%)}40%{transform:translate(2%,-2%)}50%{transform:translate(-3%,2%)}60%{transform:translate(1%,-1%)}70%{transform:translate(-2%,3%)}80%{transform:translate(2%,1%)}90%{transform:translate(-1%,-2%)}}
+[data-theme="light"] .grain{opacity:.3}
+.orb{position:fixed;border-radius:50%;filter:blur(90px);pointer-events:none;z-index:0;animation:of 20s ease-in-out infinite alternate}
+.orb1{width:800px;height:800px;background:radial-gradient(circle,rgba(124,58,237,.11) 0%,transparent 70%);top:-300px;left:-200px;animation-duration:24s}
+.orb2{width:600px;height:600px;background:radial-gradient(circle,rgba(93,58,155,.09) 0%,transparent 70%);bottom:-100px;right:-200px;animation-duration:19s;animation-delay:-9s}
+@keyframes of{0%{transform:translate(0,0) scale(1)}50%{transform:translate(40px,-50px) scale(1.05)}100%{transform:translate(-30px,30px) scale(.97)}}
+[data-theme="light"] .orb1{background:radial-gradient(circle,rgba(93,58,155,.07) 0%,transparent 70%)}
+[data-theme="light"] .orb2{background:radial-gradient(circle,rgba(93,58,155,.05) 0%,transparent 70%)}
+.wrap{position:relative;z-index:10}
 
-    @media (min-width: 768px) {
-      .testimonial-card {
-        min-width: 45%;
-      }
-    }
+/* ────────────────────────────────────────────
+   NAV
+──────────────────────────────────────────── */
+nav{position:fixed;top:0;left:0;right:0;z-index:200;padding:0 48px;height:72px;display:flex;align-items:center;justify-content:space-between}
+nav::before{content:'';position:absolute;inset:0;background:var(--nav);backdrop-filter:blur(32px);-webkit-backdrop-filter:blur(32px);border-bottom:1px solid var(--bd);z-index:-1;transition:background .4s}
+.nav-logo{display:flex;align-items:center;gap:12px;text-decoration:none}
+.nav-logo img{height:40px;width:auto;object-fit:contain}
+.nav-logo-text{line-height:1}
+.nav-logo-name{font-family:'Unbounded',sans-serif;font-size:.78rem;font-weight:900;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);display:block;transition:color .4s}
+.nav-logo-name span{color:var(--pt)}
+.edu-text{font-size:0.62em;opacity:0.8;font-weight:700;margin-left:4px}
+.nav-logo-sub{font-family:'Space Mono',monospace;font-size:.42rem;letter-spacing:.16em;color:var(--fdd);text-transform:uppercase;display:block;margin-top:3px;transition:color .4s}
+.nav-links{display:flex;align-items:center;gap:32px;margin:0 auto}
+.nav-links a{font-family:'Space Mono',monospace;font-size:.6rem;letter-spacing:.1em;color:var(--fd);text-decoration:none;text-transform:uppercase;transition:color .2s;padding:4px 0;position:relative}
+.nav-links a::after{content:'';position:absolute;bottom:-2px;left:0;right:100%;height:1px;background:var(--pt);transition:right .25s}
+.nav-links a:hover{color:var(--fg)}
+.nav-links a:hover::after{right:0}
+.nav-right{display:flex;align-items:center;gap:14px}
+.nav-login{padding:9px 22px;background:var(--p);color:#fff;border-radius:6px;font-family:'Unbounded',sans-serif;font-size:.6rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:all .25s;border:none}
+.nav-login:hover{background:var(--pm);transform:translateY(-1px);box-shadow:0 6px 24px var(--pg)}
+.theme-pill{display:flex;align-items:center;background:var(--bgc);border:1px solid var(--b);border-radius:100px;padding:4px;gap:2px;cursor:pointer;transition:var(--trans)}
+.theme-pill:hover{border-color:var(--p)}
+.tt{width:30px;height:26px;border-radius:100px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:background .25s;border:none;background:transparent;color:var(--fd)}
+[data-theme="dark"] .tt[data-t="dark"]{background:var(--p);color:#fff}
+[data-theme="light"] .tt[data-t="light"]{background:var(--pt);color:#fff}
+.nav-menu-btn{display:none;background:none;border:none;color:var(--fg);cursor:pointer;padding:4px}
+.mm-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.5);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);z-index:9998;opacity:0;pointer-events:none;transition:opacity .4s ease}
+.mm-overlay.active{opacity:1;pointer-events:auto}
+.mobile-menu{position:fixed;top:0;right:0;bottom:0;width:320px;background:var(--bgc);backdrop-filter:blur(30px);-webkit-backdrop-filter:blur(30px);border-left:1px solid rgba(255,255,255,0.05);z-index:9999;transform:translateX(100%);transition:transform .4s cubic-bezier(.16,1,.3,1);display:flex;flex-direction:column;box-shadow:-20px 0 80px rgba(0,0,0,0.3)}
+.mobile-menu.active{transform:translateX(0)}
+.mm-header{padding:30px 24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.mm-logo-text{font-family:'Unbounded',sans-serif;font-size:1.1rem;font-weight:900;color:var(--fg);text-transform:uppercase}
+.mm-logo-text span{color:var(--pt)}
+.mm-close{background:transparent;border:1px solid var(--bd);border-radius:50%;color:var(--fg);width:36px;height:36px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .3s}
+.mm-close:hover{background:var(--pt);border-color:var(--pt);color:#fff}
+.mm-inner{display:flex;flex-direction:column;padding:30px 24px;gap:12px;overflow-y:auto;flex-grow:1}
+.mm-inner a{font-family:'Unbounded',sans-serif;font-size:1.15rem;font-weight:700;color:var(--fg);text-decoration:none;text-transform:uppercase;transition:all .3s;padding:12px 16px;border-radius:12px}
+.mm-inner a:hover{color:var(--pt);background:var(--bgch);padding-left:24px}
+.mm-footer{padding:30px 24px;border-top:1px solid var(--bd);display:flex;flex-direction:column;gap:12px;background:var(--bg2)}
+/* ────────────────────────────────────────────
+   HERO
+──────────────────────────────────────────── */
+.hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 48px 72px;position:relative;overflow:hidden}
+.hero-glow{position:absolute;width:900px;height:900px;border-radius:50%;background:radial-gradient(circle,rgba(124,58,237,.07) 0%,rgba(93,58,155,.03) 45%,transparent 70%);top:50%;left:38%;transform:translate(-50%,-50%);pointer-events:none;z-index:1;animation:rp 7s ease-in-out infinite}
+@keyframes rp{0%,100%{transform:translate(-50%,-50%) scale(1);opacity:1}50%{transform:translate(-50%,-50%) scale(1.07);opacity:.7}}
+.ticker-wrap{position:absolute;top:50%;left:0;right:0;transform:translateY(-55%);overflow:hidden;white-space:nowrap;pointer-events:none;z-index:0}
+.ticker{display:inline-flex;animation:tk 22s linear infinite}
+.ticker span{font-family:'Unbounded',sans-serif;font-size:clamp(7rem,18vw,20rem);font-weight:900;letter-spacing:-.04em;line-height:.85;color:transparent;-webkit-text-stroke:1px var(--tks);padding-right:80px;white-space:nowrap;transition:-webkit-text-stroke-color .4s}
+@keyframes tk{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.hero-body{position:relative;z-index:2;display:grid;grid-template-columns:1fr auto;align-items:flex-end;gap:60px}
+.h-kicker{font-family:'Space Mono',monospace;font-size:.63rem;letter-spacing:.2em;color:var(--pt);text-transform:uppercase;margin-bottom:22px;display:flex;align-items:center;gap:10px;transition:color .4s}
+.kd{width:6px;height:6px;border-radius:50%;background:var(--pt);box-shadow:0 0 10px var(--pt);animation:blink 1.8s ease-in-out infinite;transition:background .4s}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.12}}
+h1{font-family:'Unbounded',sans-serif;font-size:clamp(3.2rem,7.5vw,9rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase}
+.acc{color:var(--pt);text-shadow:0 0 40px var(--pg2);transition:color .4s,text-shadow .4s}
+[data-theme="light"] .acc{text-shadow:none}
+.lim{color:var(--lt);transition:color .4s}
+.stk{color:transparent;-webkit-text-stroke:2px var(--fg);transition:-webkit-text-stroke-color .4s}
+[data-theme="light"] .stk{-webkit-text-stroke-width:1.5px}
+.h-sub{font-size:.95rem;font-weight:300;color:var(--fd);max-width:420px;line-height:1.82;margin-top:28px;transition:color .4s}
+.h-cta{display:flex;gap:12px;margin-top:36px}
+.hero-right{display:flex;flex-direction:column;align-items:flex-end;gap:20px;flex-shrink:0}
+.scroll-hint{position:absolute;bottom:72px;right:35px;font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.14em;color:var(--fdd);text-transform:uppercase;writing-mode:vertical-rl;display:flex;align-items:center;gap:10px;transition:color .4s}
+.scroll-hint::before{content:'';display:block;width:1px;height:44px;background:linear-gradient(to bottom,var(--fdd),transparent)}
 
-    @media (min-width: 1024px) {
-      .testimonial-card {
-        min-width: 30%;
-      }
-    }
+/* LIVE WIDGET */
+.lw{background:var(--bgc);border:1px solid var(--b);border-radius:14px;width:310px;overflow:hidden;backdrop-filter:blur(24px);transition:var(--trans)}
+[data-theme="dark"] .lw{box-shadow:0 0 0 1px rgba(124,58,237,.15),0 20px 64px rgba(0,0,0,.5),inset 0 1px 0 rgba(255,255,255,.04)}
+.lw-h{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.lw-t{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fd);transition:color .4s}
+.lw-live{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.12em;color:var(--pt);display:flex;align-items:center;gap:5px;transition:color .4s}
+.lw-live::before{content:'';width:4px;height:4px;border-radius:50%;background:var(--pt);animation:blink 1.5s infinite}
+.lw-b{padding:8px;display:flex;flex-direction:column;gap:4px}
+.lw-r{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;background:var(--bgc);border:1px solid var(--bd);transition:all .5s var(--ease),background .4s}
+.lw-r.top{background:rgba(124,58,237,.08);border-color:rgba(124,58,237,.3)}
+.lw-pos{font-family:'Space Mono',monospace;font-size:.56rem;color:var(--fdd);width:14px;text-align:center}
+.lw-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.s1{background:#7c3aed;box-shadow:0 0 7px rgba(124,58,237,.7)}.s2{background:#9d5ff5}.s3{background:#bde045;box-shadow:0 0 5px rgba(189,224,69,.5)}
+.lw-info{flex:1}
+.lw-name{font-size:.7rem;font-weight:600;color:var(--fg);transition:color .4s}
+.lw-sub{font-size:.56rem;color:var(--fd);margin-top:2px;transition:color .4s}
+.lw-score{font-family:'Space Mono',monospace;font-size:.63rem;color:var(--pt);font-weight:700;transition:color .4s}
+.lw-score.t{color:var(--lt)!important}
 
-    .faq-item .faq-answer {
-      max-height: 0;
-      overflow: hidden;
-      transition: max-height 0.5s ease-in-out;
-    }
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:8px;padding:13px 28px;border-radius:7px;font-family:'Unbounded',sans-serif;font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;transition:all .25s;white-space:nowrap;border:none;cursor:none}
+.btn-p{background:linear-gradient(135deg,var(--p),var(--pm));color:#fff;box-shadow:0 4px 20px var(--pg)}
+.btn-p:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--pg)}
+.btn-o{border:1px solid var(--b);color:var(--fg);background:var(--bgc);backdrop-filter:blur(10px)}
+.btn-o:hover{border-color:var(--p);color:var(--pt)}
+.btn-l{background:var(--lt);color:#0a0a0a}
+.btn-l:hover{transform:translateY(-3px);box-shadow:0 12px 40px var(--lg)}
 
-    .faq-item.open .faq-answer {
-      max-height: 500px;
-    }
+/* ────────────────────────────────────────────
+   MARQUEE
+──────────────────────────────────────────── */
+.mq-wrap{border-top:1px solid var(--bd);border-bottom:1px solid var(--bd);padding:18px 0;overflow:hidden;background:var(--bgc);transition:var(--trans)}
+.mq-track{display:flex;animation:mq 28s linear infinite;white-space:nowrap}
+.mq-item{display:flex;align-items:center;gap:28px;padding:0 40px;border-right:1px solid var(--bd);flex-shrink:0;transition:border-color .4s}
+.mq-n{font-family:'Unbounded',sans-serif;font-size:1.6rem;font-weight:700;color:var(--pt);letter-spacing:-.02em;transition:color .4s}
+.mq-l{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.08em;color:var(--fd);text-transform:uppercase;line-height:1.5;transition:color .4s}
+@keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
 
-    .faq-item.open .faq-icon {
-      transform: rotate(180deg);
-    }
+/* ────────────────────────────────────────────
+   DIVIDER
+──────────────────────────────────────────── */
+.divider{height:1px;background:var(--bd);transition:background .4s}
+
+/* ────────────────────────────────────────────
+   SECTION ANATOMY (same across all sections)
+──────────────────────────────────────────── */
+.sec{padding:120px 48px;transition:var(--trans)}
+.sec-inner{max-width:1320px;margin:0 auto}
+.sec.alt{background:var(--bg2)}
+.sec-tag{font-family:'Space Mono',monospace;font-size:.56rem;letter-spacing:.22em;color:var(--fdd);text-transform:uppercase;margin-bottom:20px;display:flex;align-items:center;gap:10px;transition:color .4s}
+.sec-tag::before{content:'';width:20px;height:1px;background:var(--pt)}
+.sec-h{font-family:'Unbounded',sans-serif;font-size:clamp(2.2rem,5vw,5.5rem);font-weight:900;line-height:.88;letter-spacing:-.04em;text-transform:uppercase;color:var(--fg);margin-bottom:20px;transition:color .4s}
+.sec-h .s{color:transparent;-webkit-text-stroke:1.5px var(--fg);transition:-webkit-text-stroke-color .4s}
+[data-theme="light"] .sec-h .s{-webkit-text-stroke-width:1px}
+.sec-h .p{color:var(--pt);transition:color .4s}
+.sec-h .l{color:var(--lt);transition:color .4s}
+.sec-sub{font-size:.92rem;font-weight:300;color:var(--fd);max-width:500px;line-height:1.84;margin-bottom:56px;transition:color .4s}
+
+/* ────────────────────────────────────────────
+   2 — ADMISSIONS
+──────────────────────────────────────────── */
+.adm-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px;background:var(--bd);border:1px solid var(--bd);border-radius:20px;overflow:hidden}
+.adm-cell{background:var(--bgc);padding:44px 40px;transition:var(--trans);position:relative;overflow:hidden}
+.adm-cell:hover{background:var(--bgch)}
+.adm-cell-big{grid-column:1/3;display:grid;grid-template-columns:1fr 1fr;gap:48px;align-items:center}
+.adm-big-left .tag{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.2em;color:var(--pt);text-transform:uppercase;margin-bottom:14px;display:flex;align-items:center;gap:8px;transition:color .4s}
+.adm-big-left .tag::before{content:'';width:18px;height:1px;background:var(--pt)}
+.adm-big-left h3{font-family:'Unbounded',sans-serif;font-size:clamp(1.6rem,3.5vw,3rem);font-weight:900;line-height:.9;letter-spacing:-.03em;text-transform:uppercase;color:var(--fg);margin-bottom:16px;transition:color .4s}
+.adm-big-left p{font-size:.9rem;color:var(--fd);line-height:1.78;margin-bottom:28px;transition:color .4s}
+.adm-big-right{display:flex;flex-direction:column;gap:12px}
+.adm-stat{background:var(--bgc);border:1px solid var(--b);border-radius:12px;padding:20px 22px;transition:var(--trans)}
+[data-theme="dark"] .adm-stat{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.adm-stat-n{font-family:'Unbounded',sans-serif;font-size:2rem;font-weight:900;color:var(--pt);line-height:1;transition:color .4s}
+.adm-stat-l{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.1em;color:var(--fdd);text-transform:uppercase;margin-top:4px;transition:color .4s}
+.adm-icon{font-size:2.4rem;margin-bottom:16px;display:block}
+.adm-title{font-family:'Unbounded',sans-serif;font-size:.82rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);margin-bottom:10px;transition:color .4s}
+.adm-desc{font-size:.8rem;color:var(--fd);line-height:1.7;transition:color .4s}
+.adm-cell::after{content:'';position:absolute;bottom:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--p),transparent);opacity:0;transition:opacity .35s}
+.adm-cell:hover::after{opacity:1}
+
+/* ────────────────────────────────────────────
+   3 — FEATURES
+──────────────────────────────────────────── */
+.feat-bento{display:grid;grid-template-columns:repeat(6,1fr);grid-template-rows:auto;gap:2px;background:var(--bd);border:1px solid var(--bd);border-radius:20px;overflow:hidden}
+.fb{background:var(--bgc);padding:36px 32px;transition:var(--trans);position:relative;overflow:hidden}
+.fb:hover{background:var(--bgch)}
+.fb::before{content:'';position:absolute;inset:0;opacity:0;transition:opacity .4s;background:radial-gradient(circle at 20% 20%,var(--pg2) 0%,transparent 60%)}
+.fb:hover::before{opacity:1}
+.fb-icon{font-size:2rem;margin-bottom:18px;display:block;position:relative;z-index:1}
+.fb-title{font-family:'Unbounded',sans-serif;font-size:.8rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);margin-bottom:10px;position:relative;z-index:1;transition:color .4s}
+.fb-desc{font-size:.78rem;color:var(--fd);line-height:1.68;position:relative;z-index:1;transition:color .4s}
+.fb-accent{position:absolute;bottom:0;left:0;right:0;height:2px;opacity:0;transition:opacity .35s}
+.fb:hover .fb-accent{opacity:1}
+/* bento spans */
+.fb.span2{grid-column:span 2}
+.fb.span3{grid-column:span 3}
+.fb.span4{grid-column:span 4}
+.fb.span6{grid-column:span 6}
+/* scorecard lives in features as a full-width showcase */
+.sc-showcase{background:var(--bgc);padding:40px;transition:var(--trans)}
+.sc-showcase:hover{background:var(--bgch)}
+.sc-inner-grid{display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:start}
+.sc-card{border:1px solid var(--b);border-radius:14px;overflow:hidden;background:var(--bg)}
+[data-theme="dark"] .sc-card{box-shadow:0 0 0 1px rgba(124,58,237,.1),0 20px 60px rgba(0,0,0,.5)}
+.sc-top{padding:24px;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;align-items:flex-start}
+.sc-sname{font-family:'Unbounded',sans-serif;font-size:.88rem;font-weight:700;color:var(--fg);margin-bottom:5px;transition:color .4s}
+.sc-smeta{font-family:'Space Mono',monospace;font-size:.54rem;color:var(--fd);line-height:1.65;transition:color .4s}
+.sc-big{font-family:'Unbounded',sans-serif;font-size:3.5rem;font-weight:900;line-height:1;color:var(--pt);filter:drop-shadow(0 0 12px var(--pg2));display:block;transition:color .4s}
+[data-theme="light"] .sc-big{filter:none}
+.sc-lbl{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.12em;color:var(--fdd);text-transform:uppercase;display:block;margin-top:4px;text-align:right;transition:color .4s}
+.sc-rows{padding:18px 24px;display:flex;flex-direction:column;gap:14px}
+.scr-row{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:3px}
+.scr-n{font-size:.76rem;font-weight:500;color:var(--fg);transition:color .4s}
+.scr-v{font-family:'Space Mono',monospace;font-size:.68rem;color:var(--pt);font-weight:700}
+.scr-note{font-size:.58rem;color:var(--fdd);margin-bottom:5px;transition:color .4s}
+.bar{height:3px;background:var(--bd);border-radius:2px;overflow:hidden}
+.bi{height:100%;border-radius:2px;width:0;transition:width 1.4s cubic-bezier(.16,1,.3,1)}
+.bi.p{background:linear-gradient(90deg,var(--pm),var(--p))}
+.bi.l{background:linear-gradient(90deg,#9ac940,var(--l))}
+.sc-foot{padding:12px 24px;border-top:1px solid var(--bd);display:flex;justify-content:space-between;align-items:center}
+.sc-fl{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;color:var(--fdd);text-transform:uppercase}
+.badge{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.08em;padding:3px 10px;border-radius:100px;text-transform:uppercase;display:inline-flex;align-items:center;gap:5px}
+.badge.g{background:rgba(189,224,69,.12);color:var(--lt);border:1px solid rgba(189,224,69,.22)}
+.badge.g::before{content:'';width:4px;height:4px;border-radius:50%;background:currentColor;animation:blink 2s ease-in-out infinite}
+.sc-steps{display:flex;flex-direction:column;gap:0}
+.sc-step{display:flex;gap:20px;padding:24px 0;border-bottom:1px solid var(--bd);transition:border-color .4s}
+.sc-step:last-child{border-bottom:none}
+.sc-step-n{font-family:'Unbounded',sans-serif;font-size:2.4rem;font-weight:900;line-height:1;color:transparent;-webkit-text-stroke:1.5px var(--bd);flex-shrink:0;width:50px;transition:-webkit-text-stroke-color .4s}
+.sc-step:hover .sc-step-n{-webkit-text-stroke-color:var(--pt)}
+.sc-step-title{font-family:'Unbounded',sans-serif;font-size:.78rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fg);margin-bottom:6px;transition:color .4s}
+.sc-step-desc{font-size:.78rem;color:var(--fd);line-height:1.68;transition:color .4s}
+
+/* ────────────────────────────────────────────
+   4 — WORKING HOURS
+──────────────────────────────────────────── */
+.sched-grid{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.sched-card{background:var(--bgc);border:1px solid var(--b);border-radius:18px;overflow:hidden;transition:var(--trans)}
+[data-theme="dark"] .sched-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.sched-head{padding:22px 28px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:14px}
+.sched-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0}
+.sched-head-title{font-family:'Unbounded',sans-serif;font-size:.92rem;font-weight:700;color:var(--fg);transition:color .4s}
+.sched-head-sub{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.1em;color:var(--fdd);text-transform:uppercase;margin-top:2px;transition:color .4s}
+.sched-row{display:flex;justify-content:space-between;align-items:center;padding:20px 28px;border-bottom:1px solid var(--bd);transition:background .25s}
+.sched-row:last-child{border-bottom:none}
+.sched-row:hover{background:var(--bgch)}
+.sched-session{font-family:'Unbounded',sans-serif;font-size:.72rem;font-weight:700;color:var(--fg);transition:color .4s}
+.sched-badge{font-family:'Space Mono',monospace;font-size:.48rem;letter-spacing:.1em;text-transform:uppercase;padding:3px 8px;border-radius:4px;margin-top:4px;display:inline-block}
+.sched-badge.am{background:rgba(189,224,69,.1);color:var(--lt);border:1px solid rgba(189,224,69,.2)}
+.sched-badge.pm{background:rgba(124,58,237,.1);color:var(--pt);border:1px solid rgba(124,58,237,.2)}
+.sched-time{font-family:'Space Mono',monospace;font-size:.92rem;font-weight:700;transition:color .4s}
+.sched-time.lime{color:var(--lt)}
+.sched-time.purple{color:var(--pt)}
+.sched-extras{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:24px}
+.sched-extra{background:var(--bgc);border:1px solid var(--b);border-radius:14px;padding:22px 26px;display:flex;justify-content:space-between;align-items:center;transition:var(--trans)}
+.sched-extra:hover{background:var(--bgch)}
+.sched-extra-label{font-family:'Unbounded',sans-serif;font-size:.75rem;font-weight:700;color:var(--fg);margin-bottom:4px;transition:color .4s}
+.sched-extra-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.1em;color:var(--fdd);text-transform:uppercase;transition:color .4s}
+.sched-extra-time{font-family:'Space Mono',monospace;font-size:1.1rem;font-weight:700;transition:color .4s}
+.sched-extra-time.lime{color:var(--lt)}
+.sched-extra-time.purple{color:var(--pt)}
+
+/* ────────────────────────────────────────────
+   5 — FEE STRUCTURE
+──────────────────────────────────────────── */
+.fee-top{display:flex;align-items:flex-start;justify-content:space-between;gap:40px;margin-bottom:56px;flex-wrap:wrap}
+.fee-pills{display:flex;gap:12px;flex-wrap:wrap;align-self:flex-end}
+.fee-pill{font-family:'Space Mono',monospace;font-size:.58rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;padding:10px 20px;border-radius:8px}
+.fee-pill.l{background:rgba(189,224,69,.08);color:var(--lt);border:1px solid rgba(189,224,69,.2)}
+.fee-pill.p{background:rgba(124,58,237,.08);color:var(--pt);border:1px solid rgba(124,58,237,.2)}
+.fee-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:32px;align-items:start}
+.fee-tier-label{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;color:var(--fdd);margin-bottom:12px;transition:color .4s}
+.stacked-container{position:relative;width:100%;height:220px;cursor:pointer;user-select:none;perspective:1000px}
+.stacked-card{position:absolute;width:100%;left:0;top:0;background:var(--bgc);border:1px solid var(--bd);border-radius:16px;padding:28px;backdrop-filter:blur(12px);transition:transform .5s cubic-bezier(0.4, 0, 0.2, 1),opacity .5s,box-shadow .5s;pointer-events:none;transform-origin:top center}
+.tier-class{font-family:'Unbounded',sans-serif;font-size:1.3rem;font-weight:700;color:var(--fg);margin-bottom:8px;transition:color .4s}
+.tier-price{font-family:'Space Mono',monospace;font-size:2rem;color:var(--lt);font-weight:700;transition:color .4s}
+.tier-yearly{font-size:.72rem;color:var(--fdd);margin-top:8px;transition:color .4s}
+.stacked-card.c1{z-index:10;transform:translateY(0) scale(1);opacity:1;border-color:rgba(124,58,237,.3);box-shadow:0 10px 30px rgba(124,58,237,.12);pointer-events:auto}
+.stacked-card.c2{z-index:9;transform:translateY(16px) scale(.96);opacity:.8;box-shadow:0 10px 20px rgba(0,0,0,0.1)}
+.stacked-card.c3{z-index:8;transform:translateY(32px) scale(.92);opacity:.6;box-shadow:0 10px 20px rgba(0,0,0,0.1)}
+.stacked-card.c4{z-index:7;transform:translateY(48px) scale(.88);opacity:.4}
+.stacked-card.c5{z-index:6;transform:translateY(64px) scale(.84);opacity:.2}
+.stacked-card.c6{z-index:5;transform:translateY(80px) scale(.80);opacity:.1}
+.fee-hint{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.1em;text-transform:uppercase;color:var(--fdd);display:block;transition:color .4s;margin-top:20px}
+
+/* ────────────────────────────────────────────
+   6 — PLATFORM
+──────────────────────────────────────────── */
+.platform-wrap{position:relative;overflow:hidden}
+.platform-wrap::before{content:'HUB';position:absolute;bottom:-80px;right:-40px;font-family:'Unbounded',sans-serif;font-size:30vw;font-weight:900;color:transparent;-webkit-text-stroke:1px var(--bd);pointer-events:none;line-height:1;transition:-webkit-text-stroke-color .4s;z-index:0}
+.plat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;position:relative;z-index:1}
+.plat-card{border:1px solid var(--b);border-radius:20px;padding:40px 34px;background:var(--bgc);position:relative;overflow:hidden;transition:var(--trans)}
+[data-theme="dark"] .plat-card{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.plat-card:hover{border-color:var(--p);transform:translateY(-6px)}
+.plat-card:hover .plat-glow{opacity:1}
+.plat-glow{position:absolute;top:0;left:0;right:0;bottom:0;background:radial-gradient(circle at 30% 20%,rgba(124,58,237,.09) 0%,transparent 60%);pointer-events:none;opacity:0;transition:opacity .4s}
+.plat-glow.lime{background:radial-gradient(circle at 30% 20%,rgba(189,224,69,.1) 0%,transparent 60%)}
+.plat-role{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.16em;text-transform:uppercase;margin-bottom:18px;transition:color .4s}
+.plat-icon{font-size:2.4rem;margin-bottom:16px;display:block}
+.plat-title{font-family:'Unbounded',sans-serif;font-size:1.15rem;font-weight:700;color:var(--fg);margin-bottom:10px;transition:color .4s}
+.plat-desc{font-size:.82rem;color:var(--fd);line-height:1.7;margin-bottom:24px;transition:color .4s}
+.plat-list{display:flex;flex-direction:column;gap:8px;margin-bottom:30px}
+.plat-li{font-size:.76rem;color:var(--fd);display:flex;align-items:center;gap:10px;transition:color .4s}
+.plat-li::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--pt);flex-shrink:0}
+.plat-li.lime::before{background:var(--lt)}
+
+/* ────────────────────────────────────────────
+   7 — CTA + CONTACT
+──────────────────────────────────────────── */
+.cta-sec{padding:160px 48px;text-align:center;position:relative;overflow:hidden}
+.cta-bg{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);font-family:'Unbounded',sans-serif;font-size:clamp(5rem,18vw,22rem);font-weight:900;color:transparent;-webkit-text-stroke:1px var(--bd);white-space:nowrap;pointer-events:none;letter-spacing:-.04em;transition:-webkit-text-stroke-color .4s}
+.cta-glow{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);width:700px;height:350px;background:radial-gradient(ellipse,rgba(124,58,237,.07) 0%,transparent 70%);pointer-events:none}
+.cta-body{position:relative;z-index:2}
+.cta-h{font-family:'Unbounded',sans-serif;font-size:clamp(3rem,8vw,9.5rem);font-weight:900;line-height:.86;letter-spacing:-.04em;text-transform:uppercase;margin-bottom:30px;transition:color .4s}
+.cta-h .s{color:transparent;-webkit-text-stroke:2px var(--fg);transition:-webkit-text-stroke-color .4s}
+.cta-h .p{color:var(--pt);transition:color .4s}
+.cta-h .l{color:var(--lt);transition:color .4s}
+.cta-sub{font-size:.95rem;font-weight:300;color:var(--fd);max-width:380px;margin:0 auto 48px;line-height:1.82;transition:color .4s}
+.cta-row{display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+/* contact */
+.contact-sec{padding:120px 48px;transition:var(--trans)}
+.contact-sec.alt{background:var(--bg2)}
+.contact-inner{max-width:1320px;margin:0 auto}
+.contact-layout{display:grid;grid-template-columns:1fr 1.15fr;gap:64px}
+.contact-info{background:var(--bgc);border:1px solid var(--b);border-radius:18px;overflow:hidden}
+[data-theme="dark"] .contact-info{box-shadow:inset 0 1px 0 rgba(255,255,255,.04)}
+.ci-row{display:flex;align-items:center;gap:20px;padding:24px 28px;border-bottom:1px solid var(--bd);transition:background .25s}
+.ci-row:last-child{border-bottom:none}
+.ci-row:hover{background:var(--bgch)}
+.ci-icon{width:44px;height:44px;border-radius:10px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.2);display:flex;align-items:center;justify-content:center;font-size:1.15rem;flex-shrink:0}
+.ci-label{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--fdd);margin-bottom:3px;transition:color .4s}
+.ci-val{font-size:.9rem;color:var(--fg);font-weight:500;line-height:1.55;transition:color .4s}
+.contact-form{display:flex;flex-direction:column;gap:18px}
+.cf-row{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.fg{display:flex;flex-direction:column;gap:7px}
+.fl{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.14em;text-transform:uppercase;color:var(--fdd);transition:color .4s}
+.fi{background:var(--bgc);border:1px solid var(--b);border-radius:8px;padding:14px 18px;color:var(--fg);font-family:'Inter',sans-serif;font-size:.9rem;outline:none;width:100%;transition:border-color .3s,background .3s}
+.fi:focus{border-color:var(--p);background:var(--bgch)}
+.fi::placeholder{color:var(--fdd)}
+textarea.fi{resize:vertical;min-height:130px}
+.cf-btn{background:linear-gradient(135deg,var(--p),var(--pm));color:#fff;border:none;padding:15px 32px;border-radius:8px;font-family:'Unbounded',sans-serif;font-size:.63rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:none;transition:all .3s;align-self:flex-start}
+.cf-btn:hover{transform:translateY(-2px);box-shadow:0 8px 28px var(--pg)}
+.cf-msg{font-family:'Space Mono',monospace;font-size:.62rem;padding:10px 16px;border-radius:6px;display:none}
+.cf-msg.ok{background:rgba(189,224,69,.1);color:var(--lt);border:1px solid rgba(189,224,69,.22);display:block}
+.cf-msg.err{background:rgba(255,59,59,.1);color:#ff6b6b;border:1px solid rgba(255,59,59,.22);display:block}
+
+/* ────────────────────────────────────────────
+   FOOTER
+──────────────────────────────────────────── */
+footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transition:var(--trans)}
+.footer-inner{max-width:1320px;margin:0 auto}
+.footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;padding-bottom:48px;border-bottom:1px solid var(--bd)}
+.ft-brand .brand-name{font-family:'Unbounded',sans-serif;font-size:.88rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--pt);margin-bottom:6px;transition:color .4s}
+.ft-brand .brand-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.14em;color:var(--fdd);text-transform:uppercase;margin-bottom:16px;transition:color .4s}
+.ft-brand p{font-size:.8rem;color:var(--fd);line-height:1.75;max-width:220px;transition:color .4s}
+.ft-col-title{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fdd);margin-bottom:20px;transition:color .4s}
+.ft-links{display:flex;flex-direction:column;gap:10px}
+.ft-links a{font-size:.82rem;color:var(--fd);text-decoration:none;transition:color .2s}
+.ft-links a:hover{color:var(--pt)}
+.ft-contact-item{display:flex;align-items:flex-start;gap:10px;margin-bottom:12px}
+.ft-contact-item .icon{font-size:.9rem;flex-shrink:0;margin-top:2px}
+.ft-contact-item .text{font-size:.78rem;color:var(--fd);line-height:1.6;transition:color .4s}
+.footer-bottom{display:flex;justify-content:space-between;align-items:center;padding-top:28px;flex-wrap:wrap;gap:12px}
+.footer-copy{font-family:'Space Mono',monospace;font-size:.54rem;letter-spacing:.08em;color:var(--fdd);transition:color .4s}
+.footer-powered{font-family:'Space Mono',monospace;font-size:.54rem;color:var(--fdd);transition:color .4s}
+.footer-powered a{color:var(--pt);text-decoration:none;border-bottom:1px dashed var(--pt);transition:color .4s}
+
+/* ────────────────────────────────────────────
+   RESPONSIVE
+──────────────────────────────────────────── */
+  .contact-left{background:rgba(124,58,237,.02);padding:40px;border-right:1px solid var(--b)}
+  .contact-right{padding:40px}
+@media(max-width:1024px){
+  #cur{display:none!important}
+  body, *, a, button, .btn{cursor:auto!important}
+  nav{padding:0 24px}
+  .nav-links{display:none}
+  .nav-menu-btn{display:block}
+  h1{font-size:clamp(2.5rem,6.5vw,6rem)}
+  .hero{padding:140px 24px 56px;justify-content:center;min-height:auto}
+  .hero-body{grid-template-columns:1fr;gap:36px}
+  .hero-right{align-items:center;width:100%}
+  .lw{width:100%;max-width:340px}
+  .sec{padding:80px 24px}
+  .adm-grid{grid-template-columns:1fr;background:none;border:none;border-radius:0;gap:2px}
+  .adm-cell-big{grid-column:1;grid-template-columns:1fr}
+  .feat-bento{grid-template-columns:1fr 1fr}
+  .fb.span2,.fb.span3,.fb.span4,.fb.span6{grid-column:span 1}
+  .sc-inner-grid{grid-template-columns:1fr}
+  .sched-grid,.sched-extras,.plat-grid{grid-template-columns:1fr}
+  .fee-grid{grid-template-columns:1fr}
+  .contact-layout{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr 1fr;gap:32px;padding-bottom:32px}
+  .footer-bottom{flex-direction:column;text-align:center}
+  .cta-sec{padding:100px 24px}
+  .contact-sec{padding:80px 24px}
+  footer{padding:40px 24px}
+}
+@media(max-width:560px){
+  h1{font-size:clamp(1.8rem,8vw,2.5rem);word-break:break-word;padding-right:10px}
+  .edu-text{display:block;margin-top:2px;margin-left:0;font-size:0.7em}
+  .nav-logo-name{font-size:.65rem}
+  .nav-logo-sub{font-size:.34rem}
+  .scroll-hint{display:none}
+  .hero-body{gap:24px}
+  .h-cta{flex-wrap:nowrap;gap:8px;display:flex;flex-direction:row;}
+  .h-cta .btn{padding:10px 8px;font-size:0.55rem;flex:1;justify-content:center;white-space:nowrap;letter-spacing:0.02em}
+  .feat-bento{grid-template-columns:1fr}
+  .cf-row{grid-template-columns:1fr}
+  .footer-top{grid-template-columns:1fr;gap:28px}
+  .ft-brand p{max-width:100%}
+  .cta-h{font-size:clamp(1.8rem,8vw,2.5rem);word-break:break-word}
+  .cta-row{flex-direction:column;width:100%}
+  .cta-row .btn{width:100%;justify-content:center}
+  .ci-row{padding:18px 20px;flex-direction:column;align-items:flex-start;gap:12px}
+  .contact-left{padding:24px;border-right:none;border-bottom:1px solid var(--b)}
+  .contact-right{padding:24px}
+}
+
+/* SCROLL REVEAL */
+.rv{opacity:0;transform:translateY(30px);transition:opacity .7s ease,transform .7s ease}
+.rv.in{opacity:1;transform:none}
   </style>
 </head>
+<body>
+  <div id="cur"></div>
+  <div class="grain"></div>
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
 
-<%- include('./partials/background') %>
+  <div class="wrap">
 
-<body class="font-inter text-brand-gray-800">
-  <header id="main-header" class="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md shadow-md transition-all duration-300">
-    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
-      <a href="/" class="flex items-center space-x-2">
-        <img src="/images/logo.png" alt="Tuition Hub Logo" class="w-12 h-12 square-full" />
-        <h1 class="text-2xl font-extrabold text-brand-purple">
-          TUITION HUB Education Center
-        </h1>
-      </a>
-
-      <nav class="hidden lg:flex items-center space-x-8">
-        <a href="#features" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Features</a>
-        <a href="#courses" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Courses</a>
-        <a href="#tutors" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Our Tutors</a>
-        <a href="#testimonials" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Testimonials</a>
-        <a href="#faq" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">FAQ</a>
-      </nav>
-
-      <div class="hidden lg:flex items-center space-x-4">
-        <a href="/teacher/login" class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Teacher Login</a>
-        <a href="/student/login" class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Student Login</a>
+  <!-- ══════════ 0. NAV ══════════ -->
+  <nav>
+    <a href="/" class="nav-logo">
+      <img src="/images/logo.png" alt="Tuition Hub">
+      <div class="nav-logo-text">
+        <span class="nav-logo-name">Tuition Hub <span class="edu-text">Education Centre</span></span>
+        <span class="nav-logo-sub">Andheri East, Mumbai</span>
       </div>
-
-      <button id="mobile-menu-button" class="lg:hidden text-brand-purple text-2xl">
-        <i class="fa-solid fa-bars"></i>
+    </a>
+    <div class="nav-links">
+      <a href="#admissions">Admissions</a>
+      <a href="#features">Features</a>
+      <a href="#schedule">Schedule</a>
+      <a href="#fees">Fees</a>
+      <a href="#platform">Platform</a>
+      <a href="#contact">Contact</a>
+    </div>
+    <div class="nav-right">
+      <div class="theme-pill" onclick="toggleTheme()">
+        <button class="tt" data-t="dark" onclick="setTheme('dark',event)">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+        </button>
+        <button class="tt" data-t="light" onclick="setTheme('light',event)">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+      <button class="nav-menu-btn" onclick="toggleMobileMenu()">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
       </button>
     </div>
+  </nav>
 
-    <div id="mobile-menu" class="hidden lg:hidden bg-white shadow-lg">
-      <div class="flex flex-col items-center space-y-4 py-8">
-        <a href="#features" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Features</a>
-        <a href="#courses" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Courses</a>
-        <a href="#tutors" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Our Tutors</a>
-        <a href="#testimonials" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">Testimonials</a>
-        <a href="#faq" class="text-brand-gray-800 hover:text-brand-purple transition-colors duration-300 font-medium">FAQ</a>
-        <div class="flex flex-col space-y-4 pt-4">
-          <a href="/teacher/login" class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Teacher Login</a>
-          <a href="/student/login" class="px-5 py-2.5 text-sm font-semibold text-brand-purple bg-white border-2 border-brand-purple rounded-full hover:bg-brand-purple hover:text-white transition-all duration-300">Student Login</a>
+  <!-- ══════════ MOBILE MENU ══════════ -->
+  <div class="mm-overlay" id="mm-overlay" onclick="toggleMobileMenu()"></div>
+  <div class="mobile-menu" id="mobile-menu">
+    <div class="mm-header">
+      <div class="mm-logo-text">Tuition <span>Hub</span></div>
+      <button class="mm-close" onclick="toggleMobileMenu()">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+      </button>
+    </div>
+    <div class="mm-inner">
+      <a href="#admissions" onclick="toggleMobileMenu()">Admissions</a>
+      <a href="#features" onclick="toggleMobileMenu()">Features</a>
+      <a href="#schedule" onclick="toggleMobileMenu()">Schedule</a>
+      <a href="#fees" onclick="toggleMobileMenu()">Fees</a>
+      <a href="#platform" onclick="toggleMobileMenu()">Platform</a>
+      <a href="#contact" onclick="toggleMobileMenu()">Contact</a>
+    </div>
+    <div class="mm-footer">
+      <a href="/student/login" class="btn btn-p" style="justify-content:center;text-decoration:none;">Student Login →</a>
+      <a href="/teacher/login" class="btn btn-o" style="justify-content:center;text-decoration:none;">Teacher Login →</a>
+    </div>
+  </div>
+
+  <!-- ══════════ 1. HERO ══════════ -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="ticker-wrap">
+      <div class="ticker">
+        <span>MASTER EVERY SUBJECT&nbsp;&nbsp;&nbsp;&nbsp;MASTER EVERY SUBJECT&nbsp;&nbsp;&nbsp;&nbsp;</span>
+        <span>MASTER EVERY SUBJECT&nbsp;&nbsp;&nbsp;&nbsp;MASTER EVERY SUBJECT&nbsp;&nbsp;&nbsp;&nbsp;</span>
+      </div>
+    </div>
+    <div class="hero-body">
+      <div>
+        <div class="h-kicker"><span class="kd"></span>Tuition Hub · Academic Year 2026-27</div>
+        <h1>
+          <span class="stk">Your Path</span><br>
+          <span>To</span> <span class="acc">Academic</span><br>
+          <span class="lim">Excellence</span>
+        </h1>
+        <p class="h-sub">One platform. Every student. Total clarity. Track attendance, manage fees, monitor performance in real-time. Teachers get deep insights. Students get results. Parents stay informed.</p>
+        <div class="h-cta">
+          <a href="/student/login" class="btn btn-p">Student Portal →</a>
+          <a href="/teacher/login" class="btn btn-o">Teacher Portal →</a>
+        </div>
+      </div>
+      <div class="hero-right">
+        <div class="lw">
+          <div class="lw-h">
+            <span class="lw-t">Live Leaderboard</span>
+            <span class="lw-live">LIVE</span>
+          </div>
+          <div class="lw-b">
+            <% if (typeof topStudents !== 'undefined' && topStudents.length > 0) { %>
+              <% topStudents.forEach((s, i) => { %>
+                <div class="lw-r <%= i === 0 ? 'top' : '' %>">
+                  <span class="lw-pos"><%= i + 1 %></span>
+                  <span class="lw-dot s<%= i + 1 %>"></span>
+                  <div class="lw-info">
+                    <div class="lw-name"><%= s.name %></div>
+                    <div class="lw-sub">Academic Year <%= s.year || '2026-27' %></div>
+                  </div>
+                  <span class="lw-score <%= i === 0 ? 't' : '' %>"><%= Math.trunc(s.score) %> pts</span>
+                </div>
+              <% }) %>
+            <% } else { %>
+              <div class="lw-r" style="justify-content:center;color:var(--fdd);font-size:.7rem;padding:12px;">No rankings yet.</div>
+            <% } %>
+          </div>
         </div>
       </div>
     </div>
-  </header>
+    <div class="scroll-hint">Scroll to explore</div>
+  </section>
 
-  <main class="pt-32" style="z-index: 2">
-    <section class="content-container py-20 text-center px-6">
-      <div class="max-w-4xl mx-auto">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold">
-          Unlock Your Potential. Master Your Subjects.
-        </h2>
-        <h3 class="mt-4 text-2xl md:text-3xl lg:text-4xl font-extrabold bg-gradient-to-r from-brand-purple to-brand-lime text-transparent bg-clip-text">
-          <span id="dynamic-text">Growth.</span><span class="animate-pulse">|</span>
-        </h3>
-        <p class="mt-6 text-base md:text-lg max-w-2xl mx-auto">
-          Personalized one-on-one tutoring from expert educators. We provide
-          the tools and support you need to excel academically and beyond.
-        </p>
-        <div class="mt-10 flex flex-col sm:flex-row justify-center items-center gap-4">
-          <a href="#courses" class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg">
-            Explore Courses
-          </a>
-          <a href="#tutors" class="w-full sm:w-auto px-6 py-3 text-lg font-bold text-brand-lime bg-brand-purple border-2 border-brand-lime rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300 shadow-lg">
-            Find a Tutor
-          </a>
-        </div>
-      </div>
-    </section>
+  <!-- MARQUEE -->
+  <div class="mq-wrap">
+    <div class="mq-track">
+      <div class="mq-item"><div class="mq-n">200+</div><div class="mq-l">Active<br>Students</div></div>
+      <div class="mq-item"><div class="mq-n">98%</div><div class="mq-l">Success<br>Rate</div></div>
+      <div class="mq-item"><div class="mq-n">5</div><div class="mq-l">Expert<br>Teachers</div></div>
+      <div class="mq-item"><div class="mq-n">12</div><div class="mq-l">Subjects<br>Offered</div></div>
+      <div class="mq-item"><div class="mq-n">100%</div><div class="mq-l">Attendance<br>Tracked</div></div>
+      <div class="mq-item"><div class="mq-n">24/7</div><div class="mq-l">Platform<br>Access</div></div>
+      <div class="mq-item"><div class="mq-n">3×</div><div class="mq-l">Faster<br>Grading</div></div>
+      <div class="mq-item"><div class="mq-n">₹0</div><div class="mq-l">Hidden<br>Fees</div></div>
+      <div class="mq-item"><div class="mq-n">200+</div><div class="mq-l">Active<br>Students</div></div>
+      <div class="mq-item"><div class="mq-n">98%</div><div class="mq-l">Success<br>Rate</div></div>
+      <div class="mq-item"><div class="mq-n">5</div><div class="mq-l">Expert<br>Teachers</div></div>
+      <div class="mq-item"><div class="mq-n">12</div><div class="mq-l">Subjects<br>Offered</div></div>
+      <div class="mq-item"><div class="mq-n">100%</div><div class="mq-l">Attendance<br>Tracked</div></div>
+      <div class="mq-item"><div class="mq-n">24/7</div><div class="mq-l">Platform<br>Access</div></div>
+      <div class="mq-item"><div class="mq-n">3×</div><div class="mq-l">Faster<br>Grading</div></div>
+      <div class="mq-item"><div class="mq-n">₹0</div><div class="mq-l">Hidden<br>Fees</div></div>
+    </div>
+  </div>
 
-    <section class="content-container bg-brand-purple text-white py-12">
-      <div class="container mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
-        <div>
-          <h4 class="text-4xl font-extrabold text-brand-lime" data-target="5">
-            5
-          </h4>
-          <p class="mt-2">Expert Tutors</p>
-        </div>
-        <div>
-          <h4 class="text-4xl font-extrabold text-brand-lime" data-target="200">
-            200
-          </h4>
-          <p class="mt-2">Students Enrolled</p>
-        </div>
-        <div>
-          <h4 class="text-4xl font-extrabold text-brand-lime" data-target="12">
-            12
-          </h4>
-          <p class="mt-2">Courses Offered</p>
-        </div>
-        <div>
-          <h4 class="text-4xl font-extrabold text-brand-lime" data-target="98">
-            98
-          </h4>
-          <p class="mt-2">Success Rate (%)</p>
-        </div>
-      </div>
-    </section>
+  <!-- ══════════ 2. ADMISSIONS ══════════ -->
+  <div class="divider"></div>
+  <section class="sec" id="admissions">
+    <div class="sec-inner">
+      <div class="sec-tag rv">Admissions 2026-27</div>
+      <h2 class="sec-h rv">Admissions <span class="s">Open.</span></h2>
+      <p class="sec-sub rv">Nursery to Class X · English, Hindi &amp; Semi-English mediums. Small batches. Personal attention. Seats are limited.</p>
 
-    <section id="features" class="content-container py-20 px-6">
-      <div class="max-w-6xl mx-auto text-center mb-16">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
-          Why Tuition Hub?
-        </h2>
-        <p class="mt-4 text-base md:text-lg text-brand-gray-800">
-          The best learning experience you can imagine.
-        </p>
-      </div>
-
-      <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-            <i class="fa-solid fa-user-friends text-2xl"></i>
+      <div class="adm-grid">
+        <!-- Big hero cell -->
+        <div class="adm-cell adm-cell-big rv">
+          <div class="adm-big-left">
+            <div class="tag">Enroll Now</div>
+            <h3>Enroll your child<br>for <span style="color:var(--pt)">2026-27</span></h3>
+            <p>We believe every child can excel with the right guidance. Our small batches, regular tests, and dedicated teachers make the difference — since day one.</p>
+            <a href="#contact" class="btn btn-p" style="text-decoration:none;">Inquire Now →</a>
           </div>
-          <h3 class="text-2xl font-bold mb-3">Expert Tutors</h3>
-          <p>Learn from certified professionals passionate about teaching.</p>
-        </div>
-
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-            <i class="fa-solid fa-book-open-reader text-2xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold mb-3">Personalized Learning</h3>
-          <p>
-            Customized lesson plans tailored to your needs and learning style.
-          </p>
-        </div>
-
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-            <i class="fa-solid fa-laptop-code text-2xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold mb-3">Interactive Platform</h3>
-          <p>
-            Teaching staff ensures overall student development with
-            interactive tools.
-          </p>
-        </div>
-
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-            <i class="fa-solid fa-calendar-alt text-2xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold mb-3">Perfect Scheduling</h3>
-          <p>Well-scheduled classes for time efficiency and relevance.</p>
-        </div>
-
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-purple text-white mb-6">
-            <i class="fa-solid fa-chart-line text-2xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold mb-3">Progress Tracking</h3>
-          <p>
-            Monitor improvement with regular assessments and detailed reports.
-          </p>
-        </div>
-
-        <div class="bg-brand-gray-100 p-8 rounded-2xl shadow-lg hover:shadow-2xl hover:-translate-y-2 transition-all duration-300">
-          <div class="flex items-center justify-center w-16 h-16 rounded-full bg-brand-lime text-white mb-6">
-            <i class="fa-solid fa-headset text-2xl"></i>
-          </div>
-          <h3 class="text-2xl font-bold mb-3">24/7 Support</h3>
-          <p>Our team is always available to help with any queries.</p>
-        </div>
-      </div>
-    </section>
-
-    <section id="courses" class="content-container py-20 px-6">
-      <div class="max-w-6xl mx-auto text-center mb-16">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
-          Our Popular Courses
-        </h2>
-        <p class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto">
-          Find the perfect course to help you achieve your academic goals.
-        </p>
-      </div>
-
-      <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-6xl mx-auto">
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-          <img src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Mathematics" alt="Mathematics Course" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div class="p-6">
-            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-              Maths</span>
-            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
-              Mathematics
-            </h3>
-            <p class="text-brand-gray-800 text-sm mb-4">
-              Master topics from algebra, geometry, and arithmetic with ease.
-            </p>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-          <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Science" alt="Academic Studies" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div class="p-6">
-            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-              Academics</span>
-            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
-              School Studies
-            </h3>
-            <p class="text-brand-gray-800 text-sm mb-4">
-              Covers essential subjects like Science, Social Studies, and
-              more.
-            </p>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-          <img src="https://placehold.co/600x400/8B5CF6/FFFFFF?text=Coding" alt="Coding Course" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div class="p-6">
-            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-              Coding</span>
-            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
-              Basic Coding
-            </h3>
-            <p class="text-brand-gray-800 text-sm mb-4">
-              Learn HTML, CSS, C, Java basics with fun hands-on exercises.
-            </p>
-          </div>
-        </div>
-
-        <div class="bg-white rounded-2xl shadow-lg overflow-hidden group">
-          <img src="https://placehold.co/600x400/10B981/FFFFFF?text=Languages" alt="Languages Course" class="w-full h-48 object-cover group-hover:scale-105 transition-transform duration-300" />
-          <div class="p-6">
-            <span class="text-sm font-semibold text-brand-lime bg-brand-purple border-2 border-brand-lime px-3 py-1 rounded-full hover:bg-brand-lime hover:text-brand-purple hover:border-brand-purple transition-all duration-300">
-              Languages
-            </span>
-
-            <h3 class="text-xl font-bold text-brand-gray-900 mt-4 mb-2">
-              Languages
-            </h3>
-            <p class="text-brand-gray-800 text-sm mb-4">
-              Develop speaking, reading, and writing skills in multiple
-              languages.
-            </p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <section id="tutors" class="content-container py-20 px-6">
-      <div class="max-w-6xl mx-auto text-center mb-16">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
-          Meet Our Expert Tutors
-        </h2>
-        <p class="mt-4 text-base md:text-lg text-brand-gray-800 max-w-2xl mx-auto">
-          Highly qualified and dedicated professionals ready to guide you.
-        </p>
-      </div>
-
-      <div class="grid sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        <div class="text-center group">
-          <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Zeenat+Ahmed" alt="Zeenat Ahmed" class="rounded-full w-full h-full object-cover shadow-lg" />
-            <div class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-              <i class="fa-solid fa-plus text-white text-3xl"></i>
+          <div class="adm-big-right">
+            <div class="adm-stat">
+              <div class="adm-stat-n">200+</div>
+              <div class="adm-stat-l">Students currently enrolled</div>
             </div>
-          </div>
-          <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
-            Zeenat Ahmed
-          </h3>
-          <p class="text-brand-purple font-semibold">B.Ed</p>
-          <p class="text-sm text-brand-gray-800 mt-2">
-            20+ years of experience in school academics, expert in teaching
-            core subjects.
-          </p>
-        </div>
-
-        <div class="text-center group">
-          <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Heena+Shaikh" alt="Heena Shaikh" class="rounded-full w-full h-full object-cover shadow-lg" />
-            <div class="absolute inset-0 rounded-full bg-brand-lime opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-              <i class="fa-solid fa-plus text-white text-3xl"></i>
+            <div class="adm-stat">
+              <div class="adm-stat-n" style="color:var(--lt)">98%</div>
+              <div class="adm-stat-l">Academic success rate</div>
             </div>
-          </div>
-          <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
-            Heena Shaikh
-          </h3>
-          <p class="text-brand-lime font-semibold">B.Ed</p>
-          <p class="text-sm text-brand-gray-800 mt-2">
-            30+ years of experience in teaching languages, specializing in
-            communication and literature.
-          </p>
-        </div>
-
-        <div class="text-center group">
-          <div class="relative w-36 h-36 mx-auto md:w-40 md:h-40">
-            <img src="https://placehold.co/200x200/E5E7EB/333333?text=Siddharth+Tiwari" alt="Siddharth Tiwari" class="rounded-full w-full h-full object-cover shadow-lg" />
-            <div class="absolute inset-0 rounded-full bg-brand-purple opacity-0 group-hover:opacity-70 transition-opacity duration-300 flex items-center justify-center">
-              <i class="fa-solid fa-plus text-white text-3xl"></i>
-            </div>
-          </div>
-          <h3 class="mt-6 text-xl font-bold text-brand-gray-900">
-            Siddharth Tiwari
-          </h3>
-          <p class="text-brand-purple font-semibold">
-            BE in Computer Engineering
-          </p>
-          <p class="text-sm text-brand-gray-800 mt-2">
-            3+ years of experience teaching mathematics and coding, including
-            Python, Java, and basic programming.
-          </p>
-        </div>
-      </div>
-    </section>
-
-    <section id="testimonials" class="content-container py-20">
-      <div class="content-container container mx-auto px-6">
-        <div class="text-center mb-16">
-          <h2 class="text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
-            What Our Students Say
-          </h2>
-          <p class="mt-4 text-lg text-brand-gray-800 max-w-2xl mx-auto">
-            Real stories from students who achieved their dreams with us.
-          </p>
-        </div>
-
-        <div class="relative">
-          <div id="testimonial-slider" class="flex overflow-x-auto snap-x snap-mandatory scroll-smooth gap-8 pb-8">
-            <div class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-              <div class="flex items-center mb-4">
-                <img src="https://placehold.co/100x100/A78BFA/FFFFFF?text=S" class="w-12 h-12 rounded-full mr-4" alt="Student Sarah L." />
-                <div>
-                  <h4 class="font-bold text-brand-gray-900">Sara L.</h4>
-                  <p class="text-sm text-brand-gray-800">
-                    10th Grade Student
-                  </p>
-                </div>
-              </div>
-              <p class="text-brand-gray-800">
-                "My grades in chemistry went from a C to an A+ in just one
-                semester! My tutor was incredibly patient and explained
-                complex topics in a way I could finally understand."
-              </p>
-            </div>
-
-            <div class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-              <div class="flex items-center mb-4">
-                <img src="https://placehold.co/100x100/34D399/FFFFFF?text=M" class="w-12 h-12 rounded-full mr-4" alt="Parent Akash T." />
-                <div>
-                  <h4 class="font-bold text-brand-gray-900">Akash T.</h4>
-                  <p class="text-sm text-brand-gray-800">
-                    Parent of 8th Grader
-                  </p>
-                </div>
-              </div>
-              <p class="text-brand-gray-800">
-                "The flexible scheduling and high-quality tutors at Tuition
-                Hub have been a game-changer for my son's education. He's more
-                confident and engaged in his studies now."
-              </p>
-            </div>
-
-            <div class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-              <div class="flex items-center mb-4">
-                <img src="https://placehold.co/100x100/A78BFA/FFFFFF?text=D" class="w-12 h-12 rounded-full mr-4" alt="Student Daksh C." />
-                <div>
-                  <h4 class="font-bold text-brand-gray-900">Daksh C.</h4>
-                  <p class="text-sm text-brand-gray-800">10th Student</p>
-                </div>
-              </div>
-              <p class="text-brand-gray-800">
-                "I was struggling with my statistics course. The personalized
-                sessions helped me ace my final exams. Highly recommended!"
-              </p>
-            </div>
-
-            <div class="testimonial-card flex-shrink-0 w-[80%] sm:w-[45%] md:w-[30%] lg:w-[25%] snap-start bg-white p-6 rounded-2xl shadow-lg">
-              <div class="flex items-center mb-4">
-                <img src="https://placehold.co/100x100/34D399/FFFFFF?text=A" class="w-12 h-12 rounded-full mr-4" alt="Student Aisha K." />
-                <div>
-                  <h4 class="font-bold text-brand-gray-900">Aisha K.</h4>
-                  <p class="text-sm text-brand-gray-800">
-                    10th Standard Student
-                  </p>
-                </div>
-              </div>
-              <p class="text-brand-gray-800">
-                "Thanks to my 10th prep tutor, I improved my score 96%! The
-                strategies and practice tests were incredibly helpful."
-              </p>
+            <div class="adm-stat">
+              <div class="adm-stat-n">5+</div>
+              <div class="adm-stat-l">Years of excellence in Mumbai</div>
             </div>
           </div>
         </div>
-      </div>
-    </section>
-
-    <section id="faq" class="content-container py-20 px-6">
-      <div class="text-center max-w-4xl mx-auto mb-16">
-        <h2 class="text-3xl md:text-4xl lg:text-5xl font-extrabold text-brand-gray-900">
-          Frequently Asked Questions
-        </h2>
-        <p class="mt-4 text-base md:text-lg text-brand-gray-800">
-          Have questions? We have answers. If you can't find it here, feel
-          free to contact us.
-        </p>
-      </div>
-
-      <div class="max-w-4xl mx-auto space-y-4">
-        <details class="p-6 bg-brand-gray-100 rounded-2xl">
-          <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">
-            How do I choose a tutor?
-          </summary>
-          <p class="mt-2 text-brand-gray-800">
-            You can browse our tutor profiles, which include their
-            qualifications, experience, and student reviews. You can also
-            contact our support team, and we'll help match you with the
-            perfect tutor based on your needs and learning style.
-          </p>
-        </details>
-
-        <details class="p-6 bg-brand-gray-100 rounded-2xl">
-          <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">
-            What subjects do you offer?
-          </summary>
-          <p class="mt-2 text-brand-gray-800">
-            We offer a wide range of subjects, from K-12 core subjects like
-            Math, Science, and English, to school academic courses, coding
-            basics (HTML, CSS, C, Java), and languages. Check our Courses
-            section for a complete list.
-          </p>
-        </details>
-
-        <details class="p-6 bg-brand-gray-100 rounded-2xl">
-          <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">
-            How are the tutoring sessions conducted?
-          </summary>
-          <p class="mt-2 text-brand-gray-800">
-            All sessions are conducted offline through our interactive
-            classroom sessions with expert tutors.
-          </p>
-        </details>
-
-        <details class="p-6 bg-brand-gray-100 rounded-2xl">
-          <summary class="font-bold cursor-pointer text-lg text-brand-gray-900">
-            What if I'm not satisfied with my tutor?
-          </summary>
-          <p class="mt-2 text-brand-gray-800">
-            We offer a satisfaction guarantee. If you're not completely
-            satisfied with your first session, we'll help you find a new tutor
-            at no extra cost or provide a full refund for that session.
-          </p>
-        </details>
-      </div>
-    </section>
-  </main>
-
-  <footer class="content-container bg-brand-purple text-white py-12 px-6">
-    <div class="max-w-6xl mx-auto grid sm:grid-cols-1 md:grid-cols-3 gap-8">
-      <div>
-        <h4 class="font-bold text-lg mb-4">TUITION HUB</h4>
-        <p>
-          Providing quality education and personalized tutoring for all
-          students. Your partner in achieving academic excellence.
-        </p>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-lg mb-4">Quick Links</h4>
-        <ul class="space-y-2">
-          <li>
-            <a href="#courses" class="hover:text-brand-lime transition-colors">Courses</a>
-          </li>
-          <li>
-            <a href="#tutors" class="hover:text-brand-lime transition-colors">Tutors</a>
-          </li>
-          <li>
-            <a href="#testimonials" class="hover:text-brand-lime transition-colors">Testimonials</a>
-          </li>
-          <li>
-            <a href="#faq" class="hover:text-brand-lime transition-colors">FAQ</a>
-          </li>
-        </ul>
-      </div>
-
-      <div>
-        <h4 class="font-bold text-lg mb-4">Contact</h4>
-        <p> Email: <a href="mailto:tuitionhubeducationcenter@gmail.com">tuitionhubeducationcenter@gmail.com</a></p>
+        <!-- 3 feature mini-cells -->
+        <div class="adm-cell rv">
+          <span class="adm-icon">👨‍🏫</span>
+          <div class="adm-title">Expert Teachers</div>
+          <div class="adm-desc">Highly qualified educators who give personal attention. Small class sizes — your child is never just a number.</div>
+        </div>
+        <div class="adm-cell rv">
+          <span class="adm-icon">📋</span>
+          <div class="adm-title">Weekly Tests</div>
+          <div class="adm-desc">Regular assessments keep students consistently exam-ready. Results published instantly — no waiting, no surprises.</div>
+        </div>
+        <div class="adm-cell rv">
+          <span class="adm-icon">💻</span>
+          <div class="adm-title">Digital Portal</div>
+          <div class="adm-desc">24/7 access to scores, attendance, fees, and study materials. Parents and students always in the loop.</div>
+        </div>
+        <div class="adm-cell rv">
+          <span class="adm-icon">💡</span>
+          <div class="adm-title">Doubt Solving</div>
+          <div class="adm-desc">Dedicated time for individual questions. We ensure every concept is crystal clear before moving to the next chapter.</div>
+        </div>
       </div>
     </div>
+  </section>
 
-    <p class="mt-12 text-center text-sm text-brand-gray-200">
-      © 2025 TUITION HUB Education Center. All rights reserved.
-    </p>
+  <!-- ══════════ 3. FEATURES ══════════ -->
+  <div class="divider"></div>
+  <section class="sec alt" id="features">
+    <div class="sec-inner">
+      <div class="sec-tag rv">Platform Features</div>
+      <h2 class="sec-h rv">Everything.<br><span class="s">One place.</span></h2>
+      <p class="sec-sub rv">A complete digital system for tuition management — built for teachers, students, and parents. All real-time, all synchronized.</p>
+
+      <div class="feat-bento">
+        <div class="fb span2 rv">
+          <span class="fb-icon">📊</span>
+          <div class="fb-title">Smart Dashboard</div>
+          <div class="fb-desc">Real-time class and student analytics. Spot trends before they become problems.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--p),transparent)"></div>
+        </div>
+        <div class="fb span2 rv">
+          <span class="fb-icon">📝</span>
+          <div class="fb-title">Test Management</div>
+          <div class="fb-desc">Create tests, auto-calculate scores, publish results instantly, and rank the class live.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--l),transparent)"></div>
+        </div>
+        <div class="fb span2 rv">
+          <span class="fb-icon">📅</span>
+          <div class="fb-title">Attendance</div>
+          <div class="fb-desc">Digital one-tap marking. Parents get instant WhatsApp alerts when a student is absent.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--p),transparent)"></div>
+        </div>
+        <!-- Scorecard showcase — full width -->
+        <div class="fb span6 sc-showcase rv" id="sc-card">
+          <div style="margin-bottom:24px;">
+            <div style="font-family:'Unbounded',sans-serif;font-size:.72rem;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--fdd);margin-bottom:6px;">Performance Intelligence</div>
+            <div style="font-family:'Unbounded',sans-serif;font-size:clamp(1.2rem,2.5vw,2rem);font-weight:900;line-height:.9;letter-spacing:-.03em;text-transform:uppercase;color:var(--fg);">Score every subject.<br><span style="color:var(--pt)">Track every student.</span></div>
+          </div>
+          <div class="sc-inner-grid">
+            <div class="sc-card">
+              <div class="sc-top">
+                <div>
+                  <div class="sc-sname">Taniya Singh</div>
+                  <div class="sc-smeta">Class 10 · Roll No. 07<br>Batch A · Academic Year 2025-26</div>
+                </div>
+                <div style="text-align:right">
+                  <span class="sc-big">94.2</span>
+                  <span class="sc-lbl">Overall Score</span>
+                </div>
+              </div>
+              <div class="sc-rows">
+                <div>
+                  <div class="scr-row"><span class="scr-n">Mathematics</span><span class="scr-v">97/100</span></div>
+                  <div class="scr-note">Consistent top performer · 3 tests</div>
+                  <div class="bar"><div class="bi p" data-w="97"></div></div>
+                </div>
+                <div>
+                  <div class="scr-row"><span class="scr-n">Science</span><span class="scr-v">92/100</span></div>
+                  <div class="scr-note">Improved +8pts from last month</div>
+                  <div class="bar"><div class="bi p" data-w="92"></div></div>
+                </div>
+                <div>
+                  <div class="scr-row"><span class="scr-n">English</span><span class="scr-v">89/100</span></div>
+                  <div class="scr-note">Strong comprehension</div>
+                  <div class="bar"><div class="bi l" data-w="89"></div></div>
+                </div>
+                <div>
+                  <div class="scr-row"><span class="scr-n">Social Studies</span><span class="scr-v">95/100</span></div>
+                  <div class="scr-note">Highest in batch this month</div>
+                  <div class="bar"><div class="bi p" data-w="95"></div></div>
+                </div>
+                <div>
+                  <div class="scr-row"><span class="scr-n">Hindi</span><span class="scr-v">88/100</span></div>
+                  <div class="scr-note">Reading speed improving steadily</div>
+                  <div class="bar"><div class="bi l" data-w="88"></div></div>
+                </div>
+              </div>
+              <div class="sc-foot">
+                <span class="sc-fl">Updated · few min ago</span>
+                <span class="badge g">↑ Top 3% of Class</span>
+              </div>
+            </div>
+            <div class="sc-steps">
+              <div class="sc-step rv">
+                <div class="sc-step-n">01</div>
+                <div>
+                  <div class="sc-step-title">Instant Score Publishing</div>
+                  <div class="sc-step-desc">Teachers enter marks once. Students and parents see results in real-time. Notifications fire automatically.</div>
+                </div>
+              </div>
+              <div class="sc-step rv">
+                <div class="sc-step-n">02</div>
+                <div>
+                  <div class="sc-step-title">Multi-Subject Analytics</div>
+                  <div class="sc-step-desc">Cross-subject trends reveal where each student excels and needs work — before exam season hits.</div>
+                </div>
+              </div>
+              <div class="sc-step rv">
+                <div class="sc-step-n">03</div>
+                <div>
+                  <div class="sc-step-title">Live Class Rankings</div>
+                  <div class="sc-step-desc">Every test updates the class leaderboard live. Healthy competition drives consistent improvement.</div>
+                </div>
+              </div>
+              <div class="sc-step rv">
+                <div class="sc-step-n">04</div>
+                <div>
+                  <div class="sc-step-title">Parent Transparency</div>
+                  <div class="sc-step-desc">Parents see scores, attendance, and fee status in one view. Full visibility, zero surprises.</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="fb span2 rv">
+          <span class="fb-icon">💰</span>
+          <div class="fb-title">Fee Management</div>
+          <div class="fb-desc">Track dues, generate receipts, send automated reminders. Zero manual accounting, complete audit trail.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--l),transparent)"></div>
+        </div>
+        <div class="fb span2 rv">
+          <span class="fb-icon">📚</span>
+          <div class="fb-title">Study Materials</div>
+          <div class="fb-desc">Cloud library of notes, assignments, and references. Students download anytime on any device.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--p),transparent)"></div>
+        </div>
+        <div class="fb span2 rv">
+          <span class="fb-icon">🏆</span>
+          <div class="fb-title">Leaderboards</div>
+          <div class="fb-desc">Gamified live class rankings. Motivation through healthy competition and real-time recognition.</div>
+          <div class="fb-accent" style="background:linear-gradient(90deg,var(--l),transparent)"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 4. WORKING HOURS ══════════ -->
+  <div class="divider"></div>
+  <section class="sec" id="schedule">
+    <div class="sec-inner">
+      <div class="sec-tag rv">Batch Timings</div>
+      <h2 class="sec-h rv">Working <span class="s">Hours.</span></h2>
+      <p class="sec-sub rv">Morning and evening batches designed around your routine. Flexible scheduling so no child misses out.</p>
+
+      <div class="sched-grid">
+        <div class="sched-card rv">
+          <div class="sched-head">
+            <div class="sched-dot" style="background:var(--lt);box-shadow:0 0 8px var(--lg)"></div>
+            <div>
+              <div class="sched-head-title">Primary Classes</div>
+              <div class="sched-head-sub">Nursery — Class IV</div>
+            </div>
+          </div>
+          <div class="sched-row">
+            <div>
+              <div class="sched-session">Morning Batch</div>
+              <span class="sched-badge am">Mon – Sat</span>
+            </div>
+            <div class="sched-time lime">9:00 – 11:00 AM</div>
+          </div>
+          <div class="sched-row">
+            <div>
+              <div class="sched-session">Evening Batch</div>
+              <span class="sched-badge pm">Mon – Sat</span>
+            </div>
+            <div class="sched-time purple">5:00 – 7:00 PM</div>
+          </div>
+        </div>
+        <div class="sched-card rv">
+          <div class="sched-head">
+            <div class="sched-dot" style="background:var(--pt);box-shadow:0 0 8px var(--pg)"></div>
+            <div>
+              <div class="sched-head-title">Secondary Classes</div>
+              <div class="sched-head-sub">Class V — Class X</div>
+            </div>
+          </div>
+          <div class="sched-row">
+            <div>
+              <div class="sched-session">Morning Batch</div>
+              <span class="sched-badge am">Mon – Sat</span>
+            </div>
+            <div class="sched-time lime">8:15 – 11:15 AM</div>
+          </div>
+          <div class="sched-row">
+            <div>
+              <div class="sched-session">Evening Batch</div>
+              <span class="sched-badge pm">Mon – Sat</span>
+            </div>
+            <div class="sched-time purple">4:00 – 7:00 PM</div>
+          </div>
+        </div>
+      </div>
+      <div class="sched-extras">
+        <div class="sched-extra rv">
+          <div class="sched-extra-info">
+            <div class="sched-extra-label">🤝 Parent Consultation</div>
+            <div class="sched-extra-sub">Meet teachers · Daily</div>
+          </div>
+          <div class="sched-extra-time purple">7:30 – 8:30 PM</div>
+        </div>
+        <div class="sched-extra rv">
+          <div class="sched-extra-info">
+            <div class="sched-extra-label">⭐ Daily Maths Practice</div>
+            <div class="sched-extra-sub">All classes · Every day</div>
+          </div>
+          <div class="sched-extra-time lime">7 – 8 PM</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 5. FEE STRUCTURE ══════════ -->
+  <div class="divider"></div>
+  <section class="sec alt" id="fees">
+    <div class="sec-inner">
+      <div class="fee-top">
+        <div>
+          <div class="sec-tag rv">Pricing</div>
+          <h2 class="sec-h rv">Fee <span class="s">Structure.</span></h2>
+          <p class="sec-sub rv" style="margin-bottom:0">Transparent, no-hidden-cost pricing. Click any stack to browse classes.</p>
+        </div>
+        <div class="fee-pills rv">
+          <div class="fee-pill l">Monthly: 1st – 10th</div>
+          <div class="fee-pill p">Annual: 10th August</div>
+        </div>
+      </div>
+      <div class="fee-grid">
+        <div class="rv">
+          <div class="fee-tier-label">Pre-Primary & Lower Primary</div>
+          <div class="stacked-container" style="height:210px;">
+            <div class="stacked-card c3">
+              <div class="tier-class">Jr. KG & Sr. KG</div>
+              <div class="tier-price">₹400 / mo</div>
+              <div class="tier-yearly">Yearly: ₹4,000</div>
+            </div>
+            <div class="stacked-card c2">
+              <div class="tier-class">Class I & II</div>
+              <div class="tier-price">₹450 / mo</div>
+              <div class="tier-yearly">Yearly: ₹4,500</div>
+            </div>
+            <div class="stacked-card c1">
+              <div class="tier-class">Class III & IV</div>
+              <div class="tier-price">₹500 / mo</div>
+              <div class="tier-yearly">Yearly: ₹5,000</div>
+            </div>
+          </div>
+          <span class="fee-hint">↑ Click to browse classes</span>
+        </div>
+        <div class="rv">
+          <div class="fee-tier-label">Middle School (Class V – VII)</div>
+          <div class="stacked-container" style="height:210px;">
+            <div class="stacked-card c3">
+              <div class="tier-class">Class V</div>
+              <div class="tier-price">₹550 / mo</div>
+              <div class="tier-yearly">Yearly: ₹5,500</div>
+            </div>
+            <div class="stacked-card c2">
+              <div class="tier-class">Class VI</div>
+              <div class="tier-price">₹600 / mo</div>
+              <div class="tier-yearly">Yearly: ₹6,000</div>
+            </div>
+            <div class="stacked-card c1">
+              <div class="tier-class">Class VII</div>
+              <div class="tier-price">₹700 / mo</div>
+              <div class="tier-yearly">Yearly: ₹7,000</div>
+            </div>
+          </div>
+          <span class="fee-hint">↑ Click to browse classes</span>
+        </div>
+        <div class="rv">
+          <div class="fee-tier-label">Secondary (Class VIII – X)</div>
+          <div class="stacked-container" style="height:210px;">
+            <div class="stacked-card c3">
+              <div class="tier-class">Class VIII</div>
+              <div class="tier-price">₹800 / mo</div>
+              <div class="tier-yearly">Yearly: ₹8,000</div>
+            </div>
+            <div class="stacked-card c2">
+              <div class="tier-class">Class IX</div>
+              <div class="tier-price">₹900 / mo</div>
+              <div class="tier-yearly">Yearly: ₹9,000</div>
+            </div>
+            <div class="stacked-card c1">
+              <div class="tier-class">Class X</div>
+              <div class="tier-price">₹1,000 / mo</div>
+              <div class="tier-yearly">Yearly: ₹10,000</div>
+            </div>
+          </div>
+          <span class="fee-hint">↑ Click to browse classes</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 6. PLATFORM ══════════ -->
+  <div class="divider"></div>
+  <section class="sec platform-wrap" id="platform">
+    <div class="sec-inner">
+      <div class="sec-tag rv">Three Portals. One System.</div>
+      <h2 class="sec-h rv">Built for everyone<br>in the <span class="s">classroom.</span></h2>
+      <p class="sec-sub rv">Three dedicated portals — one for teachers, one for students, one view for parents. Everything synchronized in real-time.</p>
+      <div class="plat-grid">
+        <div class="plat-card rv">
+          <div class="plat-glow"></div>
+          <div class="plat-role" style="color:var(--pt)">For Teachers</div>
+          <span class="plat-icon">👩‍🏫</span>
+          <div class="plat-title">Teacher Portal</div>
+          <div class="plat-desc">Your complete classroom command centre. Manage everything from one dashboard.</div>
+          <div class="plat-list">
+            <div class="plat-li">Mark &amp; track attendance daily</div>
+            <div class="plat-li">Create tests &amp; publish results instantly</div>
+            <div class="plat-li">Upload study materials by subject</div>
+            <div class="plat-li">Monitor fee collection &amp; dues</div>
+            <div class="plat-li">View performance analytics per student</div>
+          </div>
+          <a href="/teacher/login" class="btn btn-p" style="width:100%;justify-content:center;text-decoration:none;">Teacher Login →</a>
+        </div>
+        <div class="plat-card rv">
+          <div class="plat-glow lime"></div>
+          <div class="plat-role" style="color:var(--lt)">For Students</div>
+          <span class="plat-icon">🎓</span>
+          <div class="plat-title">Student Portal</div>
+          <div class="plat-desc">Your personal academic dashboard. See your scores, rank, and all materials.</div>
+          <div class="plat-list">
+            <div class="plat-li lime">View test scores &amp; class rank live</div>
+            <div class="plat-li lime">Download study materials anytime</div>
+            <div class="plat-li lime">Check attendance record</div>
+            <div class="plat-li lime">Track fee payment history</div>
+            <div class="plat-li lime">See where you stand on the leaderboard</div>
+          </div>
+          <a href="/student/login" class="btn btn-l" style="width:100%;justify-content:center;text-decoration:none;">Student Login →</a>
+        </div>
+        <div class="plat-card rv">
+          <div class="plat-glow"></div>
+          <div class="plat-role" style="color:var(--pt)">For Parents</div>
+          <span class="plat-icon">👨‍👩‍👦</span>
+          <div class="plat-title">Parent View</div>
+          <div class="plat-desc">Stay connected to your child's journey without having to ask anyone.</div>
+          <div class="plat-list">
+            <div class="plat-li">Real-time attendance alerts</div>
+            <div class="plat-li">Test result notifications</div>
+            <div class="plat-li">Fee due reminders</div>
+            <div class="plat-li">Monthly performance report</div>
+            <div class="plat-li">Full visibility, zero friction</div>
+          </div>
+          <a href="/student/login" class="btn btn-o" style="width:100%;justify-content:center;text-decoration:none;">Access via Student Login →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ══════════ 7. CTA + CONTACT ══════════ -->
+  <!-- ══════════ 7. CTA + CONTACT (UNIFIED) ══════════ -->
+  <div class="divider"></div>
+  <section class="cta-sec" id="contact" style="padding: 140px 24px; text-align: center; position: relative; overflow: hidden;">
+    <div class="cta-bg" style="opacity:0.4">Tuition Hub</div>
+    <div class="cta-glow"></div>
+    <div class="cta-body" style="max-width: 1000px; margin: 0 auto;">
+      
+      <h2 class="cta-h" style="line-height:0.9;margin-bottom:14px;">
+        <span class="s">START</span>
+        <span class="s">YOUR</span><br>
+        <span class="p">LEARNING</span>
+        <span class="l">JOURNEY.</span>
+      </h2>
+      
+      <h3 style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:700;color:var(--fg);margin-bottom:20px;">Call for <span class="p">Admission.</span></h3>
+      
+      <p class="cta-sub" style="margin: 0 auto 56px; max-width: 460px;">Join 200+ students already excelling with Tuition Hub. Accepting enrollments for 2026-27. Seats are strictly limited.</p>
+      
+      <div class="rv contact-layout" style="background:var(--bgc);border:1px solid var(--b);border-radius:24px;text-align:left;box-shadow:0 20px 60px rgba(0,0,0,.15);backdrop-filter:blur(24px);overflow:hidden;gap:0;">
+        
+        <!-- Left: Contact Details -->
+        <div class="contact-left">
+          <div class="ci-row" style="border:none;padding:0;margin-bottom:28px;background:none;">
+            <div class="ci-icon">📍</div>
+            <div>
+              <div class="ci-label">Location</div>
+              <div class="ci-val">Navpada, Marol Naka<br>Andheri (E), Mumbai 400059</div>
+            </div>
+          </div>
+          <div class="ci-row" style="border:none;padding:0;margin-bottom:28px;background:none;">
+            <div class="ci-icon">📞</div>
+            <div>
+              <div class="ci-label">Direct Lines</div>
+              <div class="ci-val">+91 9967466955<br>+91 8451826909</div>
+            </div>
+          </div>
+          <div class="ci-row" style="border:none;padding:0;margin-bottom:28px;background:none;">
+            <div class="ci-icon">🤝</div>
+            <div>
+              <div class="ci-label">Parent Consultation</div>
+              <div class="ci-val">7:30 PM – 8:30 PM daily</div>
+            </div>
+          </div>
+          <div class="ci-row" style="border:none;padding:0;margin-bottom:28px;background:none;">
+            <div class="ci-icon">🎓</div>
+            <div>
+              <div class="ci-label">Classes</div>
+              <div class="ci-val">Nursery to Class X</div>
+            </div>
+          </div>
+          <div class="ci-row" style="border:none;padding:0;margin-bottom:0;background:none;">
+            <div class="ci-icon">✉️</div>
+            <div>
+              <div class="ci-label">Email Us</div>
+              <div class="ci-val"><a href="mailto:tuitionhubeducationcentre@gmail.com" style="color:var(--fg);text-decoration:none;">tuitionhubeducationcentre@gmail.com</a></div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Right: Form -->
+        <div class="contact-right">
+          <form id="cf" class="contact-form" action="/contact" method="POST">
+            <input type="hidden" name="_csrf" value="<%= locals.csrfToken || '' %>">
+            <div class="cf-row">
+              <div class="fg">
+                <label class="fl" for="cname">Your Name</label>
+                <input type="text" id="cname" name="name" class="fi" placeholder="Parent / Student name" required>
+              </div>
+              <div class="fg">
+                <label class="fl" for="cemail">Email Address</label>
+                <input type="email" id="cemail" name="email" class="fi" placeholder="your@email.com" required>
+              </div>
+            </div>
+            <div class="fg">
+              <label class="fl" for="cphone">Phone Number</label>
+              <input type="tel" id="cphone" name="phone" class="fi" placeholder="+91 XXXXX XXXXX">
+            </div>
+            <div class="fg">
+              <label class="fl" for="cmsg">Message</label>
+              <textarea id="cmsg" name="message" class="fi" placeholder="Which class are you inquiring for? Any questions?" required></textarea>
+            </div>
+            <button type="submit" class="cf-btn" id="cf-btn" style="width:100%;margin-top:12px;">Submit Inquiry →</button>
+            <div class="cf-msg" id="cf-msg"></div>
+          </form>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ══════════ 8. FOOTER ══════════ -->
+  <footer>
+    <div class="footer-inner">
+      <div class="footer-top">
+        <div class="ft-brand">
+          <div class="brand-name">Tuition Hub</div>
+          <div class="brand-sub">Education Centre · Est. Mumbai</div>
+          <p>Expert tuition for Nursery to Class X. Small batches, dedicated teachers, and a smart digital platform for the modern student.</p>
+        </div>
+        <div>
+          <div class="ft-col-title">Quick Links</div>
+          <div class="ft-links">
+            <a href="#admissions">Admissions</a>
+            <a href="#features">Features</a>
+            <a href="#schedule">Schedule</a>
+            <a href="#fees">Fee Structure</a>
+            <a href="#platform">Portals</a>
+            <a href="#contact">Contact</a>
+          </div>
+        </div>
+        <div>
+          <div class="ft-col-title">Portals</div>
+          <div class="ft-links">
+            <a href="/student/login">Student Login</a>
+            <a href="/teacher/login">Teacher Login</a>
+            <a href="/student/login">Parent View</a>
+          </div>
+        </div>
+        <div>
+          <div class="ft-col-title">Contact</div>
+          <div class="ft-contact-item">
+            <span class="icon">📍</span>
+            <span class="text">Navpada, Marol Naka, Andheri (E), Mumbai 400059</span>
+          </div>
+          <div class="ft-contact-item">
+            <span class="icon">📞</span>
+            <span class="text">+91 9967466955<br>+91 8451826909</span>
+          </div>
+          <div class="ft-contact-item">
+            <span class="icon">🕐</span>
+            <span class="text">Consultation: 7:30–8:30 PM daily</span>
+          </div>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <div class="footer-copy">© 2026 Tuition Hub Education Centre. All rights reserved.</div>
+        <div class="footer-powered">Powered by <a href="https://classconnects.vercel.app" target="_blank">ClassConnect</a></div>
+      </div>
+    </div>
   </footer>
 
+  </div><!-- /wrap -->
+
   <script>
-    const btn = document.getElementById("mobile-menu-button");
-    const menu = document.getElementById("mobile-menu");
-    btn.addEventListener("click", () => {
-      menu.classList.toggle("hidden");
+  // MOBILE MENU
+  function toggleMobileMenu(){
+    document.getElementById('mobile-menu').classList.toggle('active');
+    const overlay = document.getElementById('mm-overlay');
+    if(overlay) overlay.classList.toggle('active');
+  }
+
+  // THEME
+  function setTheme(t,e){if(e)e.stopPropagation();document.documentElement.setAttribute('data-theme',t);localStorage.setItem('th',t)}
+  function toggleTheme(){setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark')}
+  (function(){const s=localStorage.getItem('th');if(s)document.documentElement.setAttribute('data-theme',s)})();
+
+  // CURSOR
+  const cur=document.getElementById('cur');
+  document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px'});
+  document.querySelectorAll('a,button,.stacked-container,.theme-pill').forEach(el=>{
+    el.addEventListener('mouseenter',()=>cur.classList.add('xl'));
+    el.addEventListener('mouseleave',()=>cur.classList.remove('xl'));
+  });
+
+  // SCORE BAR ANIMATION
+  const bo=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting)e.target.querySelectorAll('.bi').forEach((b,i)=>setTimeout(()=>{b.style.width=b.dataset.w+'%'},i*140+200))})},{threshold:.25});
+  const sc=document.getElementById('sc-card');if(sc)bo.observe(sc);
+
+  // SCROLL REVEAL
+  const io=new IntersectionObserver(en=>{en.forEach(e=>{if(e.isIntersecting)e.target.classList.add('in')})},{threshold:.07});
+  document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+
+  // STACKED CARDS
+  document.querySelectorAll('.stacked-container').forEach(c=>{
+    c.addEventListener('click',()=>{
+      Array.from(c.querySelectorAll('.stacked-card')).forEach(card=>{
+        const cn=Array.from(card.classList).find(x=>/^c\d+$/.test(x));
+        if(cn){const n=parseInt(cn.slice(1)),tot=c.querySelectorAll('.stacked-card').length;card.classList.remove(cn);card.classList.add('c'+(n===1?tot:n-1))}
+      });
     });
+  });
 
-    const header = document.getElementById("main-header");
-    window.addEventListener("scroll", () => {
-      if (window.scrollY > 50) {
-        header.classList.add("nav-scrolled");
-      } else {
-        header.classList.remove("nav-scrolled");
-      }
-    });
-
-    const dynamicText = document.getElementById("dynamic-text");
-    const words = ["Success.", "Growth.", "Excellence."];
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-
-    function type() {
-      const currentWord = words[wordIndex];
-      if (isDeleting) {
-        dynamicText.textContent = currentWord.substring(0, charIndex - 1);
-        charIndex--;
-      } else {
-        dynamicText.textContent = currentWord.substring(0, charIndex + 1);
-        charIndex++;
-      }
-
-      if (!isDeleting && charIndex === currentWord.length) {
-        setTimeout(() => (isDeleting = true), 2000);
-      } else if (isDeleting && charIndex === 0) {
-        isDeleting = false;
-        wordIndex = (wordIndex + 1) % words.length;
-      }
-
-      const typeSpeed = isDeleting ? 100 : 200;
-      setTimeout(type, typeSpeed);
-    }
-    type();
-
-    const statsCounters = document.querySelectorAll("[data-target]");
-    const animateCounter = (el) => {
-      const target = +el.getAttribute("data-target");
-      const duration = 2000; // 2 seconds
-      const stepTime = Math.abs(Math.floor(duration / target));
-      let current = 0;
-      const timer = setInterval(() => {
-        current += 1;
-        el.innerText = current;
-        if (current == target) {
-          clearInterval(timer);
-        }
-      }, stepTime);
-    };
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            animateCounter(entry.target);
-            observer.unobserve(entry.target);
-          }
-        });
-      }, {
-        threshold: 0.5
-      }
-    );
-
-    statsCounters.forEach((counter) => {
-      observer.observe(counter);
-    });
+  // CONTACT AJAX
+  const cf=document.getElementById('cf'),msg=document.getElementById('cf-msg'),btn=document.getElementById('cf-btn');
+  cf.addEventListener('submit',async e=>{
+    e.preventDefault();btn.textContent='Sending…';btn.disabled=true;msg.className='cf-msg';msg.textContent='';
+    try{
+      const d=new FormData(cf);
+      const r=await fetch('/contact',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':d.get('_csrf')},body:new URLSearchParams(d)});
+      const j=await r.json();
+      if(j.ok){msg.className='cf-msg ok';msg.textContent="✓ Sent! We'll reply within 24 hours.";cf.reset()}
+      else throw new Error(j.error||'Failed');
+    }catch(er){msg.className='cf-msg err';msg.textContent='✗ '+er.message}
+    finally{btn.textContent='Submit Inquiry →';btn.disabled=false}
+  });
   </script>
 </body>
-
 </html>

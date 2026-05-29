@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -7,56 +7,37 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body { font-family: "Inter", sans-serif; }
-    .bg-brand-background { background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%); }
-    .text-brand-purple { color: #5d3a9b; }
-    
-    .btn-solid-purple { background-color: #5d3a9b; color: #fff; transition: all 0.3s; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; border: 1px solid #5d3a9b; }
-    .btn-solid-purple:hover { background-color: #4b2d84; border-color: #4b2d84; }
-    .btn-outline-purple { color: #5d3a9b; border: 1px solid #5d3a9b; padding: 0.5rem 1rem; border-radius: 0.5rem; font-weight: 600; transition: all 0.3s; }
-    .btn-outline-purple:hover { background-color: #bde045; color: #333; border-color: #bde045; }
-    
-    .data-table { width: 100%; border-collapse: collapse; font-size: 0.875rem; }
-    .data-table thead tr { background: #5d3a9b; color: #fff; }
-    .data-table th { padding: 0.75rem 1rem; text-align: left; font-weight: 600; border: 1px solid #4b2d84; white-space: nowrap; }
-    .data-table td { padding: 0.4rem 0.5rem; border: 1px solid #d8b4e2; }
-    .data-table tbody tr:nth-child(even) { background: #f9f5ff; }
-    .data-table tbody tr:hover td { background: #ede9fe; }
-
-    .editable-cell input, .editable-cell select {
-      width: 100%; border: 1px solid transparent; padding: 0.25rem; border-radius: 0.25rem; background: transparent; font-size: 0.875rem;
-    }
-    .editable-cell input:focus, .editable-cell select:focus {
-      border-color: #5d3a9b; outline: none; background: white;
-    }
-    .editable-cell input::placeholder { color: #a1a1aa; }
-  </style>
+  
 </head>
 
 <%- include('../partials/background') %>
 
-<body class="text-gray-800">
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <header class="mb-8">
-      <a href="/teacher/manage_students" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Manage Students</a>
       <h1 class="text-3xl font-bold text-gray-900">Bulk Import & Edit Students</h1>
       <p class="text-gray-600 mt-1">Upload a CSV file for new students, or mass-edit all your existing students right here.</p>
     </header>
 
     <!-- SECTION 1: CSV UPLOAD -->
-    <div class="bg-white p-6 rounded-xl shadow border border-purple-100 mb-12">
+    <div class="glass-card p-6 rounded-xl shadow border border-purple-100 mb-12">
       <h2 class="text-xl font-bold text-gray-800 mb-4">Option A: Upload CSV File</h2>
       <p class="text-sm text-gray-600 mb-4">Your CSV must have exactly these headers (case-sensitive). Passwords default to their mobile number.</p>
       
       <div class="bg-gray-50 rounded p-4 font-mono text-xs text-gray-700 overflow-x-auto mb-4 border border-gray-200">
-        studentName,studentId,standard,mobileNo,monthlyFee<br>
-        Aarav Shah,1001,10,9876543210,1200<br>
-        Priya Patel,1002,10,8765432109,1200
+        studentName,studentId,batchId,mobileNo,monthlyFee,email<br>
+        Aarav Shah,1001,INSERT_BATCH_ID,9876543210,1200,aarav@example.com<br>
+        Priya Patel,1002,INSERT_BATCH_ID,8765432109,1200,priya@example.com
       </div>
       
       <div class="flex flex-col sm:flex-row gap-4 mb-4">
-        <a href="data:text/csv;charset=utf-8,studentName,studentId,standard,mobileNo,monthlyFee%0A" download="students_template.csv" class="btn-outline-purple text-sm text-center">
+        <a href="data:text/csv;charset=utf-8,studentName,studentId,batchId,mobileNo,monthlyFee,email%0A" download="students_template.csv" class="btn-outline-purple text-sm text-center">
           &#8659; Download Empty Template
         </a>
         <input type="file" id="csv-file" accept=".csv" class="block flex-grow text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-brand-purple hover:file:bg-purple-100 border border-gray-300 rounded-lg cursor-pointer focus:outline-none">
@@ -73,9 +54,10 @@
                 <th>Row</th>
                 <th>Name</th>
                 <th>Student ID</th>
-                <th>Standard</th>
+                <th>Batch ID</th>
                 <th>Mobile</th>
                 <th>Monthly Fee</th>
+                <th>Email</th>
               </tr>
             </thead>
             <tbody id="preview-body"></tbody>
@@ -89,7 +71,7 @@
     </div>
 
     <!-- SECTION 2: MASS EDIT GRID -->
-    <div class="bg-white p-6 rounded-xl shadow border border-purple-100">
+    <div class="glass-card p-6 rounded-xl shadow border border-purple-100">
       <div class="flex justify-between items-center mb-4">
         <div>
           <h2 class="text-xl font-bold text-gray-800">Option B: Mass-Edit Existing Students</h2>
@@ -106,9 +88,10 @@
           <thead class="sticky top-0 z-10">
             <tr>
               <th>Profile Photo</th>
-              <th>Standard</th>
+              <th>Batch</th>
               <th>Student ID</th>
               <th>Student Name</th>
+              <th>Email Address</th>
               <th>Password</th>
               <th>Monthly Fee (₹)</th>
               <th>Mobile No</th>
@@ -127,14 +110,18 @@
                   <% } %>
                 </td>
                 <td class="editable-cell">
-                  <select class="grid-standard">
-                    <% for(let i=0; i<=10; i++) { %>
-                      <option value="<%= i %>" <%= String(s.standard) === String(i) ? 'selected' : '' %>>Grade <%= i %></option>
+                  <select class="grid-batch">
+                    <option value="" disabled <%= !s.batch ? 'selected' : '' %>>Select Batch</option>
+                    <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                      <% batches.forEach(batch => { %>
+                        <option value="<%= batch._id %>" <%= String(s.batch && s.batch._id || s.batch) === String(batch._id) ? 'selected' : '' %>><%= batch.name %> (<%= batch.academicYear %>)</option>
+                      <% }) %>
                     <% } %>
                   </select>
                 </td>
                 <td class="editable-cell"><input type="text" class="grid-id font-mono text-gray-600" value="<%= s.studentId %>" readonly title="Note: Student ID cannot be changed here." style="background:#f3f4f6;cursor:not-allowed;"></td>
                 <td class="editable-cell"><input type="text" class="grid-name font-semibold" value="<%= s.studentName %>"></td>
+                <td class="editable-cell"><input type="email" class="grid-email" placeholder="student@example.com" value="<%= s.email || '' %>"></td>
                 <td class="editable-cell"><input type="text" class="grid-pass" placeholder="(Leave blank to keep)"></td>
                 <td class="editable-cell"><input type="number" class="grid-fee" value="<%= s.monthlyFee || 0 %>"></td>
                 <td class="editable-cell"><input type="text" class="grid-mobile" value="<%= s.mobileNo || '' %>"></td>
@@ -173,9 +160,10 @@
                 <td class="text-gray-400 text-xs">${index + 1}</td>
                 <td class="font-semibold">${row.studentName || '<span class="text-red-500">Missing</span>'}</td>
                 <td class="font-mono text-xs">${row.studentId || '<span class="text-red-500">Missing</span>'}</td>
-                <td>${row.standard || '<span class="text-red-500">Missing</span>'}</td>
+                <td>${row.batchId || '<span class="text-red-500">Missing</span>'}</td>
                 <td class="text-xs">${row.mobileNo || '<span class="text-red-500">Missing</span>'}</td>
                 <td class="text-gray-500">&#8377;${row.monthlyFee || '0'}</td>
+                <td class="text-xs">${row.email || '—'}</td>
               </tr>
             `;
           });
@@ -193,19 +181,24 @@
     // OPTION B: MASS EDIT GRID LOGIC
     const gridBody = document.getElementById('grid-body');
 
-    document.getElementById('add-row-btn').addEventListener('click', () => {
-      let optionsHtml = '';
-      for(let i=0; i<=10; i++) {
-        optionsHtml += `<option value="${i}">Grade ${i}</option>`;
-      }
+    const batchesOptionsHtml = `
+      <option value="" disabled selected>Select Batch</option>
+      <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+        <% batches.forEach(batch => { %>
+          <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
+        <% }) %>
+      <% } %>
+    `;
 
+    document.getElementById('add-row-btn').addEventListener('click', () => {
       const tr = document.createElement('tr');
       tr.className = 'student-grid-row';
       tr.innerHTML = `
         <td class="text-center text-xs text-gray-400 italic">New Student</td>
-        <td class="editable-cell"><select class="grid-standard">${optionsHtml}</select></td>
+        <td class="editable-cell"><select class="grid-batch">${batchesOptionsHtml}</select></td>
         <td class="editable-cell"><input type="text" class="grid-id font-mono text-brand-purple" placeholder="New ID" required></td>
         <td class="editable-cell"><input type="text" class="grid-name font-semibold" placeholder="Enter Name" required></td>
+        <td class="editable-cell"><input type="email" class="grid-email" placeholder="student@example.com"></td>
         <td class="editable-cell"><input type="text" class="grid-pass" placeholder="(Default: Mobile)"></td>
         <td class="editable-cell"><input type="number" class="grid-fee" placeholder="0"></td>
         <td class="editable-cell"><input type="text" class="grid-mobile" placeholder="Mobile No" required></td>
@@ -222,16 +215,18 @@
       rows.forEach(row => {
         const id = row.querySelector('.grid-id').value.trim();
         const name = row.querySelector('.grid-name').value.trim();
-        const std = row.querySelector('.grid-standard').value;
+        const email = row.querySelector('.grid-email').value.trim();
+        const batchId = row.querySelector('.grid-batch').value;
         const pass = row.querySelector('.grid-pass').value.trim();
         const fee = row.querySelector('.grid-fee').value;
         const mobile = row.querySelector('.grid-mobile').value.trim();
 
-        if (id && name && std && mobile) {
+        if (id && name && batchId && mobile) {
           dataToSave.push({
             studentId: id,
             studentName: name,
-            standard: std,
+            email: email,
+            batchId: batchId,
             password: pass,
             monthlyFee: fee ? Number(fee) : 0,
             mobileNo: mobile
@@ -301,5 +296,9 @@
       }
     }
   </script>
+      </main>
+    </div>
+  </div>
 </body>
+
 </html>

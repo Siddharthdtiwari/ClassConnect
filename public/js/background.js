@@ -29,7 +29,7 @@ function animateParticle(particle) {
   const delay = Math.random() * 5;
   setTimeout(() => {
     particle.style.transition = `all ${duration}s linear`;
-    particle.style.opacity = Math.random() * 0.3 + 0.1;
+    particle.style.opacity = Math.random() * 0.5 + 0.3; // Increased opacity
     const moveX = pos.x + (Math.random() * 20 - 10);
     const moveY = pos.y - Math.random() * 30;
     particle.style.left = `${moveX}%`;

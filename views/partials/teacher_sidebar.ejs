@@ -1,0 +1,374 @@
+<% 
+  const currentPath = typeof path !== 'undefined' ? path : '';
+  
+  const navItems = [
+    { to: '/teacher/dashboard', label: 'Dashboard', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>' },
+    { to: '/teacher/manage_students', label: 'Students', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"></path><path d="M6 12v5c3 3 9 3 12 0v-5"></path></svg>' },
+    { to: '/teacher/manage_attendance', label: 'Attendance', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg>' },
+    { to: '/teacher/manage_tests', label: 'Assessments', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg>' },
+    { to: '/teacher/manage_score', label: 'Performance', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline></svg>' },
+    { to: '/teacher/manage_fees', label: 'Fees', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"></rect><line x1="2" y1="10" x2="22" y2="10"></line></svg>' },
+    { to: '/teacher/revenue_report', label: 'Analytics', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"></path><path d="M18 17V9"></path><path d="M13 17V5"></path><path d="M8 17v-3"></path></svg>' },
+    { to: '/teacher/study_material', label: 'Materials', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>' },
+    { to: '/teacher/manage_batches', label: 'Batches', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M23 21v-2a4 4 0 0 0-3-3.87"></path><path d="M16 3.13a4 4 0 0 1 0 7.75"></path></svg>' },
+    { to: '/teacher/timetable', label: 'Timetable', icon: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>' }
+  ];
+%>
+
+<style>
+  /* ═══════════════════════════════════════
+     SIDEBAR — Matches Theme Perfectly
+  ═══════════════════════════════════════ */
+  .sb {
+    width: 68px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 100;
+    background: var(--bg2, #EDE8F5);
+    border-right: 1px solid var(--bd);
+    transition: width 0.35s cubic-bezier(.4,0,.2,1), box-shadow 0.35s;
+    overflow: visible;
+  }
+  .sb.open {
+    width: 250px;
+    box-shadow: 8px 0 30px rgba(93,58,155,0.08);
+  }
+
+  /* Logo area */
+  .sb-logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 16px;
+    border-bottom: 1px solid var(--bd);
+    flex-shrink: 0;
+    transition: padding 0.35s;
+    position: relative;
+  }
+  .sb.open .sb-logo { padding: 20px 20px; }
+
+  .sb-logo-mark {
+    width: 36px; height: 36px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .sb-logo-mark img { width: 100%; height: 100%; object-fit: contain; }
+
+  .sb-logo-text {
+    opacity: 0; width: 0; overflow: hidden;
+    transition: opacity 0.25s, width 0.35s;
+    white-space: nowrap;
+  }
+  .sb.open .sb-logo-text { opacity: 1; width: 120px; }
+  .sb-logo-name {
+    font-family: 'Unbounded', sans-serif;
+    font-size: 0.88rem; font-weight: 900;
+    color: var(--fg); line-height: 1;
+  }
+  .sb-logo-name span { color: var(--pt); }
+  .sb-logo-sub {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.38rem; letter-spacing: 0.16em;
+    color: var(--fdd); text-transform: uppercase; margin-top: 4px;
+  }
+
+  /* Pin */
+  .sb-pin {
+    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; border: 1px solid transparent;
+    background: transparent; color: var(--fdd);
+    opacity: 0; pointer-events: none;
+    transition: all 0.25s;
+  }
+  .sb.open .sb-pin { opacity: 1; pointer-events: auto; }
+  .sb-pin:hover { background: var(--bgch); color: var(--pt); border-color: var(--bd); }
+  .sb-pin.pinned {
+    color: var(--pt);
+    background: rgba(124,58,237,0.08);
+    border-color: rgba(124,58,237,0.2);
+  }
+
+  /* Nav */
+  .sb-nav {
+    flex: 1; overflow-y: auto; overflow-x: hidden;
+    padding: 16px 10px;
+  }
+  .sb-nav::-webkit-scrollbar { width: 0; }
+
+  .sb-link {
+    display: flex; align-items: center; gap: 14px;
+    padding: 11px 14px; border-radius: 12px;
+    margin-bottom: 4px; text-decoration: none;
+    color: var(--fd); background: transparent;
+    transition: all 0.25s cubic-bezier(.4,0,.2,1);
+    justify-content: center; white-space: nowrap; overflow: hidden;
+    position: relative;
+  }
+  .sb.open .sb-link { justify-content: flex-start; }
+
+  .sb-link:hover {
+    background: var(--bgch);
+    color: var(--fg);
+  }
+  .sb-link.active {
+    background: linear-gradient(135deg, rgba(124,58,237,0.1) 0%, rgba(124,58,237,0.04) 100%);
+    color: var(--pt);
+    font-weight: 600;
+    box-shadow: inset 3px 0 0 var(--pt);
+  }
+  .sb-link.active svg { stroke: var(--pt); }
+
+  .sb-link-icon {
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    width: 22px; height: 22px;
+  }
+  .sb-link-label {
+    font-family: 'Inter', sans-serif;
+    font-size: 0.82rem; font-weight: 500;
+    opacity: 0; width: 0; overflow: hidden;
+    transition: opacity 0.2s, width 0.3s;
+    pointer-events: none;
+  }
+  .sb.open .sb-link-label {
+    opacity: 1; width: 130px; pointer-events: auto;
+  }
+
+  /* Footer */
+  .sb-footer {
+    flex-shrink: 0; padding: 12px 10px;
+    border-top: 1px solid var(--bd);
+  }
+
+  .sb-user {
+    display: flex; align-items: center; gap: 12px;
+    padding: 10px 14px; border-radius: 12px;
+    cursor: pointer; transition: all 0.25s;
+    justify-content: center; overflow: hidden;
+  }
+  .sb.open .sb-user { justify-content: flex-start; }
+  .sb-user:hover { background: var(--bgch); }
+
+  .sb-avatar {
+    width: 34px; height: 34px; border-radius: 10px;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+    font-family: 'Unbounded', sans-serif; font-weight: 900;
+    font-size: 0.85rem; color: white;
+    background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
+    box-shadow: 0 3px 10px var(--pg);
+  }
+  .sb-user-info {
+    opacity: 0; width: 0; overflow: hidden;
+    transition: opacity 0.2s, width 0.3s; pointer-events: none;
+  }
+  .sb.open .sb-user-info { opacity: 1; width: 130px; pointer-events: auto; }
+  .sb-user-name {
+    font-size: 0.78rem; font-weight: 600;
+    color: var(--fg); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    line-height: 1.2;
+  }
+  .sb-user-email {
+    font-size: 0.6rem; color: var(--fdd);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    font-family: 'Space Mono', monospace;
+  }
+
+  /* Dropdown menu */
+  .sb-menu {
+    max-height: 0; opacity: 0; overflow: hidden;
+    transition: max-height 0.3s, opacity 0.25s, margin 0.3s;
+    margin-top: 0;
+    background: var(--bgc);
+    border: 1px solid var(--bd);
+    border-radius: 12px;
+  }
+  .sb-menu.show {
+    max-height: 300px; opacity: 1; margin-top: 8px;
+  }
+  .sb-menu-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 14px; font-size: 0.8rem; font-weight: 500;
+    color: var(--fd); text-decoration: none;
+    transition: all 0.2s;
+  }
+  .sb-menu-item:hover { background: var(--bgch); color: var(--fg); }
+  .sb-menu-item.danger { color: #ef4444; }
+  .sb-menu-item.danger:hover { background: rgba(239,68,68,0.06); }
+
+  .sb-menu-divider {
+    height: 1px; background: var(--bd); margin: 4px 12px;
+  }
+
+  .sb-year-section { padding: 12px 14px; }
+  .sb-year-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.55rem; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--fdd);
+    margin-bottom: 6px; display: block;
+  }
+  .sb-year-select {
+    width: 100%;
+    background: var(--bgch) !important;
+    border: 1px solid var(--bd) !important;
+    color: var(--fg) !important;
+    font-size: 0.78rem !important;
+    border-radius: 8px !important;
+    padding: 7px 10px !important;
+    font-weight: 600 !important;
+  }
+
+  /* Responsive: Make open sidebar float over content using negative margin, and make closed sidebar thinner */
+  @media (max-width: 768px) {
+    .sb { width: 56px; }
+    .sb.open {
+      width: 250px;
+      margin-right: -194px; /* 250 - 56 = 194 */
+      box-shadow: 8px 0 30px rgba(0,0,0,0.15);
+    }
+    .sb-logo { padding: 16px 14px; gap: 10px; }
+    .sb.open .sb-logo { padding: 16px 20px; }
+    .sb-logo-mark { width: 28px; height: 28px; }
+    .sb-nav { padding: 12px 6px; }
+    .sb-link { padding: 10px 0; }
+    .sb.open .sb-link { padding: 10px 14px; }
+    .sb-footer { padding: 12px 6px; }
+    .sb-user { padding: 10px 0; }
+    .sb.open .sb-user { padding: 10px 14px; }
+    .sb-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
+  }
+</style>
+
+<aside id="sb" class="sb">
+
+  <!-- Logo -->
+  <div class="sb-logo">
+    <div class="sb-logo-mark">
+      <img src="/images/logo.png" alt="Logo">
+    </div>
+    <div class="sb-logo-text">
+      <div class="sb-logo-name">Tuition<span>Hub</span></div>
+      <div class="sb-logo-sub">Faculty Portal</div>
+    </div>
+    <button id="sb-pin" class="sb-pin" title="Pin sidebar">
+      <svg id="sb-pin-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="transition: transform 0.3s;">
+        <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
+      </svg>
+    </button>
+  </div>
+
+  <!-- Nav Links -->
+  <nav class="sb-nav">
+    <% navItems.forEach(item => { %>
+      <% const isActive = currentPath === item.to || currentPath.startsWith(item.to + '/'); %>
+      <a href="<%= item.to %>" class="sb-link <%= isActive ? 'active' : '' %>" title="<%= item.label %>">
+        <span class="sb-link-icon"><%- item.icon %></span>
+        <span class="sb-link-label"><%= item.label %></span>
+      </a>
+    <% }) %>
+  </nav>
+
+  <!-- User -->
+  <div class="sb-footer">
+    <div id="sb-user" class="sb-user" title="Profile & Settings">
+      <div class="sb-avatar">
+        <%= typeof teacher !== 'undefined' ? teacher.teacherName[0] : 'T' %>
+      </div>
+      <div class="sb-user-info">
+        <div class="sb-user-name"><%= typeof teacher !== 'undefined' ? teacher.teacherName : 'Teacher' %></div>
+        <div class="sb-user-email"><%= typeof teacher !== 'undefined' ? (teacher.email || 'Faculty') : '' %></div>
+      </div>
+    </div>
+
+    <div id="sb-menu" class="sb-menu">
+      <!-- Academic Year -->
+      <div class="sb-year-section">
+        <label class="sb-year-label">Academic Year</label>
+        <select id="sb-year" class="sb-year-select" onchange="sbSwitchYear(this.value)">
+          <% if (typeof availableYears !== 'undefined' && availableYears.length > 0) { %>
+            <% availableYears.forEach(year => { %>
+            <option value="<%= year %>" <%= typeof viewingYear !== 'undefined' && viewingYear === year ? 'selected' : '' %>>
+              <%= year %> <%= typeof currentAcademicYear !== 'undefined' && currentAcademicYear === year ? '(Current)' : '' %>
+            </option>
+            <% }) %>
+          <% } else { %>
+            <option value="<%= typeof viewingYear !== 'undefined' ? viewingYear : '' %>">
+              <%= typeof viewingYear !== 'undefined' ? viewingYear : 'N/A' %>
+            </option>
+          <% } %>
+        </select>
+      </div>
+      <div class="sb-menu-divider"></div>
+      <% if (typeof teacher !== 'undefined' && teacher._id) { %>
+      <a href="/teacher/edit_teacher/<%= teacher._id %>" class="sb-menu-item">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+        Edit Profile
+      </a>
+      <% } %>
+      <a href="/teacher/logout" class="sb-menu-item danger">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Logout
+      </a>
+    </div>
+  </div>
+
+</aside>
+
+<script>
+  function sbSwitchYear(year) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('year', year);
+    window.location.href = url.toString();
+  }
+
+  document.addEventListener('DOMContentLoaded', () => {
+    const sb = document.getElementById('sb');
+    const pin = document.getElementById('sb-pin');
+    const pinIcon = document.getElementById('sb-pin-icon');
+    const user = document.getElementById('sb-user');
+    const menu = document.getElementById('sb-menu');
+
+    let pinned = localStorage.getItem('sbPinned') === 'true';
+    let hovered = false;
+    let ht = null;
+    let menuOpen = false;
+
+    if (pinned) {
+      sb.classList.add('open');
+      pin.classList.add('pinned');
+      pinIcon.style.transform = 'rotate(180deg)';
+    }
+
+    function sync() {
+      const open = pinned || hovered;
+      sb.classList.toggle('open', open);
+      if (!open) {
+        menuOpen = false;
+        menu.classList.remove('show');
+      }
+      pin.classList.toggle('pinned', pinned);
+      pinIcon.style.transform = pinned ? 'rotate(180deg)' : '';
+    }
+
+    sb.addEventListener('mouseenter', () => { clearTimeout(ht); hovered = true; sync(); });
+    sb.addEventListener('mouseleave', () => { ht = setTimeout(() => { hovered = false; sync(); }, 180); });
+
+    pin.addEventListener('click', e => {
+      e.stopPropagation();
+      pinned = !pinned;
+      localStorage.setItem('sbPinned', pinned);
+      if (!pinned) hovered = false;
+      sync();
+    });
+
+    user.addEventListener('click', () => {
+      if (!pinned && !hovered) return;
+      menuOpen = !menuOpen;
+      menu.classList.toggle('show', menuOpen);
+    });
+  });
+</script>

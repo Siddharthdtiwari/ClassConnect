@@ -1,0 +1,92 @@
+const express = require('express');
+const router = express.Router();
+const catchAsync = require('../utils/catchAsync');
+const rateLimit = require("express-rate-limit");
+const { ensureDBConnection, requireTeacherLogin } = require("../middlewares/auth");
+const { loadBatches } = require("../middlewares/batchContext");
+const { upload } = require("../utils/upload");
+
+// Controllers
+const authController = require("../controllers/teacher/authController");
+const batchController = require("../controllers/teacher/batchController");
+const studentController = require("../controllers/teacher/studentController");
+const attendanceController = require("../controllers/teacher/attendanceController");
+const feeController = require("../controllers/teacher/feeController");
+const testController = require("../controllers/teacher/testController");
+const resourceController = require("../controllers/teacher/resourceController");
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: "Too many login attempts, please try again after 15 minutes"
+});
+
+// Load context batches for all teacher routes (relies on req.viewingYear set in app.js)
+router.use(loadBatches);
+
+// Auth & Dashboard
+router.get("/teacher/login", catchAsync(authController.renderLogin));
+router.post("/teacher/login", loginLimiter, ensureDBConnection, catchAsync(authController.processLogin));
+router.get("/teacher/dashboard", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderDashboard));
+router.get("/teacher/logout", catchAsync(authController.processLogout));
+
+// Teacher Management
+router.get("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderAddTeacher));
+router.post("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, catchAsync(authController.processAddTeacher));
+router.get("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderEditTeacher));
+router.post("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, catchAsync(authController.processEditTeacher));
+
+// Batch Management
+router.get("/teacher/manage_batches", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderManageBatches));
+router.get("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderAddBatch));
+router.post("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processAddBatch));
+router.get("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderEditBatch));
+router.post("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processEditBatch));
+
+// Student Management
+router.get("/teacher/manage_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderManageStudents));
+router.get("/teacher/add_student", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderAddStudent));
+router.post("/teacher/add_student", ensureDBConnection, requireTeacherLogin, upload.single("profilePhoto"), catchAsync(studentController.processAddStudent));
+router.get("/teacher/edit_profile/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderEditProfile));
+router.post("/teacher/edit_profile/:id", ensureDBConnection, requireTeacherLogin, upload.single("profilePhoto"), catchAsync(studentController.processEditProfile));
+router.get("/teacher/view_profile/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderViewProfile));
+router.get("/teacher/bulk_add_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderBulkAddStudents));
+router.post("/teacher/bulk_save_students", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(studentController.processBulkSaveStudents));
+router.get("/teacher/bulk_student_reports", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateBulkStudentReports));
+router.get("/teacher/student_report/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateStudentReport));
+
+// Attendance Management
+router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderManageAttendance));
+router.post("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.processManageAttendance));
+router.get("/teacher/detailed_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDetailedAttendance));
+router.get("/teacher/defaulters/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDefaulters));
+
+// Fee Management
+router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderManageFees));
+router.get("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderAddFees));
+router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.processAddFees));
+router.get("/teacher/detailed_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderDetailedFees));
+router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
+router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
+
+// Test Management & Scores & Timetable
+router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));
+router.get("/teacher/add_test", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderAddTest));
+router.post("/teacher/delete_test/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processDeleteTest));
+router.get("/teacher/manage_score", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageScore));
+router.get("/api/tests/:batchId", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiGetTests));
+router.get("/api/scores/:batchId/:testId", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiGetScores));
+router.post("/api/scores/save", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiSaveScores));
+router.get("/api/scores/consolidated_classwise", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiConsolidatedScores));
+router.get("/teacher/timetable", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderTimetable));
+router.post("/teacher/timetable/bulk", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableBulk));
+router.post("/teacher/timetable/edit/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableEdit));
+router.post("/teacher/timetable/delete/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableDelete));
+
+// Resource Management (Study Materials)
+router.get("/teacher/study_material", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.renderStudyMaterial));
+router.post("/teacher/study_material", ensureDBConnection, requireTeacherLogin, upload.single("file"), catchAsync(resourceController.processStudyMaterialUpload));
+router.put("/api/materials/:id", ensureDBConnection, requireTeacherLogin, upload.single("file"), catchAsync(resourceController.processStudyMaterialUpdate));
+router.delete("/api/materials/:id", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.processStudyMaterialDelete));
+
+module.exports = router;

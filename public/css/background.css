@@ -1,171 +1,192 @@
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+/* ────────────────────────────────────────────
+   TOKENS
+──────────────────────────────────────────── */
+:root {
+  --p: #7c3aed; --pm: #5d3a9b;
+  --pg: rgba(124,58,237,.32); --pg2: rgba(93,58,155,.18);
+  --l: #bde045; --lg: rgba(189,224,69,.22);
+  --ease: cubic-bezier(.34,1.56,.64,1);
+  --trans: background .4s,color .4s,border-color .3s,box-shadow .3s;
 }
 
+/* We will default to light theme for the student portal, but support data-theme="dark" */
+[data-theme="dark"] {
+  --bg:#05050a; --bg2:#0b0b14; --bgc:rgba(255,255,255,.03); --bgch:rgba(124,58,237,.07);
+  --fg:#F0EBE0; --fd:rgba(240,235,224,.75); --fdd:rgba(240,235,224,.55);
+  --b:rgba(240,235,224,.09); --bd:rgba(240,235,224,.055);
+  --nav:rgba(5,5,10,.25); --cop:.55;
+  --pt:var(--p); --lt:var(--l);
+  --tks:rgba(240,235,224,.18);
+}
+:root, [data-theme="light"] {
+  --bg:#F5F1FC; --bg2:#EDE8F5; --bgc:rgba(255,255,255,.8); --bgch:rgba(255,255,255,.98);
+  --fg:#0C0C0C; --fd:rgba(12,12,12,.80); --fdd:rgba(12,12,12,.60);
+  --b:rgba(12,12,12,.12); --bd:rgba(12,12,12,.07);
+  --nav:rgba(245,241,252,.8); --cop:.12;
+  --pt:#5d3a9b; --lt:#6e8e00;
+  --tks:rgba(100,90,90,.16);
+}
+
+/* ── BASE ── */
 body {
-  font-family: "Inter", "Helvetica Neue", sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: 'Inter', sans-serif;
   overflow-x: hidden;
-  background-color: #f7f5fa;
-  color: #333;
-  min-height: 100vh;
+  transition: var(--trans);
 }
 
-.content-container {
-  position: relative;
-  z-index: 10;
+/* ── BACKGROUND ── */
+.grain{
+  position:fixed;
+  inset:-50%;
+  z-index:-2;
+  width:200%;
+  height:200%;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='300' height='300'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='300' height='300' filter='url(%23g)' opacity='0.055'/%3E%3C/svg%3E");
+  pointer-events:none;
+  animation:grain .5s steps(1) infinite;
+  opacity: .3;
+}
+[data-theme="dark"] .grain { opacity: 1; }
+
+@keyframes grain{
+  0%,100%{transform:translate(0,0)}
+  10%{transform:translate(-2%,-3%)}
+  20%{transform:translate(3%,1%)}
+  30%{transform:translate(-1%,4%)}
+  40%{transform:translate(2%,-2%)}
+  50%{transform:translate(-3%,2%)}
+  60%{transform:translate(1%,-1%)}
+  70%{transform:translate(-2%,3%)}
+  80%{transform:translate(2%,1%)}
+  90%{transform:translate(-1%,-2%)}
 }
 
-.gradient-background {
+.orb{
+  position:fixed;
+  border-radius:50%;
+  filter:blur(90px);
+  pointer-events:none;
+  z-index:-1;
+  animation:of 20s ease-in-out infinite alternate;
+}
+.orb1{
+  width:800px;
+  height:800px;
+  background:radial-gradient(circle,rgba(93,58,155,.07) 0%,transparent 70%);
+  top:-300px;
+  left:-200px;
+  animation-duration:24s;
+}
+.orb2{
+  width:600px;
+  height:600px;
+  background:radial-gradient(circle,rgba(93,58,155,.05) 0%,transparent 70%);
+  bottom:-100px;
+  right:-200px;
+  animation-duration:19s;
+  animation-delay:-9s;
+}
+[data-theme="dark"] .orb1{background:radial-gradient(circle,rgba(124,58,237,.11) 0%,transparent 70%)}
+[data-theme="dark"] .orb2{background:radial-gradient(circle,rgba(93,58,155,.09) 0%,transparent 70%)}
+
+@keyframes of{
+  0%{transform:translate(0,0) scale(1)}
+  50%{transform:translate(40px,-50px) scale(1.05)}
+  100%{transform:translate(-30px,30px) scale(.97)}
+}
+
+/* ── PARTICLES BACKGROUND ── */
+#particles-container {
   position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  overflow: hidden;
-}
-
-.gradient-sphere {
-  position: absolute;
-  border-radius: 50%;
-  filter: blur(80px);
-  opacity: 0.12;
-}
-
-.sphere-1 {
-  width: 45vw;
-  height: 45vw;
-  background: linear-gradient(40deg,
-      rgba(180, 0, 100, 0.9),
-      rgba(150, 40, 180, 0.5));
-  top: -10%;
-  left: -10%;
-  animation: float-1 15s ease-in-out infinite alternate;
-}
-
-.sphere-2 {
-  width: 45vw;
-  height: 45vw;
-  background: linear-gradient(240deg,
-      rgba(40, 0, 150, 0.9),
-      rgba(0, 100, 200, 0.5));
-  bottom: -10%;
-  left: -10%;
-  animation: float-2 18s ease-in-out infinite alternate;
-}
-
-.sphere-3 {
-  width: 45vw;
-  height: 45vw;
-  background: linear-gradient(40deg,
-      rgba(180, 0, 100, 0.8),
-      rgba(150, 50, 0, 0.4));
-  bottom: -10%;
-  right: -10%;
-  animation: float-1 15s ease-in-out infinite alternate;
-}
-
-.sphere-4 {
-  width: 45vw;
-  height: 45vw;
-  background: linear-gradient(240deg,
-      rgba(60, 0, 180, 0.8),
-      rgba(0, 80, 150, 0.4));
-  top: -10%;
-  right: -10%;
-  animation: float-2 18s ease-in-out infinite alternate;
-}
-
-.glow {
-  position: absolute;
-  width: 40vw;
-  height: 40vh;
-  background: radial-gradient(circle, rgba(50, 0, 150, 0.18), transparent 70%);
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 0;
-  animation: pulse 8s infinite alternate;
-  filter: blur(30px);
-}
-
-@media (max-width: 768px) {
-
-  .sphere-1,
-  .sphere-2,
-  .sphere-3,
-  .sphere-4 {
-    width: 80vw;
-    height: 80vw;
-    filter: blur(50px);
-  }
-
-  .glow {
-    width: 60vw;
-    height: 30vh;
-  }
-}
-
-@keyframes float-1 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  100% {
-    transform: translate(10%, 10%) scale(1.1);
-  }
-}
-
-@keyframes float-2 {
-  0% {
-    transform: translate(0, 0) scale(1);
-  }
-
-  100% {
-    transform: translate(-10%, -5%) scale(1.15);
-  }
-}
-
-@keyframes float-3 {
-  0% {
-    transform: translate(0, 0) scale(1);
-    opacity: 0.3;
-  }
-
-  100% {
-    transform: translate(-5%, 10%) scale(1.05);
-    opacity: 0.6;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    opacity: 0.3;
-    transform: translate(-50%, -50%) scale(0.9);
-  }
-
-  100% {
-    opacity: 0.7;
-    transform: translate(-50%, -50%) scale(1.1);
-  }
-}
-
-.particles-container {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 20;
+  inset: 0;
+  z-index: -1;
   pointer-events: none;
+  overflow: hidden;
 }
 
 .particle {
   position: absolute;
-  background: #6d2d91;
   border-radius: 50%;
-  opacity: 0;
+  background: radial-gradient(circle, #a78bfa 0%, transparent 100%);
+  filter: drop-shadow(0 0 5px var(--p));
   pointer-events: none;
+}
+
+.wrap{
+  position:relative;
+  z-index:10;
+}
+
+/* Premium Glass Cards used in student UI */
+.glass-card {
+  background: var(--bgc);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--b);
+  border-radius: 20px;
+  box-shadow: 0 4px 30px rgba(0,0,0,0.03);
+  transition: var(--trans);
+}
+.glass-card:hover {
+  background: var(--bgch);
+  border-color: var(--p);
+}
+[data-theme="dark"] .glass-card {
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.04), 0 10px 40px rgba(0,0,0,.3);
+}
+
+/* Typography styles used in index.ejs */
+.font-unbounded { font-family: 'Unbounded', sans-serif; }
+.font-space { font-family: 'Space Mono', monospace; }
+
+/* Buttons */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: linear-gradient(135deg, var(--p), var(--pm));
+  color: #fff !important;
+  border: none;
+  cursor: pointer;
+  transition: all 0.25s;
+  box-shadow: 0 4px 20px var(--pg);
+}
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px var(--pg);
+}
+.btn-outline {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-family: 'Unbounded', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  text-decoration: none;
+  background: var(--bgc);
+  color: var(--fg);
+  border: 1px solid var(--b);
+  cursor: pointer;
+  transition: all 0.25s;
+  backdrop-filter: blur(10px);
+}
+.btn-outline:hover {
+  border-color: var(--p);
+  color: var(--pt);
 }

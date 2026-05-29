@@ -1,0 +1,172 @@
+const User = require("../../models/User");
+const Batch = require("../../models/Batch");
+const Attendance = require("../../models/Attendance");
+
+exports.renderManageAttendance = async (req, res) => {
+  try {
+    const students = await User.find({ batch: { $in: req.viewingBatches } })
+      .populate('batch')
+      .lean();
+    const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
+
+    const attendanceMap = {};
+    attendanceRecords.forEach((record) => {
+      const dateString = record.date.toISOString().split('T')[0];
+      attendanceMap[dateString] = {};
+      (record.records || []).forEach(
+        (r) => (attendanceMap[dateString][r.studentId] = r.status)
+      );
+    });
+
+    res.render("teacher/manage_attendance", {
+      students,
+      attendance: attendanceMap,
+    });
+  } catch (err) {
+    console.error("Manage attendance GET error:", err);
+    res.status(500).send("Error loading attendance");
+  }
+};
+
+exports.processManageAttendance = async (req, res) => {
+  try {
+    const { date, records, batchId } = req.body;
+    let batchValue = batchId;
+
+    if (!batchValue && records && records.length > 0) {
+      const firstStudentId = records[0].studentId;
+      const student = await User.findOne({ studentId: firstStudentId, batch: { $in: req.viewingBatches } }).populate('batch').lean();
+      if (student) {
+        batchValue = (student.batch ? student.batch._id : null);
+      }
+    }
+
+    let attendance = await Attendance.findOne({ date, batch: { $in: req.viewingBatches } });
+    if (attendance) {
+      attendance.records = records;
+    } else {
+      attendance = new Attendance({
+        batch: batchValue,
+        date: new Date(date),
+        records,
+      });
+    }
+    await attendance.save();
+    res.json({ success: true, message: "Attendance saved successfully!" });
+  } catch (err) {
+    console.error("Error saving attendance:", err);
+    res.status(500).json({ success: false, message: "Failed to save attendance." });
+  }
+};
+
+exports.renderDetailedAttendance = async (req, res) => {
+  try {
+    const students = await User.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+    const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
+
+    const detailedReport = {};
+    const allAttendanceDates = new Set();
+
+    students.forEach(student => {
+      detailedReport[student.studentId] = {
+        studentId: student.studentId,
+        studentName: student.studentName,
+        records: {},
+        presentCount: 0,
+        totalRecordedDays: 0,
+      };
+    });
+
+    attendanceRecords.forEach(record => {
+      const dateKey = record.date.toISOString().split('T')[0];
+      allAttendanceDates.add(dateKey);
+
+      (record.records || []).forEach(r => {
+        if (detailedReport[r.studentId]) {
+          const studentData = detailedReport[r.studentId];
+          studentData.records[dateKey] = r.status;
+
+          if (r.status === 'P') {
+            studentData.presentCount++;
+            studentData.totalRecordedDays++;
+          } else if (r.status === 'A') {
+            studentData.totalRecordedDays++;
+          }
+        }
+      });
+    });
+
+    const sortedDates = Array.from(allAttendanceDates).sort();
+    const reportArray = Object.values(detailedReport);
+
+    res.render("teacher/detailed_attendance", {
+      report: reportArray,
+      allDates: sortedDates,
+    });
+  } catch (err) {
+    console.error("Error generating detailed attendance report:", err);
+    res.status(500).send("Failed to generate detailed attendance report.");
+  }
+};
+
+exports.renderDefaulters = async (req, res) => {
+  try {
+    const { year, month } = req.params;
+
+    if (!/^\d{4}$/.test(year) || !/^(0?[1-9]|1[0-2])$/.test(month)) {
+      return res.status(400).send("Invalid year or month format");
+    }
+
+    const startDate = new Date(`${year}-${month}-01`);
+    const endDate = new Date(year, parseInt(month), 0);
+
+    const students = await User.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+
+    const attendanceDocs = await Attendance.find({
+      date: {
+        $gte: startDate.toISOString().split("T")[0],
+        $lte: endDate.toISOString().split("T")[0],
+      },
+      batch: { $in: req.viewingBatches },
+    }).lean();
+
+    const stats = {};
+    students.forEach((s) => {
+      stats[s.studentId] = {
+        studentId: s.studentId,
+        studentName: s.studentName,
+        standard: (s.batch ? s.batch.name : 'Unknown'),
+        mobileNo: s.mobileNo,
+        present: 0,
+        absent: 0,
+        total: 0,
+        percentage: 0,
+      };
+    });
+
+    attendanceDocs.forEach((doc) => {
+      doc.records.forEach((r) => {
+        if (stats[r.studentId]) {
+          if (r.status === "P") stats[r.studentId].present++;
+          if (r.status === "A") stats[r.studentId].absent++;
+          stats[r.studentId].total++;
+        }
+      });
+    });
+
+    const defaulters = Object.values(stats)
+      .map((s) => {
+        s.percentage = s.total > 0 ? (s.present / (s.present + s.absent)) * 100 : 0;
+        return s;
+      })
+      .filter((s) => s.percentage < 75)
+      .sort((a, b) => Number(a.percentage) - Number(b.percentage));
+
+    const headerUrl = process.env.CLOUDINARY_HEADER_URL || "";
+
+    res.render("teacher/defaulters", { year, month, defaulters, headerUrl });
+  } catch (err) {
+    console.error(err);
+    res.status(500).send("Error generating defaulter list");
+  }
+};

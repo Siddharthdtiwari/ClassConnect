@@ -1,103 +1,30 @@
-<%- include('../partials/background') %>
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Dashboard | <%= student.studentName %></title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
-    body {
-      font-family: "Inter", sans-serif;
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-    }
-
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .bg-brand-purple-light {
-      background-color: #f3e8ff;
-    }
-
-    .text-brand-lime {
-      color: #bde045;
-    }
-
-    .border-brand-lime {
-      border-color: #bde045;
-    }
-
-    .btn-action {
-      background-color: #5d3a9b;
-      color: white;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 9999px;
-      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
-    }
-
-    .btn-action:hover {
-      background-color: #4b2d84;
-      transform: translateY(-2px);
-      box-shadow: 0 6px 20px rgba(93, 58, 155, 0.23);
-    }
-
-    .btn-outline-white {
-      color: white;
-      border: 1px solid rgba(255,255,255,0.6);
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 9999px;
-      background: rgba(255,255,255,0.1);
-    }
-
-    .btn-outline-white:hover {
-      background-color: white;
-      color: #5d3a9b;
-    }
-
-    .glass-profile {
-      background: rgba(255, 255, 255, 0.85);
-      backdrop-filter: blur(16px);
-      -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255, 255, 255, 0.5);
-      box-shadow: 0 4px 30px rgba(93, 58, 155, 0.08);
-    }
-
     .premium-banner {
-      background: linear-gradient(135deg, #4b2d84 0%, #7c52ca 100%);
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
       color: white;
-      box-shadow: 0 10px 25px -5px rgba(93, 58, 155, 0.3);
+      box-shadow: 0 10px 30px var(--pg);
     }
-
     .action-card {
       transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      border: 1px solid transparent;
-      background-color: white;
     }
-
     .action-card:hover {
       transform: translateY(-8px);
-      box-shadow: 0 20px 25px -5px rgba(93, 58, 155, 0.15);
-      border-color: rgba(93, 58, 155, 0.2);
+      box-shadow: 0 20px 25px -5px var(--pg);
+      border-color: var(--p);
     }
-
     .main-chart-area {
       position: relative;
       height: 0;
       padding-bottom: 48%;
     }
-
     .main-chart-area canvas {
       position: absolute;
       top: 0;
@@ -105,11 +32,20 @@
       width: 100%;
       height: 100%;
     }
+    /* Stats box */
+    .stat-box {
+      background: var(--bg);
+      border: 1px solid var(--b);
+      transition: var(--trans);
+    }
+    .stat-box:hover {
+      background: var(--bgch);
+      border-color: var(--p);
+    }
   </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 </head>
 
-<body class="text-gray-800">
+<body class="text-theme-fg wrap">
   <div id="chart-data-wrapper" style="display: none" data-chart-data="<%= JSON.stringify({
       labels: scoreLabels,
       data: scoreData
@@ -121,23 +57,23 @@
       <div class="absolute bottom-0 right-32 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
       
       <div class="relative z-10">
-        <h1 class="text-3xl md:text-4xl font-extrabold text-white leading-tight">
+        <h1 class="text-3xl md:text-4xl font-unbounded font-extrabold text-white leading-tight">
           Welcome Back,
-          <span class="text-brand-lime"> <%= student.studentName %>! </span>
+          <span class="text-theme-lt"> <%= student.studentName %>! </span>
         </h1>
-        <p class="text-sm text-purple-100 mt-2 font-medium">
-          Your central hub for success and learning.
+        <p class="text-sm font-mono tracking-widest mt-3 text-white/80 uppercase">
+          Your central hub for success.
         </p>
       </div>
 
-      <div class="relative z-10 flex flex-wrap items-center gap-3 mt-6 sm:mt-0">
-        <button onclick="window.open('/student/report', '_blank')" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+      <div class="relative z-10 flex flex-wrap items-center justify-center sm:justify-end gap-2.5 mt-6 sm:mt-0 w-full sm:w-auto">
+        <button onclick="window.open('/student/report', '_blank')" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
           🖨️ Print Report
         </button>
-        <button onclick="window.location.href='/student/edit_profile'" class="py-2.5 px-6 bg-white text-brand-purple hover:bg-gray-50 transition-colors rounded-full text-sm font-bold shadow-lg flex items-center gap-2">
+        <button onclick="window.location.href='/student/edit_profile'" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
           ✏️ Edit Profile
         </button>
-        <button onclick="window.location.href='/student/logout'" class="py-2.5 px-6 btn-outline-white text-sm font-bold">
+        <button onclick="window.location.href='/student/logout'" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
           Logout
         </button>
       </div>
@@ -145,106 +81,109 @@
 
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
       <div class="lg:col-span-1 space-y-6">
-        <div class="glass-profile p-8 rounded-2xl relative overflow-hidden">
-          <div class="absolute top-0 left-0 w-full h-24 premium-banner"></div>
+        <div class="glass-card p-8 relative overflow-hidden">
+          <div class="absolute top-0 left-0 w-full h-24 premium-banner opacity-90"></div>
           <div class="relative flex flex-col items-center text-center mt-6">
-            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-28 h-28 rounded-full border-4 border-white object-cover mb-4 shadow-xl bg-white" />
-            <p class="text-2xl font-extrabold text-gray-900">
+            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-28 h-28 rounded-full border-4 border-theme-bg object-cover mb-4 shadow-xl bg-theme-bg" />
+            <p class="text-2xl font-unbounded font-extrabold text-theme-fg">
               <%= student.studentName %>
             </p>
-            <span class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-purple-100 text-brand-purple">
-              Class <%= student.standard %>
+            <span class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-theme-bgch text-theme-pt border border-theme-p/20">
+              Batch: <%= student.batch ? student.batch.name : 'Unassigned' %>
             </span>
-            <p class="text-sm text-gray-500 mt-2 font-medium">
+            <p class="text-sm text-theme-fdd mt-2 font-mono">
               ID: <%= student.studentId %>
+            </p>
+            <p class="text-xs text-theme-fd mt-1 font-mono break-all text-center max-w-[200px]">
+              <%= student.email || 'No email registered' %>
             </p>
           </div>
 
-          <div class="mt-8 pt-6 border-t border-gray-100 space-y-5">
-            <div class="flex justify-between items-center bg-gray-50 p-3 rounded-lg border border-gray-100">
-              <span class="text-gray-600 font-semibold text-sm">Monthly Fee</span>
-              <span class="font-extrabold text-lg text-brand-purple">₹<%= student.monthlyFee.toLocaleString() %></span>
+          <div class="mt-8 pt-6 border-t border-theme-bd space-y-4">
+            <div class="flex justify-between items-center stat-box p-3 rounded-lg">
+              <span class="text-theme-fd font-mono text-xs uppercase tracking-widest">Monthly Fee</span>
+              <span class="font-unbounded font-extrabold text-theme-pt">₹<%= student.monthlyFee.toLocaleString() %></span>
             </div>
-            <div class="flex justify-between items-center bg-lime-50 p-3 rounded-lg border border-lime-100">
-              <span class="text-gray-700 font-semibold text-sm">Reward Points</span>
-              <span class="font-extrabold text-lg text-green-700 flex items-center gap-1">
+            <div class="flex justify-between items-center stat-box p-3 rounded-lg border-theme-lt/30 bg-theme-lt/10 hover:border-theme-lt">
+              <span class="text-theme-fd font-mono text-xs uppercase tracking-widest">Points</span>
+              <span class="font-unbounded font-extrabold text-theme-lt flex items-center gap-1">
                 <%= Math.trunc(student.points) %> 
-                <svg class="w-5 h-5 text-yellow-500" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
+                <svg class="w-4 h-4 text-theme-lt" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"></path></svg>
               </span>
             </div>
-            <div class="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100">
-              <span class="text-gray-700 font-semibold text-sm">Leaderboard Rank</span>
-              <span class="font-extrabold text-lg text-brand-purple flex items-center gap-1">
-                <span class="text-sm text-gray-400 font-normal">#</span><%= studentRank %> 🏆
+            <div class="flex justify-between items-center stat-box p-3 rounded-lg">
+              <span class="text-theme-fd font-mono text-xs uppercase tracking-widest">Rank</span>
+              <span class="font-unbounded font-extrabold text-theme-pt flex items-center gap-1">
+                <span class="text-sm text-theme-fdd font-normal">#</span><%= studentRank %> 🏆
               </span>
             </div>
           </div>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-brand-lime">
-          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
-            Attendance Summary
+        <div class="glass-card p-6 border-t-4 border-theme-lt">
+          <h3 class="text-sm font-mono font-bold tracking-widest mb-4 border-b border-theme-bd pb-2 text-theme-fg uppercase">
+            Attendance
           </h3>
 
-          <div class="grid grid-cols-2 gap-4 items-center">
-            <div>
-              <p class="text-5xl font-extrabold text-brand-purple leading-none">
+          <div class="grid grid-cols-2 gap-4 items-center w-full">
+            <div class="min-w-0">
+              <p class="text-2xl sm:text-3xl font-unbounded font-extrabold text-theme-pt leading-none drop-shadow-md break-words">
                 <%= attendancePercentage %>%
               </p>
-              <p class="text-sm text-gray-600 mt-2">Overall Present</p>
+              <p class="text-[10px] sm:text-xs font-mono text-theme-fd mt-2 uppercase tracking-widest">Overall</p>
             </div>
-            <div class="text-sm space-y-1 text-right">
-              <div class="flex justify-between">
-                <span class="font-medium">Present:</span>
-                <span class="font-bold text-green-600">
+            <div class="text-xs sm:text-sm space-y-1.5 text-right min-w-0">
+              <div class="flex justify-between text-theme-fd gap-2">
+                <span>Present:</span>
+                <span class="font-bold text-theme-lt drop-shadow-sm">
                   <%= presentDays %>
                 </span>
               </div>
-              <div class="flex justify-between">
-                <span class="font-medium">Absent:</span>
+              <div class="flex justify-between text-theme-fd gap-2">
+                <span>Absent:</span>
                 <span class="font-bold text-red-500">
                   <%= absentDays %>
                 </span>
               </div>
-              <div class="flex justify-between pt-1 border-t">
-                <span class="font-medium">Total Days:</span>
-                <span class="font-bold"> <%= presentDays+absentDays %> </span>
+              <div class="flex justify-between pt-1.5 border-t border-theme-bd text-theme-fd gap-2">
+                <span>Total:</span>
+                <span class="font-bold text-theme-fg"> <%= presentDays+absentDays %> </span>
               </div>
             </div>
           </div>
-          <a href="/student/attendance" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
-            View Full History
+          <a href="/student/attendance" class="mt-6 w-full btn-outline">
+            View History →
           </a>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-lg border-t-8 border-green-500">
-          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
-            Recent Fee Payments
+        <div class="glass-card p-6 border-t-4 border-theme-pt">
+          <h3 class="text-sm font-mono font-bold tracking-widest mb-4 border-b border-theme-bd pb-2 text-theme-fg uppercase">
+            Fee Payments
           </h3>
-          <div class="divide-y divide-gray-100 max-h-48 overflow-y-auto pr-3">
+          <div class="divide-y divide-theme-bd max-h-48 overflow-y-auto pr-3">
             <% if (recentFees.length > 0) { %> <% recentFees.forEach(fee => { %>
-            <div class="flex items-center py-3 gap-2">
+            <div class="flex items-center py-3 gap-2 hover:bg-theme-bgc transition-colors rounded-lg px-2 -mx-2">
               <div class="flex flex-col flex-1 min-w-0">
-                <span class="text-sm font-semibold truncate">Fee for <%= fee.month %>, <%= fee.year %></span>
-                <span class="text-xs text-gray-500 truncate">Method: <%= fee.method %> | Paid <%= new Date(fee.datePaid).toLocaleDateString() %></span>
+                <span class="text-sm font-semibold text-theme-fg truncate">Fee for <%= fee.month %>, <%= fee.year %></span>
+                <span class="text-xs text-theme-fd truncate font-mono mt-1"><%= fee.method %> | <%= new Date(fee.datePaid).toLocaleDateString() %></span>
               </div>
-              <span class="text-sm font-bold text-green-600 flex-shrink-0">₹<%= fee.amount.toLocaleString() %></span>
+              <span class="text-sm font-bold text-theme-lt flex-shrink-0 font-unbounded">₹<%= fee.amount.toLocaleString() %></span>
             </div>
             <% }) %> <% } else { %>
-            <p class="py-3 text-gray-500 text-sm">
+            <p class="py-3 text-theme-fdd text-sm italic">
               No recent fee payments recorded.
             </p>
             <% } %>
           </div>
-          <a href="/student/fee_payment" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
-            View Fee History
+          <a href="/student/fee_payment" class="mt-6 w-full btn-outline">
+            View Fee History →
           </a>
         </div>
       </div>
 
       <div class="lg:col-span-2 space-y-6">
-        <div class="bg-white p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+        <div class="glass-card p-6">
+          <h3 class="text-lg font-unbounded font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg">
             Performance Trend
           </h3>
 
@@ -253,62 +192,66 @@
           </div>
 
           <% if (scoreLabels.length === 0) { %>
-          <p class="text-center text-gray-500 py-4">
+          <p class="text-center text-theme-fdd py-4 italic">
             No test scores available to show a trend.
           </p>
           <% } %>
         </div>
 
-        <div class="bg-white p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
+        <div class="glass-card p-6">
+          <h3 class="text-lg font-unbounded font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg">
             Recent Test Results
           </h3>
-          <div class="divide-y divide-gray-100 max-h-60 overflow-y-auto pr-2">
+          <div class="divide-y divide-theme-bd max-h-60 overflow-y-auto pr-2">
             <% if (recentScores.length > 0) { %> <%
               recentScores.forEach(score => { %>
-            <div class="flex items-center py-2 gap-2">
+            <div class="flex items-center py-3 gap-2 hover:bg-theme-bgc transition-colors rounded-lg px-2 -mx-2">
               <div class="flex flex-col flex-1 min-w-0">
-                <span class="text-sm font-semibold text-brand-purple truncate"><%= score.testName %></span>
-                <span class="text-xs text-gray-500 truncate">
-                  Test Date: <%= new Date(score.testId?.testDate || score.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                <span class="text-base font-semibold text-theme-pt truncate"><%= score.testName %></span>
+                <span class="text-xs font-mono text-theme-fd truncate mt-1">
+                  DATE: <%= new Date(score.testId?.testDate || score.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
                 </span>
               </div>
               <div class="flex flex-col items-end flex-shrink-0">
-                <span class="text-sm font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">Score: <%= score.score %>/<%= score.testId?.totalMarks || '?' %></span>
-                <span class="text-xs text-gray-500"><%= score.percentage %>%</span>
+                <span class="text-sm font-unbounded font-bold <%= score.percentage > 70 ? 'text-theme-lt' : 'text-orange-500' %>">Score: <%= score.score %>/<%= score.testId?.totalMarks || '?' %></span>
+                <span class="text-xs font-mono text-theme-fdd mt-1"><%= score.percentage %>%</span>
               </div>
             </div>
             <% }) %> <% } else { %>
-            <p class="py-2 text-gray-500 text-sm">
+            <p class="py-2 text-theme-fdd text-sm italic">
               No test results recorded yet.
             </p>
             <% } %>
           </div>
-          <a href="/student/test_score" class="mt-6 block w-full text-center py-2 px-4 btn-action text-sm">
-            View All Scores
+          <a href="/student/test_score" class="mt-6 w-full btn-outline">
+            View All Scores →
           </a>
         </div>
 
-        <div class="glass-profile p-8 rounded-2xl">
-          <h3 class="text-xl font-bold mb-6 text-brand-purple border-b border-purple-100 pb-2">
+        <div class="glass-card p-8">
+          <h3 class="text-lg font-unbounded font-bold mb-6 text-theme-pt border-b border-theme-bd pb-2">
             Quick Actions
           </h3>
-          <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <a href="/student/leader_board" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
-              <div class="text-3xl mb-3">🏆</div>
-              <span class="font-bold text-sm text-center">Class Leaderboard</span>
+          <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
+            <a href="/student/leader_board" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md">🏆</div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Rankings</span>
             </a>
-            <a href="/student/content" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
-              <div class="text-3xl mb-3">📚</div>
-              <span class="font-bold text-sm text-center">Study Materials</span>
+            <a href="/student/content" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md">📚</div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Materials</span>
             </a>
-            <a href="/student/take_test" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
-              <div class="text-3xl mb-3">✍️</div>
-              <span class="font-bold text-sm text-center">Class Tests</span>
+            <a href="/student/take_test" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md">✍️</div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Tests</span>
             </a>
-            <a href="/student/timetable" class="action-card flex flex-col items-center p-6 rounded-xl text-brand-purple shadow-sm">
-              <div class="text-3xl mb-3">📅</div>
-              <span class="font-bold text-sm text-center">Exam Timetable</span>
+            <a href="/student/timetable" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md">📅</div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Timetable</span>
+            </a>
+            <a href="/student/report" target="_blank" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md">📄</div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Report</span>
             </a>
           </div>
         </div>
@@ -324,7 +267,8 @@
     const scoreLabels = chartDataObject.labels;
     const scoreData = chartDataObject.data;
 
-    const primaryColor = "#5d3a9b";
+    // Use theme primary color
+    const primaryColor = getComputedStyle(document.documentElement).getPropertyValue('--p').trim() || "#7c3aed";
 
     if (scoreData.length > 0) {
       new Chart(document.getElementById("scoreChart"), {
@@ -335,13 +279,16 @@
             label: "Score Percentage",
             data: scoreData,
             borderColor: primaryColor,
-            backgroundColor: "rgba(93, 58, 155, 0.1)",
+            backgroundColor: "rgba(124, 58, 237, 0.15)",
+            borderWidth: 3,
             tension: 0.4,
             fill: true,
             pointBackgroundColor: primaryColor,
+            pointBorderColor: "#fff",
+            pointBorderWidth: 2,
             pointRadius: 5,
             pointHoverRadius: 8,
-          }, ],
+          }],
         },
         options: {
           responsive: true,
@@ -350,18 +297,26 @@
             legend: {
               display: false,
             },
+            tooltip: {
+              backgroundColor: 'rgba(5, 5, 10, 0.9)',
+              titleFont: { family: 'Space Mono', size: 11 },
+              bodyFont: { family: 'Inter', size: 13, weight: 'bold' },
+              padding: 12,
+              cornerRadius: 8
+            }
           },
           scales: {
             y: {
               beginAtZero: true,
               max: 100,
-              title: {
-                display: true,
-                text: "Percentage (%)",
-              },
               grid: {
-                color: "#f3f4f6",
+                color: "rgba(124, 58, 237, 0.05)",
+                borderDash: [5, 5]
               },
+              ticks: {
+                font: { family: 'Space Mono', size: 10 },
+                color: "rgba(12, 12, 12, 0.6)"
+              }
             },
             x: {
               grid: {
@@ -369,6 +324,8 @@
               },
               ticks: {
                 display: scoreLabels.length > 1,
+                font: { family: 'Space Mono', size: 10 },
+                color: "rgba(12, 12, 12, 0.6)"
               },
             },
           },

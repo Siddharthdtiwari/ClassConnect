@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 
 <head>
   <meta charset="UTF-8" />
@@ -9,61 +9,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  <style>
-    body {
-      font-family: "Inter", sans-serif;
-    }
-
-    .bg-brand-background {
-      background-color: #f3f4f6;
-      background-image: linear-gradient(120deg, #f3e8ff 0%, #eef2f3 100%);
-    }
-
-    .text-brand-purple {
-      color: #5d3a9b;
-    }
-
-    .border-brand-purple {
-      border-color: #5d3a9b;
-    }
-
-    .btn-outline-purple {
-      color: #5d3a9b;
-      border: 1px solid #5d3a9b;
-      font-weight: 600;
-      transition: background-color 0.3s ease, color 0.3s ease,
-        border-color 0.3s ease;
-      border-radius: 0.5rem;
-    }
-
-    .btn-outline-purple:hover {
-      background-color: #bde045;
-      color: #333;
-      border-color: #bde045;
-    }
-    .btn-solid-purple {
-      background-color: #5d3a9b;
-      color: #fff;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      border-radius: 0.5rem;
-      border: 1px solid #5d3a9b;
-      padding: 0.5rem 1rem;
-    }
-
-    .btn-solid-purple:hover {
-      background-color: #4b2d84;
-      border-color: #4b2d84;
-      box-shadow: 0 4px 14px 0 rgba(93, 58, 155, 0.39);
-    }
-  </style>
+  
 </head>
 <%- include('../partials/background') %>
 
-<body class="text-gray-800">
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <header class="mb-8">
-      <a href="/teacher/manage_tests" class="text-brand-purple hover:underline mb-4 block">&larr; Back to Manage Tests</a>
       <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
         Add New Test
       </h1>
@@ -72,21 +30,29 @@
       </p>
     </header>
 
-    <div class="bg-white p-8 rounded-xl shadow-lg max-w-md mx-auto mb-10">
-      <form id="add-test-form" class="space-y-6" action="/teacher/add_test" method="POST" enctype="multipart/form-data">
+    <div class="glass-card p-6 sm:p-8 max-w-md mx-auto mb-10">
+      <form id="add-test-form" class="space-y-6" action="/teacher/add_test?_csrf=<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>" method="POST" enctype="multipart/form-data">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
         <div>
           <label for="test-name" class="block text-sm font-medium text-gray-700">Test Name</label>
           <input type="text" id="test-name" name="testName" placeholder="e.g., Class Test 1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required />
         </div>
 
         <div>
-          <label for="standard" class="block text-sm font-medium text-gray-700">Standard</label>
-          <select id="standard" name="standard" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
-            <option value="">Select Standard</option>
-            <% for(let i=0;i<=10;i++){ %>
-            <option value="<%=i%>">Grade <%= i %></option>
+          <label for="batchId" class="block text-sm font-medium text-gray-700">Batch</label>
+          
+          <select id="batchId" name="batchId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
+            <option value="" disabled selected>Select Batch</option>
+            <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+              <% batches.forEach(batch => { %>
+                <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
+              <% }) %>
+            <% } else { %>
+              <option value="" disabled>No active batches found</option>
             <% } %>
           </select>
+
         </div>
 
         <div>
@@ -213,6 +179,10 @@
       });
     });
   </script>
+      </main>
+    </div>
+  </div>
 </body>
+
 
 </html>

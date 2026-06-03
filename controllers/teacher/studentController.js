@@ -8,12 +8,16 @@ const archiver = require("archiver");
 const PDFDocument = require("pdfkit");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { generateStudentReportPDF, drawStudentReport } = require("../../utils/pdfUtils");
+const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 
 exports.renderManageStudents = async (req, res) => {
   try {
     const students = await User.find({ batch: { $in: req.viewingBatches } })
       .populate('batch')
       .lean();
+
+    students.sort(sortStudentsByBatchAndId);
+
     res.render("teacher/manage_students", { students });
   } catch (err) {
     console.error(err);
@@ -24,6 +28,7 @@ exports.renderManageStudents = async (req, res) => {
 exports.renderAddStudent = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
+    batches.sort(sortBatches);
     res.render("teacher/add_student", { batches });
   } catch (err) {
     console.error(err);
@@ -167,12 +172,11 @@ exports.renderBulkAddStudents = async (req, res) => {
   try {
     const activeBatches = await Batch.find({ academicYear: req.viewingYear }).lean();
     const studentsRaw = await User.find({ batch: { $in: activeBatches.map(b => b._id) } }).populate('batch').lean();
-    const students = studentsRaw.sort((a, b) => {
-      const stdDiff = String(a.batch ? a.batch.name : '').localeCompare(String(b.batch ? b.batch.name : ''), undefined, { numeric: true });
-      if (stdDiff !== 0) return stdDiff;
-      return String(a.studentId).localeCompare(String(b.studentId), undefined, { numeric: true });
-    });
-    res.render("teacher/bulk_add_students", { students, batches: activeBatches });
+
+    activeBatches.sort(sortBatches);
+    studentsRaw.sort(sortStudentsByBatchAndId);
+
+    res.render("teacher/bulk_add_students", { students: studentsRaw, batches: activeBatches });
   } catch (err) {
     console.error("Bulk add students GET error:", err);
     res.status(500).send("Error loading bulk add page");

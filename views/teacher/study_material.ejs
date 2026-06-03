@@ -143,7 +143,15 @@
           if (!grouped[key]) grouped[key] = [];
           grouped[key].push(mat);
         });
-        const sortedStandards = Object.keys(grouped).sort();
+        const getBatchOrderValue = (name) => {
+          if (!name) return 999;
+          const lowerName = name.toLowerCase();
+          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+          const match = lowerName.match(/^(\d+)/);
+          if (match) return parseInt(match[1]);
+          return 100;
+        };
+        const sortedStandards = Object.keys(grouped).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
       %>
 
       <% if (sortedStandards.length === 0) { %>

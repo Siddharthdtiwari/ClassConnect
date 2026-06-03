@@ -1,10 +1,12 @@
 const StudyMaterial = require("../../models/StudyMaterial");
 const Batch = require("../../models/Batch");
 const { uploadToCloudinary } = require("../../utils/upload");
+const { sortBatches } = require("../../utils/sortHelpers");
 
 exports.renderStudyMaterial = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
     const batchIds = batches.map(b => b._id);
     const materials = await StudyMaterial.find({ batch: { $in: batchIds } }).populate('batch').lean();
     

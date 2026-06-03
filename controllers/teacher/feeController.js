@@ -2,6 +2,7 @@ const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Fee = require("../../models/Fee");
 const { getAvailableAcademicYears, calculateCurrentAcademicYear } = require("../../utils/academicYear");
+const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 
 exports.renderDetailedFees = async (req, res) => {
   try {
@@ -9,6 +10,7 @@ exports.renderDetailedFees = async (req, res) => {
       { batch: { $in: req.viewingBatches } },
       "studentId studentName batch monthlyFee"
     ).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
     
     const allFees = await Fee.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
 
@@ -136,6 +138,7 @@ exports.renderManageFees = async (req, res) => {
     const batchIds = batches.map(b => b._id);
     
     const students = await User.find({ batch: { $in: batchIds } }).populate('batch');
+    students.sort(sortStudentsByBatchAndId);
     const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' });
 
     const studentsWithFees = students.map(student => {
@@ -168,6 +171,7 @@ exports.renderFeeDefaulters = async (req, res) => {
     const batchIds = batches.map(b => b._id);
     
     const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
     const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
 
     const allMonths = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
@@ -237,6 +241,7 @@ exports.renderAddFees = async (req, res) => {
     const batches = await Batch.find({ academicYear: req.viewingYear });
     const batchIds = batches.map(b => b._id);
     const users = await User.find({ batch: { $in: batchIds } }).populate('batch');
+    users.sort(sortStudentsByBatchAndId);
     const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
     res.render("teacher/add_fees", { users, months });
   } catch (err) {
@@ -249,7 +254,7 @@ exports.processAddFees = async (req, res) => {
   try {
     const { studentId, standard, amount, month, year, method, datePaid } = req.body;
     const batchId = standard; 
-    const studentObj = await User.findById(studentId);
+    const studentObj = await User.findById(studentId).populate('batch');
     
     if (!studentObj) {
       return res.status(404).json({ success: false, message: "Student not found." });
@@ -260,23 +265,146 @@ exports.processAddFees = async (req, res) => {
       return res.status(400).json({ success: false, message: "Fee already exists for this month." });
     }
     
-    const receiptNo = "REC-" + Date.now();
     const fee = new Fee({ 
       studentId: studentObj.studentId, 
       studentName: studentObj.studentName, 
+      studentEmail: studentObj.email || "",
+      userRef: studentObj._id,
       batch: batchId, 
       amount, 
       month, 
       year, 
       method, 
       datePaid, 
-      receiptNo, 
       status: "Paid" 
     });
-    await fee.save();
+    const savedFee = await fee.save();
+
+    // Send email receipt
+    if (studentObj.email) {
+      const { sendFeeReceipt } = require("../../utils/emailService");
+      sendFeeReceipt(studentObj.email, studentObj.studentName, month, year, amount, {
+        fee: savedFee.toObject(),
+        student: studentObj.toObject ? studentObj.toObject() : studentObj,
+      }).catch(err => console.error("Error sending fee receipt email:", err));
+    }
+
     res.json({ success: true, message: "Fee added successfully" });
   } catch (err) {
     console.error(err);
     res.status(500).json({ success: false, message: "Error adding fee" });
   }
 };
+
+exports.renderBulkFees = async (req, res) => {
+  try {
+    const selectedYearStr = req.query.year || req.viewingYear;
+    const years = getAvailableAcademicYears(5).map(y => parseInt(y.split("-")[0]));
+    const selectedYear = parseInt(selectedYearStr.split("-")[0]);
+
+    const batches = await Batch.find({ academicYear: selectedYearStr });
+    const batchIds = batches.map(b => b._id);
+    
+    const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
+    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
+
+    const months = [
+      "May", "June", "July", "August", "September", "October",
+      "November", "December", "January", "February", "March", "April",
+    ];
+
+    const feeMap = {};
+    students.forEach(student => {
+      feeMap[student.studentId] = {};
+    });
+
+    fees.forEach(fee => {
+      if (feeMap[fee.studentId]) {
+        feeMap[fee.studentId][fee.month] = fee;
+      }
+    });
+
+    const users = students.map(student => ({
+      _id: student._id,
+      studentId: student.studentId,
+      studentName: student.studentName,
+      monthlyFee: student.monthlyFee || 0,
+      standard: student.batch ? student.batch._id : ''
+    }));
+
+    res.render("teacher/bulk_fees", {
+      users,
+      months,
+      feeMap,
+      years,
+      selectedYear
+    });
+  } catch (err) {
+    console.error("Error rendering bulk fees:", err);
+    res.status(500).send("Server Error");
+  }
+};
+
+exports.processBulkSave = async (req, res) => {
+  try {
+    const { updates } = req.body;
+    console.log(`[Bulk Save] Received updates count: ${updates ? updates.length : 0}`);
+    if (!updates || !Array.isArray(updates)) {
+      return res.status(400).json({ success: false, message: "Invalid updates data." });
+    }
+
+    const { sendFeeReceipt } = require("../../utils/emailService");
+
+    for (const update of updates) {
+      const { studentId, standard, amount, month, year, method, datePaid } = update;
+      console.log(`[Bulk Save] Processing update for studentId: ${studentId}, month: ${month}, year: ${year}`);
+      
+      const studentObj = await User.findOne({ studentId, batch: standard }).populate('batch');
+      if (!studentObj) {
+        console.warn(`[Bulk Save] Student not found for studentId: ${studentId}`);
+        continue;
+      }
+
+      let fee = await Fee.findOne({ studentId, month, year, batch: standard });
+      if (!fee) {
+        fee = new Fee({
+          studentId,
+          studentName: studentObj.studentName,
+          studentEmail: studentObj.email || "",
+          userRef: studentObj._id,
+          batch: standard,
+          month,
+          year,
+          amount,
+          method,
+          datePaid,
+          status: "Paid"
+        });
+      } else {
+        fee.amount = amount;
+        fee.method = method;
+        fee.datePaid = datePaid;
+        fee.status = "Paid";
+        fee.studentEmail = studentObj.email || "";
+        fee.userRef = studentObj._id;
+      }
+
+      const savedFee = await fee.save();
+      console.log(`[Bulk Save] Fee saved successfully for studentId: ${studentId}. Email: ${studentObj.email}`);
+
+      if (studentObj.email) {
+        sendFeeReceipt(studentObj.email, studentObj.studentName, month, year, amount, {
+          fee: savedFee.toObject(),
+          student: studentObj.toObject ? studentObj.toObject() : studentObj,
+        }).catch(err => console.error(`[Bulk Save] Error sending email to ${studentObj.email}:`, err));
+      }
+    }
+
+    res.json({ success: true, message: "Bulk fees updated successfully" });
+  } catch (err) {
+    console.error("Error saving bulk fees:", err);
+    res.status(500).json({ success: false, message: "Error saving bulk fees" });
+  }
+};
+

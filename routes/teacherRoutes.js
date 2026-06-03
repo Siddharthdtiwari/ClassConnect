@@ -60,6 +60,8 @@ router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin
 router.post("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.processManageAttendance));
 router.get("/teacher/detailed_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDetailedAttendance));
 router.get("/teacher/defaulters/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDefaulters));
+router.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderBulkAttendance));
+router.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(attendanceController.processBulkSaveAttendance));
 
 // Fee Management
 router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderManageFees));
@@ -68,6 +70,8 @@ router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchA
 router.get("/teacher/detailed_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderDetailedFees));
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
 router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
+router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderBulkFees));
+router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(feeController.processBulkSave));
 
 // Test Management & Scores & Timetable
 router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));

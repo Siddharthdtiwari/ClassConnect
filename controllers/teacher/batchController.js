@@ -1,9 +1,11 @@
 const Batch = require("../../models/Batch");
 const User = require("../../models/User");
+const { sortBatches } = require("../../utils/sortHelpers");
 
 exports.renderManageBatches = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
+    batches.sort(sortBatches);
     
     // Calculate dynamic student count for each batch
     const batchesWithCounts = await Promise.all(

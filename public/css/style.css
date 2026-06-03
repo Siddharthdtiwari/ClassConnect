@@ -256,10 +256,6 @@ a.text-brand-purple:hover, a.text-sm.font-medium:hover {
   border-color: var(--bd) !important;
 }
 
-/* Content containers inside sidebar shell */
-.content-container {
-  padding: 0 !important;
-}
 
 /* ── Calendar Grid ── */
 .calendar-grid {

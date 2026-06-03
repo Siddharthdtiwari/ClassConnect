@@ -78,7 +78,17 @@
         </div>
       </div>
 
-      <% const standards = Object.keys(groupedEntriesByStandard).sort(); %>
+      <%
+        const getBatchOrderValue = (name) => {
+          if (!name) return 999;
+          const lowerName = name.toLowerCase();
+          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+          const match = lowerName.match(/^(\d+)/);
+          if (match) return parseInt(match[1]);
+          return 100;
+        };
+        const standards = Object.keys(groupedEntriesByStandard).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+      %>
       <% if (standards.length === 0) { %>
       <div class="flex flex-col items-center justify-center py-16 text-center">
         <div class="text-5xl mb-4">📋</div>

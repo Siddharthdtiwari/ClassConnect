@@ -41,8 +41,15 @@
     </header>
 
     <% 
-      // Use pre-computed byClass grouping from the backend, sorted alphabetically by batch name
-      const sortedClasses = Object.keys(byClass).sort();
+      const getBatchOrderValue = (name) => {
+        if (!name) return 999;
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+        const match = lowerName.match(/^(\d+)/);
+        if (match) return parseInt(match[1]);
+        return 100;
+      };
+      const sortedClasses = Object.keys(byClass).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
     %>
 
     <div class="glass-card p-6 mb-8">

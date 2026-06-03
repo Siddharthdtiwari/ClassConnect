@@ -55,7 +55,15 @@
         if (!byBatch[batchName]) byBatch[batchName] = [];
         byBatch[batchName].push(s);
       });
-      const sortedBatches = Object.keys(byBatch).sort((a,b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+      const getBatchOrderValue = (name) => {
+        if (!name) return 999;
+        const lowerName = name.toLowerCase();
+        if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+        const match = lowerName.match(/^(\d+)/);
+        if (match) return parseInt(match[1]);
+        return 100;
+      };
+      const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
       
       const totalStudents = students.length;
     %>

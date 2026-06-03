@@ -72,7 +72,15 @@
           if (!byClass[d.standard]) byClass[d.standard] = [];
           byClass[d.standard].push(d);
         });
-        const sortedClasses = Object.keys(byClass).sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+        const getBatchOrderValue = (name) => {
+          if (!name) return 999;
+          const lowerName = name.toLowerCase();
+          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+          const match = lowerName.match(/^(\d+)/);
+          if (match) return parseInt(match[1]);
+          return 100;
+        };
+        const sortedClasses = Object.keys(byClass).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
       %>
 
       <% sortedClasses.forEach(cls => { %>

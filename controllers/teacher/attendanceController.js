@@ -1,12 +1,14 @@
 const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Attendance = require("../../models/Attendance");
+const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 
 exports.renderManageAttendance = async (req, res) => {
   try {
     const students = await User.find({ batch: { $in: req.viewingBatches } })
       .populate('batch')
       .lean();
+    students.sort(sortStudentsByBatchAndId);
     const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
 
     const attendanceMap = {};
@@ -62,6 +64,7 @@ exports.processManageAttendance = async (req, res) => {
 exports.renderDetailedAttendance = async (req, res) => {
   try {
     const students = await User.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
     const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
 
     const detailedReport = {};
@@ -168,5 +171,114 @@ exports.renderDefaulters = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error generating defaulter list");
+  }
+};
+
+exports.renderBulkAttendance = async (req, res) => {
+  try {
+    const today = new Date();
+    const selectedMonth = req.query.month ? parseInt(req.query.month) : today.getMonth() + 1;
+    const selectedYear = req.query.year ? parseInt(req.query.year) : today.getFullYear();
+
+    const { getAvailableAcademicYears } = require("../../utils/academicYear");
+    const years = getAvailableAcademicYears(5).map(y => parseInt(y.split("-")[0]));
+
+    const students = await User.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
+
+    const numDays = new Date(selectedYear, selectedMonth, 0).getDate();
+    const daysArray = [];
+    for (let d = 1; d <= numDays; d++) {
+      const dateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
+      daysArray.push(dateStr);
+    }
+
+    const startDateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-01`;
+    const endDateStr = `${selectedYear}-${String(selectedMonth).padStart(2, '0')}-${String(numDays).padStart(2, '0')}`;
+
+    const attendanceRecords = await Attendance.find({
+      batch: { $in: req.viewingBatches },
+      date: {
+        $gte: new Date(startDateStr),
+        $lte: new Date(endDateStr)
+      }
+    }).lean();
+
+    const attendanceMap = {};
+    daysArray.forEach(date => {
+      attendanceMap[date] = {};
+    });
+
+    attendanceRecords.forEach(record => {
+      const dateStr = record.date.toISOString().split('T')[0];
+      if (attendanceMap[dateStr]) {
+        (record.records || []).forEach(r => {
+          attendanceMap[dateStr][r.studentId] = r.status;
+        });
+      }
+    });
+
+    res.render("teacher/bulk_attendance", {
+      students,
+      daysArray,
+      attendanceMap,
+      selectedMonth,
+      selectedYear,
+      years
+    });
+  } catch (err) {
+    console.error("Error rendering bulk attendance:", err);
+    res.status(500).send("Error rendering bulk attendance");
+  }
+};
+
+exports.processBulkSaveAttendance = async (req, res) => {
+  try {
+    const { attendanceData } = req.body;
+    if (!attendanceData) {
+      return res.status(400).json({ success: false, message: "Missing attendance data" });
+    }
+
+    for (const [dateStr, records] of Object.entries(attendanceData)) {
+      const recordsByBatch = {};
+
+      for (const r of records) {
+        const student = await User.findOne({ studentId: r.studentId });
+        if (student && student.batch) {
+          const batchId = student.batch.toString();
+          if (!recordsByBatch[batchId]) {
+            recordsByBatch[batchId] = [];
+          }
+          recordsByBatch[batchId].push({
+            studentId: r.studentId,
+            userRef: student._id,
+            status: r.status
+          });
+        }
+      }
+
+      for (const [batchId, batchRecords] of Object.entries(recordsByBatch)) {
+        let attendance = await Attendance.findOne({
+          date: new Date(dateStr),
+          batch: batchId
+        });
+
+        if (attendance) {
+          attendance.records = batchRecords;
+        } else {
+          attendance = new Attendance({
+            batch: batchId,
+            date: new Date(dateStr),
+            records: batchRecords
+          });
+        }
+        await attendance.save();
+      }
+    }
+
+    res.json({ success: true, message: "Attendance saved successfully" });
+  } catch (err) {
+    console.error("Error saving bulk attendance:", err);
+    res.status(500).json({ success: false, message: "Failed to save attendance" });
   }
 };

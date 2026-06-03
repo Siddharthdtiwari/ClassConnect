@@ -4,10 +4,12 @@ const Score = require("../../models/Score");
 const User = require("../../models/User");
 const ExamTimetable = require("../../models/ExamTimetable");
 const mongoose = require("mongoose");
+const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 
 exports.renderManageTests = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
     const batchIds = batches.map(b => b._id);
     const tests = await Test.find({ batch: { $in: batchIds } }).populate('batch').sort({ testDate: -1 });
 
@@ -29,6 +31,7 @@ exports.renderManageTests = async (req, res) => {
 exports.renderAddTest = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear, isActive: true });
+    batches.sort(sortBatches);
     res.render("teacher/add_test", { batches });
   } catch (err) {
     console.error("Add test error:", err);
@@ -50,6 +53,7 @@ exports.processDeleteTest = async (req, res) => {
 exports.renderManageScore = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
     res.render("teacher/manage_score", { batches });
   } catch (err) {
     console.error("Manage score error:", err);
@@ -70,7 +74,8 @@ exports.apiGetTests = async (req, res) => {
 exports.apiGetScores = async (req, res) => {
   try {
     const { batchId, testId } = req.params;
-    const students = await User.find({ batch: batchId }).sort({ studentName: 1 });
+    const students = await User.find({ batch: batchId }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
     const existingScores = await Score.find({ testId, batch: batchId });
 
     const scoreMap = {};
@@ -141,11 +146,13 @@ exports.apiSaveScores = async (req, res) => {
 exports.apiConsolidatedScores = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
     const responseData = {};
 
     for (const batch of batches) {
       const tests = await Test.find({ batch: batch._id }).sort({ testDate: 1 });
-      const students = await User.find({ batch: batch._id }).sort({ studentName: 1 });
+      const students = await User.find({ batch: batch._id }).populate('batch').lean();
+      students.sort(sortStudentsByBatchAndId);
 
       if (tests.length === 0 || students.length === 0) continue;
 
@@ -191,6 +198,7 @@ exports.apiConsolidatedScores = async (req, res) => {
 exports.renderTimetable = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
     const batchIds = batches.map(b => b._id);
     
     let filterBatchIds = batchIds;

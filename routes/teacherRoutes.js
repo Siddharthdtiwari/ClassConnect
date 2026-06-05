@@ -70,6 +70,7 @@ router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchA
 router.get("/teacher/detailed_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderDetailedFees));
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
 router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
+router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));
 router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderBulkFees));
 router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(feeController.processBulkSave));
 

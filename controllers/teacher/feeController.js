@@ -2,8 +2,7 @@ const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Fee = require("../../models/Fee");
 const { getAvailableAcademicYears, calculateCurrentAcademicYear } = require("../../utils/academicYear");
-const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
-
+const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
 exports.renderDetailedFees = async (req, res) => {
   try {
     const students = await User.find(
@@ -233,6 +232,100 @@ exports.renderFeeDefaulters = async (req, res) => {
   } catch (err) {
     console.error("Fee defaulters error:", err);
     res.status(500).send("Server Error");
+  }
+};
+
+exports.downloadFeeDefaulters = async (req, res) => {
+  try {
+    const selectedYearStr = req.query.year || req.viewingYear;
+    const filterType = req.query.type; // 'batch', 'month', 'allBatches', 'allMonths'
+    const filterValue = req.query.value;
+    const reportTitle = req.query.title || "FEE DEFAULTERS REPORT";
+
+    const batches = await Batch.find({ academicYear: selectedYearStr });
+    const batchIds = batches.map(b => b._id);
+    
+    const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
+    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
+
+    const allMonths = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+    
+    let elapsedMonths = [...allMonths];
+    const today = new Date();
+    const currentAcademicYear = calculateCurrentAcademicYear();
+    
+    if (selectedYearStr === currentAcademicYear) {
+      const currentMonth = today.getMonth();
+      const monthMap = { 5:0, 6:1, 7:2, 8:3, 9:4, 10:5, 11:6, 0:7, 1:8, 2:9, 3:10, 4:11 };
+      const elapsedIndex = monthMap[currentMonth] !== undefined ? monthMap[currentMonth] : 11;
+      elapsedMonths = allMonths.slice(0, elapsedIndex + 1);
+    }
+
+    let defaulters = [];
+    let monthData = {};
+    allMonths.forEach(m => { monthData[m] = []; });
+
+    students.forEach(student => {
+      const studentFees = fees.filter(f => f.studentId === student.studentId);
+      const paidMonths = studentFees.map(f => f.month);
+      const unpaidMonths = elapsedMonths.filter(m => !paidMonths.includes(m));
+
+      if (unpaidMonths.length > 0) {
+        const monthlyFee = student.monthlyFee || 0;
+        const balance = unpaidMonths.length * monthlyFee;
+
+        const defaulter = {
+          studentId: student.studentId,
+          studentName: student.studentName,
+          mobileNo: student.mobileNo,
+          standard: student.batch ? student.batch.name : 'Unknown',
+          unpaidMonths,
+          balance
+        };
+        defaulters.push(defaulter);
+
+        unpaidMonths.forEach(m => {
+          monthData[m].push({
+            standard: student.batch ? student.batch.name : 'Unknown',
+            studentId: student.studentId,
+            studentName: student.studentName,
+            balance: monthlyFee
+          });
+        });
+      }
+    });
+
+    // Apply filtering based on requested PDF type
+    if (filterType === 'batch') {
+      defaulters = defaulters.filter(d => d.standard === filterValue);
+      monthData = {};
+      elapsedMonths = [];
+    } else if (filterType === 'allBatches') {
+      monthData = {};
+      elapsedMonths = [];
+    } else if (filterType === 'month') {
+      defaulters = [];
+      const tempMonthData = {};
+      tempMonthData[filterValue] = monthData[filterValue] || [];
+      monthData = tempMonthData;
+      elapsedMonths = [filterValue];
+    } else if (filterType === 'allMonths') {
+      defaulters = [];
+      // keep full monthData
+    }
+
+    await generateFeeDefaultersPDF({
+      defaulters,
+      monthData,
+      effectiveMonths: elapsedMonths,
+      selectedYearStr,
+      reportTitle
+    }, res, "attachment");
+
+  } catch (err) {
+    console.error("Fee defaulters download error:", err);
+    res.status(500).send("Error generating PDF");
   }
 };
 

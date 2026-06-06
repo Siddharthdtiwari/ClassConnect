@@ -5,6 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Exam Timetable | Tuition Hub</title>
+  <script src="/js/subjects.js"></script>
   <style>
     .premium-banner {
       background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
@@ -282,15 +283,7 @@
            <div>
              <label for="edit-subject">Subject</label>
              <select id="edit-subject" name="subject" class="w-full" required>
-               <option value="English">English</option>
-               <option value="Maths I">Maths I</option>
-               <option value="Maths II">Maths II</option>
-               <option value="Science I">Science I</option>
-               <option value="Science II">Science II</option>
-               <option value="History-Civics">History-Civics</option>
-               <option value="Geography">Geography</option>
-               <option value="Hindi">Hindi</option>
-               <option value="Marathi">Marathi</option>
+               <option value="" disabled selected>Select Subject...</option>
              </select>
            </div>
            <div>
@@ -308,6 +301,8 @@
   </div>
 
   <script>
+    const studentBatchName = "<%= student.batch ? student.batch.name : '' %>";
+
     function openAddModal() {
       document.getElementById('subject-rows').innerHTML = '';
       // reset pills
@@ -326,19 +321,13 @@
       const num = rows.children.length + 1;
       const div = document.createElement('div');
       div.className = 'subject-row-premium';
+      
+      const subjectOptions = typeof getSubjectOptionsHtml !== 'undefined' ? getSubjectOptionsHtml(studentBatchName) : '<option value="" disabled selected>Select Subject...</option>';
+
       div.innerHTML = `
         <span class="row-num">${num}</span>
         <select name="subjects[]" required class="srow-input cursor-pointer">
-          <option value="" disabled selected>Select Subject...</option>
-          <option value="English">English</option>
-          <option value="Maths I">Maths I</option>
-          <option value="Maths II">Maths II</option>
-          <option value="Science I">Science I</option>
-          <option value="Science II">Science II</option>
-          <option value="History-Civics">History-Civics</option>
-          <option value="Geography">Geography</option>
-          <option value="Hindi">Hindi</option>
-          <option value="Marathi">Marathi</option>
+          ${subjectOptions}
         </select>
         <input name="dates[]" type="date" required class="srow-input" />
         <input name="chapters[]" type="text" placeholder="Ch. 1, 2…" class="srow-input" />
@@ -365,7 +354,13 @@
       const form = document.getElementById('edit-form');
       form.action = '/student/timetable/edit/' + btn.dataset.id;
       document.getElementById('edit-examType').value = btn.dataset.examtype;
-      document.getElementById('edit-subject').value = btn.dataset.subject;
+      
+      const subjectDropdown = document.getElementById('edit-subject');
+      if (typeof updateSubjectDropdowns !== 'undefined') {
+        updateSubjectDropdowns([subjectDropdown], studentBatchName);
+      }
+      subjectDropdown.value = btn.dataset.subject;
+      
       document.getElementById('edit-examDate').value = btn.dataset.date;
       document.getElementById('edit-chapters').value = btn.dataset.chapters;
       document.getElementById('edit-modal').classList.add('open');

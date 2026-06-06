@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+  <script src="/js/subjects.js"></script>
 </head>
 
 <%- include('../partials/background') %>
@@ -48,7 +48,7 @@
           <div>
             <label for="batchId" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Batch</label>
             
-            <select id="batchId" name="batchId" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none" required>
+            <select id="batchId" name="batchId" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none" required onchange="handleBatchChange(this)">
               <option value="" disabled selected>Select Batch</option>
               <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
                 <% batches.forEach(batch => { %>
@@ -65,15 +65,6 @@
             <label for="subject-select" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Subject</label>
             <select id="subject-select" name="subject" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none">
               <option value="">-- Choose a Subject --</option>
-              <option value="English">English</option>
-              <option value="Maths I">Maths I</option>
-              <option value="Maths II">Maths II</option>
-              <option value="Science I">Science I</option>
-              <option value="Science II">Science II</option>
-              <option value="History-Civics">History-Civics</option>
-              <option value="Geography">Geography</option>
-              <option value="Hindi">Hindi</option>
-              <option value="Marathi">Marathi</option>
             </select>
           </div>
 
@@ -217,6 +208,7 @@
                     data-action="edit"
                     data-id="<%= mat._id %>"
                     data-standard="<%= mat.batch ? mat.batch._id : '' %>"
+                    data-batchname="<%= std %>"
                     data-subject="<%= mat.subject %>"
                     data-type="<%= mat.materialType %>"
                     data-description="<%= mat.description || '' %>"
@@ -240,6 +232,15 @@
   </div>
 
   <script>
+    function handleBatchChange(selectEl) {
+      const option = selectEl.options[selectEl.selectedIndex];
+      const batchName = option ? option.text : '';
+      const subjectDropdown = document.getElementById('subject-select');
+      if (typeof updateSubjectDropdowns !== 'undefined') {
+        updateSubjectDropdowns([subjectDropdown], batchName);
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       const uploadForm = document.getElementById("upload-form");
       const messageBox = document.getElementById("message-box");
@@ -312,10 +313,16 @@
       });
     });
 
-    function editMaterial(id, standard, subject, type, description, existingLink) {
+    function editMaterial(id, standard, batchName, subject, type, description, existingLink) {
       document.getElementById("edit-id").value = id;
       document.getElementById("batchId").value = standard;
-      document.getElementById("subject-select").value = subject;
+      
+      const subjectDropdown = document.getElementById('subject-select');
+      if (typeof updateSubjectDropdowns !== 'undefined') {
+        updateSubjectDropdowns([subjectDropdown], batchName);
+      }
+      subjectDropdown.value = subject;
+      
       document.getElementById("material-type").value = type;
       document.getElementById("material-description").value = description;
       
@@ -338,6 +345,7 @@
         editMaterial(
           editBtn.dataset.id,
           editBtn.dataset.standard,
+          editBtn.dataset.batchname,
           editBtn.dataset.subject,
           editBtn.dataset.type,
           editBtn.dataset.description,

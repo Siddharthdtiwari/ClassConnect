@@ -9,7 +9,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+  <script src="/js/subjects.js"></script>
 </head>
 <%- include('../partials/background') %>
 
@@ -42,7 +42,7 @@
         <div>
           <label for="batchId" class="block text-sm font-medium text-gray-700">Batch</label>
           
-          <select id="batchId" name="batchId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
+          <select id="batchId" name="batchId" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required onchange="handleBatchChange(this)">
             <option value="" disabled selected>Select Batch</option>
             <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
               <% batches.forEach(batch => { %>
@@ -58,16 +58,7 @@
         <div>
           <label for="subject" class="block text-sm font-medium text-gray-700">Subject</label>
           <select id="subject" name="subject" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50" required>
-            <option value="">Select Subject</option>
-            <option value="English">English</option>
-            <option value="Maths I">Maths I</option>
-            <option value="Maths II">Maths II</option>
-            <option value="Science I">Science I</option>
-            <option value="Science II">Science II</option>
-            <option value="History-Civics">History-Civics</option>
-            <option value="Geography">Geography</option>
-            <option value="Hindi">Hindi</option>
-            <option value="Marathi">Marathi</option>
+            <option value="" disabled selected>Select Subject...</option>
           </select>
         </div>
 
@@ -115,6 +106,15 @@
   </div>
 
   <script>
+    function handleBatchChange(selectEl) {
+      const option = selectEl.options[selectEl.selectedIndex];
+      const batchName = option ? option.text : '';
+      const subjectDropdown = document.getElementById('subject');
+      if (typeof updateSubjectDropdowns !== 'undefined') {
+        updateSubjectDropdowns([subjectDropdown], batchName);
+      }
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
       const addTestForm = document.getElementById("add-test-form");
       const messageBox = document.getElementById("message-box");

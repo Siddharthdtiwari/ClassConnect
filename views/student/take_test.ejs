@@ -56,6 +56,7 @@
     }
   </style>
 </head>
+<script src="/js/subjects.js"></script>
 
 <body class="text-theme-fg wrap">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
@@ -81,17 +82,8 @@
       <!-- Subject Filter Pills -->
       <div class="mb-10">
         <p class="text-xs font-mono font-bold uppercase tracking-widest text-theme-fdd mb-4 border-b border-theme-bd pb-2">Filter by Subject</p>
-        <div class="flex flex-wrap gap-3">
-          <a href="/student/take_test?subject=overall" class="tab-pill <%= subject === 'overall' ? 'active' : '' %>">📋 Overall</a>
-          <a href="/student/take_test?subject=English" class="tab-pill <%= subject === 'English' ? 'active' : '' %>">🇬🇧 English</a>
-          <a href="/student/take_test?subject=Maths I" class="tab-pill <%= subject === 'Maths I' ? 'active' : '' %>">🔢 Maths I</a>
-          <a href="/student/take_test?subject=Maths II" class="tab-pill <%= subject === 'Maths II' ? 'active' : '' %>">🔢 Maths II</a>
-          <a href="/student/take_test?subject=Science I" class="tab-pill <%= subject === 'Science I' ? 'active' : '' %>">🔬 Science I</a>
-          <a href="/student/take_test?subject=Science II" class="tab-pill <%= subject === 'Science II' ? 'active' : '' %>">⚗️ Science II</a>
-          <a href="/student/take_test?subject=History-Civics" class="tab-pill <%= subject === 'History-Civics' ? 'active' : '' %>">📜 History-Civics</a>
-          <a href="/student/take_test?subject=Geography" class="tab-pill <%= subject === 'Geography' ? 'active' : '' %>">🌍 Geography</a>
-          <a href="/student/take_test?subject=Hindi" class="tab-pill <%= subject === 'Hindi' ? 'active' : '' %>">🇮🇳 Hindi</a>
-          <a href="/student/take_test?subject=Marathi" class="tab-pill <%= subject === 'Marathi' ? 'active' : '' %>">📚 Marathi</a>
+        <div class="flex flex-wrap gap-3" id="subject-filters">
+           <!-- Dynamic Pills Injected Here -->
         </div>
       </div>
 
@@ -140,6 +132,25 @@
       </div>
     </div>
   </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const studentBatchName = "<%= studentStandard %>";
+      const currentSubject = "<%= subject %>";
+      const filtersDiv = document.getElementById("subject-filters");
+      
+      const subjects = typeof getSubjectsForBatch !== 'undefined' ? getSubjectsForBatch(studentBatchName) : [];
+      
+      let html = `<a href="/student/take_test?subject=overall" class="tab-pill ${currentSubject === 'overall' ? 'active' : ''}">📋 Overall</a>`;
+      
+      subjects.forEach(sub => {
+        const isActive = currentSubject === sub ? 'active' : '';
+        html += `<a href="/student/take_test?subject=${encodeURIComponent(sub)}" class="tab-pill ${isActive}">📚 ${sub}</a>`;
+      });
+      
+      filtersDiv.innerHTML = html;
+    });
+  </script>
 </body>
 
 </html>

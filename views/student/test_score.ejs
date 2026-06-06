@@ -104,6 +104,7 @@
     .qp-btn:hover { background: var(--p); color: white; border-color: var(--p); transform: translateY(-1px); box-shadow: 0 2px 8px var(--pg); }
   </style>
 </head>
+<script src="/js/subjects.js"></script>
 
 <body class="text-theme-fg wrap">
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
@@ -131,16 +132,7 @@
       <div class="mb-10">
         <p class="text-xs font-mono font-bold uppercase tracking-widest text-theme-fdd mb-4 border-b border-theme-bd pb-2">Filter by Subject</p>
         <div id="subject-tabs" class="flex flex-wrap gap-3">
-          <button class="tab-pill active" data-subject="overall">📋 Overall</button>
-          <button class="tab-pill" data-subject="English">🇬🇧 English</button>
-          <button class="tab-pill" data-subject="Maths I">🔢 Maths I</button>
-          <button class="tab-pill" data-subject="Maths II">🔢 Maths II</button>
-          <button class="tab-pill" data-subject="Science I">🔬 Science I</button>
-          <button class="tab-pill" data-subject="Science II">⚗️ Science II</button>
-          <button class="tab-pill" data-subject="History-Civics">📜 History-Civics</button>
-          <button class="tab-pill" data-subject="Geography">🌍 Geography</button>
-          <button class="tab-pill" data-subject="Hindi">🇮🇳 Hindi</button>
-          <button class="tab-pill" data-subject="Marathi">📚 Marathi</button>
+          <!-- Dynamic Pills Injected Here -->
         </div>
       </div>
 
@@ -158,6 +150,14 @@
       const tabs = document.getElementById("subject-tabs");
       const scoresArea = document.getElementById("scores-area");
       const scoresData = JSON.parse(document.getElementById("scores-data").dataset.scores);
+      const studentBatchName = "<%= student.batch ? student.batch.name : '' %>";
+      
+      const subjects = typeof getSubjectsForBatch !== 'undefined' ? getSubjectsForBatch(studentBatchName) : [];
+      let tabsHtml = `<button class="tab-pill active" data-subject="overall">📋 Overall</button>`;
+      subjects.forEach(sub => {
+        tabsHtml += `<button class="tab-pill" data-subject="${sub}">📚 ${sub}</button>`;
+      });
+      tabs.innerHTML = tabsHtml;
 
       function getColor(percent) {
         if (percent >= 80) return "progress-bar-good";

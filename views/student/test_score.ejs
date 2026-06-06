@@ -150,7 +150,7 @@
       const tabs = document.getElementById("subject-tabs");
       const scoresArea = document.getElementById("scores-area");
       const scoresData = JSON.parse(document.getElementById("scores-data").dataset.scores);
-      const studentBatchName = "<%= student.batch ? student.batch.name : '' %>";
+      const studentBatchName = "<%= typeof studentBatchName !== 'undefined' ? studentBatchName : '' %>";
       
       const subjects = typeof getSubjectsForBatch !== 'undefined' ? getSubjectsForBatch(studentBatchName) : [];
       let tabsHtml = `<button class="tab-pill active" data-subject="overall">📋 Overall</button>`;

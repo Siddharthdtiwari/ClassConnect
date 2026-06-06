@@ -22,7 +22,8 @@ exports.renderTestScore = async (req, res) => {
         questionPaper: score.testId?.questionPaper || "",
       });
     });
-    res.render("student/test_score", { scoresBySubject });
+    const studentBatchName = req.user.batch ? req.user.batch.name : 'Unknown';
+    res.render("student/test_score", { scoresBySubject, studentBatchName });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error fetching scores");

@@ -6,137 +6,512 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Bulk Fee Entry (<%= selectedYear %>)</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
   
+  <style>
+    /* Compact, High-Density Premium Theme */
+    .bulk-header-bg {
+      background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%);
+      border: 1px solid var(--bd);
+      position: relative;
+      overflow: hidden;
+    }
+    .bulk-header-bg::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 50%);
+      animation: rotateBg 30s linear infinite;
+      z-index: 0;
+      pointer-events: none;
+    }
+    @keyframes rotateBg {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+    
+    .glass-table-wrapper {
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      overflow: hidden;
+      position: relative;
+      scrollbar-width: thin;
+      scrollbar-color: var(--p) transparent;
+    }
+    
+    .glass-table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+    .glass-table-wrapper::-webkit-scrollbar-track { background: transparent; }
+    .glass-table-wrapper::-webkit-scrollbar-thumb { background-color: rgba(124,58,237,0.3); border-radius: 20px; }
+
+    .premium-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .premium-table th {
+      background: var(--bgc);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 10px 12px;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+      color: var(--fd);
+      border-bottom: 2px solid var(--bd);
+      font-weight: 700;
+      white-space: nowrap;
+    }
+    
+    .premium-table td {
+      padding: 4px 6px;
+      border-bottom: 1px solid var(--bd);
+      transition: background 0.2s ease;
+      vertical-align: middle;
+    }
+    .premium-table tbody tr { transition: all 0.2s ease; }
+    .premium-table tbody tr:hover td { background: var(--bgch); }
+    
+    .sticky-col-left {
+      position: sticky;
+      left: 0;
+      background: var(--bgc);
+      z-index: 15;
+      border-right: 2px solid var(--bd);
+      box-shadow: 2px 0 10px rgba(0,0,0,0.02);
+    }
+    .premium-table th.sticky-col-left { z-index: 25; }
+
+    /* HIGH DENSITY CELLS */
+    .student-cell {
+      display: flex;
+      flex-direction: column;
+      padding: 4px 8px;
+      min-width: 180px;
+      max-width: 220px;
+    }
+    .student-name {
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 0.75rem;
+      color: var(--fg);
+      margin-bottom: 2px;
+      line-height: 1.2;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .student-id {
+      font-size: 0.6rem;
+      color: var(--pt);
+      background: rgba(124,58,237,0.1);
+      padding: 1px 6px;
+      border-radius: 12px;
+      display: inline-block;
+      width: max-content;
+      font-weight: 700;
+      border: 1px solid rgba(124,58,237,0.2);
+    }
+
+    .fee-cell-wrapper {
+      background: var(--bg);
+      border: 1px solid transparent;
+      border-radius: 8px;
+      padding: 4px;
+      transition: all 0.2s ease;
+      min-width: 140px;
+      position: relative;
+    }
+    .fee-cell-wrapper:hover, .fee-cell-wrapper:focus-within {
+      border-color: var(--p);
+      box-shadow: 0 4px 12px rgba(124,58,237,0.1);
+      background: var(--bgc);
+      z-index: 10;
+    }
+
+    .amount-input-wrapper {
+      position: relative;
+      margin-bottom: 3px;
+    }
+    .currency-symbol {
+      position: absolute;
+      left: 8px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--pt);
+      font-weight: 800;
+      font-size: 0.75rem;
+      opacity: 0.7;
+    }
+    .amount-input {
+      width: 100%;
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 6px;
+      padding: 4px 6px 4px 22px;
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: var(--fg);
+      outline: none;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .amount-input:focus {
+      border-color: var(--p);
+      box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+    }
+    .amount-input::placeholder { color: var(--fdd); opacity: 0.5; }
+
+    .meta-inputs {
+      display: flex;
+      gap: 4px;
+      opacity: 0.4;
+      transition: all 0.2s ease;
+    }
+    .fee-cell-wrapper:hover .meta-inputs, 
+    .fee-cell-wrapper:focus-within .meta-inputs,
+    .paid-existing .meta-inputs {
+      opacity: 1;
+    }
+    
+    .meta-select, .meta-date {
+      background: var(--bg);
+      border: 1px solid var(--bd);
+      border-radius: 4px;
+      font-size: 0.6rem;
+      padding: 2px 4px;
+      color: var(--fd);
+      outline: none;
+      transition: all 0.2s;
+      font-family: 'Inter', sans-serif;
+    }
+    .meta-select { width: 35%; font-weight: 700; text-transform: uppercase; cursor: pointer; }
+    .meta-date { width: 65%; cursor: pointer; }
+    .meta-select:focus, .meta-date:focus {
+      border-color: var(--p);
+      color: var(--fg);
+      background: var(--bgc);
+    }
+
+    /* Status Colors */
+    .paid-existing .fee-cell-wrapper {
+      background: linear-gradient(180deg, rgba(52,211,153,0.05) 0%, rgba(52,211,153,0.01) 100%);
+      border: 1px solid rgba(52,211,153,0.2);
+    }
+    .paid-existing .amount-input {
+      color: #059669;
+      border-color: rgba(52,211,153,0.3);
+      background: rgba(52,211,153,0.05);
+    }
+    .paid-existing .currency-symbol { color: #10b981; opacity: 1; }
+    .paid-existing .meta-select, .paid-existing .meta-date {
+      background: rgba(52,211,153,0.05);
+      border-color: rgba(52,211,153,0.2);
+      color: #059669;
+    }
+    
+    .changed-cell .fee-cell-wrapper {
+      border-color: #f59e0b;
+      background: rgba(245,158,11,0.05);
+      animation: pulseBorder 2s infinite;
+    }
+    @keyframes pulseBorder {
+      0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.2); }
+      70% { box-shadow: 0 0 0 4px rgba(245,158,11,0); }
+      100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+    }
+
+    .saved-cell .fee-cell-wrapper { animation: flashSuccess 1s ease-out; }
+    @keyframes flashSuccess {
+      0% { background: #10b981; }
+      100% { background: rgba(52,211,153,0.05); }
+    }
+
+    /* Floating Save Bar */
+    .floating-save-bar {
+      position: fixed;
+      bottom: -100px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(20, 20, 25, 0.95);
+      backdrop-filter: blur(16px);
+      -webkit-backdrop-filter: blur(16px);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 12px 20px;
+      border-radius: 100px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 0 1px rgba(124,58,237,0.2);
+      display: flex;
+      align-items: center;
+      gap: 20px;
+      z-index: 100;
+      transition: bottom 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    }
+    .floating-save-bar.visible { bottom: 32px; }
+    
+    .unsaved-count {
+      background: #f59e0b;
+      color: #fff;
+      font-weight: 800;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+      padding: 4px 10px;
+      border-radius: 20px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-save-glow {
+      background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
+      color: white;
+      border: none;
+      padding: 8px 24px;
+      border-radius: 100px;
+      font-family: 'Unbounded', sans-serif;
+      font-weight: 700;
+      font-size: 0.8rem;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+      transition: all 0.2s;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .btn-save-glow:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(124,58,237,0.5);
+    }
+    
+    .ctrl-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--fd);
+      margin-bottom: 4px;
+      display: block;
+      font-weight: 700;
+    }
+    
+    .ctrl-input {
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 8px;
+      padding: 6px 12px;
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--fg);
+      outline: none;
+      transition: all 0.2s;
+      cursor: pointer;
+    }
+    .ctrl-input:focus, .ctrl-input:hover {
+      border-color: var(--p);
+    }
+
+    /* MOBILE OPTIMIZATIONS */
+    @media (max-width: 768px) {
+      .student-cell {
+        min-width: 110px;
+        max-width: 130px;
+        padding: 4px;
+      }
+      .student-name {
+        font-size: 0.65rem;
+      }
+      .student-id {
+        display: none; /* Hide ID on mobile to save space */
+      }
+      .fee-cell-wrapper {
+        min-width: 110px;
+        padding: 2px;
+      }
+      .amount-input {
+        padding: 2px 4px 2px 16px;
+        font-size: 0.75rem;
+      }
+      .currency-symbol {
+        font-size: 0.65rem;
+        left: 4px;
+      }
+      .premium-table th {
+        padding: 6px;
+        font-size: 0.6rem;
+      }
+      .premium-table td {
+        padding: 2px;
+      }
+      .glass-table-wrapper {
+        border-radius: 8px;
+      }
+      .bulk-header-bg {
+        padding: 16px;
+      }
+      .ctrl-input {
+        font-size: 0.7rem;
+        padding: 4px 8px;
+      }
+    }
+  </style>
 </head>
 
 <%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
     <%- include('../partials/teacher_sidebar') %>
     
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
-      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 100px;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-    <header class="mb-8 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Bulk Fee Entry</h1>
-        <p class="text-gray-600 mt-1 text-sm">Managing Session: <span class="font-bold text-brand-purple"><%= selectedYear %> - <%= selectedYear + 1 %></span></p>
-      </div>
+          <!-- COMPACT JAW DROPPING HEADER -->
+          <header class="bulk-header-bg p-6 rounded-2xl mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-sm border border-gray-200/50 backdrop-blur-xl">
+            <div class="relative z-10 flex items-center gap-4">
+              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#ec4899] flex items-center justify-center shadow-lg transform -rotate-3">
+                <svg class="w-6 h-6 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+              </div>
+              <div>
+                <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-[#ec4899]" style="font-family: 'Unbounded', sans-serif;">Bulk Fee Entry</h1>
+              </div>
+            </div>
 
-      <div class="glass-card p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-4 items-end w-full lg:w-auto">
+            <div class="relative z-10 flex flex-wrap gap-4 items-end bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/50 shadow-sm w-full lg:w-auto">
+              
+              <div class="flex flex-col flex-1 sm:flex-none">
+                <label class="ctrl-label">Default Date</label>
+                <input type="date" id="global-date" class="ctrl-input py-1.5 px-2" value="<%= new Date().toISOString().split('T')[0] %>">
+              </div>
 
-        <div class="flex flex-col w-full sm:w-auto">
-          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Academic Session</label>
-          <select id="year-select" class="text-sm border-2 border-brand-purple bg-purple-50 text-brand-purple font-bold rounded-lg p-2 focus:outline-none shadow-sm cursor-pointer">
-            <% years.forEach(y => { %>
-            <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>>
-              <%= y %> - <%= y + 1 %>
-            </option>
-            <% }) %>
-          </select>
+              <div class="flex flex-col flex-1 sm:flex-none">
+                <label class="ctrl-label">Default Method</label>
+                <select id="global-method" class="ctrl-input py-1.5 px-2">
+                  <option value="Cash">💵 Cash</option>
+                  <option value="UPI" selected>📱 UPI</option>
+                  <option value="Razorpay">🌐 Net/Razorpay</option>
+                </select>
+              </div>
+
+            </div>
+          </header>
+
+          <!-- COMPACT PREMIUM GLASS TABLE -->
+          <div class="glass-table-wrapper">
+            <div class="overflow-x-auto" style="max-height: 70vh;">
+              <table class="premium-table min-w-max">
+                <thead>
+                  <tr>
+                    <th class="sticky-col-left">
+                      <div class="flex items-center gap-2">
+                        <svg class="w-3.5 h-3.5 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        Student Roster
+                      </div>
+                    </th>
+                    <% months.forEach(month => { %>
+                    <th>
+                      <div class="flex items-center justify-center gap-1">
+                        <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <%= month %>
+                      </div>
+                    </th>
+                    <% }) %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% users.forEach((user, index) => { %>
+                  <tr>
+                    <td class="sticky-col-left bg-white/50 backdrop-blur-sm">
+                      <div class="student-cell">
+                        <div class="student-name" title="<%= user.studentName %>"><%= user.studentName %></div>
+                        <div class="student-id">
+                          <%= user.studentId %>
+                        </div>
+                      </div>
+                    </td>
+
+                    <% months.forEach(month => { 
+                       const record = (feeMap[user.studentId] && feeMap[user.studentId][month]) ? feeMap[user.studentId][month] : null;
+                       const isPaid = !!record;
+                       const isNextYear = ["January", "February", "March", "April"].includes(month);
+                       const cellYear = isNextYear ? selectedYear + 1 : selectedYear;
+                    %>
+                    <td id="cell-<%= user.studentId %>-<%= month %>" class="<%= isPaid ? 'paid-existing' : '' %>">
+                      <div class="fee-cell-wrapper group">
+                        <input type="hidden" class="data-student-id" value="<%= user.studentId %>">
+                        <input type="hidden" class="data-student-name" value="<%= user.studentName %>">
+                        <input type="hidden" class="data-standard" value="<%= user.standard %>">
+                        <input type="hidden" class="data-month" value="<%= month %>">
+                        <input type="hidden" class="data-year" value="<%= cellYear %>">
+
+                        <div class="amount-input-wrapper">
+                          <span class="currency-symbol">₹</span>
+                          <input type="number" class="amount-input data-amount" placeholder="<%= user.monthlyFee %>" value="<%= isPaid ? record.amount : '' %>" oninput="markDirty(this)">
+                        </div>
+
+                        <div class="meta-inputs">
+                          <select class="meta-select data-method" onchange="markDirty(this)">
+                            <option value="" disabled <%= !isPaid ? 'selected' : '' %>>Method</option>
+                            <option value="Cash" <%= (isPaid && record.method === 'Cash') ? 'selected' : '' %>>Cash</option>
+                            <option value="UPI" <%= (isPaid && record.method === 'UPI') ? 'selected' : '' %>>UPI</option>
+                            <option value="Razorpay" <%= (isPaid && record.method === 'Razorpay') ? 'selected' : '' %>>Net</option>
+                          </select>
+                          <input type="date" class="meta-date data-date" value="<%= isPaid && record.datePaid ? new Date(record.datePaid).toISOString().split('T')[0] : '' %>" onchange="markDirty(this)">
+                        </div>
+                      </div>
+                    </td>
+                    <% }) %>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+          
         </div>
-
-        <div class="flex flex-col w-full sm:w-auto">
-          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Default Date</label>
-          <input type="date" id="global-date" class="text-sm border border-gray-300 rounded-lg p-2 focus:border-brand-purple outline-none shadow-sm" value="<%= new Date().toISOString().split('T')[0] %>">
+      </main>
+      
+      <!-- FLOATING SAVE BAR -->
+      <div id="floating-save-bar" class="floating-save-bar">
+        <div class="text-white font-medium flex flex-col">
+          <span class="text-gray-300 text-[0.65rem] uppercase tracking-wider font-bold mb-0.5">Unsaved</span>
+          <div class="flex items-center gap-2">
+            <span id="unsaved-badge" class="unsaved-count">
+              <span id="unsaved-text">0 Modified</span>
+            </span>
+          </div>
         </div>
-
-        <div class="flex flex-col w-full sm:w-auto">
-          <label class="text-xs font-bold text-gray-500 mb-1 uppercase tracking-wide">Default Method</label>
-          <select id="global-method" class="text-sm border border-gray-300 rounded-lg p-2 focus:border-brand-purple outline-none shadow-sm glass-card min-w-[100px]">
-            <option value="Cash">Cash</option>
-            <option value="UPI" selected>UPI</option>
-            <option value="Razorpay">Razorpay</option>
-          </select>
-        </div>
-
-        <button onclick="saveAllChanges()" id="save-btn" class="w-full sm:w-auto px-6 py-2 bg-brand-purple text-white rounded-lg font-semibold hover:bg-[#4b2d84] shadow-md transition-colors">
-          Save Changes
+        <button onclick="saveAllChanges()" id="save-btn" class="btn-save-glow flex items-center gap-1.5">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+          Commit
         </button>
       </div>
-    </header>
-
-    <div class="glass-card rounded-xl shadow-xl overflow-hidden border border-gray-200">
-      <div class="overflow-x-auto" style="max-height: 70vh;">
-        <table class="report-table w-full min-w-max">
-          <thead>
-            <tr>
-              <th class="sticky-col-left">Student Details</th>
-              <% months.forEach(month => { %>
-              <th><%= month %></th>
-              <% }) %>
-            </tr>
-          </thead>
-          <tbody>
-            <% users.forEach(user => { %>
-            <tr>
-              <td class="sticky-col-left">
-                <div class="cell-content">
-                  <div class="font-bold text-gray-900"><%= user.studentName %></div>
-                  <div class="text-xs text-brand-purple font-medium"><%= user.studentId %></div>
-                </div>
-              </td>
-
-              <% months.forEach(month => { 
-                 const record = (feeMap[user.studentId] && feeMap[user.studentId][month]) ? feeMap[user.studentId][month] : null;
-                 const isPaid = !!record;
-                 
-                 // LOGIC: If month is Jan, Feb, Mar, Apr, it belongs to NEXT year
-                 const isNextYear = ["January", "February", "March", "April"].includes(month);
-                 const cellYear = isNextYear ? selectedYear + 1 : selectedYear;
-              %>
-              <td id="cell-<%= user.studentId %>-<%= month %>" class="<%= isPaid ? 'paid-existing' : '' %>">
-                <div class="cell-input-wrapper">
-
-                  <input type="hidden" class="data-student-id" value="<%= user.studentId %>">
-                  <input type="hidden" class="data-student-name" value="<%= user.studentName %>">
-                  <input type="hidden" class="data-standard" value="<%= user.standard %>">
-                  <input type="hidden" class="data-month" value="<%= month %>">
-                  <input type="hidden" class="data-year" value="<%= cellYear %>">
-
-                  <div class="relative">
-                    <span class="absolute left-2 top-1/2 -translate-y-1/2 text-gray-400 text-xs font-bold">₹</span>
-                    <input type="number" class="input-amount data-amount" placeholder="<%= user.monthlyFee %>" value="<%= isPaid ? record.amount : '' %>" oninput="markDirty(this)">
-                  </div>
-
-                  <div class="input-meta-row">
-                    <select class="input-meta data-method" onchange="markDirty(this)">
-                      <option value="" disabled <%= !isPaid ? 'selected' : '' %>>Method</option>
-                      <option value="Cash" <%= (isPaid && record.method === 'Cash') ? 'selected' : '' %>>Cash</option>
-                      <option value="UPI" <%= (isPaid && record.method === 'UPI') ? 'selected' : '' %>>UPI</option>
-                      <option value="Razorpay" <%= (isPaid && record.method === 'Razorpay') ? 'selected' : '' %>>Net</option>
-                    </select>
-
-                    <input type="date" class="input-meta data-date" value="<%= isPaid && record.datePaid ? new Date(record.datePaid).toISOString().split('T')[0] : '' %>" onchange="markDirty(this)">
-                  </div>
-
-                </div>
-              </td>
-              <% }) %>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+      
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-lg shadow-2xl transform translate-y-32 transition-transform duration-300 z-50 font-medium">
-    Saving...
+  <div id="toast" class="fixed top-6 right-6 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-2xl transform -translate-y-32 opacity-0 transition-all duration-300 z-[200] font-medium flex items-center gap-2 border border-gray-700 text-sm">
+    <div id="toast-icon"></div>
+    <span id="toast-msg">Saving...</span>
   </div>
 
   <script>
-    document.getElementById('year-select').addEventListener('change', function() {
-      window.location.href = `/teacher/bulk_fees?year=${this.value}`;
-    });
+    let unsavedCount = 0;
 
     function markDirty(element) {
       const cell = element.closest('td');
-      cell.classList.add('changed-cell');
+      if (!cell.classList.contains('changed-cell')) {
+        cell.classList.add('changed-cell');
+        unsavedCount++;
+        updateFloatingBar();
+      }
       cell.classList.remove('saved-cell');
 
       const amountInput = cell.querySelector('.data-amount');
@@ -149,11 +524,21 @@
       if (amountInput.value && !dateInput.value) {
         dateInput.value = globalDate;
       }
-
       if (amountInput.value && element === amountInput) {
         if (!methodInput.value || methodInput.value === "") {
           methodInput.value = globalMethod;
         }
+      }
+    }
+    
+    function updateFloatingBar() {
+      const bar = document.getElementById('floating-save-bar');
+      const text = document.getElementById('unsaved-text');
+      if (unsavedCount > 0) {
+        text.innerText = `${unsavedCount} Modified`;
+        bar.classList.add('visible');
+      } else {
+        bar.classList.remove('visible');
       }
     }
 
@@ -162,8 +547,8 @@
       if (changedCells.length === 0) return;
 
       const saveBtn = document.getElementById('save-btn');
-      const originalText = saveBtn.innerText;
-      saveBtn.innerText = "Saving...";
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = `Saving...`;
       saveBtn.disabled = true;
 
       const updates = [];
@@ -173,8 +558,10 @@
         const method = cell.querySelector('.data-method').value;
         const date = cell.querySelector('.data-date').value;
 
-        if (!amount) return;
-        if (!method || !date) return;
+        // If it was already paid and now it's empty, we should delete it
+        const isDelete = cell.classList.contains('paid-existing') && amount === "";
+
+        if (!isDelete && (!amount || !method || !date)) return;
 
         updates.push({
           studentId: cell.querySelector('.data-student-id').value,
@@ -182,9 +569,10 @@
           standard: cell.querySelector('.data-standard').value,
           month: cell.querySelector('.data-month').value,
           year: cell.querySelector('.data-year').value,
-          amount: parseInt(amount),
+          amount: isDelete ? null : parseInt(amount),
           method: method,
-          datePaid: date
+          datePaid: date,
+          deleteAction: isDelete
         });
       });
 
@@ -192,25 +580,31 @@
         try {
           const res = await fetch('/teacher/bulk_save', {
             method: 'POST',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              updates
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ updates })
           });
 
           const result = await res.json();
 
           if (result.success) {
-            showToast("Saved Successfully!", "bg-green-600");
+            showToast("Saved Successfully!", "bg-[#10b981]");
             changedCells.forEach(cell => {
               cell.classList.remove('changed-cell');
+              
+              const isDelete = cell.querySelector('.data-amount').value === "";
+              if (isDelete) {
+                cell.classList.remove('paid-existing');
+              } else {
+                cell.classList.add('paid-existing'); 
+              }
+              
               cell.classList.add('saved-cell');
-              setTimeout(() => cell.classList.remove('saved-cell'), 2000);
+              setTimeout(() => cell.classList.remove('saved-cell'), 1000);
             });
+            unsavedCount = 0;
+            updateFloatingBar();
           } else {
-            showToast("Error saving.", "bg-red-600");
+            showToast("Error saving data.", "bg-red-600");
           }
         } catch (e) {
           console.error(e);
@@ -218,22 +612,23 @@
         }
       }
 
-      saveBtn.innerText = originalText;
+      saveBtn.innerHTML = originalText;
       saveBtn.disabled = false;
     }
 
     function showToast(msg, bgClass) {
       const toast = document.getElementById('toast');
-      toast.textContent = msg;
-      toast.className = `fixed bottom-6 right-6 text-white px-6 py-4 rounded-lg shadow-2xl transform transition-transform duration-300 z-50 font-medium ${bgClass}`;
-      toast.classList.remove('translate-y-32');
-      setTimeout(() => toast.classList.add('translate-y-32'), 3000);
+      document.getElementById('toast-msg').textContent = msg;
+      toast.className = `fixed top-6 right-6 text-white px-5 py-3 rounded-xl shadow-lg transform transition-all duration-300 z-[200] font-medium flex items-center gap-2 border border-white/10 ${bgClass}`;
+      requestAnimationFrame(() => {
+        toast.classList.remove('-translate-y-32', 'opacity-0');
+        toast.classList.add('translate-y-0', 'opacity-100');
+      });
+      setTimeout(() => {
+        toast.classList.remove('translate-y-0', 'opacity-100');
+        toast.classList.add('-translate-y-32', 'opacity-0');
+      }, 3000);
     }
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
-
 </html>

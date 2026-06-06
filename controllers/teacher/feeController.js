@@ -450,8 +450,14 @@ exports.processBulkSave = async (req, res) => {
     const { sendFeeReceipt } = require("../../utils/emailService");
 
     for (const update of updates) {
-      const { studentId, standard, amount, month, year, method, datePaid } = update;
-      console.log(`[Bulk Save] Processing update for studentId: ${studentId}, month: ${month}, year: ${year}`);
+      const { studentId, standard, amount, month, year, method, datePaid, deleteAction } = update;
+      console.log(`[Bulk Save] Processing update for studentId: ${studentId}, month: ${month}, year: ${year}, delete: ${deleteAction}`);
+      
+      if (deleteAction) {
+        await Fee.findOneAndDelete({ studentId, month, year, batch: standard });
+        console.log(`[Bulk Save] Fee deleted successfully for studentId: ${studentId}, month: ${month}`);
+        continue;
+      }
       
       const studentObj = await User.findOne({ studentId, batch: standard }).populate('batch');
       if (!studentObj) {

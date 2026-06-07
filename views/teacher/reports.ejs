@@ -1,0 +1,571 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Reports Hub | Tuition Hub</title>
+
+  <%- include('../partials/background') %>
+
+  <style>
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2rem;
+      font-weight: 900;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    /* Report Sections */
+    .report-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+      gap: 24px;
+    }
+    .report-section {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 20px;
+      padding: 28px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+    .report-section:hover {
+      border-color: rgba(124,58,237,0.2);
+      box-shadow: 0 8px 30px var(--pg2);
+    }
+    .report-section-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .report-section-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .report-section-title {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      color: var(--fg);
+    }
+    .report-section-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 2px;
+    }
+
+    /* Report links */
+    .report-link {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      text-decoration: none;
+      color: var(--fg);
+      background: var(--bgch);
+      border: 1px solid transparent;
+      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+      margin-bottom: 10px;
+    }
+    .report-link:last-child { margin-bottom: 0; }
+    .report-link:hover {
+      border-color: rgba(124,58,237,0.2);
+      transform: translateX(4px);
+      box-shadow: 0 4px 16px var(--pg2);
+    }
+    .report-link-icon {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+    }
+    .report-link-text {
+      flex: 1;
+    }
+    .report-link-name {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.82rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .report-link-desc {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--fdd);
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+    .report-link-arrow {
+      color: var(--fdd);
+      opacity: 0;
+      transform: translateX(-6px);
+      transition: all 0.25s;
+      flex-shrink: 0;
+    }
+    .report-link:hover .report-link-arrow {
+      opacity: 1;
+      transform: translateX(0);
+    }
+
+    /* Mini stat inside section */
+    .mini-stats {
+      display: flex;
+      gap: 16px;
+      margin-bottom: 18px;
+      flex-wrap: wrap;
+    }
+    .mini-stat {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 14px;
+      border-radius: 10px;
+      background: var(--bgch);
+      border: 1px solid var(--bd);
+    }
+    .mini-stat-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--fg);
+    }
+    .mini-stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--fdd);
+    }
+
+    /* Activity timeline */
+    .activity-list { list-style: none; padding: 0; margin: 0; }
+    .activity-item {
+      display: flex;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--bd);
+      align-items: flex-start;
+    }
+    .activity-item:last-child { border-bottom: none; }
+    .activity-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      flex-shrink: 0;
+      margin-top: 5px;
+    }
+    .activity-content { flex: 1; }
+    .activity-title {
+      font-family: 'Inter', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--fg);
+    }
+    .activity-meta {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      color: var(--fdd);
+      letter-spacing: 0.06em;
+      margin-top: 2px;
+    }
+
+    /* Coming soon badge */
+    .coming-soon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(251,191,36,0.1);
+      border: 1px solid rgba(251,191,36,0.2);
+      color: #f59e0b;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    /* Responsive */
+    @media (max-width: 480px) {
+      .report-grid { grid-template-columns: 1fr; }
+      .stat-value { font-size: 1.6rem; }
+    }
+  </style>
+</head>
+
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+          <!-- Header -->
+          <header class="mb-10">
+            <h1 class="dash-greeting">Reports <span style="color: var(--pt);">Hub</span></h1>
+            <p class="dash-sub">Admin Command Center · Analytics & System Reports</p>
+          </header>
+
+          <!-- Top Stats Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 mb-10">
+            <div class="stat-card">
+              <div class="stat-value">₹<%= stats.totalRevenue ? stats.totalRevenue.toLocaleString('en-IN') : '0' %></div>
+              <div class="stat-label">Total Revenue</div>
+              <div class="stat-icon">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--pt)" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color: #10b981;"><%= stats.totalStudents %></div>
+              <div class="stat-label">Total Students</div>
+              <div class="stat-icon">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color: #8b5cf6;"><%= stats.totalTests %></div>
+              <div class="stat-label">Tests Created</div>
+              <div class="stat-icon">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </div>
+            </div>
+            <div class="stat-card">
+              <div class="stat-value" style="color: #f59e0b;"><%= stats.totalPayments %></div>
+              <div class="stat-label">Fee Payments</div>
+              <div class="stat-icon">
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.5"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+            </div>
+          </div>
+
+          <!-- Report Sections Grid -->
+          <div class="report-grid">
+
+            <!-- Fee Reports -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(124,58,237,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--pt)" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title">Fee Reports</div>
+                  <div class="report-section-sub">Revenue analytics & defaulters</div>
+                </div>
+              </div>
+
+              <div class="mini-stats">
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#10b981;"><%= stats.totalPayments %></div>
+                  <div class="mini-stat-label">Paid</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#ef4444;"><%= stats.pendingFees %></div>
+                  <div class="mini-stat-label">Pending</div>
+                </div>
+              </div>
+
+              <a href="/teacher/revenue_report" class="report-link">
+                <div class="report-link-icon" style="background: rgba(124,58,237,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--pt)" stroke-width="2"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Revenue Dashboard</div>
+                  <div class="report-link-desc">Monthly revenue charts & payment breakdowns</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+
+              <a href="/teacher/fee_defaulters" class="report-link">
+                <div class="report-link-icon" style="background: rgba(239,68,68,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Fee Defaulters</div>
+                  <div class="report-link-desc">Students with overdue or unpaid fees</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+            </div>
+
+            <!-- Student Reports -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(16,185,129,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title">Student Reports</div>
+                  <div class="report-section-sub">Enrollment & performance data</div>
+                </div>
+              </div>
+
+              <div class="mini-stats">
+                <div class="mini-stat">
+                  <div class="mini-stat-val"><%= stats.totalStudents %></div>
+                  <div class="mini-stat-label">Enrolled</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#8b5cf6;"><%= stats.totalBatches %></div>
+                  <div class="mini-stat-label">Batches</div>
+                </div>
+              </div>
+
+              <% const bulkReportUrl = '/teacher/bulk_student_reports' + (typeof viewingYear !== 'undefined' ? '?year=' + viewingYear : ''); %>
+              <a href="<%= bulkReportUrl %>" class="report-link">
+                <div class="report-link-icon" style="background: rgba(16,185,129,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="2"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Bulk Student Reports</div>
+                  <div class="report-link-desc">Download PDF reports for all students</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+
+              <a href="/teacher/manage_students" class="report-link">
+                <div class="report-link-icon" style="background: rgba(59,130,246,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Student Directory</div>
+                  <div class="report-link-desc">View & manage all enrolled students</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+            </div>
+
+            <!-- Academic Reports -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(139,92,246,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title">Academic Overview</div>
+                  <div class="report-section-sub">Tests, scores & study material</div>
+                </div>
+              </div>
+
+              <div class="mini-stats">
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#8b5cf6;"><%= stats.totalTests %></div>
+                  <div class="mini-stat-label">Tests</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#f59e0b;"><%= stats.totalMaterials %></div>
+                  <div class="mini-stat-label">Resources</div>
+                </div>
+                <div class="mini-stat">
+                  <div class="mini-stat-val" style="color:#10b981;"><%= stats.upcomingExams %></div>
+                  <div class="mini-stat-label">Upcoming</div>
+                </div>
+              </div>
+
+              <a href="/teacher/manage_tests" class="report-link">
+                <div class="report-link-icon" style="background: rgba(139,92,246,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Test Management</div>
+                  <div class="report-link-desc">All tests & question papers</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+
+              <a href="/teacher/manage_score" class="report-link">
+                <div class="report-link-icon" style="background: rgba(245,158,11,0.08);">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                </div>
+                <div class="report-link-text">
+                  <div class="report-link-name">Score Ledger</div>
+                  <div class="report-link-desc">Classwise consolidated scores</div>
+                </div>
+                <div class="report-link-arrow">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"/></svg>
+                </div>
+              </a>
+            </div>
+
+            <!-- Activity Log -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(245,158,11,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title">Recent Activity</div>
+                  <div class="report-section-sub">Latest fee payments recorded</div>
+                </div>
+              </div>
+
+              <% if (recentFees && recentFees.length > 0) { %>
+              <ul class="activity-list">
+                <% recentFees.forEach(fee => { %>
+                <li class="activity-item">
+                  <div class="activity-dot" style="background: #10b981;"></div>
+                  <div class="activity-content">
+                    <div class="activity-title">
+                      ₹<%= fee.amount.toLocaleString('en-IN') %> — <%= fee.studentName || 'Student' %>
+                    </div>
+                    <div class="activity-meta">
+                      <%= fee.batch ? fee.batch.name : '' %> · <%= fee.month %> · <%= fee.method || 'N/A' %>
+                      <% if (fee.datePaid) { %> · <%= new Date(fee.datePaid).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %><% } %>
+                    </div>
+                  </div>
+                </li>
+                <% }) %>
+              </ul>
+              <% } else { %>
+              <div style="text-align: center; padding: 30px 0; opacity: 0.5;">
+                <div style="font-size: 2rem; margin-bottom: 8px;">📋</div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 0.6rem; letter-spacing: 0.1em; text-transform: uppercase; color: var(--fdd);">No recent activity</div>
+              </div>
+              <% } %>
+            </div>
+
+            <!-- Communication Log (Coming Soon) -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(59,130,246,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title" style="display: flex; align-items: center; gap: 10px;">
+                    Emails & Notifications
+                    <span class="coming-soon">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Coming Soon
+                    </span>
+                  </div>
+                  <div class="report-section-sub">Communication history & logs</div>
+                </div>
+              </div>
+
+              <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.3;">📨</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--fd); margin-bottom: 6px;">Email tracking coming soon</div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 0.55rem; color: var(--fdd); letter-spacing: 0.08em; max-width: 280px; margin: 0 auto;">Track sent emails, notifications, and parent communications in one place</div>
+              </div>
+            </div>
+
+            <!-- Data Management (Coming Soon) -->
+            <div class="report-section">
+              <div class="report-section-header">
+                <div class="report-section-icon" style="background: rgba(239,68,68,0.1);">
+                  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                </div>
+                <div>
+                  <div class="report-section-title" style="display: flex; align-items: center; gap: 10px;">
+                    Data Management
+                    <span class="coming-soon">
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                      Coming Soon
+                    </span>
+                  </div>
+                  <div class="report-section-sub">Audit trail & data exports</div>
+                </div>
+              </div>
+
+              <div style="text-align: center; padding: 40px 20px;">
+                <div style="font-size: 2.5rem; margin-bottom: 12px; opacity: 0.3;">🗄️</div>
+                <div style="font-family: 'Inter', sans-serif; font-size: 0.85rem; font-weight: 600; color: var(--fd); margin-bottom: 6px;">Audit trail coming soon</div>
+                <div style="font-family: 'Space Mono', monospace; font-size: 0.55rem; color: var(--fdd); letter-spacing: 0.08em; max-width: 280px; margin: 0 auto;">Track all data additions, edits, deletions, and bulk operations with timestamps</div>
+              </div>
+            </div>
+
+          </div><!-- /report-grid -->
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+</body>
+</html>

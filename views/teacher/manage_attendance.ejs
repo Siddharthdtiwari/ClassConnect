@@ -4,16 +4,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage Attendance</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Manage Attendance | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      color: var(--b);
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    /* Calendar styles customization */
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 6px;
+      text-align: center;
+    }
+    .calendar-day {
+      aspect-ratio: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 10px;
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      cursor: pointer;
+      transition: all 0.2s;
+      font-weight: 600;
+      font-size: 0.85rem;
+    }
+    .calendar-day:hover {
+      background: var(--bgch);
+      border-color: var(--p);
+      color: var(--pt);
+      transform: scale(1.05);
+    }
+    .day-selected {
+      background: var(--p) !important;
+      color: white !important;
+      border-color: var(--p) !important;
+      box-shadow: 0 4px 12px var(--pg) !important;
+    }
+    .day-saved {
+      border-bottom: 3.5px solid var(--lt) !important;
+    }
+
+    /* Attendance status buttons */
+    .attendance-status-btn {
+      padding: 6px 12px;
+      border-radius: 20px;
+      border: 1px solid var(--bd);
+      background: var(--bgc);
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--fg);
+      cursor: pointer;
+      transition: all 0.25s ease;
+      font-family: 'Space Mono', monospace;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+    .attendance-status-btn:hover {
+      background: var(--bgch);
+      transform: translateY(-1px);
+    }
+    .attendance-status-btn.active[data-status="P"] {
+      background: rgba(52,211,153,0.15) !important;
+      color: rgb(52,211,153) !important;
+      border-color: rgba(52,211,153,0.3) !important;
+      box-shadow: 0 0 10px rgba(52,211,153,0.1);
+    }
+    .attendance-status-btn.active[data-status="A"] {
+      background: rgba(248,113,113,0.15) !important;
+      color: rgb(248,113,113) !important;
+      border-color: rgba(248,113,113,0.3) !important;
+      box-shadow: 0 0 10px rgba(248,113,113,0.1);
+    }
+    .attendance-status-btn.active[data-status="H"] {
+      background: rgba(99,102,241,0.15) !important;
+      color: rgb(129,140,248) !important;
+      border-color: rgba(99,102,241,0.3) !important;
+      box-shadow: 0 0 10px rgba(99,102,241,0.1);
+    }
+
+    .day-present { background: rgba(52,211,153,0.08); color: rgb(52,211,153); border: 1px solid rgba(52,211,153,0.15); }
+    .day-absent { background: rgba(248,113,113,0.08); color: rgb(248,113,113); border: 1px solid rgba(248,113,113,0.15); }
+    .day-holiday { background: rgba(99,102,241,0.08); color: rgb(129,140,248); border: 1px solid rgba(99,102,241,0.15); }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -22,150 +168,215 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-6 flex justify-between items-center">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-          Manage Attendance
-        </h1>
-        <p class="text-gray-600 mt-1">
-          Manage daily attendance for all students.
-        </p>
-      </div>
-      <div class="flex gap-2 flex-wrap justify-end">
-        <button id="send-attendance-emails-btn" class="py-2 px-4 btn-outline-purple bg-purple-50">
-          ✉️ Email Monthly Report
-        </button>
-        <button onclick="window.location.href='/teacher/detailed_attendance'" class="py-2 px-4 btn-outline-purple">
-          Detailed Attendance
-        </button>
-        <button onclick="window.location.href='/teacher/bulk_attendance'" class="py-2 px-4 btn-outline-purple">
-          Bulk Attendance
-        </button>
-      </div>
-    </header>
-    <div class="glass-card p-6 sm:p-8 rounded-xl shadow-lg">
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="lg:col-span-1">
-          <div class="flex items-center justify-between mb-6">
-            <button id="prev-month" class="p-2 rounded-full hover:bg-gray-100">
-              &larr;
-            </button>
-            <h2 id="month-year" class="text-2xl font-bold text-gray-900"></h2>
-            <button id="next-month" class="p-2 rounded-full hover:bg-gray-100">
-              &rarr;
-            </button>
-          </div>
-          <div class="calendar-grid font-semibold text-gray-500 mb-2">
-            <div>Sun</div>
-            <div>Mon</div>
-            <div>Tue</div>
-            <div>Wed</div>
-            <div>Thu</div>
-            <div>Fri</div>
-            <div>Sat</div>
-          </div>
-          <div id="calendar-body" class="calendar-grid"></div>
+          
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Manage <span style="color: var(--pt);">Attendance</span></h1>
+              <p class="dash-sub">Faculty Command Center · Daily Presence Records</p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <button id="send-attendance-emails-btn" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                ✉️ Email Monthly Report
+              </button>
+              <button onclick="window.location.href='/teacher/detailed_attendance'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                📊 Detailed Ledger
+              </button>
+              <button onclick="window.location.href='/teacher/bulk_attendance'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                ✏️ Bulk Attendance
+              </button>
+            </div>
+          </header>
 
-          <div class="border-t border-gray-200 my-6"></div>
-          <h3 class="text-lg font-bold text-gray-900 mb-4">Legend</h3>
-          <div class="space-y-3 text-sm">
-            <div class="flex items-center">
-              <div class="w-5 h-5 rounded-full day-present mr-3 flex items-center justify-center text-xs font-bold">
-                P
+          <%
+            const batchNames = new Set();
+            students.forEach(s => {
+              if (s.batch && s.batch.name) {
+                batchNames.add(s.batch.name);
+              }
+            });
+          %>
+
+          <!-- Metrics Row (Dashboard Card style) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Total Students -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 110-8 4 4 0 010 8zm12 5H18M21 9H19m2 6H19"/></svg>
               </div>
-              Present
+              <div class="stat-value" style="color: var(--pt);"><%= students.length %></div>
+              <div class="stat-label">Total Enrolled</div>
             </div>
-            <div class="flex items-center">
-              <div class="w-5 h-5 rounded-full day-absent mr-3 flex items-center justify-center text-xs font-bold">
-                A
+
+            <!-- Active Batches -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
               </div>
-              Absent
+              <div class="stat-value" style="color: var(--pt);"><%= batchNames.size %></div>
+              <div class="stat-label">Active Batches</div>
             </div>
-            <div class="flex items-center">
-              <div class="w-5 h-5 rounded-full day-holiday mr-3 flex items-center justify-center text-xs font-bold">
-                H
+
+            <!-- Days Saved -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--lt);"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               </div>
-              Holiday
-            </div>
-            <div class="flex items-center">
-              <div class="w-4 h-4 rounded-full border-2 border-brand-purple mr-3"></div>
-              Today
+              <div class="stat-value" style="color: var(--lt);" id="metric-saved-days">—</div>
+              <div class="stat-label">Recorded Days</div>
             </div>
           </div>
-          <div class="glass-card shadow-md rounded-lg p-6 mt-6">
-            <h2 class="text-xl font-bold mb-4">
-              Check Monthly Defaulter List
-            </h2>
 
-            <form id="defaulterForm" class="flex flex-col sm:flex-row gap-4">
-              <div>
-                <label for="month" class="block text-sm font-medium text-gray-700">Select Month</label>
-                <select id="month" name="month" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                  <% const months=[ "January" , "February" , "March" , "April"
-                    , "May" , "June" , "July" , "August" , "September" ,
-                    "October" , "November" , "December" ]; for (let m=1; m <=12;
-                    m++) { const val=m.toString().padStart(2, "0" ); const
-                    name=months[m - 1]; %>
-                  <option value="<%= val %>"><%= name %></option>
-                  <% } %>
-                </select>
+          <!-- Main Layout Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-10">
+            
+            <!-- Left Pane: Calendar Workspace & Legend -->
+            <div class="lg:col-span-5 space-y-8">
+              
+              <!-- Calendar Card -->
+              <div class="stat-card p-6 sm:p-8">
+                <div class="flex items-center justify-between mb-6">
+                  <button id="prev-month" class="p-2 rounded-xl border border-theme-b hover:bg-theme-bgch text-theme-fg transition-all font-bold text-sm">
+                    &larr;
+                  </button>
+                  <h2 id="month-year" class="text-sm font-bold tracking-tight text-theme-fg uppercase font-mono" style="font-family: 'Space Mono', monospace;"></h2>
+                  <button id="next-month" class="p-2 rounded-xl border border-theme-b hover:bg-theme-bgch text-theme-fg transition-all font-bold text-sm">
+                    &rarr;
+                  </button>
+                </div>
+
+                <div class="calendar-grid font-bold text-[10px] font-mono text-theme-fdd uppercase tracking-wider mb-4">
+                  <div>Sun</div>
+                  <div>Mon</div>
+                  <div>Tue</div>
+                  <div>Wed</div>
+                  <div>Thu</div>
+                  <div>Fri</div>
+                  <div>Sat</div>
+                </div>
+
+                <div id="calendar-body" class="calendar-grid"></div>
+
+                <div class="border-t border-theme-bd my-6"></div>
+
+                <!-- Legend -->
+                <h3 class="text-[10px] font-bold uppercase tracking-widest font-mono text-theme-pt mb-4">Legend</h3>
+                <div class="grid grid-cols-2 gap-3 text-xs font-semibold">
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg day-present flex items-center justify-center text-[10px] font-black">P</span>
+                    <span class="text-theme-fd">Present</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg day-absent flex items-center justify-center text-[10px] font-black">A</span>
+                    <span class="text-theme-fd">Absent</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-6 h-6 rounded-lg day-holiday flex items-center justify-center text-[10px] font-black">H</span>
+                    <span class="text-theme-fd">Holiday</span>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <span class="w-4 h-4 rounded-md border-2 border-theme-p"></span>
+                    <span class="text-theme-fd">Selected Day</span>
+                  </div>
+                </div>
               </div>
 
-              <div>
-                <label for="year" class="block text-sm font-medium text-gray-700">Select Year</label>
-                <select id="year" name="year" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm">
-                  <% const currentYear=new Date().getFullYear(); for (let
-                    y=currentYear; y>= currentYear - 5; y--) { %>
-                  <option value="<%= y %>"><%= y %></option>
-                  <% } %>
-                </select>
+              <!-- Defaulters Card -->
+              <div class="stat-card p-6 sm:p-8">
+                <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-theme-pt mb-6 flex items-center gap-2">
+                  <span>⚠️</span> Monthly Defaulter Checker
+                </h3>
+
+                <form id="defaulterForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <div>
+                    <label for="month" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Select Month</label>
+                    <select id="month" name="month" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer">
+                      <% 
+                        const months = [ "January" , "February" , "March" , "April" , "May" , "June" , "July" , "August" , "September" , "October" , "November" , "December" ]; 
+                        for (let m = 1; m <= 12; m++) { 
+                          const val = m.toString().padStart(2, "0"); 
+                          const name = months[m - 1]; 
+                      %>
+                      <option value="<%= val %>"><%= name %></option>
+                      <% } %>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label for="year" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Select Year</label>
+                    <select id="year" name="year" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer">
+                      <% 
+                        const currentYear = new Date().getFullYear(); 
+                        for (let y = currentYear; y >= currentYear - 5; y--) { 
+                      %>
+                      <option value="<%= y %>"><%= y %></option>
+                      <% } %>
+                    </select>
+                  </div>
+
+                  <div class="sm:col-span-2 mt-2">
+                    <button type="submit" class="btn-solid-purple w-full py-3 shadow-lg">
+                      Show Defaulters ✓
+                    </button>
+                  </div>
+                </form>
               </div>
 
-              <div class="flex items-end">
-                <button type="submit" class="btn-solid-purple px-4 py-2 mt-1 shadow w-full">
-                  Show Defaulters
-                </button>
+            </div>
+
+            <!-- Right Pane: Daily Attendance Entry -->
+            <div class="lg:col-span-7" id="attendance-table-container">
+              <div class="stat-card p-6 sm:p-8 min-h-[500px] flex flex-col">
+                
+                <!-- Date Header -->
+                <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-8">
+                  <div class="flex items-center gap-2">
+                    <button id="prev-day" class="p-2 rounded-xl border border-theme-b hover:bg-theme-bgch text-theme-fg transition-all font-bold text-sm">
+                      &larr;
+                    </button>
+                    <h3 class="text-sm font-bold tracking-tight text-theme-fg uppercase font-mono" style="font-family: 'Space Mono', monospace;">
+                      Date: <span id="current-date-display" style="color: var(--pt);"></span>
+                    </h3>
+                    <button id="next-day" class="p-2 rounded-xl border border-theme-b hover:bg-theme-bgch text-theme-fg transition-all font-bold text-sm">
+                      &rarr;
+                    </button>
+                  </div>
+
+                  <!-- Quick Set Buttons -->
+                  <div class="flex gap-2">
+                    <button id="mark-all-p" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/25 transition-all font-mono uppercase">All P</button>
+                    <button id="mark-all-a" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/25 transition-all font-mono uppercase">All A</button>
+                    <button id="mark-all-h" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 transition-all font-mono uppercase">All H</button>
+                  </div>
+                </div>
+
+                <!-- Table Wrapper -->
+                <div class="flex-1 overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-6">
+                  <table class="data-table">
+                    <thead>
+                      <tr>
+                        <th class="text-left font-mono">Student Name</th>
+                        <th class="text-left font-mono">Student ID</th>
+                        <th class="text-center font-mono w-40">Status</th>
+                      </tr>
+                    </thead>
+                    <tbody id="student-attendance-list"></tbody>
+                  </table>
+                </div>
+
+                <!-- Save Action -->
+                <div class="flex justify-end">
+                  <button id="save-attendance-btn" class="btn-solid-purple w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
+                    <span>Save Daily Attendance ✓</span>
+                  </button>
+                </div>
               </div>
-            </form>
+            </div>
+
           </div>
+
         </div>
-
-        <div class="lg:col-span-1" id="attendance-table-container">
-          <div class="flex items-center justify-between mb-4">
-            <button id="prev-day" class="p-2 rounded-full hover:bg-gray-100">
-              &larr;
-            </button>
-            <h3 class="text-2xl font-bold text-gray-900">
-              Attendance for <span id="current-date-display"></span>
-            </h3>
-            <button id="next-day" class="p-2 rounded-full hover:bg-gray-100">
-              &rarr;
-            </button>
-          </div>
-          <div class="flex justify-end gap-3 mb-4">
-            <button id="mark-all-p" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-green-50 text-green-700 border border-green-200 hover:bg-green-100 transition-colors">Mark All P</button>
-            <button id="mark-all-a" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-red-50 text-red-700 border border-red-200 hover:bg-red-100 transition-colors">Mark All A</button>
-            <button id="mark-all-h" class="px-4 py-1.5 text-sm font-bold rounded-lg bg-indigo-50 text-indigo-700 border border-indigo-200 hover:bg-indigo-100 transition-colors">Mark All H</button>
-          </div>
-          <div class="overflow-x-auto rounded-xl shadow border border-gray-200">
-            <table class="data-table">
-              <thead>
-                <tr>
-                  <th>Student Name</th>
-                  <th>Student ID</th>
-                  <th>Status</th>
-                </tr>
-              </thead>
-              <tbody id="student-attendance-list"></tbody>
-            </table>
-          </div>
-          <div class="mt-6 text-right">
-            <button id="save-attendance-btn" class="py-2 px-6 btn-solid-purple">
-              Save Attendance
-            </button>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   </div>
 
@@ -187,15 +398,9 @@
       const nextMonthBtn = document.getElementById("next-month");
       const prevDayBtn = document.getElementById("prev-day");
       const nextDayBtn = document.getElementById("next-day");
-      const currentDateDisplay = document.getElementById(
-        "current-date-display"
-      );
-      const studentAttendanceList = document.getElementById(
-        "student-attendance-list"
-      );
-      const saveAttendanceBtn = document.getElementById(
-        "save-attendance-btn"
-      );
+      const currentDateDisplay = document.getElementById("current-date-display");
+      const studentAttendanceList = document.getElementById("student-attendance-list");
+      const saveAttendanceBtn = document.getElementById("save-attendance-btn");
       const messageBox = document.getElementById("message-box");
       const markAllPBtn = document.getElementById("mark-all-p");
       const markAllABtn = document.getElementById("mark-all-a");
@@ -204,24 +409,20 @@
       let currentDate = new Date();
       let selectedDate = new Date();
 
-      const allStudents = JSON.parse(
-        document.getElementById("students-data").textContent
-      );
-      const attendanceFromServer = JSON.parse(
-        document.getElementById("attendance-data").textContent
-      );
+      const allStudents = JSON.parse(document.getElementById("students-data").textContent);
+      const attendanceFromServer = JSON.parse(document.getElementById("attendance-data").textContent);
 
       const savedAttendance = attendanceFromServer || {};
 
       function showMessage(message, type = "success") {
         messageBox.textContent = message;
-        messageBox.className = `fixed bottom-10 right-10 z-[100] p-4 rounded-lg shadow-xl text-center font-bold max-w-sm transition-all duration-300 ${
+        messageBox.className = `fixed bottom-10 right-10 z-[100] p-3 rounded-lg text-center text-xs font-semibold shadow-lg ${
             type === "success"
-              ? "bg-green-100 text-green-800 border border-green-200"
-              : "bg-red-100 text-red-800 border border-red-200"
+              ? "bg-green-500/10 text-green-400 border border-green-500/20"
+              : "bg-red-500/10 text-red-400 border border-red-500/20"
           }`;
         messageBox.classList.remove("hidden");
-        setTimeout(() => messageBox.classList.add("hidden"), 3000);
+        setTimeout(() => messageBox.classList.add("hidden"), 3500);
       }
 
       function formatDateKey(date) {
@@ -246,8 +447,11 @@
         const firstDay = new Date(year, month, 1).getDay();
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        for (let i = 0; i < firstDay; i++)
-          calendarBody.innerHTML += `<div></div>`;
+        let savedDaysCount = 0;
+
+        for (let i = 0; i < firstDay; i++) {
+          calendarBody.appendChild(document.createElement("div"));
+        }
 
         for (let day = 1; day <= daysInMonth; day++) {
           const dayEl = document.createElement("div");
@@ -263,6 +467,7 @@
             Object.keys(savedAttendance[dateKey]).length > 0
           ) {
             dayEl.classList.add("day-saved");
+            savedDaysCount++;
           }
 
           if (
@@ -282,6 +487,8 @@
 
           calendarBody.appendChild(dayEl);
         }
+
+        document.getElementById("metric-saved-days").textContent = savedDaysCount;
       }
 
       function renderAttendanceTable() {
@@ -295,20 +502,17 @@
           const status = attendanceForDate[student.studentId] || "P";
           const row = document.createElement("tr");
           row.dataset.studentId = student.studentId;
+          row.className = "hover:bg-theme-bgch/40 border-b border-theme-bd transition-all";
 
           row.innerHTML = `
-                <td class="whitespace-nowrap">${student.studentName}</td>
-                <td>${student.studentId}</td>
-                <td class="whitespace-nowrap">
-                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${
-                      status === "P" ? "active" : ""
-                    }" data-status="P">P</button>
-                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${
-                      status === "A" ? "active" : ""
-                    }" data-status="A">A</button>
-                    <button class="attendance-status-btn px-3 py-1 rounded-full text-sm ${
-                      status === "H" ? "active" : ""
-                    }" data-status="H">H</button>
+                <td class="px-4 py-3 font-bold text-theme-fg">${student.studentName}</td>
+                <td class="px-4 py-3 font-mono text-xs text-theme-pt font-bold">${student.studentId}</td>
+                <td class="px-4 py-3 text-center">
+                  <div class="inline-flex gap-2 justify-center items-center">
+                    <button class="attendance-status-btn ${status === "P" ? "active" : ""}" data-status="P" title="Present">P</button>
+                    <button class="attendance-status-btn ${status === "A" ? "active" : ""}" data-status="A" title="Absent">A</button>
+                    <button class="attendance-status-btn ${status === "H" ? "active" : ""}" data-status="H" title="Holiday">H</button>
+                  </div>
                 </td>
             `;
           studentAttendanceList.appendChild(row);
@@ -363,6 +567,10 @@
         const dateKey = formatDateKey(selectedDate);
         const dailyRecords = [];
 
+        saveAttendanceBtn.disabled = true;
+        const originalText = saveAttendanceBtn.innerHTML;
+        saveAttendanceBtn.innerHTML = `<span>Saving...</span>`;
+
         allStudents.forEach((student) => {
           const row = studentAttendanceList.querySelector(
             `tr[data-student-id="${student.studentId}"]`
@@ -395,7 +603,7 @@
             dailyRecords.forEach(
               (r) => (savedAttendance[dateKey][r.studentId] = r.status)
             );
-            showMessage("Attendance saved successfully!");
+            showMessage("Attendance saved successfully!", "success");
             renderCalendar();
           } else {
             showMessage("Error saving attendance", "error");
@@ -403,20 +611,22 @@
         } catch (err) {
           console.error(err);
           showMessage("Error saving attendance", "error");
+        } finally {
+          saveAttendanceBtn.disabled = false;
+          saveAttendanceBtn.innerHTML = originalText;
         }
       });
 
       renderCalendar();
       renderAttendanceTable();
     });
-    document
-      .getElementById("defaulterForm")
-      .addEventListener("submit", function(e) {
-        e.preventDefault();
-        const month = document.getElementById("month").value;
-        const year = document.getElementById("year").value;
-        window.location.href = `/teacher/defaulters/${year}/${month}`;
-      });
+
+    document.getElementById("defaulterForm").addEventListener("submit", function(e) {
+      e.preventDefault();
+      const month = document.getElementById("month").value;
+      const year = document.getElementById("year").value;
+      window.location.href = `/teacher/defaulters/${year}/${month}`;
+    });
       
     document.getElementById('send-attendance-emails-btn').addEventListener('click', async function() {
       const btn = this;
@@ -427,8 +637,7 @@
       
       const originalText = btn.innerHTML;
       btn.disabled = true;
-      btn.innerHTML = `<svg class="animate-spin inline-block w-4 h-4 mr-2" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg> Sending...`;
-      btn.style.opacity = "0.7";
+      btn.innerHTML = `<span>Sending...</span>`;
 
       try {
         const res = await fetch("/teacher/send_attendance_emails", {
@@ -447,14 +656,9 @@
       } finally {
         btn.disabled = false;
         btn.innerHTML = originalText;
-        btn.style.opacity = "1";
       }
     });
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 
 </html>

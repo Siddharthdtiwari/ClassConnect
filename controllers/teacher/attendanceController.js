@@ -174,6 +174,68 @@ exports.renderDefaulters = async (req, res) => {
   }
 };
 
+exports.downloadDefaulters = async (req, res) => {
+  try {
+    const { year, month } = req.params;
+
+    if (!/^\d{4}$/.test(year) || !/^(0?[1-9]|1[0-2])$/.test(month)) {
+      return res.status(400).send("Invalid year or month format");
+    }
+
+    const startDate = new Date(`${year}-${month}-01`);
+    const endDate = new Date(year, parseInt(month), 0);
+
+    const students = await User.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+
+    const attendanceDocs = await Attendance.find({
+      date: {
+        $gte: startDate.toISOString().split("T")[0],
+        $lte: endDate.toISOString().split("T")[0],
+      },
+      batch: { $in: req.viewingBatches },
+    }).lean();
+
+    const stats = {};
+    students.forEach((s) => {
+      stats[s.studentId] = {
+        studentId: s.studentId,
+        studentName: s.studentName,
+        standard: (s.batch ? s.batch.name : 'Unknown'),
+        mobileNo: s.mobileNo,
+        present: 0,
+        absent: 0,
+        total: 0,
+        percentage: 0,
+      };
+    });
+
+    attendanceDocs.forEach((doc) => {
+      doc.records.forEach((r) => {
+        if (stats[r.studentId]) {
+          if (r.status === "P") stats[r.studentId].present++;
+          if (r.status === "A") stats[r.studentId].absent++;
+          stats[r.studentId].total++;
+        }
+      });
+    });
+
+    const defaulters = Object.values(stats)
+      .map((s) => {
+        s.percentage = s.total > 0 ? (s.present / (s.present + s.absent)) * 100 : 0;
+        return s;
+      })
+      .filter((s) => s.percentage < 75)
+      .sort((a, b) => Number(a.percentage) - Number(b.percentage));
+
+    const { generateAttendanceDefaultersPDF } = require("../../utils/pdfUtils");
+    await generateAttendanceDefaultersPDF({ defaulters, month, year }, res, "attachment");
+  } catch (err) {
+    console.error("Attendance defaulters download error:", err);
+    res.status(500).send("Error generating PDF");
+  }
+};
+
+
 exports.renderBulkAttendance = async (req, res) => {
   try {
     const today = new Date();
@@ -264,7 +326,14 @@ exports.processBulkSaveAttendance = async (req, res) => {
         });
 
         if (attendance) {
-          attendance.records = batchRecords;
+          batchRecords.forEach(newRecord => {
+            const existingIndex = attendance.records.findIndex(r => r.studentId === newRecord.studentId);
+            if (existingIndex !== -1) {
+              attendance.records[existingIndex].status = newRecord.status;
+            } else {
+              attendance.records.push(newRecord);
+            }
+          });
         } else {
           attendance = new Attendance({
             batch: batchId,

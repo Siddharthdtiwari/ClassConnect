@@ -4,16 +4,99 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage Fees Tracker</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Fees Directory | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+  
+  <style>
+    /* Premium Dashboard Theme Harmonization */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    /* Column Sizing for Fee Grid */
+    .col-student { min-width: 200px; }
+    .col-batch { min-width: 110px; }
+    .col-month { min-width: 110px; text-align: center; }
+    .col-summary { min-width: 160px; }
+
+    /* Sticky Headers & Scroll wrapper */
+    .grid-container {
+      max-height: 550px;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+    #fees-table thead tr {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -22,117 +105,432 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mt-1">Manage Fees</h1>
-        <p class="text-gray-600 mt-2">Track and view student fee payments by month.</p>
-      </div>
 
-      <div class="flex flex-wrap gap-3 items-center">
-        <!-- Academic Year Selector -->
+          <%
+            let totalDueSum = 0;
+            let totalCollected = 0;
+            let totalPending = 0;
+            report.forEach(student => {
+              totalDueSum += student.totalDue;
+              totalCollected += student.totalPaid;
+              totalPending += student.balance > 0 ? student.balance : 0;
+            });
+          %>
 
+          <!-- Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Fees <span style="color: var(--pt);">Directory</span></h1>
+              <p class="dash-sub">Faculty Command Center · Student Fee Ledger</p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <button onclick="window.location.href='/teacher/fee_defaulters'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                Fee Defaulters
+              </button>
+              <button onclick="window.location.href='/teacher/revenue_report'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                Revenue Report
+              </button>
+              <button onclick="window.location.href='/teacher/bulk_fees'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+                Bulk Mode
+              </button>
+              <button onclick="openAddModal()" class="btn-solid-purple flex items-center gap-2 shadow-lg">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                Add Fee
+              </button>
+            </div>
+          </header>
 
-        <button onclick="window.location.href='/teacher/fee_defaulters'" class="py-2 px-4 btn-outline-purple text-sm">
-          Fee Defaulters
-        </button>
-        <button onclick="window.location.href='/teacher/detailed_fees'" class="py-2 px-4 btn-outline-purple text-sm">
-          Detailed Report
-        </button>
-        <button onclick="window.location.href='/teacher/revenue_report'" class="py-2 px-4 btn-outline-purple text-sm">
-          Revenue Report
-        </button>
-        <button onclick="window.location.href='/teacher/add_fees'" class="py-2 px-5 btn-solid-purple text-sm shadow">
-          + Add Fee
-        </button>
-      </div>
-    </header>
+          <!-- Metrics Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Total Due -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);">₹<%= totalDueSum.toLocaleString() %></div>
+              <div class="stat-label">Total Receivables</div>
+            </div>
 
-    <div class="glass-card p-6 rounded-xl shadow border border-purple-100 mb-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 class="text-xl font-bold text-gray-800">Fee Status Grid</h2>
-        <div class="relative w-full sm:w-64">
-          <input type="text" id="student-search" placeholder="Search a student by name..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-brand-purple focus:border-brand-purple text-sm transition-shadow">
-          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
-          </svg>
-        </div>
-      </div>
+            <!-- Total Collected -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="stat-value" style="color: #34d399;">₹<%= totalCollected.toLocaleString() %></div>
+              <div class="stat-label">Total Collected</div>
+            </div>
 
-      <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
-        <table class="data-table">
-          <thead>
-            <tr>
-              <th>Batch</th>
-              <th>Student ID</th>
-              <th>Student Name</th>
-              <% months.forEach(month => { %>
-              <th class="text-center"><%= month %></th>
+            <!-- Outstanding Balance -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div class="stat-value" style="color: #f87171;">₹<%= totalPending.toLocaleString() %></div>
+              <div class="stat-label">Total Outstanding</div>
+            </div>
+          </div>
+
+          <!-- Filters Section -->
+          <div class="stat-card p-6 mb-10 flex flex-col gap-6">
+            <!-- Search Bar -->
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-theme-fdd" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input type="text" id="student-search" placeholder="Search by student name or ID..." class="w-full pl-12 pr-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm placeholder-theme-fdd" />
+            </div>
+
+            <!-- Batch Tabs Filter -->
+            <% if (batches.length > 0) { %>
+            <div class="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
+              <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-3 font-mono">Filter by Batch:</span>
+              <button onclick="filterBatch('All')" 
+                class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono"
+                data-class="All">🗓 All</button>
+              <% batches.forEach((cls) => { %>
+              <button onclick="filterBatch('<%= cls.name %>')" 
+                class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono"
+                data-class="<%= cls.name %>">🏫 <%= cls.name %></button>
               <% }) %>
-            </tr>
-          </thead>
-          <tbody>
-            <% studentsWithFees.forEach(student => { %>
-            <tr class="student-row">
-              <td class="font-medium text-gray-600 search-standard"><%= student.standard %></td>
-              <td class="font-mono text-gray-500 search-id"><%= student.studentId %></td>
-              <td class="font-bold text-gray-800 search-name"><%= student.studentName %></td>
-              <% months.forEach(month => { %>
-              <td class="text-center">
-                <% if (student.fees[month]) { %>
-                <span class="paid" title="Paid on <%= student.fees[month] %>"><%= student.fees[month] %></span>
-                <% } else { %>
-                <span class="unpaid">-</span>
-                <% } %>
-              </td>
-              <% }) %>
-            </tr>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Fee Table Grouped by Batch -->
+          <div id="fees-container">
+            <% if (report.length === 0) { %>
+            <div class="stat-card p-16 text-center text-theme-fdd">
+              <p class="text-5xl mb-4">💳</p>
+              <p class="text-xl font-bold">No students or fees recorded</p>
+              <p class="text-sm mt-1">Enroll students and record payments to build the grid.</p>
+            </div>
+            <% } else { %>
+
+            <% batches.forEach(batch => { %>
+            <% const batchStudents = report.filter(s => s.standard === batch.name); %>
+            <% if(batchStudents.length > 0) { %>
+            <div class="class-section mb-10" data-class="<%= batch.name %>">
+              
+              <!-- Batch Grouping Header -->
+              <div class="flex items-center justify-between mb-4 pl-1">
+                <div class="flex items-center gap-3">
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-xl font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch: <span style="color: var(--pt);"><%= batch.name %></span></h3>
+                  <span class="text-xs font-semibold bg-purple-500/10 text-theme-pt border border-purple-500/20 px-2.5 py-1 rounded-full class-count"><%= batchStudents.length %> student<%= batchStudents.length !== 1 ? 's' : '' %></span>
+                </div>
+                <div class="flex-grow h-px bg-theme-bd ml-4 hidden sm:block"></div>
+              </div>
+
+              <!-- Scrollable Table -->
+              <div class="grid-container border border-theme-b bg-theme-bgc rounded-xl">
+                <table class="data-table" id="fees-table">
+                  <thead class="sticky top-0 z-10 shadow-sm">
+                    <tr>
+                      <th class="col-student text-left">Student Details</th>
+                      <% months.forEach(month => { %>
+                      <th class="col-month text-center"><%= month %></th>
+                      <% }) %>
+                      <th class="col-summary text-right">Summary Balance</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% batchStudents.forEach(student => { %>
+                    <tr class="student-row hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
+                      <td class="col-student">
+                        <div class="flex items-center gap-3">
+                          <img src="https://placehold.co/96x96/ffffff/5d3a9b?text=<%= encodeURIComponent(student.studentName.charAt(0)) %>" alt="Avatar" class="w-8 h-8 rounded-full border border-theme-bd object-cover flex-shrink-0" />
+                          <div>
+                            <div class="font-bold text-theme-fg search-name leading-tight"><%= student.studentName %></div>
+                            <div class="text-[9px] text-theme-pt font-mono font-bold tracking-wider search-id mt-1 inline-block bg-theme-pt/10 px-2 py-0.5 rounded border border-theme-pt/20 leading-none"><%= student.studentId %></div>
+                          </div>
+                        </div>
+                      </td>
+
+                      <% months.forEach(month => { %>
+                      <% const record = student.records[month]; %>
+                      <td class="col-month text-center">
+                        <% if (record.status === 'Paid') { %>
+                        <div class="flex flex-col items-center justify-center leading-none">
+                          <span class="paid" title="Paid ₹<%= record.amount.toLocaleString() %> via <%= record.method %>"><%= record.datePaid.toLocaleDateString('en-IN', {day:'numeric',month:'short'}) %></span>
+                          <span class="text-[8px] text-theme-fdd font-mono tracking-tighter mt-1 block">₹<%= record.amount.toLocaleString() %></span>
+                        </div>
+                        <% } else { %>
+                        <span class="unpaid">-</span>
+                        <% } %>
+                      </td>
+                      <% }) %>
+
+                      <td class="col-summary text-right">
+                        <div class="flex flex-col items-end gap-0.5 text-xs">
+                          <div class="text-theme-fd font-medium">Due: <span class="font-mono text-theme-fg">₹<%= student.totalDue.toLocaleString() %></span></div>
+                          <div class="text-emerald-400 font-bold">Paid: <span class="font-mono">₹<%= student.totalPaid.toLocaleString() %></span></div>
+                          <% if (student.balance > 0) { %>
+                          <div class="text-red-400 font-extrabold">Bal: <span class="font-mono">₹<%= student.balance.toLocaleString() %></span></div>
+                          <% } else { %>
+                          <div class="text-emerald-400 font-extrabold">Clear ✓</div>
+                          <% } %>
+                        </div>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Empty state for search filtering per class -->
+              <div class="no-results-msg hidden p-10 text-center text-theme-fdd stat-card border border-t-0 rounded-b-xl">
+                <p class="text-3xl mb-2">🔍</p>
+                <p class="font-semibold text-sm">No students match your search in <%= batch.name %>.</p>
+              </div>
+            </div>
+            <% } %>
             <% }) %>
-          </tbody>
-        </table>
-      </div>
 
-      <div id="no-results-msg" class="hidden p-6 text-center text-gray-500 bg-gray-50 border border-t-0 border-gray-200 rounded-b-xl italic">
-        No students found matching your search.
-      </div>
+            <% } %>
+          </div>
+
+        </div>
+
+        <!-- =================== ADD FEE MODAL =================== -->
+        <div class="modal-overlay" id="add-fee-modal">
+          <div class="modal-box max-w-md" style="background: var(--bgc); border: 1px solid var(--bd); border-radius: 18px; padding: 24px;">
+            
+            <!-- Header (Dashboard Match) -->
+            <div class="flex justify-between items-start mb-6 border-b border-theme-bd pb-4">
+              <div>
+                <h2 class="text-xl font-black uppercase tracking-tight" style="font-family: 'Unbounded', sans-serif; color: var(--pt) !important;">Add <span style="color: var(--fg) !important;">Fee Payment</span></h2>
+                <p class="dash-sub mt-1">Record a student fee payment</p>
+              </div>
+              <button onclick="closeModal('add-fee-modal')" class="text-theme-fdd hover:text-theme-fg text-2xl font-bold leading-none">&times;</button>
+            </div>
+
+            <!-- Body -->
+            <div>
+              <form id="add-fee-form" action="/teacher/add_fees" method="POST" class="space-y-4">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                
+                <div>
+                  <label for="student-id" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Select Student</label>
+                  <select id="student-id" name="studentId" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm" required>
+                    <option value="" disabled selected>Select Student...</option>
+                    <% students.forEach(user=> { %>
+                    <option value="<%= user._id %>" data-student-id="<%= user.studentId %>" data-name="<%= user.studentName %>" data-standard-id="<%= user.batch ? user.batch._id : '' %>" data-standard-name="<%= user.batch ? user.batch.name : 'Unknown' %>" data-monthly-fee="<%= user.monthlyFee %>">
+                      <%= user.studentId %> — <%= user.studentName %>
+                    </option>
+                    <% }) %>
+                  </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="student-name" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Student Name</label>
+                    <input type="text" id="student-name" name="studentName" readonly class="w-full px-4 py-2 bg-theme-bgc/50 text-theme-fdd border border-theme-b rounded-lg cursor-not-allowed text-xs font-semibold" />
+                  </div>
+                  <div>
+                    <label for="student-standard-display" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Batch</label>
+                    <input type="text" id="student-standard-display" readonly class="w-full px-4 py-2 bg-theme-bgc/50 text-theme-fdd border border-theme-b rounded-lg cursor-not-allowed text-xs font-semibold" />
+                    <input type="hidden" id="student-standard" name="standard" />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="month" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Month</label>
+                    <select id="month" name="month" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm" required>
+                      <option value="" disabled selected>Select Month...</option>
+                      <% const allMonths = ["May","June","July","August","September","October","November","December","January","February","March","April"]; %>
+                      <% allMonths.forEach(m => { %>
+                      <option value="<%= m %>" <%= new Date().toLocaleString('en-US', {month: 'long'}) === m ? 'selected' : '' %>><%= m %></option>
+                      <% }) %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="year" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Year</label>
+                    <input type="number" id="year" name="year" value="<%= new Date().getFullYear() %>" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                  </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="amount" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Amount (₹)</label>
+                    <input type="number" id="amount" name="amount" placeholder="e.g., 5000" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                  </div>
+                  <div>
+                    <label for="method" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Payment Method</label>
+                    <select id="method" name="method" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm" required>
+                      <option value="" disabled selected>Select Method...</option>
+                      <option value="Cash">Cash</option>
+                      <option value="UPI">UPI</option>
+                      <option value="Razorpay">Razorpay</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="date-paid" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Date Paid</label>
+                  <input type="date" id="date-paid" name="datePaid" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                </div>
+
+                <button type="submit" class="w-full py-3.5 mt-5 btn-solid-purple flex items-center justify-center gap-2 shadow-lg">Submit Fee ✓</button>
+              </form>
+            </div>
+            
+            <div id="message-box" class="mt-4 p-3 rounded-lg text-center hidden text-xs font-semibold"></div>
+          </div>
+        </div>
+
+      </main>
     </div>
   </div>
 
   <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      const searchInput = document.getElementById('student-search');
-      const rows = document.querySelectorAll('.student-row');
-      const noResultsMsg = document.getElementById('no-results-msg');
+    document.addEventListener("DOMContentLoaded", () => {
+      const searchInput = document.getElementById("student-search");
+      const classSections = document.querySelectorAll(".class-section");
 
-      if (searchInput) {
-        searchInput.addEventListener('input', () => {
-          const query = searchInput.value.toLowerCase().trim();
-          let anyVisible = false;
+      // Set default datePaid to today
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('date-paid').value = today;
+
+      // Live search filter
+      searchInput.addEventListener("input", () => {
+        const query = searchInput.value.toLowerCase().trim();
+
+        classSections.forEach(section => {
+          let visibleCount = 0;
+          const rows = section.querySelectorAll(".student-row");
+          const msg = section.querySelector(".no-results-msg");
+          const tableWrap = section.querySelector(".grid-container");
 
           rows.forEach(row => {
-            const name = row.querySelector('.search-name').textContent.toLowerCase();
-            const id = row.querySelector('.search-id').textContent.toLowerCase();
+            const name = row.querySelector(".search-name").textContent.toLowerCase();
+            const id = row.querySelector(".search-id").textContent.toLowerCase();
 
             if (name.includes(query) || id.includes(query)) {
-              row.style.display = '';
-              anyVisible = true;
+              row.style.display = "";
+              visibleCount++;
             } else {
-              row.style.display = 'none';
+              row.style.display = "none";
             }
           });
 
-          if (!anyVisible && query !== '') {
-            noResultsMsg.classList.remove('hidden');
+          if (visibleCount === 0) {
+            if (tableWrap) tableWrap.classList.add("hidden");
+            if (msg) msg.classList.remove("hidden");
           } else {
-            noResultsMsg.classList.add('hidden');
+            if (tableWrap) tableWrap.classList.remove("hidden");
+            if (msg) msg.classList.add("hidden");
+          }
+
+          const countSpan = section.querySelector(".class-count");
+          if (countSpan) {
+            countSpan.textContent = visibleCount + (visibleCount === 1 ? ' match' : ' matches');
           }
         });
+      });
+
+      // Student Dropdown Change Trigger
+      document.getElementById("student-id").addEventListener("change", function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (!selectedOption.value) {
+          document.getElementById("student-name").value = "";
+          document.getElementById("amount").value = "";
+          document.getElementById("student-standard-display").value = "";
+          document.getElementById("student-standard").value = "";
+          return;
+        }
+        document.getElementById("student-name").value = selectedOption.dataset.name || "";
+        document.getElementById("amount").value = selectedOption.dataset.monthlyFee || "";
+        document.getElementById("student-standard-display").value = selectedOption.dataset.standardName || "";
+        document.getElementById("student-standard").value = selectedOption.dataset.standardId || "";
+      });
+
+      // Submit Form Interceptor
+      document.getElementById("add-fee-form").addEventListener("submit", async function(e) {
+        e.preventDefault();
+        const data = {
+          studentId: document.getElementById("student-id").value,
+          standard: document.getElementById("student-standard").value,
+          amount: Number(document.getElementById("amount").value),
+          month: document.getElementById("month").value,
+          year: Number(document.getElementById("year").value),
+          method: document.getElementById("method").value,
+          datePaid: document.getElementById("date-paid").value
+        };
+
+        const messageBox = document.getElementById("message-box");
+        messageBox.classList.add("hidden");
+
+        try {
+          const res = await fetch("/teacher/add_fees", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify(data),
+          });
+
+          const result = await res.json();
+
+          if (result.success) {
+            messageBox.textContent = result.message;
+            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-green-500/10 text-green-400 border border-green-500/20";
+            messageBox.classList.remove("hidden");
+            this.reset();
+            setTimeout(() => { window.location.reload(); }, 1200);
+          } else {
+            messageBox.textContent = result.message;
+            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-red-500/10 text-red-400 border border-red-500/20";
+            messageBox.classList.remove("hidden");
+          }
+        } catch(err) {
+          messageBox.textContent = "Network Error: Could not connect to server";
+          messageBox.className = "mt-4 p-3 rounded-lg text-center bg-red-500/10 text-red-400 border border-red-500/20";
+          messageBox.classList.remove("hidden");
+        }
+      });
+
+      const modalOverlay = document.getElementById("add-fee-modal");
+      if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+          if(e.target === this) closeModal(this.id);
+        });
+      }
+
+      // Auto-open modal if URL query param action=add is present
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'add') {
+        openAddModal();
+        window.history.replaceState({}, document.title, window.location.pathname);
       }
     });
-  </script>
-      </main>
-    </div>
-  </div>
-</body>
 
+    function filterBatch(cls) {
+      document.querySelectorAll('.batch-tab-filter').forEach(btn => {
+        const isActive = btn.dataset.class === cls;
+        if (isActive) {
+          btn.className = 'batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono';
+        } else {
+          btn.className = 'batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono';
+        }
+      });
+      document.querySelectorAll('.class-section').forEach(section => {
+        section.style.display = (cls === 'All' || section.dataset.class === cls) ? '' : 'none';
+      });
+    }
+
+    function openAddModal() {
+      document.getElementById('add-fee-modal').classList.add('open');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+  </script>
+</body>
 
 </html>

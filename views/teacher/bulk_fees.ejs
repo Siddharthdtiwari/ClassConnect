@@ -4,49 +4,42 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bulk Fee Entry (<%= selectedYear %>)</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Unbounded:wght@600;700;800;900&family=Space+Mono:wght@700&display=swap" rel="stylesheet" />
+  <title>Bulk Fee Entry | Tuition Hub</title>
+  
+  <%- include('../partials/background') %>
   
   <style>
-    /* Compact, High-Density Premium Theme */
-    .bulk-header-bg {
-      background: linear-gradient(135deg, rgba(124, 58, 237, 0.05) 0%, rgba(52, 211, 153, 0.05) 100%);
-      border: 1px solid var(--bd);
-      position: relative;
-      overflow: hidden;
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
     }
-    .bulk-header-bg::before {
-      content: '';
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: radial-gradient(circle, rgba(124,58,237,0.08) 0%, transparent 50%);
-      animation: rotateBg 30s linear infinite;
-      z-index: 0;
-      pointer-events: none;
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
     }
-    @keyframes rotateBg {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-    
+
     .glass-table-wrapper {
       background: var(--bgc);
       border: 1px solid var(--bd);
       border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+      box-shadow: 0 8px 32px rgba(0,0,0,0.04);
       overflow: hidden;
       position: relative;
-      scrollbar-width: thin;
-      scrollbar-color: var(--p) transparent;
+      margin-bottom: 2rem;
     }
     
-    .glass-table-wrapper::-webkit-scrollbar { width: 8px; height: 8px; }
+    .glass-table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
     .glass-table-wrapper::-webkit-scrollbar-track { background: transparent; }
-    .glass-table-wrapper::-webkit-scrollbar-thumb { background-color: rgba(124,58,237,0.3); border-radius: 20px; }
+    .glass-table-wrapper::-webkit-scrollbar-thumb { background-color: rgba(124,58,237,0.25); border-radius: 10px; }
+    .glass-table-wrapper::-webkit-scrollbar-thumb:hover { background-color: rgba(124,58,237,0.5); }
 
     .premium-table {
       width: 100%;
@@ -54,41 +47,46 @@
       border-spacing: 0;
     }
     .premium-table th {
-      background: var(--bgc);
-      backdrop-filter: blur(12px);
-      -webkit-backdrop-filter: blur(12px);
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
       position: sticky;
       top: 0;
       z-index: 20;
-      padding: 10px 12px;
+      padding: 12px 14px;
       font-family: 'Space Mono', monospace;
       text-transform: uppercase;
       font-size: 0.7rem;
       letter-spacing: 0.08em;
-      color: var(--fd);
-      border-bottom: 2px solid var(--bd);
+      color: white;
       font-weight: 700;
       white-space: nowrap;
+      border: none;
     }
     
     .premium-table td {
       padding: 4px 6px;
       border-bottom: 1px solid var(--bd);
+      border-right: 1px solid var(--bd);
       transition: background 0.2s ease;
       vertical-align: middle;
+      background: transparent;
     }
-    .premium-table tbody tr { transition: all 0.2s ease; }
-    .premium-table tbody tr:hover td { background: var(--bgch); }
+    .premium-table td:last-child {
+      border-right: none;
+    }
+    .premium-table tbody tr:hover td { background: var(--bgch) !important; }
     
     .sticky-col-left {
       position: sticky;
       left: 0;
-      background: var(--bgc);
+      background: var(--bgc) !important;
       z-index: 15;
-      border-right: 2px solid var(--bd);
+      border-right: 2px solid var(--bd) !important;
       box-shadow: 2px 0 10px rgba(0,0,0,0.02);
     }
-    .premium-table th.sticky-col-left { z-index: 25; }
+    .premium-table th.sticky-col-left {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+      z-index: 25;
+    }
 
     /* HIGH DENSITY CELLS */
     .student-cell {
@@ -121,59 +119,62 @@
       border: 1px solid rgba(124,58,237,0.2);
     }
 
+    /* Cell wrapper design */
+    .fee-cell {
+      min-width: 150px;
+      background: transparent;
+      transition: all 0.2s;
+    }
     .fee-cell-wrapper {
-      background: var(--bg);
-      border: 1px solid transparent;
+      padding: 6px;
       border-radius: 8px;
-      padding: 4px;
+      border: 1px solid transparent;
       transition: all 0.2s ease;
-      min-width: 140px;
-      position: relative;
+      background: transparent;
     }
     .fee-cell-wrapper:hover, .fee-cell-wrapper:focus-within {
       border-color: var(--p);
-      box-shadow: 0 4px 12px rgba(124,58,237,0.1);
       background: var(--bgc);
-      z-index: 10;
+      box-shadow: 0 4px 12px var(--pg2);
     }
 
     .amount-input-wrapper {
       position: relative;
-      margin-bottom: 3px;
+      margin-bottom: 2px;
     }
     .currency-symbol {
       position: absolute;
-      left: 8px;
+      left: 4px;
       top: 50%;
       transform: translateY(-50%);
-      color: var(--pt);
+      color: var(--fdd);
       font-weight: 800;
       font-size: 0.75rem;
-      opacity: 0.7;
+      transition: color 0.2s;
     }
     .amount-input {
       width: 100%;
-      background: var(--bgc);
-      border: 1px solid var(--bd);
-      border-radius: 6px;
-      padding: 4px 6px 4px 22px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: var(--fg);
-      outline: none;
+      background: transparent !important;
+      border: 1px solid transparent !important;
+      border-radius: 4px !important;
+      padding: 2px 4px 2px 14px !important;
+      font-size: 0.82rem !important;
+      font-weight: 700 !important;
+      color: var(--fg) !important;
+      outline: none !important;
       transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
+      font-family: 'Inter', sans-serif !important;
     }
     .amount-input:focus {
-      border-color: var(--p);
-      box-shadow: 0 0 0 2px rgba(124,58,237,0.15);
+      border-bottom: 2px solid var(--p) !important;
+      background: var(--bgch) !important;
     }
-    .amount-input::placeholder { color: var(--fdd); opacity: 0.5; }
+    .amount-input::placeholder { color: var(--fdd) !important; opacity: 0.45; }
 
     .meta-inputs {
       display: flex;
       gap: 4px;
-      opacity: 0.4;
+      opacity: 0.35;
       transition: all 0.2s ease;
     }
     .fee-cell-wrapper:hover .meta-inputs, 
@@ -183,56 +184,44 @@
     }
     
     .meta-select, .meta-date {
-      background: var(--bg);
-      border: 1px solid var(--bd);
-      border-radius: 4px;
-      font-size: 0.6rem;
-      padding: 2px 4px;
-      color: var(--fd);
-      outline: none;
-      transition: all 0.2s;
-      font-family: 'Inter', sans-serif;
+      background: transparent !important;
+      border: none !important;
+      font-size: 0.62rem !important;
+      padding: 0 !important;
+      color: var(--fdd) !important;
+      outline: none !important;
+      cursor: pointer;
+      font-family: 'Inter', sans-serif !important;
     }
-    .meta-select { width: 35%; font-weight: 700; text-transform: uppercase; cursor: pointer; }
-    .meta-date { width: 65%; cursor: pointer; }
+    .meta-select { width: 40%; font-weight: 700; text-transform: uppercase; }
+    .meta-date { width: 60%; }
     .meta-select:focus, .meta-date:focus {
-      border-color: var(--p);
-      color: var(--fg);
-      background: var(--bgc);
+      color: var(--pt) !important;
     }
 
-    /* Status Colors */
+    /* Paid States */
     .paid-existing .fee-cell-wrapper {
-      background: linear-gradient(180deg, rgba(52,211,153,0.05) 0%, rgba(52,211,153,0.01) 100%);
-      border: 1px solid rgba(52,211,153,0.2);
+      background: rgba(52,211,153,0.03);
+      border-color: rgba(52,211,153,0.15);
     }
     .paid-existing .amount-input {
-      color: #059669;
-      border-color: rgba(52,211,153,0.3);
-      background: rgba(52,211,153,0.05);
+      color: #34d399 !important;
     }
-    .paid-existing .currency-symbol { color: #10b981; opacity: 1; }
+    .paid-existing .currency-symbol { color: #34d399; opacity: 1; }
     .paid-existing .meta-select, .paid-existing .meta-date {
-      background: rgba(52,211,153,0.05);
-      border-color: rgba(52,211,153,0.2);
-      color: #059669;
+      color: #34d399 !important;
     }
     
+    /* Dirty Changes */
     .changed-cell .fee-cell-wrapper {
       border-color: #f59e0b;
-      background: rgba(245,158,11,0.05);
-      animation: pulseBorder 2s infinite;
-    }
-    @keyframes pulseBorder {
-      0% { box-shadow: 0 0 0 0 rgba(245,158,11,0.2); }
-      70% { box-shadow: 0 0 0 4px rgba(245,158,11,0); }
-      100% { box-shadow: 0 0 0 0 rgba(245,158,11,0); }
+      background: rgba(245,158,11,0.03);
     }
 
     .saved-cell .fee-cell-wrapper { animation: flashSuccess 1s ease-out; }
     @keyframes flashSuccess {
-      0% { background: #10b981; }
-      100% { background: rgba(52,211,153,0.05); }
+      0% { background: rgba(52,211,153,0.4); }
+      100% { background: transparent; }
     }
 
     /* Floating Save Bar */
@@ -241,13 +230,13 @@
       bottom: -100px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(20, 20, 25, 0.95);
+      background: var(--bgc);
       backdrop-filter: blur(16px);
       -webkit-backdrop-filter: blur(16px);
-      border: 1px solid rgba(255,255,255,0.1);
-      padding: 12px 20px;
+      border: 1px solid var(--bd);
+      padding: 12px 24px;
       border-radius: 100px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.3), 0 0 0 1px rgba(124,58,237,0.2);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15), 0 0 0 1px var(--bd);
       display: flex;
       align-items: center;
       gap: 20px;
@@ -261,8 +250,8 @@
       color: #fff;
       font-weight: 800;
       font-family: 'Space Mono', monospace;
-      font-size: 0.8rem;
-      padding: 4px 10px;
+      font-size: 0.75rem;
+      padding: 4px 12px;
       border-radius: 20px;
       display: inline-flex;
       align-items: center;
@@ -270,100 +259,65 @@
     }
 
     .btn-save-glow {
-      background: linear-gradient(135deg, #7c3aed 0%, #ec4899 100%);
-      color: white;
-      border: none;
-      padding: 8px 24px;
-      border-radius: 100px;
-      font-family: 'Unbounded', sans-serif;
-      font-weight: 700;
-      font-size: 0.8rem;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+      color: white !important;
+      border: none !important;
+      padding: 8px 24px !important;
+      border-radius: 100px !important;
+      font-family: 'Unbounded', sans-serif !important;
+      font-weight: 700 !important;
+      font-size: 0.75rem !important;
       cursor: pointer;
-      box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+      box-shadow: 0 4px 15px var(--pg) !important;
       transition: all 0.2s;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
     .btn-save-glow:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 6px 20px rgba(124,58,237,0.5);
+      transform: translateY(-2px) !important;
+      box-shadow: 0 6px 20px var(--pg) !important;
     }
     
     .ctrl-label {
       font-family: 'Space Mono', monospace;
-      font-size: 0.6rem;
+      font-size: 0.58rem;
       text-transform: uppercase;
-      letter-spacing: 0.1em;
-      color: var(--fd);
+      letter-spacing: 0.12em;
+      color: var(--fdd);
       margin-bottom: 4px;
       display: block;
       font-weight: 700;
     }
     
     .ctrl-input {
-      background: var(--bgc);
-      border: 1px solid var(--bd);
-      border-radius: 8px;
-      padding: 6px 12px;
-      font-family: 'Inter', sans-serif;
-      font-size: 0.8rem;
-      font-weight: 600;
-      color: var(--fg);
-      outline: none;
+      background: var(--bgc) !important;
+      border: 1px solid var(--bd) !important;
+      border-radius: 8px !important;
+      padding: 6px 12px !important;
+      font-family: 'Inter', sans-serif !important;
+      font-size: 0.8rem !important;
+      font-weight: 600 !important;
+      color: var(--fg) !important;
+      outline: none !important;
       transition: all 0.2s;
       cursor: pointer;
     }
     .ctrl-input:focus, .ctrl-input:hover {
-      border-color: var(--p);
+      border-color: var(--p) !important;
     }
 
-    /* MOBILE OPTIMIZATIONS */
     @media (max-width: 768px) {
-      .student-cell {
-        min-width: 110px;
-        max-width: 130px;
-        padding: 4px;
-      }
-      .student-name {
-        font-size: 0.65rem;
-      }
-      .student-id {
-        display: none; /* Hide ID on mobile to save space */
-      }
-      .fee-cell-wrapper {
-        min-width: 110px;
-        padding: 2px;
-      }
-      .amount-input {
-        padding: 2px 4px 2px 16px;
-        font-size: 0.75rem;
-      }
-      .currency-symbol {
-        font-size: 0.65rem;
-        left: 4px;
-      }
-      .premium-table th {
-        padding: 6px;
-        font-size: 0.6rem;
-      }
-      .premium-table td {
-        padding: 2px;
-      }
-      .glass-table-wrapper {
-        border-radius: 8px;
-      }
-      .bulk-header-bg {
-        padding: 16px;
-      }
-      .ctrl-input {
-        font-size: 0.7rem;
-        padding: 4px 8px;
-      }
+      .student-cell { min-width: 110px; max-width: 130px; padding: 4px; }
+      .student-name { font-size: 0.65rem; }
+      .student-id { display: none; }
+      .fee-cell { min-width: 110px; }
+      .amount-input { padding: 2px 4px 2px 14px !important; font-size: 0.75rem !important; }
+      .currency-symbol { font-size: 0.65rem; left: 4px; }
+      .premium-table th { padding: 8px; font-size: 0.6rem; }
+      .premium-table td { padding: 4px; }
     }
   </style>
 </head>
-
-<%- include('../partials/background') %>
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -373,37 +327,36 @@
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden; padding-bottom: 100px;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-          <!-- COMPACT JAW DROPPING HEADER -->
-          <header class="bulk-header-bg p-6 rounded-2xl mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-6 shadow-sm border border-gray-200/50 backdrop-blur-xl">
-            <div class="relative z-10 flex items-center gap-4">
-              <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-[#7c3aed] to-[#ec4899] flex items-center justify-center shadow-lg transform -rotate-3">
-                <svg class="w-6 h-6 text-white drop-shadow-md" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-              </div>
-              <div>
-                <h1 class="text-2xl font-black text-transparent bg-clip-text bg-gradient-to-r from-brand-purple to-[#ec4899]" style="font-family: 'Unbounded', sans-serif;">Bulk Fee Entry</h1>
-              </div>
+          <!-- Header (Dashboard matching style) -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Bulk Fee <span style="color: var(--pt);">Entry</span></h1>
+              <p class="dash-sub">Faculty Command Center · Matrix Payments Ledger (<%= selectedYear %>)</p>
             </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <a href="/teacher/manage_fees" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back
+              </a>
+              <div class="flex gap-3 flex-wrap items-center bg-theme-bgc/60 backdrop-blur-md p-3.5 rounded-xl border border-theme-bd">
+                <div class="flex flex-col sm:flex-none">
+                  <label class="ctrl-label">Default Date</label>
+                  <input type="date" id="global-date" class="ctrl-input" value="<%= new Date().toISOString().split('T')[0] %>">
+                </div>
 
-            <div class="relative z-10 flex flex-wrap gap-4 items-end bg-white/40 backdrop-blur-md p-3 rounded-xl border border-white/50 shadow-sm w-full lg:w-auto">
-              
-              <div class="flex flex-col flex-1 sm:flex-none">
-                <label class="ctrl-label">Default Date</label>
-                <input type="date" id="global-date" class="ctrl-input py-1.5 px-2" value="<%= new Date().toISOString().split('T')[0] %>">
+                <div class="flex flex-col sm:flex-none">
+                  <label class="ctrl-label">Default Method</label>
+                  <select id="global-method" class="ctrl-input">
+                    <option value="Cash">💵 Cash</option>
+                    <option value="UPI" selected>📱 UPI</option>
+                    <option value="Razorpay">🌐 Razorpay</option>
+                  </select>
+                </div>
               </div>
-
-              <div class="flex flex-col flex-1 sm:flex-none">
-                <label class="ctrl-label">Default Method</label>
-                <select id="global-method" class="ctrl-input py-1.5 px-2">
-                  <option value="Cash">💵 Cash</option>
-                  <option value="UPI" selected>📱 UPI</option>
-                  <option value="Razorpay">🌐 Net/Razorpay</option>
-                </select>
-              </div>
-
             </div>
           </header>
 
-          <!-- COMPACT PREMIUM GLASS TABLE -->
+          <!-- Table Container -->
           <div class="glass-table-wrapper">
             <div class="overflow-x-auto" style="max-height: 70vh;">
               <table class="premium-table min-w-max">
@@ -411,14 +364,14 @@
                   <tr>
                     <th class="sticky-col-left">
                       <div class="flex items-center gap-2">
-                        <svg class="w-3.5 h-3.5 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                         Student Roster
                       </div>
                     </th>
                     <% months.forEach(month => { %>
-                    <th>
+                    <th class="text-center">
                       <div class="flex items-center justify-center gap-1">
-                        <svg class="w-3 h-3 opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <svg class="w-3.5 h-3.5 opacity-60" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <%= month %>
                       </div>
                     </th>
@@ -427,8 +380,8 @@
                 </thead>
                 <tbody>
                   <% users.forEach((user, index) => { %>
-                  <tr>
-                    <td class="sticky-col-left bg-white/50 backdrop-blur-sm">
+                  <tr class="border-b border-theme-bd hover:bg-theme-bgch/40 transition-all">
+                    <td class="sticky-col-left">
                       <div class="student-cell">
                         <div class="student-name" title="<%= user.studentName %>"><%= user.studentName %></div>
                         <div class="student-id">
@@ -443,8 +396,8 @@
                        const isNextYear = ["January", "February", "March", "April"].includes(month);
                        const cellYear = isNextYear ? selectedYear + 1 : selectedYear;
                     %>
-                    <td id="cell-<%= user.studentId %>-<%= month %>" class="<%= isPaid ? 'paid-existing' : '' %>">
-                      <div class="fee-cell-wrapper group">
+                    <td id="cell-<%= user.studentId %>-<%= month %>" class="fee-cell <%= isPaid ? 'paid-existing' : '' %>">
+                      <div class="fee-cell-wrapper">
                         <input type="hidden" class="data-student-id" value="<%= user.studentId %>">
                         <input type="hidden" class="data-student-name" value="<%= user.studentName %>">
                         <input type="hidden" class="data-standard" value="<%= user.standard %>">
@@ -480,17 +433,17 @@
       
       <!-- FLOATING SAVE BAR -->
       <div id="floating-save-bar" class="floating-save-bar">
-        <div class="text-white font-medium flex flex-col">
-          <span class="text-gray-300 text-[0.65rem] uppercase tracking-wider font-bold mb-0.5">Unsaved</span>
+        <div class="text-theme-fg font-medium flex flex-col">
+          <span class="text-theme-fdd text-[0.65rem] uppercase tracking-wider font-bold mb-0.5">Unsaved Changes</span>
           <div class="flex items-center gap-2">
             <span id="unsaved-badge" class="unsaved-count">
               <span id="unsaved-text">0 Modified</span>
             </span>
           </div>
         </div>
-        <button onclick="saveAllChanges()" id="save-btn" class="btn-save-glow flex items-center gap-1.5">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-          Commit
+        <button onclick="saveAllChanges()" id="save-btn" class="btn-save-glow flex items-center gap-1.5 shadow-lg">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"></path></svg>
+          Commit ✓
         </button>
       </div>
       
@@ -507,6 +460,8 @@
 
     function markDirty(element) {
       const cell = element.closest('td');
+      
+      // Calculate dirty status and show visual modified warning
       if (!cell.classList.contains('changed-cell')) {
         cell.classList.add('changed-cell');
         unsavedCount++;
@@ -521,6 +476,7 @@
       const globalDate = document.getElementById('global-date').value;
       const globalMethod = document.getElementById('global-method').value;
 
+      // Automatically fill date/method defaults if amount is typed
       if (amountInput.value && !dateInput.value) {
         dateInput.value = globalDate;
       }
@@ -528,6 +484,13 @@
         if (!methodInput.value || methodInput.value === "") {
           methodInput.value = globalMethod;
         }
+      }
+
+      // Reactive highlight classes based on amount length
+      if (amountInput.value && amountInput.value.trim() !== "") {
+        cell.classList.add('paid-existing');
+      } else {
+        cell.classList.remove('paid-existing');
       }
     }
     
@@ -554,11 +517,13 @@
       const updates = [];
 
       changedCells.forEach(cell => {
-        const amount = cell.querySelector('.data-amount').value;
+        const amountInput = cell.querySelector('.data-amount');
+        const amount = amountInput.value;
         const method = cell.querySelector('.data-method').value;
         const date = cell.querySelector('.data-date').value;
 
-        // If it was already paid and now it's empty, we should delete it
+        // If it was already paid in DB but now it is empty, mark for deletion
+        // (If cell didn't have data-originally-paid, it defaults to original check)
         const isDelete = cell.classList.contains('paid-existing') && amount === "";
 
         if (!isDelete && (!amount || !method || !date)) return;
@@ -631,4 +596,5 @@
     }
   </script>
 </body>
+
 </html>

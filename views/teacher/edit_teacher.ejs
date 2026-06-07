@@ -8,80 +8,101 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
-
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
     <%- include('../partials/teacher_sidebar') %>
     
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-12 min-h-screen flex flex-col items-center justify-center">
-    
-    <div class="w-full max-w-2xl">
-      <div class="premium-card overflow-hidden">
-        
-        <div class="h-40 bg-[#f8f9fa] border-b border-gray-100 relative overflow-hidden">
-          <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(#5d3a9b 0.5px, transparent 0.5px); background-size: 16px 16px;"></div>
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+          <header class="mb-10 flex items-center justify-between">
+            <div>
+              <h1 class="dash-greeting">Edit <span style="color: var(--pt);">Teacher</span></h1>
+              <p class="dash-sub">Update <%= teacher.teacherName %>'s credentials</p>
+            </div>
+            <a href="/teacher/dashboard" class="btn-outline-purple flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider font-mono">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Dashboard
+            </a>
+          </header>
           
-          <a href="/teacher/dashboard" class="absolute top-6 left-6 text-gray-600 hover:text-brand-purple font-semibold flex items-center gap-2 transition-colors z-10 glass-card px-4 py-2 rounded-full shadow-sm text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to Dashboard
-          </a>
-        </div>
-
-        <div class="p-8 sm:p-12 pt-0">
-          <div class="mb-10 -mt-20 relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left">
-            <div class="p-2 glass-card rounded-full shadow-md">
-              <div class="inline-flex items-center justify-center w-32 h-32 bg-[#f8f9fa] rounded-full text-5xl text-brand-purple font-black border-4 border-white object-cover">
+          <div class="stat-card p-6 sm:p-10 max-w-3xl mx-auto mb-10">
+            <div class="mb-8 border-b border-theme-bd pb-6 flex items-center gap-4">
+              <div class="inline-flex items-center justify-center w-16 h-16 rounded-full text-2xl font-black object-cover" style="background: var(--bgch); color: var(--pt); border: 2px solid var(--p);">
                 <%= teacher.teacherName.charAt(0).toUpperCase() %>
               </div>
+              <div>
+                <h2 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;"><%= teacher.teacherName %></h2>
+                <p class="text-[10px] text-theme-fdd mt-1 font-mono uppercase tracking-wider font-bold"><%= teacher.teacherId %></p>
+              </div>
             </div>
-            <div class="pb-2">
-              <h1 class="text-3xl font-black text-gray-900 tracking-tight">Edit Teacher</h1>
-              <p class="text-gray-500 font-medium mt-1">Update <%= teacher.teacherName %>'s credentials.</p>
-            </div>
-          </div>
 
           <form id="edit-teacher-form" action="/teacher/edit_teacher/<%= teacher._id %>" method="POST" class="space-y-6">
             
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="teacherId" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Teacher ID</label>
-                <input type="text" id="teacherId" value="<%= teacher.teacherId %>" disabled class="soft-input mt-1 block w-full rounded-xl py-3 px-4 text-gray-500 cursor-not-allowed" />
+                <label for="teacherId" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Teacher ID</label>
+                <input type="text" id="teacherId" value="<%= teacher.teacherId %>" disabled class="w-full bg-theme-bgc text-theme-fdd border border-theme-b rounded-xl focus:outline-none py-3 px-4 font-semibold text-sm cursor-not-allowed opacity-70" />
               </div>
 
               <div>
-                <label for="teacherName" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Teacher Name</label>
-                <input type="text" id="teacherName" name="teacherName" value="<%= teacher.teacherName %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" required />
+                <label for="teacherName" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Teacher Name</label>
+                <input type="text" id="teacherName" name="teacherName" value="<%= teacher.teacherName %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" required />
               </div>
 
               <div class="sm:col-span-2">
-                <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
-                <input type="email" id="email" name="email" value="<%= teacher.email %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" required />
+                <label for="email" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Email Address</label>
+                <input type="email" id="email" name="email" value="<%= teacher.email %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" required />
               </div>
 
               <div class="sm:col-span-2">
-                <label for="subjects" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Subjects</label>
-                <input type="text" id="subjects" name="subjects" value="<%= teacher.subjects %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="subjects" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Subjects</label>
+                <input type="text" id="subjects" name="subjects" value="<%= teacher.subjects %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
 
               <div class="sm:col-span-2">
-                <label for="password" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">New Password <span class="text-gray-400 normal-case font-normal">(leave blank to keep current)</span></label>
-                <input type="password" id="password" name="password" placeholder="••••••••" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="password" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">New Password <span class="text-theme-fdd/60 normal-case font-normal">(leave blank to keep current)</span></label>
+                <input type="password" id="password" name="password" placeholder="••••••••" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
             </div>
 
-            <div class="pt-6 border-t border-gray-100 flex gap-4 mt-8">
-              <a href="/teacher/dashboard" class="w-full py-4 px-4 rounded-xl text-center font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+            <div class="pt-8 border-t border-theme-bd flex gap-4 mt-8">
+              <a href="/teacher/dashboard" class="w-full py-3 px-6 rounded-xl text-center font-bold text-theme-fdd hover:text-theme-fg hover:bg-theme-bg2 transition-colors border border-transparent">
                 Cancel
               </a>
-              <button type="submit" class="w-full py-4 px-4 btn-solid-purple text-lg">
+              <button type="submit" class="w-full py-3 px-8 btn-solid-purple text-lg shadow-md">
                 Save Changes
               </button>
             </div>
@@ -90,8 +111,6 @@
           <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
         </div>
       </div>
-    </div>
-  </div>
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {

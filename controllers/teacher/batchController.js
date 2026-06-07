@@ -22,22 +22,18 @@ exports.renderManageBatches = async (req, res) => {
   }
 };
 
-exports.renderAddBatch = (req, res) => {
-  res.render("teacher/add_batch");
-};
-
 exports.processAddBatch = async (req, res) => {
   try {
     const { name, description } = req.body;
     const academicYear = req.viewingYear;
 
     if (!name || name.trim() === "") {
-      return res.render("teacher/add_batch", { error: "Batch name is required." });
+      return res.redirect("/teacher/manage_batches");
     }
 
     const existing = await Batch.findOne({ name: name.trim(), academicYear });
     if (existing) {
-      return res.render("teacher/add_batch", { error: `Batch "${name}" already exists for academic year ${academicYear}.` });
+      return res.redirect("/teacher/manage_batches");
     }
 
     const newBatch = new Batch({
@@ -51,20 +47,7 @@ exports.processAddBatch = async (req, res) => {
     res.redirect("/teacher/manage_batches");
   } catch (err) {
     console.error("Add batch error:", err);
-    res.render("teacher/add_batch", { error: "Failed to add batch. Please try again." });
-  }
-};
-
-exports.renderEditBatch = async (req, res) => {
-  try {
-    const batch = await Batch.findById(req.params.id).lean();
-    if (!batch) {
-      return res.status(404).send("Batch not found");
-    }
-    res.render("teacher/edit_batch", { batch });
-  } catch (err) {
-    console.error("Edit batch GET error:", err);
-    res.status(500).send("Error loading batch");
+    res.redirect("/teacher/manage_batches");
   }
 };
 
@@ -73,18 +56,18 @@ exports.processEditBatch = async (req, res) => {
     const { name, description, isActive } = req.body;
     const batch = await Batch.findById(req.params.id);
     if (!batch) {
-      return res.status(404).send("Batch not found");
+      return res.redirect("/teacher/manage_batches");
     }
 
     if (!name || name.trim() === "") {
-      return res.render("teacher/edit_batch", { batch, error: "Batch name is required." });
+      return res.redirect("/teacher/manage_batches");
     }
 
     // Check duplicate (if name changed)
     if (name.trim() !== batch.name) {
       const existing = await Batch.findOne({ name: name.trim(), academicYear: batch.academicYear });
       if (existing) {
-        return res.render("teacher/edit_batch", { batch, error: `Another batch named "${name}" already exists.` });
+        return res.redirect("/teacher/manage_batches");
       }
     }
 
@@ -96,6 +79,6 @@ exports.processEditBatch = async (req, res) => {
     res.redirect("/teacher/manage_batches");
   } catch (err) {
     console.error("Edit batch POST error:", err);
-    res.render("teacher/edit_batch", { batch, error: "Failed to update batch. Please try again." });
+    res.redirect("/teacher/manage_batches");
   }
 };

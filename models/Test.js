@@ -26,6 +26,8 @@ testSchema.pre("save", function (next) {
   next();
 });
 
+const { calculatePercentage } = require("../utils/constants");
+
 testSchema.post("save", async function () {
   try {
     if (!this._totalMarksChanged) return;
@@ -41,7 +43,7 @@ testSchema.post("save", async function () {
         filter: { _id: s._id },
         update: {
           $set: {
-            percentage: Math.round((s.score / this.totalMarks) * 10000) / 100,
+            percentage: calculatePercentage(s.score, this.totalMarks),
           },
         },
       },

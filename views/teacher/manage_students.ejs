@@ -4,16 +4,79 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage Students</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Student Directory | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+  
+  <style>
+    /* Premium Dashboard Theme Harmonization */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0.15;
+      z-index: 0;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -23,124 +86,288 @@
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-    <header class="mb-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-        <div>
-          <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Manage Students</h1>
-          <p class="text-gray-600 mt-1">View, search, and manage all enrolled students.</p>
-        </div>
-        <div class="flex gap-3 flex-wrap items-center">
-          <!-- Academic Year Selector -->
+          <!-- Greeting Header (Dashboard Match) -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Student <span style="color: var(--pt);">Directory</span></h1>
+              <p class="dash-sub">Faculty Command Center · Academic Student Enrollments</p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <% const bulkReportUrl = '/teacher/bulk_student_reports' + (typeof viewingYear !== 'undefined' ? '?year=' + viewingYear : ''); %>
+              <button onclick="window.location.href='<%= bulkReportUrl %>'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Export Reports
+              </button>
+              <button onclick="window.location.href='/teacher/bulk_add_students'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Bulk Import
+              </button>
+              <button onclick="openAddModal()" class="btn-solid-purple flex items-center gap-2 shadow-lg">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                Add Student
+              </button>
+            </div>
+          </header>
 
+          <% 
+            // Group students by batch name
+            const byBatch = {};
+            students.forEach(s => {
+              const batchName = s.batch ? s.batch.name : 'Unassigned';
+              if (!byBatch[batchName]) byBatch[batchName] = [];
+              byBatch[batchName].push(s);
+            });
+            const getBatchOrderValue = (name) => {
+              if (!name) return 999;
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+              const match = lowerName.match(/^(\d+)/);
+              if (match) return parseInt(match[1]);
+              return 100;
+            };
+            const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+            
+            const totalStudents = students.length;
+          %>
 
-          <% const bulkReportUrl = '/teacher/bulk_student_reports' + (typeof viewingYear !== 'undefined' ? '?year=' + viewingYear : ''); %>
-          <button onclick="window.location.href='<%= bulkReportUrl %>'" class="btn-outline-purple flex items-center gap-2">
-            📥 Download All Reports
-          </button>
-          <button onclick="window.location.href='/teacher/bulk_add_students'" class="btn-outline-purple">
-            &#8645; Bulk Import
-          </button>
-          <button onclick="window.location.href='/teacher/add_student'" class="btn-solid-purple">
-            + Add New Student
-          </button>
-        </div>
-      </div>
-    </header>
+          <!-- Metrics Row (Dashboard Card style) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Total Students -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 110-8 4 4 0 010 8zm12 5H18M21 9H19m2 6H19"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= totalStudents %></div>
+              <div class="stat-label">Total Enrolled</div>
+            </div>
 
-    <% 
-      // Group students by batch name
-      const byBatch = {};
-      students.forEach(s => {
-        const batchName = s.batch ? s.batch.name : 'Unassigned';
-        if (!byBatch[batchName]) byBatch[batchName] = [];
-        byBatch[batchName].push(s);
-      });
-      const getBatchOrderValue = (name) => {
-        if (!name) return 999;
-        const lowerName = name.toLowerCase();
-        if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-        const match = lowerName.match(/^(\d+)/);
-        if (match) return parseInt(match[1]);
-        return 100;
-      };
-      const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
-      
-      const totalStudents = students.length;
-    %>
+            <!-- Active Classes -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= sortedBatches.length %></div>
+              <div class="stat-label">Academic Batches</div>
+            </div>
 
-    <div class="glass-card p-6 mb-8">
-      <!-- Search Bar -->
-      <div class="flex flex-col sm:flex-row items-center gap-4">
-        <div class="flex-grow w-full relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-              <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-            </svg>
+            <!-- Avg Class Strength -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--lt);"><%= sortedBatches.length ? Math.round(totalStudents / sortedBatches.length) : 0 %></div>
+              <div class="stat-label">Avg Strength</div>
+            </div>
           </div>
-          <input type="text" id="student-search" placeholder="Search by student name or ID across all classes..." class="w-full pl-10 pr-4 py-3 rounded-lg border border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 transition duration-150" />
-        </div>
-        <div class="text-sm font-medium text-gray-500 whitespace-nowrap bg-purple-50 px-4 py-2 rounded-lg border border-purple-100">
-          Total: <span class="text-brand-purple font-bold text-lg"><%= totalStudents %></span> students
-        </div>
-      </div>
-    </div>
 
-    <!-- Student Tables Grouped By Class -->
-    <div id="students-container">
-      <% if (students.length === 0) { %>
-      <div class="glass-card rounded-xl shadow p-16 text-center text-gray-400">
-        <p class="text-4xl mb-4">&#128100;</p>
-        <p class="text-xl font-semibold">No students found</p>
-        <p class="text-sm mt-1">Add a new student or use bulk import to get started.</p>
-      </div>
-      <% } else { %>
+          <!-- Filters Section -->
+          <div class="stat-card p-6 mb-10 flex flex-col gap-6">
+            <!-- Search Bar -->
+            <div class="relative w-full">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="h-5 w-5 text-theme-fdd" viewBox="0 0 20 20" fill="currentColor">
+                  <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                </svg>
+              </div>
+              <input type="text" id="student-search" placeholder="Search by student name or ID..." class="w-full pl-12 pr-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm placeholder-theme-fdd" />
+            </div>
 
-      <% sortedBatches.forEach(cls => { %>
-      <div class="class-section mb-12" data-class="<%= cls %>">
-        <div class="flex items-center gap-3 mb-4">
-          <span class="class-header"><%= cls %></span>
-          <span class="text-sm text-gray-500 font-medium class-count"><%= byBatch[cls].length %> student<%= byBatch[cls].length !== 1 ? 's' : '' %></span>
-          <div class="flex-1 h-px bg-purple-200"></div>
-        </div>
-
-        <div class="overflow-x-auto rounded-xl shadow border border-gray-200">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th class="w-24">ID</th>
-                <th>Student Name</th>
-                <th>Email</th>
-                <th>Mobile</th>
-                <th class="text-center w-32">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              <% byBatch[cls].forEach(student => { %>
-              <tr class="student-row">
-                <td class="font-mono text-gray-500 text-xs search-id"><%= student.studentId %></td>
-                <td class="font-semibold text-gray-800 search-name"><%= student.studentName %></td>
-                <td class="text-gray-600 text-sm search-email truncate max-w-[180px]" title="<%= student.email %>"><%= student.email || '—' %></td>
-                <td class="text-gray-600 text-sm"><%= student.mobileNo || '—' %></td>
-                <td class="text-center space-x-3">
-                  <a href="/teacher/view_profile/<%= student._id %>" class="text-brand-purple hover:underline text-sm font-medium">Profile</a>
-                  <a href="/teacher/student_report/<%= student._id %>" target="_blank" class="text-green-600 hover:underline text-sm font-medium">Report</a>
-                </td>
-              </tr>
+            <!-- Batch Tabs Filter -->
+            <% if (sortedBatches.length > 0) { %>
+            <div class="flex items-center gap-2 overflow-x-auto pb-1.5 custom-scrollbar">
+              <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-3 font-mono">Filter by Batch:</span>
+              <button onclick="filterBatch('All')" 
+                class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono"
+                data-class="All">🗓 All</button>
+              <% sortedBatches.forEach((cls) => { %>
+              <button onclick="filterBatch('<%= cls %>')" 
+                class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono"
+                data-class="<%= cls %>">🏫 <%= cls %></button>
               <% }) %>
-            </tbody>
-          </table>
+            </div>
+            <% } %>
+          </div>
+
+          <!-- Student Tables Grouped By Class -->
+          <div id="students-container">
+            <% if (students.length === 0) { %>
+            <div class="stat-card p-16 text-center text-theme-fdd">
+              <p class="text-5xl mb-4">👤</p>
+              <p class="text-xl font-bold">No students found</p>
+              <p class="text-sm mt-1">Add a new student or use bulk import to get started.</p>
+            </div>
+            <% } else { %>
+
+            <% sortedBatches.forEach(cls => { %>
+            <div class="class-section mb-10" data-class="<%= cls %>">
+              
+              <!-- Batch Grouping Header -->
+              <div class="flex items-center justify-between mb-4 pl-1">
+                <div class="flex items-center gap-3">
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-xl font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch: <span style="color: var(--pt);"><%= cls %></span></h3>
+                  <span class="text-xs font-semibold bg-purple-500/10 text-theme-pt border border-purple-500/20 px-2.5 py-1 rounded-full class-count"><%= byBatch[cls].length %> student<%= byBatch[cls].length !== 1 ? 's' : '' %></span>
+                </div>
+                <div class="flex-grow h-px bg-theme-bd ml-4 hidden sm:block"></div>
+              </div>
+
+              <!-- Glass Card Table Container -->
+              <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="text-left">Student Details</th>
+                      <th class="text-left">Contact Information</th>
+                      <th class="text-left">Monthly Fee</th>
+                      <th class="text-center w-48">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    <% byBatch[cls].forEach(student => { %>
+                    <tr class="student-row hover:bg-theme-bgch/50 transition-all">
+                      <td>
+                        <div class="flex items-center gap-3.5">
+                          <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile" class="w-10 h-10 rounded-full border border-theme-bd object-cover shadow-sm flex-shrink-0" />
+                          <div>
+                            <div class="font-bold text-theme-fg search-name leading-snug"><%= student.studentName %></div>
+                            <div class="text-[9px] text-theme-pt font-mono font-bold tracking-wider search-id mt-1.5 inline-block bg-theme-pt/10 px-2 py-0.5 rounded border border-theme-pt/20 leading-none"><%= student.studentId %></div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="flex flex-col gap-1 text-xs text-theme-fd">
+                          <div class="flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-theme-pt flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 5a2 2 0 012-2h3.28a1 1 0 01.94.725l.548 2.2a1 1 0 01-.321.988l-1.305.98a10.582 10.582 0 004.872 4.872l.98-1.305a1 1 0 01.988-.321l2.2.548a1 1 0 01.725.94V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z"/></svg>
+                            <span class="font-medium"><%= student.mobileNo || '—' %></span>
+                          </div>
+                          <% if (student.email) { %>
+                          <div class="flex items-center gap-1.5">
+                            <svg class="w-3.5 h-3.5 text-theme-pt flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/></svg>
+                            <span class="truncate max-w-[155px] font-medium search-email" title="<%= student.email %>"><%= student.email %></span>
+                          </div>
+                          <% } else { %>
+                            <span class="search-email hidden"></span>
+                          <% } %>
+                        </div>
+                      </td>
+                      <td>
+                        <div class="font-bold text-theme-fg text-sm">₹<%= (student.monthlyFee || 0).toLocaleString() %></div>
+                        <div class="text-[10px] text-theme-fdd font-medium">per month</div>
+                      </td>
+                      <td>
+                        <div class="flex items-center justify-center gap-2">
+                          <a href="/teacher/view_profile/<%= student._id %>" class="btn-outline-purple py-1.5 px-3 text-[10px] uppercase tracking-wider flex items-center gap-1.5 font-bold rounded-lg shadow-sm border border-theme-b font-mono">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                            Profile
+                          </a>
+                          <a href="/teacher/student_report/<%= student._id %>" target="_blank" class="py-1.5 px-3 text-[10px] uppercase tracking-wider flex items-center gap-1.5 font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600 hover:text-white transition-all shadow-sm font-mono">
+                            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                            Report
+                          </a>
+                        </div>
+                      </td>
+                    </tr>
+                    <% }) %>
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Empty state for search filtering per class -->
+              <div class="no-results-msg hidden p-10 text-center text-theme-fdd stat-card border border-t-0 rounded-b-xl">
+                <p class="text-3xl mb-2">🔍</p>
+                <p class="font-semibold text-sm">No students match your search in <%= cls %>.</p>
+              </div>
+            </div>
+            <% }) %>
+
+            <% } %>
+          </div>
+
         </div>
 
-        <!-- Empty state for search filtering per class -->
-        <div class="no-results-msg hidden p-6 text-center text-gray-400 glass-card border border-t-0 border-gray-200 rounded-b-xl">
-          No students match your search in <%= cls %>.
-        </div>
-      </div>
-      <% }) %>
+        <!-- =================== ADD STUDENT MODAL =================== -->
+        <div class="modal-overlay" id="add-student-modal">
+          <div class="modal-box max-w-md" style="background: var(--bgc); border: 1px solid var(--bd); border-radius: 18px; padding: 24px;">
+            <!-- Header (Dashboard Match) -->
+            <div class="flex justify-between items-start mb-6 border-b border-theme-bd pb-4">
+              <div>
+                <h2 class="text-xl font-black uppercase tracking-tight" style="font-family: 'Unbounded', sans-serif; color: var(--pt) !important;">Add <span style="color: var(--fg) !important;">Student</span></h2>
+                <p class="dash-sub mt-1">Enroll a new student into a batch</p>
+              </div>
+              <button onclick="closeModal('add-student-modal')" class="text-theme-fdd hover:text-theme-fg text-2xl font-bold leading-none">&times;</button>
+            </div>
+            <!-- Body -->
+            <div>
+              <form id="add-student-form" class="space-y-4" action="/teacher/add_student?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data">
+                <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+                
+                <div class="text-center mb-6">
+                  <div class="relative inline-block group cursor-pointer" onclick="document.getElementById('profilePhoto').click()">
+                    <img id="current-photo" src="https://placehold.co/128x128/ffffff/5d3a9b?text=U" alt="Profile Picture Placeholder" class="w-24 h-24 rounded-full border-4 border-[var(--p)] mx-auto object-cover group-hover:opacity-85 transition-opacity" />
+                    <div class="absolute inset-0 bg-black/40 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <input type="file" id="profilePhoto" name="profilePhoto" class="hidden" onchange="previewImage(this)" />
+                  <p class="text-[9px] text-theme-fdd font-mono uppercase tracking-widest mt-2">Click photo to upload</p>
+                </div>
 
-      <% } %>
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="batchId" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Batch</label>
+                    <select id="batchId" name="batchId" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm" required>
+                      <option value="" disabled selected>Select Batch...</option>
+                      <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                        <% batches.forEach(batch => { %>
+                          <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
+                        <% }) %>
+                      <% } else { %>
+                        <option value="" disabled>No active batches found</option>
+                      <% } %>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="studentId" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Student ID</label>
+                    <input type="text" id="studentId" name="studentId" placeholder="e.g., THEC001" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="studentName" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Student Name</label>
+                  <input type="text" id="studentName" name="studentName" placeholder="e.g., Anaya Patel" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                </div>
+
+                <div>
+                  <label for="email" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Email Address (Optional)</label>
+                  <input type="email" id="email" name="email" placeholder="e.g., student@example.com" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" />
+                </div>
+
+                <div>
+                  <label for="password" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Password</label>
+                  <input type="password" id="password" name="password" placeholder="password" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                  <div>
+                    <label for="monthlyFee" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Monthly Fee (₹)</label>
+                    <input type="number" id="monthlyFee" name="monthlyFee" placeholder="e.g., 5000" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                  </div>
+                  <div>
+                    <label for="mobileNo" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Mobile No</label>
+                    <input type="tel" id="mobileNo" name="mobileNo" placeholder="e.g., 9967..." class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
+                  </div>
+                </div>
+
+                <button type="submit" class="w-full py-3.5 mt-5 btn-solid-purple flex items-center justify-center gap-2 shadow-lg">Add Student ✓</button>
+              </form>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
-
   </div>
 
   <script>
@@ -185,12 +412,52 @@
 
         });
       });
-    });
-  </script>
-      </main>
-    </div>
-  </div>
-</body>
 
+      const modalOverlay = document.getElementById("add-student-modal");
+      if (modalOverlay) {
+        modalOverlay.addEventListener('click', function(e) {
+          if(e.target === this) closeModal(this.id);
+        });
+      }
+
+      // Auto-open modal if URL query param action=add is present
+      const urlParams = new URLSearchParams(window.location.search);
+      if (urlParams.get('action') === 'add') {
+        openAddModal();
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    });
+
+    function filterBatch(cls) {
+      document.querySelectorAll('.batch-tab-filter').forEach(btn => {
+        const isActive = btn.dataset.class === cls;
+        if (isActive) {
+          btn.className = 'batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono';
+        } else {
+          btn.className = 'batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono';
+        }
+      });
+      document.querySelectorAll('.class-section').forEach(section => {
+        section.style.display = (cls === 'All' || section.dataset.class === cls) ? '' : 'none';
+      });
+    }
+
+    function openAddModal() {
+      document.getElementById('add-student-modal').classList.add('open');
+    }
+    function closeModal(id) {
+      document.getElementById(id).classList.remove('open');
+    }
+    function previewImage(input) {
+      if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('current-photo').src = e.target.result;
+        }
+        reader.readAsDataURL(input.files[0]);
+      }
+    }
+  </script>
+</body>
 
 </html>

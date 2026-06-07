@@ -14,6 +14,7 @@ const attendanceController = require("../controllers/teacher/attendanceControlle
 const feeController = require("../controllers/teacher/feeController");
 const testController = require("../controllers/teacher/testController");
 const resourceController = require("../controllers/teacher/resourceController");
+const reportsController = require("../controllers/teacher/reportsController");
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -38,9 +39,9 @@ router.post("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin
 
 // Batch Management
 router.get("/teacher/manage_batches", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderManageBatches));
-router.get("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderAddBatch));
+router.get("/teacher/add_batch", (req, res) => res.redirect("/teacher/manage_batches"));
 router.post("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processAddBatch));
-router.get("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderEditBatch));
+router.get("/teacher/edit_batch/:id", (req, res) => res.redirect("/teacher/manage_batches"));
 router.post("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processEditBatch));
 
 // Student Management
@@ -60,14 +61,14 @@ router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin
 router.post("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.processManageAttendance));
 router.get("/teacher/detailed_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDetailedAttendance));
 router.get("/teacher/defaulters/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDefaulters));
+router.get("/teacher/defaulters/download/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.downloadDefaulters));
 router.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderBulkAttendance));
 router.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(attendanceController.processBulkSaveAttendance));
 
+
 // Fee Management
 router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderManageFees));
-router.get("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderAddFees));
 router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.processAddFees));
-router.get("/teacher/detailed_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderDetailedFees));
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
 router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
 router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));
@@ -76,12 +77,16 @@ router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, expre
 
 // Test Management & Scores & Timetable
 router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));
-router.get("/teacher/add_test", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderAddTest));
+router.get("/teacher/generate_paper", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderGeneratePaper));
+router.post("/teacher/add_test", ensureDBConnection, requireTeacherLogin, upload.single("questionPaperFile"), catchAsync(testController.processAddTest));
 router.post("/teacher/delete_test/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processDeleteTest));
+router.post("/teacher/edit_test/:id", ensureDBConnection, requireTeacherLogin, upload.single("questionPaperFile"), catchAsync(testController.processEditTest));
 router.get("/teacher/manage_score", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageScore));
+
 router.get("/api/tests/:batchId", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiGetTests));
 router.get("/api/scores/:batchId/:testId", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiGetScores));
 router.post("/api/scores/save", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiSaveScores));
+router.post("/api/ai/generate_paper", ensureDBConnection, requireTeacherLogin, catchAsync(testController.generatePaperAI));
 router.get("/api/scores/consolidated_classwise", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiConsolidatedScores));
 router.get("/teacher/timetable", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderTimetable));
 router.post("/teacher/timetable/bulk", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableBulk));
@@ -91,7 +96,13 @@ router.post("/teacher/timetable/delete/:id", ensureDBConnection, requireTeacherL
 // Resource Management (Study Materials)
 router.get("/teacher/study_material", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.renderStudyMaterial));
 router.post("/teacher/study_material", ensureDBConnection, requireTeacherLogin, upload.single("file"), catchAsync(resourceController.processStudyMaterialUpload));
+// Static API routes MUST come before :id param routes
+router.post("/api/materials/repost-single/:id", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.repostSingleMaterial));
+router.post("/api/materials/repost-multiple", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.repostMultipleMaterials));
 router.put("/api/materials/:id", ensureDBConnection, requireTeacherLogin, upload.single("file"), catchAsync(resourceController.processStudyMaterialUpdate));
 router.delete("/api/materials/:id", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.processStudyMaterialDelete));
+
+// Reports Hub
+router.get("/teacher/reports", ensureDBConnection, requireTeacherLogin, catchAsync(reportsController.renderReports));
 
 module.exports = router;

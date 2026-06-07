@@ -4,14 +4,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bulk Attendance</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Bulk Attendance | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+
+    /* Table Customizations for Matrix Spreadsheet */
+    .report-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .report-table th, .report-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--bd);
+      border-right: 1px solid var(--bd);
+      text-align: center;
+      vertical-align: middle;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .report-table th {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+      color: white !important;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+    .report-table tr:hover td {
+      background-color: var(--bgch) !important;
+    }
+
+    /* Sticky columns */
+    .sticky-col-left {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background: var(--bgc) !important;
+      text-align: left !important;
+      border-right: 2px solid var(--b) !important;
+      min-width: 200px;
+    }
+    .report-table th.sticky-col-left {
+      z-index: 20;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+    }
+
+    /* Cell status types */
+    .status-cell {
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-weight: 700;
+      user-select: none;
+    }
+    .status-cell:hover {
+      filter: brightness(1.1);
+      transform: scale(1.08);
+    }
+    .status-P {
+      background: rgba(52, 211, 153, 0.12) !important;
+      color: rgb(52, 211, 153) !important;
+    }
+    .status-A {
+      background: rgba(248, 113, 113, 0.12) !important;
+      color: rgb(248, 113, 113) !important;
+    }
+    .status-H {
+      background: rgba(99, 102, 241, 0.12) !important;
+      color: rgb(129, 140, 248) !important;
+    }
+    .status-empty {
+      color: var(--fdd) !important;
+      font-style: italic;
+    }
+    
+    .is-modified {
+      box-shadow: inset 0 0 0 2px var(--p) !important;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    th.sticky-col-left .header-content {
+      justify-content: flex-start;
+    }
+    
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -21,106 +150,109 @@
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-    <header class="mb-6 flex flex-col lg:flex-row justify-between items-start lg:items-end gap-6">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Bulk Attendance</h1>
-        <p class="text-gray-600 mt-1 text-sm">
-          <span class="font-bold text-gray-800">Double-click</span> cells to cycle status:
-          <span class="text-green-600 font-bold">P</span> &rarr;
-          <span class="text-red-600 font-bold">A</span> &rarr;
-          <span class="text-indigo-600 font-bold">H</span>
-        </p>
-      </div>
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col xl:flex-row justify-between items-start xl:items-center gap-6">
+            <div class="flex items-center gap-4">
+              <a href="/teacher/manage_attendance" class="btn-outline-purple p-2 rounded-xl flex items-center justify-center" title="Back to Attendance">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+              </a>
+              <div>
+                <h1 class="dash-greeting">Bulk <span style="color: var(--pt);">Attendance</span></h1>
+                <p class="dash-sub">Double-click cells to cycle status: <span class="text-green-400 font-bold">P</span> &rarr; <span class="text-red-400 font-bold">A</span> &rarr; <span class="text-indigo-400 font-bold">H</span></p>
+              </div>
+            </div>
 
-      <div class="glass-card p-4 rounded-xl shadow-sm border border-gray-200 flex flex-wrap gap-4 items-end w-full lg:w-auto">
-        <form id="filter-form" action="/teacher/bulk_attendance" method="GET" class="flex gap-2 items-end">
-          <div class="flex flex-col">
-            <label class="text-xs font-bold text-gray-500 mb-1">Month</label>
-            <select name="month" class="text-sm border border-gray-300 rounded-lg p-2 font-bold cursor-pointer" onchange="document.getElementById('filter-form').submit()">
-              <% const mNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]; %>
-              <% mNames.forEach((m, index) => { %>
-              <option value="<%= index + 1 %>" <%= (index + 1) === selectedMonth ? 'selected' : '' %>><%= m %></option>
-              <% }) %>
-            </select>
-          </div>
-          <div class="flex flex-col">
-            <label class="text-xs font-bold text-gray-500 mb-1">Year</label>
-            <select name="year" class="text-sm border border-gray-300 rounded-lg p-2 font-bold cursor-pointer" onchange="document.getElementById('filter-form').submit()">
-              <% years.forEach(y => { %>
-              <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>><%= y %></option>
-              <% }) %>
-            </select>
-          </div>
-        </form>
-
-        <div class="h-10 w-px bg-gray-300 mx-2 hidden sm:block"></div>
-
-        <button onclick="saveAttendance()" id="save-btn" class="w-full sm:w-auto px-6 py-2 bg-brand-purple text-white rounded-lg font-bold hover:bg-opacity-90 shadow-md transition-all flex items-center justify-center gap-2">
-          Save Changes
-        </button>
-      </div>
-    </header>
-
-    <div class="glass-card rounded-xl shadow-xl overflow-hidden border border-gray-200">
-      <div class="overflow-x-auto" style="max-height: 75vh;">
-        <table class="report-table w-full min-w-max">
-          <thead>
-            <tr class="sticky-header row-1-header month-header">
-              <th class="sticky-col-left">
-                <div class="header-content">Student Name</div>
-              </th>
-              <% const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long' }); %>
-              <th colspan="<%= daysArray.length %>" class="border-l border-gray-500">
-                <div class="header-content"><%= monthName %> <%= selectedYear %></div>
-              </th>
-            </tr>
-
-            <tr class="sticky-header row-2-header day-header">
-              <th class="sticky-col-left">
-                <div class="header-content text-xs text-gray-500">ID / Name</div>
-              </th>
-              <% daysArray.forEach(date => { 
-                  const dayNum = date.split('-')[2];
-              %>
-              <th class="min-w-[40px]">
-                <div class="header-content"><%= dayNum %></div>
-              </th>
-              <% }) %>
-            </tr>
-          </thead>
-          <tbody>
-            <% students.forEach(student => { %>
-            <tr>
-              <td class="sticky-col-left">
-                <div class="cell-content">
-                  <div class="font-bold text-gray-800 text-sm"><%= student.studentName %></div>
-                  <div class="text-xs text-brand-purple font-mono"><%= student.studentId %></div>
+            <!-- Controls Panel -->
+            <div class="stat-card p-4 flex flex-wrap gap-4 items-center w-full xl:w-auto">
+              <form id="filter-form" action="/teacher/bulk_attendance" method="GET" class="flex gap-3 items-center">
+                <div>
+                  <select name="month" class="px-3 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer" onchange="document.getElementById('filter-form').submit()">
+                    <% const mNames = ["January","February","March","April","May","June","July","August","September","October","November","December"]; %>
+                    <% mNames.forEach((m, index) => { %>
+                    <option value="<%= index + 1 %>" <%= (index + 1) === selectedMonth ? 'selected' : '' %>><%= m %></option>
+                    <% }) %>
+                  </select>
                 </div>
-              </td>
+                <div>
+                  <select name="year" class="px-3 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer" onchange="document.getElementById('filter-form').submit()">
+                    <% years.forEach(y => { %>
+                    <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>><%= y %></option>
+                    <% }) %>
+                  </select>
+                </div>
+              </form>
 
-              <% daysArray.forEach(date => { 
-                 // Get existing status or default to ''
-                 const status = (attendanceMap[date] && attendanceMap[date][student.studentId]) ? attendanceMap[date][student.studentId] : '';
-                 
-                 // Determine initial class
-                 let statusClass = 'status-empty';
-                 if(status === 'P') statusClass = 'status-P';
-                 if(status === 'A') statusClass = 'status-A';
-                 if(status === 'H') statusClass = 'status-H';
-              %>
-              <td class="status-cell <%= statusClass %>" data-date="<%= date %>" data-student="<%= student.studentId %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
-                <%= status || '-' %>
-              </td>
-              <% }) %>
-            </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
+              <div class="h-6 w-px bg-theme-bd hidden sm:block"></div>
+
+              <button onclick="saveAttendance()" id="save-btn" class="btn-solid-purple w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg py-2 px-6">
+                Save Changes ✓
+              </button>
+            </div>
+          </header>
+
+          <!-- Report Table Matrix -->
+          <div class="stat-card p-6 sm:p-8 mb-10">
+            <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc" style="max-height: 70vh;">
+              <table class="report-table w-full min-w-max border-collapse">
+                <thead>
+                  <tr class="sticky-header row-1-header month-header">
+                    <th class="sticky-col-left">
+                      <div class="header-content">Student Name</div>
+                    </th>
+                    <% const monthName = new Date(selectedYear, selectedMonth - 1).toLocaleString('default', { month: 'long' }); %>
+                    <th colspan="<%= daysArray.length %>" class="border-l border-theme-bd">
+                      <div class="header-content"><%= monthName %> <%= selectedYear %></div>
+                    </th>
+                  </tr>
+
+                  <tr class="sticky-header row-2-header day-header">
+                    <th class="sticky-col-left" style="background: rgba(124, 58, 237, 0.15) !important; color: var(--pt) !important;">
+                      <div class="header-content text-xs font-mono font-bold">ID / Name</div>
+                    </th>
+                    <% daysArray.forEach(date => { 
+                        const dayNum = date.split('-')[2];
+                    %>
+                    <th class="min-w-[40px] text-xs font-mono font-bold">
+                      <div class="header-content"><%= dayNum %></div>
+                    </th>
+                    <% }) %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% students.forEach(student => { %>
+                  <tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all">
+                    <td class="sticky-col-left font-bold text-theme-fg">
+                      <div class="cell-content">
+                        <div class="font-bold text-theme-fg text-sm"><%= student.studentName %></div>
+                        <div class="text-xs text-theme-pt font-mono font-bold"><%= student.studentId %></div>
+                      </div>
+                    </td>
+
+                    <% daysArray.forEach(date => { 
+                       const status = (attendanceMap[date] && attendanceMap[date][student.studentId]) ? attendanceMap[date][student.studentId] : '';
+                       
+                       let statusClass = 'status-empty';
+                       if(status === 'P') statusClass = 'status-P';
+                       if(status === 'A') statusClass = 'status-A';
+                       if(status === 'H') statusClass = 'status-H';
+                    %>
+                    <td class="status-cell <%= statusClass %> border-r border-theme-bd" data-date="<%= date %>" data-student="<%= student.studentId %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
+                      <%= status || '-' %>
+                    </td>
+                    <% }) %>
+                  </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+      </main>
     </div>
   </div>
 
-  <div id="toast" class="fixed bottom-6 right-6 bg-gray-900 text-white px-6 py-4 rounded-lg shadow-2xl transform translate-y-32 transition-transform duration-300 z-50 font-medium">
+  <div id="toast" class="fixed bottom-10 right-10 z-[100] p-3 rounded-lg text-center text-xs font-semibold shadow-lg transform translate-y-32 transition-all duration-300">
     Saving...
   </div>
 
@@ -149,7 +281,7 @@
         nextText = '-';
       }
 
-      cell.className = `status-cell ${nextClass}`;
+      cell.className = `status-cell ${nextClass} border-r border-theme-bd`;
       cell.innerText = nextText;
       cell.setAttribute('data-status', nextStatus);
 
@@ -158,11 +290,11 @@
 
     async function saveAttendance() {
       const saveBtn = document.getElementById('save-btn');
-      saveBtn.innerText = "Saving...";
+      const originalText = saveBtn.innerHTML;
+      saveBtn.innerHTML = `<span>Saving...</span>`;
       saveBtn.disabled = true;
 
       const allCells = document.querySelectorAll('.status-cell');
-
       const attendanceData = {};
 
       allCells.forEach(cell => {
@@ -194,32 +326,36 @@
 
         const result = await res.json();
         if (result.success) {
-          showToast("Attendance Saved Successfully!", "bg-green-600");
+          showToast("Attendance Saved Successfully!", "green");
           document.querySelectorAll('.is-modified').forEach(el => el.classList.remove('is-modified'));
         } else {
-          showToast("Error Saving Data", "bg-red-600");
+          showToast("Error Saving Data", "red");
         }
       } catch (e) {
         console.error(e);
-        showToast("Network Error", "bg-red-600");
+        showToast("Network Error", "red");
       } finally {
-        saveBtn.innerText = "Save Changes";
+        saveBtn.innerHTML = originalText;
         saveBtn.disabled = false;
       }
     }
 
-    function showToast(msg, bgClass) {
+    function showToast(msg, theme) {
       const toast = document.getElementById('toast');
       toast.textContent = msg;
-      toast.className = `fixed bottom-6 right-6 text-white px-6 py-4 rounded-lg shadow-2xl transform transition-transform duration-300 z-50 font-medium ${bgClass}`;
+      
+      let themeClasses = "";
+      if (theme === "green") {
+        themeClasses = "bg-green-500/10 text-green-400 border border-green-500/20";
+      } else {
+        themeClasses = "bg-red-500/10 text-red-400 border border-red-500/20";
+      }
+      
+      toast.className = `fixed bottom-10 right-10 z-[100] p-3 rounded-lg text-center text-xs font-semibold shadow-lg transition-all duration-300 ${themeClasses}`;
       toast.classList.remove('translate-y-32');
       setTimeout(() => toast.classList.add('translate-y-32'), 3000);
     }
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 
 </html>

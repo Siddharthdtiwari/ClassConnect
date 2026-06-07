@@ -4,16 +4,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Fee Defaulters</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-
+  <title>Fee Defaulters | Tuition Hub</title>
+  
+  <%- include('../partials/background') %>
+  
+  <style>
+    /* Premium Layout Styling Harmonization */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    
+    /* Sticky headers and scroll */
+    .grid-container {
+      max-height: 400px;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+    .grid-container thead tr {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -25,109 +52,104 @@
 
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-          <!-- Header -->
-          <header class="mb-6">
-            <div class="flex flex-wrap items-center justify-between gap-4">
-              <div>
-                <h1 class="text-3xl font-bold text-gray-900">Fee Defaulters</h1>
-                <p class="text-gray-500 mt-1 text-sm">
-                  Unpaid fees up to <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %>
-                </p>
-              </div>
-              <div class="flex items-center gap-4">
-                <form method="GET" action="/teacher/fee_defaulters" class="flex items-center gap-2">
-                  <label for="year" class="text-sm font-medium text-gray-600">Academic Year:</label>
-                  <select name="year" id="year" onchange="this.form.submit()" class="rounded-lg border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-purple-500 focus:ring focus:ring-purple-200">
-                    <% years.forEach(y => { %>
-                    <option value="<%= y %>" <%= y === selectedYear ? 'selected' : '' %>><%= y %>–<%= y+1 %></option>
-                    <% }) %>
-                  </select>
-                </form>
-              </div>
+          <!-- Header (Dashboard Style) -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Fee <span style="color: var(--pt);">Defaulters</span></h1>
+              <p class="dash-sub">Unpaid fees up to <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %></p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <a href="/teacher/manage_fees" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back
+              </a>
             </div>
           </header>
 
           <% if (defaulters.length === 0) { %>
-          <div class="glass-card rounded-xl shadow p-16 text-center text-gray-400">
-            <p class="text-5xl mb-4">&#127881;</p>
-            <p class="text-xl font-semibold">No defaulters!</p>
+          <div class="stat-card p-16 text-center text-theme-fdd">
+            <p class="text-5xl mb-4">🎉</p>
+            <p class="text-xl font-bold">No defaulters!</p>
             <p class="text-sm mt-1">All students are up to date for this period.</p>
           </div>
           <% } else { %>
 
-          <!-- Tabs/Jump Links -->
-          <div class="flex gap-4 mb-8 border-b border-gray-200 pb-4">
-            <a href="#class-section" class="text-brand-purple font-semibold hover:underline">Batch-wise Overview</a>
-            <span class="text-gray-300">|</span>
-            <a href="#month-section" class="text-brand-purple font-semibold hover:underline">Month-wise Breakdown</a>
+          <!-- Navigation Pills -->
+          <div class="stat-card p-4 mb-10 flex items-center gap-3 overflow-x-auto custom-scrollbar">
+            <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-2 font-mono">Quick Navigation:</span>
+            <a href="#class-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">🏫 Batch-wise Overview</a>
+            <a href="#month-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">📅 Month-wise Breakdown</a>
           </div>
 
-          <!--  CLASS-WISE SECTION -->
+          <!-- CLASS-WISE SECTION -->
           <section id="class-section" class="mb-16 printable-section" data-print-title="ALL BATCHES FEE DEFAULTERS">
-            <div class="flex items-center justify-between border-b border-gray-300 pb-2 mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Batch-wise Defaults</h2>
-              <button type="button" class="btn-outline-purple print-section-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-theme-bd pb-4 mb-8">
+              <h2 class="text-2xl font-black uppercase tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch-wise <span style="color: var(--pt);">Defaults</span></h2>
+              <button type="button" class="btn-outline-purple print-section-btn flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Download All Batches
               </button>
             </div>
             <%
-        const byClass = {};
-        defaulters.forEach(d => {
-          if (!byClass[d.standard]) byClass[d.standard] = [];
-          byClass[d.standard].push(d);
-        });
-        const getBatchOrderValue = (name) => {
-          if (!name) return 999;
-          const lowerName = name.toLowerCase();
-          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-          const match = lowerName.match(/^(\d+)/);
-          if (match) return parseInt(match[1]);
-          return 100;
-        };
-        const sortedClasses = Object.keys(byClass).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
-      %>
+              const byClass = {};
+              defaulters.forEach(d => {
+                if (!byClass[d.standard]) byClass[d.standard] = [];
+                byClass[d.standard].push(d);
+              });
+              const getBatchOrderValue = (name) => {
+                if (!name) return 999;
+                const lowerName = name.toLowerCase();
+                if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+                const match = lowerName.match(/^(\d+)/);
+                if (match) return parseInt(match[1]);
+                return 100;
+              };
+              const sortedClasses = Object.keys(byClass).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+            %>
 
             <% sortedClasses.forEach(cls => { %>
             <div class="mb-10 printable-block">
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <span class="class-header" data-print-title="Batch <%= cls %> Fee Defaulters">Batch: <%= cls %></span>
-                  <span class="text-sm text-gray-500 font-medium"><%= byClass[cls].length %> student<%= byClass[cls].length !== 1 ? 's' : '' %></span>
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;" class="class-header-marker" data-print-title="Batch <%= cls %> Fee Defaulters">Batch: <span class="class-header" style="color: var(--pt);"><%= cls %></span></h3>
+                  <span class="text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full"><%= byClass[cls].length %> student<%= byClass[cls].length !== 1 ? 's' : '' %></span>
                 </div>
-                <button type="button" class="btn-outline-purple print-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <button type="button" class="btn-outline-purple print-btn flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider font-mono py-1 px-2.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   Download Batch <%= cls %>
                 </button>
               </div>
 
-              <div class="overflow-x-auto rounded-xl shadow border border-gray-200 print-table-wrapper">
+              <div class="grid-container border border-theme-b bg-theme-bgc rounded-xl print-table-wrapper">
                 <table class="data-table">
                   <thead>
                     <tr>
-                      <th>ID</th>
-                      <th>Name</th>
-                      <th>Mobile</th>
-                      <th>Unpaid <%= selectedYear %>-<%= selectedYear+1 %></th>
-                      <th class="text-right">Balance Due</th>
+                      <th class="text-left font-mono">ID</th>
+                      <th class="text-left font-mono">Name</th>
+                      <th class="text-left font-mono">Mobile</th>
+                      <th class="text-left font-mono">Unpaid <%= selectedYear %>-<%= selectedYear+1 %></th>
+                      <th class="text-right font-mono">Balance Due</th>
                     </tr>
                   </thead>
                   <tbody>
                     <% byClass[cls].forEach(d => { %>
-                    <tr>
-                      <td class="font-mono text-gray-500 text-xs"><%= d.studentId %></td>
-                      <td class="font-semibold text-gray-800"><%= d.studentName %></td>
-                      <td class="text-gray-600 text-xs"><%= d.mobileNo || '—' %></td>
+                    <tr class="hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
+                      <td class="font-mono text-theme-pt text-xs"><%= d.studentId %></td>
+                      <td class="font-bold text-theme-fg"><%= d.studentName %></td>
+                      <td class="text-theme-fd text-xs font-medium"><%= d.mobileNo || '—' %></td>
                       <td>
-                        <% d.unpaidMonths.forEach(m => { %>
-                        <span class="unpaid-pill"><%= m %></span>
-                        <% }) %>
+                        <div class="flex flex-wrap gap-1.5">
+                          <% d.unpaidMonths.forEach(m => { %>
+                          <span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase"><%= m %></span>
+                          <% }) %>
+                        </div>
                       </td>
-                      <td class="text-right font-extrabold text-red-600">&#8377;<%= d.balance.toLocaleString('en-IN') %></td>
+                      <td class="text-right font-extrabold text-red-400 font-mono">₹<%= d.balance.toLocaleString('en-IN') %></td>
                     </tr>
                     <% }) %>
                   </tbody>
@@ -139,51 +161,52 @@
 
           <!-- MONTH-WISE SECTION -->
           <section id="month-section" class="mb-12 printable-section" data-print-title="ALL MONTHS FEE DEFAULTERS">
-            <div class="flex items-center justify-between border-b border-gray-300 pb-2 mb-6">
-              <h2 class="text-2xl font-bold text-gray-900">Month-wise Breakdown</h2>
-              <button type="button" class="btn-outline-purple print-section-btn">
-                <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-theme-bd pb-4 mb-8">
+              <h2 class="text-2xl font-black uppercase tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Month-wise <span style="color: var(--pt);">Breakdown</span></h2>
+              <button type="button" class="btn-outline-purple print-section-btn flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
                 Download All Months
               </button>
             </div>
 
             <% effectiveMonths.forEach(month => {
-           if (!monthData[month]) return;
-           const rows = monthData[month];
-      %>
+                 if (!monthData[month]) return;
+                 const rows = monthData[month];
+            %>
             <div class="mb-10 printable-block">
-              <div class="flex items-center justify-between mb-3">
+              <div class="flex items-center justify-between mb-4">
                 <div class="flex items-center gap-3">
-                  <span class="month-badge" data-print-title="Month: <%= month %> <%= selectedYear %>-<%= selectedYear+1 %> Defaulters"><%= month %></span>
-                  <span class="text-sm text-gray-500 font-medium"><%= rows.length %> student<%= rows.length !== 1 ? 's' : '' %> unpaid</span>
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;" class="month-badge-marker" data-print-title="Month: <%= month %> <%= selectedYear %>-<%= selectedYear+1 %> Defaulters">Month: <span class="month-badge" style="color: var(--pt);"><%= month %></span></h3>
+                  <span class="text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full"><%= rows.length %> student<%= rows.length !== 1 ? 's' : '' %> unpaid</span>
                 </div>
-                <button type="button" class="btn-outline-purple print-btn">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 inline mr-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                <button type="button" class="btn-outline-purple print-btn flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider font-mono py-1 px-2.5">
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   Download <%= month %>
                 </button>
               </div>
 
-              <div class="overflow-x-auto rounded-xl shadow border border-gray-200 print-table-wrapper">
+              <div class="grid-container border border-theme-b bg-theme-bgc rounded-xl print-table-wrapper">
                 <table class="data-table">
                   <thead>
                     <tr>
-                      <th>Batch</th>
-                      <th>ID</th>
-                      <th>Student Name</th>
-                      <th class="text-right">Amount Due</th>
+                      <th class="text-left font-mono">Batch</th>
+                      <th class="text-left font-mono">ID</th>
+                      <th class="text-left font-mono">Student Name</th>
+                      <th class="text-right font-mono">Amount Due</th>
                     </tr>
                   </thead>
                   <tbody>
                     <% rows.forEach(r => { %>
-                    <tr>
-                      <td class="font-semibold text-purple-700 text-center"><%= r.standard %></td>
-                      <td class="font-mono text-gray-500 text-xs"><%= r.studentId %></td>
-                      <td class="font-semibold text-gray-800"><%= r.studentName %></td>
-                      <td class="text-right font-bold text-red-600">&#8377;<%= r.balance.toLocaleString('en-IN') %></td>
+                    <tr class="hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
+                      <td class="font-bold text-theme-pt"><%= r.standard %></td>
+                      <td class="font-mono text-theme-fdd text-xs"><%= r.studentId %></td>
+                      <td class="font-bold text-theme-fg"><%= r.studentName %></td>
+                      <td class="text-right font-bold text-red-400 font-mono">₹<%= r.balance.toLocaleString('en-IN') %></td>
                     </tr>
                     <% }) %>
                   </tbody>
@@ -212,7 +235,7 @@
 
               if (classHeader) {
                 filterType = 'batch';
-                filterValue = classHeader.textContent.replace('Batch: ', '').trim();
+                filterValue = classHeader.textContent.trim();
               } else if (monthBadge) {
                 filterType = 'month';
                 filterValue = monthBadge.textContent.trim();

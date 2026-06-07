@@ -3,15 +3,97 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Bulk Import & Edit Students</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Bulk Student Directory | Faculty</title>
   
+  <%- include('../partials/background') %>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  
+  <style>
+    /* Premium Dashboard Theme Harmonization */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    
+    /* Spreadsheet grid inputs design */
+    .editable-cell input, .editable-cell select {
+      width: 100%;
+      background: transparent;
+      border: 1px solid transparent;
+      color: var(--fg);
+      padding: 8px 10px;
+      border-radius: 8px;
+      transition: all 0.2s;
+    }
+    .editable-cell input:focus, .editable-cell select:focus {
+      background: var(--bgch);
+      border-color: var(--p);
+      box-shadow: 0 0 0 2px var(--pg2);
+      outline: none;
+    }
+    .grid-id[readonly] {
+      background: rgba(124,58,237,0.05) !important;
+      border-color: transparent !important;
+      cursor: not-allowed;
+      color: var(--fdd) !important;
+    }
+    .grid-batch { min-width: 145px; }
+    .grid-id { min-width: 110px; }
+    .grid-name { min-width: 180px; }
+    .grid-email { min-width: 200px; }
+    .grid-pass { min-width: 150px; }
+    .grid-fee { min-width: 110px; }
+    .grid-mobile { min-width: 130px; }
+    .grid-container {
+      max-height: 480px;
+      overflow-y: auto;
+      overflow-x: auto;
+      position: relative;
+    }
+    #mass-edit-table thead tr {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -20,119 +102,153 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <h1 class="text-3xl font-bold text-gray-900">Bulk Import & Edit Students</h1>
-      <p class="text-gray-600 mt-1">Upload a CSV file for new students, or mass-edit all your existing students right here.</p>
-    </header>
 
-    <!-- SECTION 1: CSV UPLOAD -->
-    <div class="glass-card p-6 rounded-xl shadow border border-purple-100 mb-12">
-      <h2 class="text-xl font-bold text-gray-800 mb-4">Option A: Upload CSV File</h2>
-      <p class="text-sm text-gray-600 mb-4">Your CSV must have exactly these headers (case-sensitive). Passwords default to their mobile number.</p>
-      
-      <div class="bg-gray-50 rounded p-4 font-mono text-xs text-gray-700 overflow-x-auto mb-4 border border-gray-200">
-        studentName,studentId,batchId,mobileNo,monthlyFee,email<br>
-        Aarav Shah,1001,INSERT_BATCH_ID,9876543210,1200,aarav@example.com<br>
-        Priya Patel,1002,INSERT_BATCH_ID,8765432109,1200,priya@example.com
-      </div>
-      
-      <div class="flex flex-col sm:flex-row gap-4 mb-4">
-        <a href="data:text/csv;charset=utf-8,studentName,studentId,batchId,mobileNo,monthlyFee,email%0A" download="students_template.csv" class="btn-outline-purple text-sm text-center">
-          &#8659; Download Empty Template
-        </a>
-        <input type="file" id="csv-file" accept=".csv" class="block flex-grow text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-purple-50 file:text-brand-purple hover:file:bg-purple-100 border border-gray-300 rounded-lg cursor-pointer focus:outline-none">
-        <button id="preview-btn" class="btn-solid-purple whitespace-nowrap">Preview CSV Data</button>
-      </div>
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Bulk <span style="color: var(--pt);">Import</span></h1>
+              <p class="dash-sub">Faculty Command Center · Student Enrollment Engine</p>
+            </div>
+            <div class="flex gap-3 items-center">
+              <a href="/teacher/manage_students" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back to Directory
+              </a>
+            </div>
+          </header>
 
-      <!-- Preview Section -->
-      <div id="preview-section" class="hidden mt-6 border-t border-gray-200 pt-6">
-        <h3 class="text-lg font-bold text-gray-900 mb-4">CSV Preview</h3>
-        <div class="overflow-x-auto rounded-xl shadow border border-gray-200 mb-4 max-h-64">
-          <table class="data-table">
-            <thead>
-              <tr>
-                <th>Row</th>
-                <th>Name</th>
-                <th>Student ID</th>
-                <th>Batch ID</th>
-                <th>Mobile</th>
-                <th>Monthly Fee</th>
-                <th>Email</th>
-              </tr>
-            </thead>
-            <tbody id="preview-body"></tbody>
-          </table>
-        </div>
-        <div class="flex items-center gap-4">
-          <button id="save-csv-btn" class="btn-solid-purple">Import CSV Students</button>
-          <span id="csv-save-status" class="text-sm font-semibold hidden"></span>
-        </div>
-      </div>
-    </div>
+          <!-- SECTION 1: CSV UPLOAD -->
+          <div class="stat-card p-6 mb-10">
+            <div class="flex items-center gap-3 mb-4 pl-1">
+              <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+              <h2 class="text-lg font-bold text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Option A: CSV Upload</h2>
+            </div>
+            <p class="text-xs font-medium text-theme-fd mb-4">Upload a spreadsheet (CSV) file of students. The headers must match the format exactly as listed below. Password fields will default to the student's mobile number.</p>
+            
+            <div class="bg-theme-bgc/40 rounded-xl p-4 font-mono text-[10px] text-theme-fdd overflow-x-auto mb-5 border border-theme-b">
+              studentName,studentId,batchId,mobileNo,monthlyFee,email<br>
+              Aarav Shah,1001,INSERT_BATCH_ID,9876543210,1200,aarav@example.com<br>
+              Priya Patel,1002,INSERT_BATCH_ID,8765432109,1200,priya@example.com
+            </div>
+            
+            <div class="flex flex-col sm:flex-row gap-4 mb-4">
+              <a href="data:text/csv;charset=utf-8,studentName,studentId,batchId,mobileNo,monthlyFee,email%0A" download="students_template.csv" class="btn-outline-purple text-xs font-bold uppercase tracking-wider font-mono text-center flex items-center justify-center gap-2">
+                <svg class="w-4 h-4 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Download Template
+              </a>
+              <input type="file" id="csv-file" accept=".csv" class="block flex-grow text-xs text-theme-fd file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-[10px] file:font-bold file:uppercase file:tracking-wider file:bg-purple-500/10 file:text-theme-pt hover:file:bg-purple-500/20 border border-theme-b rounded-xl cursor-pointer bg-theme-bgc focus:outline-none">
+              <button id="preview-btn" class="btn-solid-purple whitespace-nowrap text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                Preview CSV
+              </button>
+            </div>
 
-    <!-- SECTION 2: MASS EDIT GRID -->
-    <div class="glass-card p-6 rounded-xl shadow border border-purple-100">
-      <div class="flex justify-between items-center mb-4">
-        <div>
-          <h2 class="text-xl font-bold text-gray-800">Option B: Mass-Edit Existing Students</h2>
-          <p class="text-sm text-gray-600 mt-1">Edit inline. If you enter a new password, it will override the old one. Leave blank to keep existing password.</p>
-        </div>
-        <div class="flex items-center gap-3">
-          <button type="button" id="add-row-btn" class="btn-outline-purple text-sm">+ Add Row</button>
-          <button type="button" id="save-grid-btn" class="btn-solid-purple">Save All Changes</button>
-        </div>
-      </div>
+            <!-- Preview Section -->
+            <div id="preview-section" class="hidden mt-6 border-t border-theme-bd pt-6">
+              <h3 class="text-md font-bold text-theme-fg mb-4" style="font-family: 'Unbounded', sans-serif;">CSV Preview</h3>
+              <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-4 max-h-64">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="w-16">Row</th>
+                      <th>Name</th>
+                      <th>Student ID</th>
+                      <th>Batch ID</th>
+                      <th>Mobile</th>
+                      <th>Monthly Fee</th>
+                      <th>Email</th>
+                    </tr>
+                  </thead>
+                  <tbody id="preview-body"></tbody>
+                </table>
+              </div>
+              <div class="flex items-center gap-4">
+                <button id="save-csv-btn" class="btn-solid-purple text-xs font-bold uppercase tracking-wider flex items-center gap-2">
+                  <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  Import CSV Students
+                </button>
+                <span id="csv-save-status" class="text-xs font-bold font-mono uppercase tracking-wider ml-2 hidden"></span>
+              </div>
+            </div>
+          </div>
 
-      <div class="overflow-x-auto rounded-xl shadow border border-gray-200 max-h-[600px] overflow-y-auto">
-        <table class="data-table" id="mass-edit-table">
-          <thead class="sticky top-0 z-10">
-            <tr>
-              <th>Profile Photo</th>
-              <th>Batch</th>
-              <th>Student ID</th>
-              <th>Student Name</th>
-              <th>Email Address</th>
-              <th>Password</th>
-              <th>Monthly Fee (₹)</th>
-              <th>Mobile No</th>
-            </tr>
-          </thead>
-          <tbody id="grid-body">
-            <% students.forEach((s) => { %>
-              <tr class="student-grid-row">
-                <td class="text-center">
-                  <% if(s.profilePhoto) { %>
-                    <img src="<%= s.profilePhoto %>" alt="Profile" class="w-8 h-8 rounded-full mx-auto object-cover border border-purple-200">
-                  <% } else { %>
-                    <div class="w-8 h-8 rounded-full bg-purple-100 text-purple-600 mx-auto flex items-center justify-center text-xs font-bold border border-purple-200">
-                      <%= s.studentName.charAt(0).toUpperCase() %>
-                    </div>
-                  <% } %>
-                </td>
-                <td class="editable-cell">
-                  <select class="grid-batch">
-                    <option value="" disabled <%= !s.batch ? 'selected' : '' %>>Select Batch</option>
-                    <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
-                      <% batches.forEach(batch => { %>
-                        <option value="<%= batch._id %>" <%= String(s.batch && s.batch._id || s.batch) === String(batch._id) ? 'selected' : '' %>><%= batch.name %> (<%= batch.academicYear %>)</option>
-                      <% }) %>
-                    <% } %>
-                  </select>
-                </td>
-                <td class="editable-cell"><input type="text" class="grid-id font-mono text-gray-600" value="<%= s.studentId %>" readonly title="Note: Student ID cannot be changed here." style="background:#f3f4f6;cursor:not-allowed;"></td>
-                <td class="editable-cell"><input type="text" class="grid-name font-semibold" value="<%= s.studentName %>"></td>
-                <td class="editable-cell"><input type="email" class="grid-email" placeholder="student@example.com" value="<%= s.email || '' %>"></td>
-                <td class="editable-cell"><input type="text" class="grid-pass" placeholder="(Leave blank to keep)"></td>
-                <td class="editable-cell"><input type="number" class="grid-fee" value="<%= s.monthlyFee || 0 %>"></td>
-                <td class="editable-cell"><input type="text" class="grid-mobile" value="<%= s.mobileNo || '' %>"></td>
-              </tr>
-            <% }) %>
-          </tbody>
-        </table>
-      </div>
-      <div class="mt-4 flex items-center gap-3">
-        <span id="grid-save-status" class="text-sm font-semibold hidden"></span>
-      </div>
+          <!-- SECTION 2: MASS EDIT GRID -->
+          <div class="stat-card p-6">
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4 border-b border-theme-bd pb-4">
+              <div>
+                <div class="flex items-center gap-3 mb-1">
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h2 class="text-lg font-bold text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Option B: Grid Mass Edit</h2>
+                </div>
+                <p class="text-xs text-theme-fd">Perform quick edits to students directly. Password fields can be left blank to keep their current passwords.</p>
+              </div>
+              <div class="flex items-center gap-3 w-full sm:w-auto">
+                <button type="button" id="add-row-btn" class="btn-outline-purple text-[10px] font-bold uppercase tracking-wider font-mono flex items-center gap-1.5 py-2 px-4">
+                  <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                  Add Row
+                </button>
+                <button type="button" id="save-grid-btn" class="btn-solid-purple text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 py-2.5 px-5 shadow-md">
+                  <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                  Save Changes
+                </button>
+              </div>
+            </div>
+
+            <!-- Spreadsheet Grid Container -->
+            <div class="grid-container border border-theme-b bg-theme-bgc rounded-xl">
+              <table class="data-table" id="mass-edit-table">
+                <thead class="sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th class="w-16">Profile</th>
+                    <th>Batch</th>
+                    <th>Student ID</th>
+                    <th>Student Name</th>
+                    <th>Email Address</th>
+                    <th>Password</th>
+                    <th>Monthly Fee</th>
+                    <th>Mobile No</th>
+                  </tr>
+                </thead>
+                <tbody id="grid-body">
+                  <% students.forEach((s) => { %>
+                    <tr class="student-grid-row hover:bg-theme-bgch/40 transition-all border-b border-theme-bd" data-id="<%= s._id %>">
+                      <td class="text-center p-2.5">
+                        <% if(s.profilePhoto) { %>
+                          <img src="<%= s.profilePhoto %>" alt="Profile" class="w-8 h-8 rounded-full mx-auto object-cover border border-theme-bd">
+                        <% } else { %>
+                          <div class="w-8 h-8 rounded-full bg-purple-500/10 text-theme-pt mx-auto flex items-center justify-center text-xs font-bold border border-theme-pt/20">
+                            <%= s.studentName.charAt(0).toUpperCase() %>
+                          </div>
+                        <% } %>
+                      </td>
+                      <td class="editable-cell">
+                        <select class="grid-batch">
+                          <option value="" disabled <%= !s.batch ? 'selected' : '' %>>Select Batch</option>
+                          <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                            <% batches.forEach(batch => { %>
+                              <option value="<%= batch._id %>" <%= String(s.batch && s.batch._id || s.batch) === String(batch._id) ? 'selected' : '' %>><%= batch.name %> (<%= batch.academicYear %>)</option>
+                            <% }) %>
+                          <% } %>
+                        </select>
+                      </td>
+                      <td class="editable-cell"><input type="text" class="grid-id font-mono text-xs text-theme-pt font-bold" value="<%= s.studentId %>"></td>
+                      <td class="editable-cell"><input type="text" class="grid-name font-bold text-sm" value="<%= s.studentName %>"></td>
+                      <td class="editable-cell"><input type="email" class="grid-email" placeholder="student@example.com" value="<%= s.email || '' %>"></td>
+                      <td class="editable-cell"><input type="text" class="grid-pass" placeholder="(Leave blank to keep)"></td>
+                      <td class="editable-cell"><input type="number" class="grid-fee font-semibold" value="<%= s.monthlyFee || 0 %>"></td>
+                      <td class="editable-cell"><input type="text" class="grid-mobile" value="<%= s.mobileNo || '' %>"></td>
+                    </tr>
+                  <% }) %>
+                </tbody>
+              </table>
+            </div>
+            
+            <div class="mt-4 flex items-center gap-3">
+              <span id="grid-save-status" class="text-xs font-bold font-mono uppercase tracking-wider ml-2 hidden"></span>
+            </div>
+          </div>
+        </div>
+      </main>
     </div>
   </div>
 
@@ -156,14 +272,14 @@
           
           parsedData.forEach((row, index) => {
             tbody.innerHTML += `
-              <tr>
-                <td class="text-gray-400 text-xs">${index + 1}</td>
-                <td class="font-semibold">${row.studentName || '<span class="text-red-500">Missing</span>'}</td>
-                <td class="font-mono text-xs">${row.studentId || '<span class="text-red-500">Missing</span>'}</td>
-                <td>${row.batchId || '<span class="text-red-500">Missing</span>'}</td>
-                <td class="text-xs">${row.mobileNo || '<span class="text-red-500">Missing</span>'}</td>
-                <td class="text-gray-500">&#8377;${row.monthlyFee || '0'}</td>
-                <td class="text-xs">${row.email || '—'}</td>
+              <tr class="border-b border-theme-bd">
+                <td class="text-theme-fdd text-xs font-mono">${index + 1}</td>
+                <td class="font-bold text-theme-fg">${row.studentName || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
+                <td class="font-mono text-xs text-theme-pt font-bold">${row.studentId || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
+                <td class="text-xs text-theme-fd">${row.batchId || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
+                <td class="text-xs text-theme-fd">${row.mobileNo || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
+                <td class="text-theme-fg font-semibold">&#8377;${row.monthlyFee || '0'}</td>
+                <td class="text-xs text-theme-fdd">${row.email || '—'}</td>
               </tr>
             `;
           });
@@ -192,15 +308,15 @@
 
     document.getElementById('add-row-btn').addEventListener('click', () => {
       const tr = document.createElement('tr');
-      tr.className = 'student-grid-row';
+      tr.className = 'student-grid-row border-b border-theme-bd hover:bg-theme-bgch/40 transition-all';
       tr.innerHTML = `
-        <td class="text-center text-xs text-gray-400 italic">New Student</td>
+        <td class="text-center text-xs text-theme-fdd italic p-2.5">New Row</td>
         <td class="editable-cell"><select class="grid-batch">${batchesOptionsHtml}</select></td>
-        <td class="editable-cell"><input type="text" class="grid-id font-mono text-brand-purple" placeholder="New ID" required></td>
-        <td class="editable-cell"><input type="text" class="grid-name font-semibold" placeholder="Enter Name" required></td>
+        <td class="editable-cell"><input type="text" class="grid-id font-mono text-xs text-theme-pt font-bold" placeholder="New ID" required></td>
+        <td class="editable-cell"><input type="text" class="grid-name font-bold text-sm" placeholder="Enter Name" required></td>
         <td class="editable-cell"><input type="email" class="grid-email" placeholder="student@example.com"></td>
         <td class="editable-cell"><input type="text" class="grid-pass" placeholder="(Default: Mobile)"></td>
-        <td class="editable-cell"><input type="number" class="grid-fee" placeholder="0"></td>
+        <td class="editable-cell"><input type="number" class="grid-fee font-semibold" placeholder="0"></td>
         <td class="editable-cell"><input type="text" class="grid-mobile" placeholder="Mobile No" required></td>
       `;
       gridBody.appendChild(tr);
@@ -220,9 +336,11 @@
         const pass = row.querySelector('.grid-pass').value.trim();
         const fee = row.querySelector('.grid-fee').value;
         const mobile = row.querySelector('.grid-mobile').value.trim();
+        const dbId = row.dataset.id || '';
 
         if (id && name && batchId && mobile) {
           dataToSave.push({
+            id: dbId,
             studentId: id,
             studentName: name,
             email: email,
@@ -254,10 +372,10 @@
       const btn = document.getElementById(btnId);
       const status = document.getElementById(statusId);
       
-      const originalBtnText = btn.innerText;
+      const originalBtnText = btn.innerHTML;
       btn.disabled = true;
       btn.innerText = 'Saving...';
-      status.className = 'text-sm font-semibold text-gray-500 ml-4';
+      status.className = 'text-xs font-bold font-mono uppercase tracking-wider ml-4 text-theme-fdd';
       status.innerText = 'Sending data to server...';
       status.classList.remove('hidden');
 
@@ -271,10 +389,10 @@
         const result = await res.json();
         
         if (result.success) {
-          status.className = 'text-sm font-semibold text-green-600 block mt-4';
+          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-green-600 block mt-4';
           let msg = `Successfully processed ${result.inserted} student(s)!`;
           if(result.errors && result.errors.length > 0) {
-            msg += `<br><span class="text-red-600 mt-2 block">Found ${result.errors.length} skipped row(s):<br>${result.errors.join('<br>')}</span>`;
+            msg += `<br><span class="text-red-500 mt-2 block">Found ${result.errors.length} skipped row(s):<br>${result.errors.join('<br>')}</span>`;
             status.innerHTML = msg;
             btn.innerText = 'Completed with errors';
           } else {
@@ -283,22 +401,18 @@
             setTimeout(() => { window.location.reload(); }, 1500);
           }
         } else {
-          status.className = 'text-sm font-semibold text-red-600 block mt-2';
+          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-red-500 block mt-2';
           status.innerHTML = 'Error: ' + (result.error || 'Unknown error');
           btn.disabled = false;
-          btn.innerText = originalBtnText;
+          btn.innerHTML = originalBtnText;
         }
       } catch (e) {
-        status.className = 'text-sm font-semibold text-red-600 block mt-2';
+        status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-red-500 block mt-2';
         status.innerHTML = 'Network Error: ' + e.message;
         btn.disabled = false;
-        btn.innerText = originalBtnText;
+        btn.innerHTML = originalBtnText;
       }
     }
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 </html>

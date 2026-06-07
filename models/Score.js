@@ -22,13 +22,15 @@ const scoreSchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+const { calculatePercentage } = require("../utils/constants");
+
 scoreSchema.pre("save", async function (next) {
   try {
     const Test = mongoose.model("Test");
     const test = await Test.findById(this.testId);
 
-    if (test && test.totalMarks > 0) {
-      this.percentage = Math.round((this.score / test.totalMarks) * 10000) / 100;
+    if (test) {
+      this.percentage = calculatePercentage(this.score, test.totalMarks);
     }
     next();
   } catch (err) {

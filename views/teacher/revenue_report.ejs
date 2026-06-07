@@ -1,18 +1,84 @@
-<%- include('../partials/background') %>
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Revenue Dashboard | <%= selectedYear %></title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+  <title>Revenue Dashboard | Tuition Hub</title>
+  
+  <%- include('../partials/background') %>
   
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+  
+  <style>
+    /* Premium Dashboard Layout styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.58rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 6px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      top: 20px;
+      right: 20px;
+      opacity: 0.15;
+      z-index: 0;
+    }
+  </style>
 </head>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -20,256 +86,277 @@
     
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-        <div id="chart-data-container" data-standard-keys='<%- JSON.stringify(Object.keys(standardStats)) %>' data-standard-totals='<%- JSON.stringify(Object.values(standardStats).map(s => s.total)) %>' data-chart-months='<%- JSON.stringify(months) %>' data-monthly-revenue='<%- JSON.stringify(monthlyRevenue) %>' data-method-keys='<%- JSON.stringify(Object.keys(methodStats)) %>' data-method-values='<%- JSON.stringify(Object.values(methodStats)) %>' style="display: none;">
-  </div>
-
-  <div class="content-container container mx-auto p-4 sm:p-8 min-h-screen">
-
-    <header class="mb-8 border-b border-gray-200 pb-4 flex justify-between items-center">
-      <div>
-        <h1 class="text-4xl font-extrabold text-gray-900 mt-1">Revenue Dashboard (<%= selectedYear %>-<%= parseInt(selectedYear) + 1 %>)</h1>
-      </div>
-      <form method="GET" action="/teacher/revenue_report" class="max-w-xs">
-        <label for="year" class="block text-xs font-semibold text-gray-600 uppercase mb-1">Academic Session</label>
-        <select name="year" id="year" onchange="this.form.submit()" class="block w-full rounded-lg border-gray-300 shadow-md text-base py-2 px-3 focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-40 transition-shadow">
-          <% years.forEach(y => { %>
-          <option value="<%= y %>" <%= y == selectedYear ? 'selected' : '' %>>
-            <%= y %>-<%= (parseInt(y) + 1).toString().slice(-2) %>
-          </option>
-          <% }) %>
-        </select>
-      </form>
-    </header>
-
-    <div class="content-container grid grid-cols-1 lg:grid-cols-3 gap-8">
-
-      <div class="lg:col-span-2 space-y-8">
-
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div class="glass-card p-6 rounded-xl shadow-xl border-l-4 border-green-500 transform hover:scale-[1.02] transition-transform">
-            <p class="text-sm font-semibold text-green-600 uppercase">Total Revenue (<%= selectedYear %>-<%= selectedYear + 1 %>)</p>
-            <p class="text-5xl font-extrabold mt-2 text-gray-900">₹<%= totalRevenue.toLocaleString() %></p>
-            <p class="text-xs text-gray-500 mt-2">All fees collected.</p>
-          </div>
-          <div class="glass-card p-6 rounded-xl shadow-md border-l-4 border-brand-purple">
-            <p class="text-sm font-semibold text-brand-purple uppercase">Total Transactions</p>
-            <p class="text-4xl font-bold mt-2 text-gray-900"><%= paymentCount.toLocaleString() %></p>
-            <p class="text-xs text-gray-500 mt-2">Individual payments recorded.</p>
-          </div>
-          <div class="glass-card p-6 rounded-xl shadow-md border-l-4 border-brand-lime">
-            <p class="text-sm font-semibold text-brand-lime uppercase">Avg. Payment Value</p>
-            <p class="text-4xl font-bold mt-2 text-gray-900">₹<%= averageRevenue.toLocaleString() %></p>
-            <p class="text-xs text-gray-500 mt-2">Avg. transaction value.</p>
-          </div>
+        <div id="chart-data-container" 
+             data-standard-keys='<%- JSON.stringify(Object.keys(standardStats)) %>' 
+             data-standard-totals='<%- JSON.stringify(Object.values(standardStats).map(s => s.total)) %>' 
+             data-chart-months='<%- JSON.stringify(months) %>' 
+             data-monthly-revenue='<%- JSON.stringify(monthlyRevenue) %>' 
+             data-method-keys='<%- JSON.stringify(Object.keys(methodStats)) %>' 
+             data-method-values='<%- JSON.stringify(Object.values(methodStats)) %>' 
+             style="display: none;">
         </div>
 
-        <div class="glass-card p-6 rounded-xl shadow-xl">
-          <h2 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Monthly Revenue Trend</h2>
-          <canvas id="monthlyChart" height="120"></canvas>
-        </div>
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-        <div class="glass-card p-6 rounded-xl shadow-xl">
-          <h2 class="text-xl font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">Revenue by Batch</h2>
-          <canvas id="classRevenueChart" height="140"></canvas>
-        </div>
-      </div>
-
-      <div class="lg:col-span-1 space-y-8">
-
-        <div class="glass-card p-6 rounded-xl shadow-xl">
-          <h2 class="text-xl font-bold text-gray-900 mb-6">Payment Methods</h2>
-          <div class="flex flex-col items-center">
-            <div class="w-48 h-48 mb-6">
-              <canvas id="methodChart"></canvas>
+          <!-- Header Section -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Revenue <span style="color: var(--pt);">Dashboard</span></h1>
+              <p class="dash-sub">Faculty Command Center · Session (<%= selectedYear %>-<%= parseInt(selectedYear) + 1 %>)</p>
             </div>
-            <div class="text-sm w-full space-y-2">
-              <% Object.keys(methodStats).forEach(method => { 
-                                const total = Object.values(methodStats).reduce((a, b) => a + b, 0);
-                                const count = methodStats[method];
-                                const percentage = (count / total * 100).toFixed(1);
-                            %>
-              <div class="flex justify-between border-b pb-1">
-                <span class="font-medium text-gray-600"><%= method %></span>
-                <span class="font-bold text-gray-900"><%= percentage %>%</span>
-              </div>
-              <% }) %>
+            <div class="flex gap-3 flex-wrap items-center">
+              <a href="/teacher/manage_fees" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back
+              </a>
             </div>
-          </div>
-        </div>
+          </header>
 
-        <div class="glass-card p-6 rounded-xl shadow-xl">
-          <h2 class="text-xl font-bold text-gray-900 mb-4">Recent Transactions</h2>
+          <!-- Core Layout Grid -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-10">
 
-          <div class="recent-list-static divide-y divide-gray-100">
-            <% 
-                            // Determine the limit: show up to 10 transactions
-                            const transactionLimit = 10;
-                            const transactionsToShow = recentPayments.slice(0, transactionLimit);
+            <!-- Stats & Trends Column -->
+            <div class="lg:col-span-2 space-y-8">
 
-                            transactionsToShow.forEach(p => { 
-                                const dateString = p.datePaid.toLocaleDateString(); 
-                                const amountString = '₹' + p.amount.toLocaleString();
-                            %>
-            <div class="flex justify-between items-center py-3">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold"><%= p.studentName %></span>
-                <span class="text-xs text-gray-500"><%= p.batch ? p.batch.name : 'Unknown' %> • <%= p.method %></span>
+              <!-- Metrics cards -->
+              <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                <!-- Total Revenue -->
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                  </div>
+                  <div class="stat-value" style="color: #34d399;">₹<%= totalRevenue.toLocaleString() %></div>
+                  <div class="stat-label">Total Revenue</div>
+                  <p class="text-[9px] text-theme-fdd font-mono tracking-wider uppercase mt-3">Total collected in period</p>
+                </div>
+
+                <!-- Total Transactions -->
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                  </div>
+                  <div class="stat-value" style="color: var(--pt);"><%= paymentCount.toLocaleString() %></div>
+                  <div class="stat-label">Transactions</div>
+                  <p class="text-[9px] text-theme-fdd font-mono tracking-wider uppercase mt-3">Individual payments logged</p>
+                </div>
+
+                <!-- Avg Revenue -->
+                <div class="stat-card">
+                  <div class="stat-icon">
+                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+                  </div>
+                  <div class="stat-value" style="color: var(--lt);">₹<%= Number(averageRevenue).toLocaleString() %></div>
+                  <div class="stat-label">Avg. Payment</div>
+                  <p class="text-[9px] text-theme-fdd font-mono tracking-wider uppercase mt-3">Mean transaction size</p>
+                </div>
               </div>
-              <div class="flex flex-col items-end">
-                <span class="text-sm font-bold text-green-600"><%= amountString %></span>
-                <span class="text-xs text-gray-400"><%= dateString %></span>
+
+              <!-- Line Chart Card -->
+              <div class="stat-card">
+                <h2 class="text-lg font-bold uppercase tracking-tight text-theme-fg mb-4 border-b border-theme-bd pb-2" style="font-family: 'Unbounded', sans-serif;">Monthly Revenue <span style="color: var(--pt);">Trend</span></h2>
+                <canvas id="monthlyChart" height="120"></canvas>
+              </div>
+
+              <!-- Bar Chart Card -->
+              <div class="stat-card">
+                <h2 class="text-lg font-bold uppercase tracking-tight text-theme-fg mb-4 border-b border-theme-bd pb-2" style="font-family: 'Unbounded', sans-serif;">Revenue by <span style="color: var(--pt);">Batch</span></h2>
+                <canvas id="classRevenueChart" height="140"></canvas>
               </div>
             </div>
-            <% }) %>
 
-            <% if (recentPayments.length > transactionLimit) { %>
-            <div class="text-center pt-3 mt-2 text-sm text-gray-500">
-              Showing the last <%= transactionLimit %> transactions.
-            </div>
-            <% } else if (recentPayments.length === 0) { %>
-            <div class="text-center pt-3 mt-2 text-sm text-gray-500">
-              No transactions found for <%= selectedYear %>.
-            </div>
-            <% } %>
+            <!-- Methods & Recent Column -->
+            <div class="lg:col-span-1 space-y-8">
 
+              <!-- Pie Chart Method Card -->
+              <div class="stat-card">
+                <h2 class="text-lg font-bold uppercase tracking-tight text-theme-fg mb-6" style="font-family: 'Unbounded', sans-serif;">Payment <span style="color: var(--pt);">Methods</span></h2>
+                <div class="flex flex-col items-center">
+                  <div class="w-48 h-48 mb-6">
+                    <canvas id="methodChart"></canvas>
+                  </div>
+                  <div class="text-xs w-full space-y-2">
+                    <% Object.keys(methodStats).forEach(method => { 
+                         const total = Object.values(methodStats).reduce((a, b) => a + b, 0);
+                         const count = methodStats[method];
+                         const percentage = total > 0 ? (count / total * 100).toFixed(1) : 0;
+                    %>
+                    <div class="flex justify-between border-b border-theme-bd pb-1">
+                      <span class="font-medium text-theme-fd font-mono"><%= method %></span>
+                      <span class="font-bold text-theme-fg"><%= percentage %>%</span>
+                    </div>
+                    <% }) %>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Recent transactions -->
+              <div class="stat-card">
+                <h2 class="text-lg font-bold uppercase tracking-tight text-theme-fg mb-4 border-b border-theme-bd pb-2" style="font-family: 'Unbounded', sans-serif;">Recent <span style="color: var(--pt);">Payments</span></h2>
+
+                <div class="recent-list-static divide-y divide-theme-bd">
+                  <% 
+                     const transactionLimit = 10;
+                     const transactionsToShow = recentPayments.slice(0, transactionLimit);
+
+                     transactionsToShow.forEach(p => { 
+                       const dateString = p.datePaid.toLocaleDateString('en-IN', {day:'numeric',month:'short'}); 
+                       const amountString = '₹' + p.amount.toLocaleString();
+                  %>
+                  <div class="flex justify-between items-center py-3">
+                    <div class="flex flex-col">
+                      <span class="text-sm font-bold text-theme-fg"><%= p.studentName %></span>
+                      <span class="text-xs text-theme-fdd font-mono"><%= p.batch ? p.batch.name : 'Unknown' %> • <%= p.method %></span>
+                    </div>
+                    <div class="flex flex-col items-end">
+                      <span class="text-sm font-bold text-emerald-400 font-mono"><%= amountString %></span>
+                      <span class="text-[10px] text-theme-fdd font-mono"><%= dateString %></span>
+                    </div>
+                  </div>
+                  <% }) %>
+
+                  <% if (recentPayments.length > transactionLimit) { %>
+                  <div class="text-center pt-3 mt-2 text-xs text-theme-fdd font-mono">
+                    Showing last <%= transactionLimit %> payments.
+                  </div>
+                  <% } else if (recentPayments.length === 0) { %>
+                  <div class="text-center pt-3 mt-2 text-xs text-theme-fdd font-mono">
+                    No transactions found for <%= selectedYear %>.
+                  </div>
+                  <% } %>
+
+                </div>
+
+              </div>
+            </div>
           </div>
-
         </div>
-      </div>
-    </div>
-  </div>
 
-  <script>
-    const dataContainer = document.getElementById('chart-data-container');
+        <script>
+          const dataContainer = document.getElementById('chart-data-container');
 
-    const standardStatsKeys = JSON.parse(dataContainer.dataset.standardKeys);
-    const standardStatsTotals = JSON.parse(dataContainer.dataset.standardTotals);
+          const standardStatsKeys = JSON.parse(dataContainer.dataset.standardKeys);
+          const standardStatsTotals = JSON.parse(dataContainer.dataset.standardTotals);
 
-    const chartMonths = JSON.parse(dataContainer.dataset.chartMonths);
-    const chartMonthlyRevenue = JSON.parse(dataContainer.dataset.monthlyRevenue);
+          const chartMonths = JSON.parse(dataContainer.dataset.chartMonths);
+          const chartMonthlyRevenue = JSON.parse(dataContainer.dataset.monthlyRevenue);
 
-    const methodStatsKeys = JSON.parse(dataContainer.dataset.methodKeys);
-    const methodStatsValues = JSON.parse(dataContainer.dataset.methodValues);
+          const methodStatsKeys = JSON.parse(dataContainer.dataset.methodKeys);
+          const methodStatsValues = JSON.parse(dataContainer.dataset.methodValues);
 
-    const primaryColor = '#5d3a9b';
-    const accentColor = '#bde045';
-    const successColor = '#10b981';
-    const warningColor = '#f59e0b';
-    const neutralColor = '#94a3b8';
+          // Dark/Light Theme Aware Colors
+          const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
+          const primaryColor = 'rgb(124, 58, 237)';
+          const accentColor = 'rgb(163, 230, 53)'; 
+          const successColor = 'rgb(52, 211, 153)'; 
+          const warningColor = 'rgb(245, 158, 11)'; 
+          const neutralColor = 'rgb(148, 163, 184)'; 
+          
+          const gridLineColor = isDark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)';
+          const labelColor = isDark ? 'rgb(156, 163, 175)' : 'rgb(75, 85, 99)';
 
-    new Chart(document.getElementById('classRevenueChart'), {
-      type: 'bar',
-      data: {
-        labels: standardStatsKeys,
-        datasets: [{
-          label: 'Revenue (₹)',
-          data: standardStatsTotals,
-          backgroundColor: [
-            primaryColor, accentColor, successColor, warningColor, neutralColor
-          ],
-          borderRadius: 6
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: '#f3f4f6'
-            }
-          },
-          x: {
-            grid: {
-              display: false
-            }
-          }
-        }
-      }
-    });
-
-    new Chart(document.getElementById('methodChart'), {
-      type: 'doughnut',
-      data: {
-        labels: methodStatsKeys,
-        datasets: [{
-          data: methodStatsValues,
-          backgroundColor: [primaryColor, accentColor, successColor, warningColor],
-          borderWidth: 1,
-          hoverOffset: 4
-        }]
-      },
-      options: {
-        responsive: true,
-        maintainAspectRatio: false,
-        cutout: '70%',
-        plugins: {
-          legend: {
-            display: false
-          },
-          tooltip: {
-            callbacks: {
-              label: function(context) {
-                let label = context.label || '';
-                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                const currentValue = context.parsed;
-                const percentage = ((currentValue / total) * 100).toFixed(1) + '%';
-                return label + ': ' + percentage;
+          new Chart(document.getElementById('classRevenueChart'), {
+            type: 'bar',
+            data: {
+              labels: standardStatsKeys,
+              datasets: [{
+                label: 'Revenue (₹)',
+                data: standardStatsTotals,
+                backgroundColor: [
+                  primaryColor, accentColor, successColor, warningColor, neutralColor
+                ],
+                borderRadius: 8
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridLineColor },
+                  ticks: { color: labelColor }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { color: labelColor }
+                }
               }
             }
-          }
-        }
-      }
-    });
+          });
 
-    new Chart(document.getElementById('monthlyChart'), {
-      type: 'line',
-      data: {
-        labels: chartMonths,
-        datasets: [{
-          label: 'Revenue (₹)',
-          data: chartMonths.map(m => chartMonthlyRevenue[m] || 0),
-          borderColor: primaryColor,
-          backgroundColor: 'rgba(93, 58, 155, 0.1)',
-          tension: 0.35,
-          fill: true,
-          pointBackgroundColor: primaryColor,
-          pointRadius: 4,
-          pointHoverRadius: 7
-        }]
-      },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: false
-          }
-        },
-        scales: {
-          y: {
-            beginAtZero: true,
-            grid: {
-              color: '#f3f4f6'
+          new Chart(document.getElementById('methodChart'), {
+            type: 'doughnut',
+            data: {
+              labels: methodStatsKeys,
+              datasets: [{
+                data: methodStatsValues,
+                backgroundColor: [primaryColor, accentColor, successColor, warningColor],
+                borderWidth: 0,
+                hoverOffset: 6
+              }]
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              cutout: '72%',
+              plugins: {
+                legend: { display: false },
+                tooltip: {
+                  callbacks: {
+                    label: function(context) {
+                      let label = context.label || '';
+                      const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                      const currentValue = context.parsed;
+                      const percentage = total > 0 ? ((currentValue / total) * 100).toFixed(1) + '%' : '0%';
+                      return label + ': ' + percentage;
+                    }
+                  }
+                }
+              }
             }
-          },
-          x: {
-            grid: {
-              display: false
+          });
+
+          new Chart(document.getElementById('monthlyChart'), {
+            type: 'line',
+            data: {
+              labels: chartMonths,
+              datasets: [{
+                label: 'Revenue (₹)',
+                data: chartMonths.map(m => chartMonthlyRevenue[m] || 0),
+                borderColor: primaryColor,
+                backgroundColor: 'rgba(124, 58, 237, 0.08)',
+                tension: 0.38,
+                fill: true,
+                pointBackgroundColor: primaryColor,
+                pointRadius: 4,
+                pointHoverRadius: 6,
+                borderWidth: 3
+              }]
+            },
+            options: {
+              responsive: true,
+              plugins: {
+                legend: { display: false }
+              },
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  grid: { color: gridLineColor },
+                  ticks: { color: labelColor }
+                },
+                x: {
+                  grid: { display: false },
+                  ticks: { color: labelColor }
+                }
+              }
             }
-          }
-        }
-      }
-    });
-  </script>
+          });
+        </script>
       </main>
     </div>
   </div>
 </body>
-
 
 </html>

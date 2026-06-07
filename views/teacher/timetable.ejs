@@ -4,16 +4,101 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Exam Timetable | Teacher</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Exam Timetable | Tuition Hub</title>
+  
+  <%- include('../partials/background') %>
   <script src="/js/subjects.js"></script>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      color: var(--b);
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    /* Timetable filter tabs customization */
+    .tab-filter {
+      padding: 8px 18px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Space Mono', monospace;
+      text-transform: uppercase;
+    }
+
+    /* Timetable row badges */
+    .badge-ut1 { background: rgba(59, 130, 246, 0.08) !important; color: rgb(96, 165, 250) !important; border: 1px solid rgba(59, 130, 246, 0.15); }
+    .badge-ut2 { background: rgba(139, 92, 246, 0.08) !important; color: rgb(167, 139, 250) !important; border: 1px solid rgba(139, 92, 246, 0.15); }
+    .badge-sem1 { background: rgba(16, 185, 129, 0.08) !important; color: rgb(52, 211, 153) !important; border: 1px solid rgba(16, 185, 129, 0.15); }
+    .badge-sem2 { background: rgba(245, 158, 11, 0.08) !important; color: rgb(251, 191, 36) !important; border: 1px solid rgba(245, 158, 11, 0.15); }
+    .badge-ct { background: rgba(239, 68, 68, 0.08) !important; color: rgb(248, 113, 113) !important; border: 1px solid rgba(239, 68, 68, 0.15); }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -22,151 +107,203 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-
-    <!-- Header — Manage Fees style -->
-    <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-bold text-gray-900 mt-1">📅 Exam Timetable</h1>
-        <p class="text-gray-600 mt-2">Schedule and manage exam dates, subjects and portions for each class.</p>
-      </div>
-      <div class="flex flex-wrap gap-3">
-        <!-- Class filter -->
-        <form method="GET" action="/teacher/timetable" class="flex items-center gap-2">
           
-          <select name="batchId" onchange="this.form.submit()" class="py-2 px-3 btn-outline-purple text-sm" style="width:auto;border-radius:0.5rem">
-            <option value="" disabled selected>Select Batch</option>
-            <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
-              <% batches.forEach(batch => { %>
-                <option value="<%= batch._id %>" <%= typeof selectedBatch !== 'undefined' && selectedBatch == batch._id.toString() ? 'selected' : '' %>><%= batch.name %> (<%= batch.academicYear %>)</option>
-              <% }) %>
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Exam <span style="color: var(--pt);">Timetable</span></h1>
+              <p class="dash-sub">Faculty Command Center · Assessment Scheduling System</p>
+            </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <!-- Class Filter Form -->
+              <form method="GET" action="/teacher/timetable" id="filter-form-select">
+                <select name="batchId" onchange="document.getElementById('filter-form-select').submit()" class="px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer">
+                  <option value="" disabled selected>Filter Batch</option>
+                  <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                    <% batches.forEach(batch => { %>
+                      <option value="<%= batch._id %>" <%= typeof selectedBatch !== 'undefined' && selectedBatch == batch._id.toString() ? 'selected' : '' %>><%= batch.name %> (<%= batch.academicYear %>)</option>
+                    <% }) %>
+                  <% } %>
+                </select>
+              </form>
+              
+              <button onclick="openAddModal()" class="btn-solid-purple flex items-center gap-2 shadow-lg">
+                <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+                Add Exams
+              </button>
+            </div>
+          </header>
+
+          <!-- Toast Notifications -->
+          <% if (success) { %>
+          <div id="toast-success" class="mb-6 flex items-center gap-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
+            <span>✓</span> <%= success %>
+          </div>
+          <% } %>
+          <% if (error) { %>
+          <div id="toast-error" class="mb-6 flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
+            <span>✗</span> <%= error %>
+          </div>
+          <% } %>
+
+          <%
+            const getBatchOrderValue = (name) => {
+              if (!name) return 999;
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+              const match = lowerName.match(/^(\d+)/);
+              if (match) return parseInt(match[1]);
+              return 100;
+            };
+            const standards = Object.keys(groupedEntriesByStandard).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+
+            let totalExams = 0;
+            let upcomingExams = 0;
+            let todayDate = new Date();
+            standards.forEach(std => {
+              groupedEntriesByStandard[std].forEach(group => {
+                totalExams += group.ids.length;
+                if (new Date(group.examDate) >= todayDate) {
+                  upcomingExams += group.ids.length;
+                }
+              });
+            });
+          %>
+
+          <!-- Metrics Row (Dashboard Card style) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Total Scheduled -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= totalExams %></div>
+              <div class="stat-label">Total Scheduled</div>
+            </div>
+
+            <!-- Upcoming Scheduled -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= upcomingExams %></div>
+              <div class="stat-label">Upcoming Exams</div>
+            </div>
+
+            <!-- Active Batches -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--lt);"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--lt);"><%= standards.length %></div>
+              <div class="stat-label">Active Batches</div>
+            </div>
+          </div>
+
+          <!-- Exam Type Tabs Filter -->
+          <div class="stat-card p-4 mb-8 flex flex-wrap gap-2 items-center">
+            <% ['All','Unit Test 1','Unit Test 2','Semester 1','Semester 2','Class Test'].forEach((t, i) => { %>
+            <button onclick="filterExams('<%= t %>')" 
+              class="tab-filter border transition-all <%= i===0 ? 'bg-purple-500/10 text-theme-pt border-purple-500/20' : 'bg-transparent text-theme-fdd border-theme-b hover:bg-theme-bgch hover:text-theme-fg' %>"
+              data-type="<%= t %>"><%= t === 'All' ? '🗓 All Exams' : t %></button>
+            <% }) %>
+          </div>
+
+          <!-- Timetable Main List Card -->
+          <div class="stat-card p-6 sm:p-8 mb-10">
+            
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-8 gap-4">
+              <h2 class="text-md font-bold tracking-tight text-theme-fg uppercase font-mono" style="font-family: 'Space Mono', monospace;">Exam Schedule</h2>
+              <div class="relative w-full sm:w-72">
+                <input type="text" id="exam-search" placeholder="Search subject or batch..." class="w-full pl-10 pr-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none font-semibold text-xs">
+                <svg class="w-4 h-4 text-theme-fdd absolute left-3.5 top-3" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              </div>
+            </div>
+
+            <% if (standards.length === 0) { %>
+            <div class="p-12 text-center text-theme-fdd border border-theme-b rounded-xl bg-theme-bgc/20">
+              <p class="text-3xl mb-2">📋</p>
+              <p class="font-semibold text-sm">No Exam Entries Yet</p>
+              <p class="text-xs mt-1 text-theme-fdd/70">Click "+ Add Exams" in the header to schedule portions.</p>
+            </div>
+            <% } else { %>
+            <% standards.forEach(std => { %>
+              <div class="mb-10 last:mb-0" data-standard-section="<%= std %>">
+                
+                <div class="flex items-center gap-3 mb-4 pl-1">
+                  <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-md font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch: <span style="color: var(--pt);"><%= std %></span></h3>
+                  <div class="flex-grow h-px bg-theme-bd ml-2"></div>
+                </div>
+
+                <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-6">
+                  <table class="data-table" id="timetable-table-<%= std.replace(/\s+/g, '-') %>">
+                    <thead>
+                      <tr>
+                        <th class="text-left font-mono">Subject</th>
+                        <th class="text-left font-mono">Exam Type</th>
+                        <th class="text-left font-mono">Date</th>
+                        <th class="text-left font-mono">Chapters / Portions</th>
+                        <th class="text-left font-mono">Added By</th>
+                        <th class="text-center font-mono w-28">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      <% groupedEntriesByStandard[std].forEach(group => {
+                        const typeMap = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
+                        const badgeClass = typeMap[group.examType] || 'badge-ct';
+                        const formattedDate = new Date(group.examDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+                        const inputDate = new Date(group.examDate).toISOString().split('T')[0];
+                        const isPast = new Date(group.examDate) < new Date();
+                      %>
+                      <tr class="exam-row <%= isPast ? 'opacity-50' : '' %> hover:bg-theme-bgch/40 border-b border-theme-bd transition-all" data-type="<%= group.examType %>">
+                        <td class="px-4 py-3 font-black text-theme-fg search-subject"><%= group.subject %></td>
+                        <td class="px-4 py-3"><span class="inline-block px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider <%= badgeClass %>"><%= group.examType %></span></td>
+                        <td class="px-4 py-3 font-semibold <%= isPast ? 'text-theme-fdd' : 'text-theme-pt' %>">
+                          <%= formattedDate %><% if (isPast) { %> <span class="text-[9px] font-normal opacity-75">(Past)</span><% } %>
+                        </td>
+                        <td class="px-4 py-3 text-theme-fdd text-xs font-semibold"><%= group.chapters %></td>
+                        <td class="px-4 py-3">
+                          <span class="text-[10px] font-bold uppercase tracking-wider <%= group.isTeacherAdded ? 'text-purple-400' : 'text-blue-400' %>">
+                            <%= group.isTeacherAdded ? '👨‍🏫 Teacher' : '🎓 ' + group.studentNames.join(', ') %>
+                          </span>
+                          <% if (group.ids.length > 1) { %>
+                          <div class="mt-1"><span class="text-[9px] bg-theme-bg2 text-theme-fdd px-1.5 py-0.5 rounded-md font-bold font-mono"><%= group.ids.length %> students</span></div>
+                          <% } %>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                          <div class="flex items-center justify-center gap-2">
+                            <button onclick="openEditModal(this)"
+                              data-id="<%= group.ids.join(',') %>"
+                              data-standard="<%= group.batchId %>"
+                              data-examtype="<%= group.examType %>"
+                              data-subject="<%= group.subject %>"
+                              data-date="<%= inputDate %>"
+                              data-chapters="<%= group.chapters %>"
+                              class="btn-outline-purple py-1 px-2.5 text-[9px] font-bold uppercase tracking-wider font-mono">✏️ Edit</button>
+                            <form method="POST" action="/teacher/timetable/delete/<%= group.ids.join(',') %>" onsubmit="return confirm('Delete this exam layout?')">
+                              <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+                              <button type="submit" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold font-mono uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all border border-red-500/20">🗑️</button>
+                            </form>
+                          </div>
+                        </td>
+                      </tr>
+                      <% }) %>
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            <% }) %>
+            <div id="no-results-msg" class="hidden p-6 text-center text-theme-fdd bg-theme-bgc/20 border border-theme-b rounded-xl italic text-xs font-semibold">No entries found for this search.</div>
             <% } %>
-          </select>
-
-        </form>
-        <button onclick="openAddModal()" class="py-2 px-5 btn-solid-purple text-sm shadow">
-          ➕ Add Exams
-        </button>
-      </div>
-    </header>
-
-    <!-- Toast Notifications -->
-    <% if (success) { %>
-    <div id="toast-success" class="mb-4 flex items-center gap-3 bg-green-50 border border-green-200 text-green-800 rounded-xl px-5 py-3 shadow-sm">
-      <span>✅</span><span class="font-semibold text-sm"><%= success %></span>    </div>
-    <% } %>
-    <% if (error) { %>
-    <div id="toast-error" class="mb-4 flex items-center gap-3 bg-red-50 border border-red-200 text-red-800 rounded-xl px-5 py-3 shadow-sm">
-      <span>❌</span><span class="font-semibold text-sm"><%= error %></span>
-    </div>
-    <% } %>
-
-    <!-- Exam Type Tabs -->
-    <div class="glass-card p-4 rounded-xl border border-purple-100 shadow-sm mb-4 flex flex-wrap gap-2">
-      <% ['All','Unit Test 1','Unit Test 2','Semester 1','Semester 2','Class Test'].forEach((t,i) => { %>
-      <button onclick="filterExams('<%= t %>')" 
-        class="tab-filter py-1.5 px-4 rounded-full text-sm font-semibold border transition-all <%= i===0 ? 'bg-purple-700 text-white border-purple-700' : 'glass-card text-brand-purple border-purple-200 hover:bg-purple-50' %>"
-        data-type="<%= t %>"><%= t === 'All' ? '🗓 All' : t %></button>
-      <% }) %>
-    </div>
-    <!-- Table Card -->
-    <div class="glass-card p-6 rounded-xl shadow border border-purple-100 mb-8">
-      <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 gap-4">
-        <h2 class="text-xl font-bold text-gray-800">Exam Schedule</h2>
-        <div class="relative w-full sm:w-64">
-          <input type="text" id="exam-search" placeholder="Search subject or batch..." class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-purple-300 focus:border-purple-400">
-          <svg class="w-5 h-5 text-gray-400 absolute left-3 top-2.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
-        </div>
-      </div>
-
-      <%
-        const getBatchOrderValue = (name) => {
-          if (!name) return 999;
-          const lowerName = name.toLowerCase();
-          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-          const match = lowerName.match(/^(\d+)/);
-          if (match) return parseInt(match[1]);
-          return 100;
-        };
-        const standards = Object.keys(groupedEntriesByStandard).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
-      %>
-      <% if (standards.length === 0) { %>
-      <div class="flex flex-col items-center justify-center py-16 text-center">
-        <div class="text-5xl mb-4">📋</div>
-        <p class="text-lg font-bold text-gray-700 mb-2">No Exam Entries Yet</p>
-        <p class="text-gray-400 text-sm">Click <strong>"+ Add Exams"</strong> to schedule.</p>
-      </div>
-      <% } else { %>
-      <% standards.forEach(std => { %>
-        <div class="mb-10 last:mb-0">
-          <div class="flex items-center gap-3 mb-4 pl-1">
-            <span class="text-xl">🏫</span>
-            <h3 class="text-xl font-bold text-gray-800">Batch: <span class="text-brand-purple"><%= std %></span></h3>
-            <div class="flex-grow h-px bg-gray-200 ml-4"></div>
           </div>
-          <div class="overflow-x-auto rounded-xl shadow-sm border border-gray-200">
-            <table class="data-table" id="timetable-table-<%= std.replace(/\s+/g, '-') %>">
-              <thead>
-                <tr>
-                  <th>Subject</th>
-                  <th>Exam Type</th>
-                  <th>Date</th>
-                  <th>Chapters / Portions</th>
-                  <th>Added By</th>
-                  <th class="text-center">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                <% groupedEntriesByStandard[std].forEach(group => {
-                  const typeMap = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
-                  const badgeClass = typeMap[group.examType] || 'badge-ct';
-                  const formattedDate = new Date(group.examDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
-                  const inputDate = new Date(group.examDate).toISOString().split('T')[0];
-                  const isPast = new Date(group.examDate) < new Date();
-                %>
-                <tr class="exam-row <%= isPast ? 'opacity-60' : '' %>" data-type="<%= group.examType %>">
-                  <td class="font-bold text-gray-900 search-subject"><%= group.subject %></td>
-                  <td><span class="badge <%= badgeClass %>"><%= group.examType %></span></td>
-                  <td class="font-semibold <%= isPast ? 'text-gray-400' : 'text-brand-purple' %>">
-                    <%= formattedDate %><% if (isPast) { %> <span class="text-xs text-gray-400">(Past)</span><% } %>
-                  </td>
-                  <td class="text-gray-600"><%= group.chapters %></td>
-                  <td>
-                    <span class="text-xs font-semibold <%= group.isTeacherAdded ? 'text-purple-700' : 'text-blue-700' %>">
-                      <%= group.isTeacherAdded ? '👩‍🏫 Teacher' : '🎓 ' + group.studentNames.join(', ') %>
-                    </span>
-                    <% if (group.ids.length > 1) { %>
-                    <div class="mt-1"><span class="text-[0.65rem] bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-sm"><%= group.ids.length %> students grouped</span></div>
-                    <% } %>
-                  </td>
-                  <td class="text-center">
-                    <div class="flex items-center justify-center gap-2">
-                      <button onclick="openEditModal(this)"
-                        data-id="<%= group.ids.join(',') %>"
-                        data-standard="<%= group.batchId %>"
-                        data-examtype="<%= group.examType %>"
-                        data-subject="<%= group.subject %>"
-                        data-date="<%= inputDate %>"
-                        data-chapters="<%= group.chapters %>"
-                        class="py-1 px-3 text-xs font-bold rounded-md btn-outline-purple">✏️ Edit</button>
-                      <form method="POST" action="/teacher/timetable/delete/<%= group.ids.join(',') %>" onsubmit="return confirm('Delete this exam layout?')">
-                        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
-                        <button type="submit" class="py-1 px-3 text-xs font-bold rounded-md bg-red-50 text-red-600 border border-red-200 hover:bg-red-600 hover:text-white transition-all">🗑️</button>
-                      </form>
-                    </div>
-                  </td>
-                </tr>
-                <% }) %>
-              </tbody>
-            </table>
-          </div>
+
         </div>
-      <% }) %>
-      <div id="no-results-msg" class="hidden p-6 text-center text-gray-500 bg-gray-50 border border-t-0 border-gray-200 rounded-b-xl italic">No entries found for this search.</div>
-      <% } %>
+      </main>
     </div>
   </div>
 
-  <!-- =================== ADD MODAL PREMIUM =================== -->
+  <!-- =================== ADD EXAMS MODAL =================== -->
   <div class="modal-overlay" id="add-modal">
     <div class="modal-box">
       <!-- Gradient Header -->
@@ -175,20 +312,21 @@
           <div>
             <div class="flex items-center gap-2 mb-1">
               <span class="text-2xl">📅</span>
-              <h2 class="text-2xl font-extrabold tracking-tight">Schedule Exams</h2>
+              <h2 class="text-xl font-extrabold tracking-tight">Schedule Exams</h2>
             </div>
-            <p class="text-purple-200 text-sm">Add multiple subjects at once for any batch &amp; exam type</p>
+            <p class="text-purple-200 text-xs font-semibold">Add multiple subjects at once for any batch &amp; exam type</p>
           </div>
-          <button onclick="closeModal('add-modal')" class="text-white/60 hover:text-white text-3xl font-light leading-none mt-1">&times;</button>
+          <button onclick="closeModal('add-modal')" class="text-white/60 hover:text-white text-3xl font-light leading-none">&times;</button>
         </div>
       </div>
       <!-- Body -->
       <div class="modal-body">
         <form method="POST" action="/teacher/timetable/bulk" id="add-form-teacher" onsubmit="return validateTeacherForm()">
-<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+          
           <div class="mb-5">
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-2">① Select Batch</p>
-            <select id="add-standard" name="standard" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required onchange="handleAddBatchChange(this)">
+            <label for="add-standard" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">① Select Batch</label>
+            <select id="add-standard" name="standard" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer" required onchange="handleAddBatchChange(this)">
               <option value="" disabled selected>Select Batch...</option>
               <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
                 <% batches.forEach(batch => { %>
@@ -197,9 +335,10 @@
               <% } %>
             </select>
           </div>
+
           <!-- Exam Type pills -->
           <div class="mb-6">
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">② Exam Type</p>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-3 font-mono">② Exam Type</label>
             <div class="flex flex-wrap gap-2" id="etype-pills">
               <% [['Unit Test 1','🧪'],['Unit Test 2','🧫'],['Semester 1','📘'],['Semester 2','📗'],['Class Test','✍️']].forEach(([t,icon]) => { %>
               <button type="button" class="etype-pill" data-val="<%= t %>" onclick="selectEtype(this)"><%= icon %> <%= t %></button>
@@ -207,71 +346,85 @@
             </div>
             <input type="hidden" name="examType" id="hidden-examType" />
           </div>
-          <!-- Subjects -->
+
+          <!-- Subjects Dynamic Rows -->
           <div>
-            <p class="text-xs font-bold uppercase tracking-widest text-gray-400 mb-3">③ Subjects &amp; Dates</p>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-3 font-mono">③ Subjects &amp; Dates</label>
             <div id="subject-rows" class="space-y-2.5"></div>
             <div class="add-row-btn mt-3" onclick="addSubjectRow()">＋ Add another subject</div>
           </div>
+
           <button type="submit" class="btn-glow mt-7">Save All Exams ✓</button>
         </form>
       </div>
     </div>
   </div>
 
-  <!-- =================== EDIT MODAL =================== -->
+  <!-- =================== EDIT EXAM MODAL =================== -->
   <div class="modal-overlay" id="edit-modal">
-    <div class="modal-box p-6 sm:p-8">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-extrabold text-brand-purple">✏️ Edit Exam Entry</h2>
-        <button onclick="closeModal('edit-modal')" class="text-gray-400 hover:text-gray-700 text-2xl font-bold">&times;</button>
+    <div class="modal-box">
+      <!-- Gradient Header -->
+      <div class="modal-header">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-xl">✏️</span>
+              <h2 class="text-lg font-extrabold tracking-tight">Edit Exam Entry</h2>
+            </div>
+            <p class="text-purple-200 text-xs font-semibold">Modify portions or exam details</p>
+          </div>
+          <button onclick="closeModal('edit-modal')" class="text-white/60 hover:text-white text-3xl font-light leading-none">&times;</button>
+        </div>
       </div>
-      <form method="POST" id="edit-form" class="space-y-5">
-        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
-        
-        <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Batch</label>
-          <select name="standard" id="edit-standard" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required onchange="handleEditBatchChange(this)">
-            <option value="" disabled selected>Select Batch...</option>
-            <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
-              <% batches.forEach(batch => { %>
-                <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
-              <% }) %>
-            <% } %>
-          </select>
-        </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Exam Type</label>
-          <select name="examType" id="edit-examType" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required>
-            <option value="" disabled selected>Select Exam Type...</option>
-            <option value="Unit Test 1">Unit Test 1</option>
-            <option value="Unit Test 2">Unit Test 2</option>
-            <option value="Semester 1">Semester 1</option>
-            <option value="Semester 2">Semester 2</option>
-            <option value="Class Test">Class Test</option>
-          </select>
-        </div>
+      <div class="modal-body space-y-5">
+        <form method="POST" id="edit-form" class="space-y-5">
+          <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
+          
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch</label>
+            <select name="standard" id="edit-standard" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer" required onchange="handleEditBatchChange(this)">
+              <option value="" disabled selected>Select Batch...</option>
+              <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                <% batches.forEach(batch => { %>
+                  <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Subject</label>
-          <select name="subject" id="edit-subject" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required>
-            <option value="" disabled selected>Select Subject...</option>
-          </select>
-        </div>
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Exam Type</label>
+            <select name="examType" id="edit-examType" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer" required>
+              <option value="" disabled selected>Select Exam Type...</option>
+              <option value="Unit Test 1">Unit Test 1</option>
+              <option value="Unit Test 2">Unit Test 2</option>
+              <option value="Semester 1">Semester 1</option>
+              <option value="Semester 2">Semester 2</option>
+              <option value="Class Test">Class Test</option>
+            </select>
+          </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Exam Date</label>
-          <input type="date" name="examDate" id="edit-examDate" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required />
-        </div>
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Subject</label>
+            <select name="subject" id="edit-subject" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer" required>
+              <option value="" disabled selected>Select Subject...</option>
+            </select>
+          </div>
 
-        <div>
-          <label class="block text-sm font-bold text-gray-700 mb-1">Chapters / Portions</label>
-          <textarea id="edit-chapters" name="chapters" rows="2" class="w-full px-4 py-2.5 rounded-lg border border-gray-300 focus:ring-2 focus:ring-purple-300 focus:border-purple-400 transition-all font-medium text-gray-800" required></textarea>
-        </div>
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Exam Date</label>
+            <input type="date" name="examDate" id="edit-examDate" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none font-semibold text-sm" required />
+          </div>
 
-        <button type="submit" class="w-full py-3 mt-4 btn-solid-purple rounded-xl font-bold shadow-md hover:shadow-lg transition-all text-lg tracking-wide">Update Exam ✓</button>
-      </form>
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Chapters / Portions</label>
+            <textarea id="edit-chapters" name="chapters" rows="2" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none font-semibold text-sm" required></textarea>
+          </div>
+
+          <button type="submit" class="btn-glow mt-4">Update Exam ✓</button>
+        </form>
+      </div>
     </div>
   </div>
 
@@ -315,12 +468,12 @@
 
       div.innerHTML = `
         <span class="row-num">${num}</span>
-        <select name="subjects[]" required class="srow-input cursor-pointer bg-transparent">
+        <select name="subjects[]" required class="srow-input cursor-pointer bg-transparent py-1.5 focus:ring-0">
           ${subjectOptions}
         </select>
-        <input name="dates[]" type="date" required class="srow-input" />
-        <input name="chapters[]" type="text" placeholder="Ch. 1, 2…" class="srow-input" />
-        <button type="button" onclick="removeRow(this)" class="text-red-300 hover:text-red-500 text-xl font-bold leading-none">&times;</button>`;
+        <input name="dates[]" type="date" required class="srow-input py-1.5 focus:ring-0" />
+        <input name="chapters[]" type="text" placeholder="Ch. 1, 2…" class="srow-input py-1.5 focus:ring-0" />
+        <button type="button" onclick="removeRow(this)" class="text-red-400 hover:text-red-500 text-xl font-bold leading-none">&times;</button>`;
       rows.appendChild(div);
       renumberRows();
     }
@@ -361,8 +514,8 @@
     function filterExams(type) {
       document.querySelectorAll('.tab-filter').forEach(btn => {
         const isActive = btn.dataset.type === type;
-        btn.className = 'tab-filter py-1.5 px-4 rounded-full text-sm font-semibold border transition-all ' +
-          (isActive ? 'bg-purple-700 text-white border-purple-700' : 'glass-card text-brand-purple border-purple-200 hover:bg-purple-50');
+        btn.className = 'tab-filter border transition-all ' +
+          (isActive ? 'bg-purple-500/10 text-theme-pt border-purple-500/20' : 'bg-transparent text-theme-fdd border-theme-b hover:bg-theme-bgch hover:text-theme-fg');
       });
       document.querySelectorAll('.exam-row').forEach(row => {
         row.style.display = (type === 'All' || row.dataset.type === type) ? '' : 'none';
@@ -384,14 +537,10 @@
       });
     }
 
-    // Auto-dismiss toasts
     setTimeout(() => {
       ['toast-success','toast-error'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
     }, 4000);
   </script>
-      </main>
-    </div>
-  </div>
 </body>
 
 </html>

@@ -3,7 +3,7 @@ const User = require("../models/User");
 const Teacher = require("../models/Teacher");
 
 async function connectDB() {
-  if (mongoose.connection.readyState === 1) return;
+  if ([1, 2].includes(mongoose.connection.readyState)) return;
   const options = { serverSelectionTimeoutMS: 5000 };
   try {
     await mongoose.connect(process.env.MONGODB_URI, options);
@@ -15,7 +15,7 @@ async function connectDB() {
 }
 
 const ensureDBConnection = async (req, res, next) => {
-  if (mongoose.connection.readyState === 1) return next();
+  if ([1, 2].includes(mongoose.connection.readyState)) return next();
   try {
     await connectDB();
     next();

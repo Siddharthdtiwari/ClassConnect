@@ -8,43 +8,75 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .photo-upload-area {
+      border: 2px dashed var(--b);
+      background: var(--bgc);
+      transition: all 0.3s;
+    }
+    .photo-upload-area:hover {
+      border-color: var(--p);
+      background: var(--bgch);
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
-
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
     <%- include('../partials/teacher_sidebar') %>
     
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-12 min-h-screen flex flex-col items-center justify-center">
-    
-    <div class="w-full max-w-2xl">
-      <div class="premium-card overflow-hidden">
-        
-        <div class="h-40 bg-[#f8f9fa] border-b border-gray-100 relative overflow-hidden">
-          <div class="absolute inset-0 opacity-30" style="background-image: radial-gradient(#5d3a9b 0.5px, transparent 0.5px); background-size: 16px 16px;"></div>
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+          <header class="mb-10 flex items-center justify-between">
+            <div>
+              <h1 class="dash-greeting">Edit <span style="color: var(--pt);">Profile</span></h1>
+              <p class="dash-sub">Update <%= student.studentName %>'s information</p>
+            </div>
+            <a href="/teacher/view_profile/<%= student._id %>" class="btn-outline-purple flex items-center gap-2 py-2 px-4 rounded-xl text-xs font-bold uppercase tracking-wider font-mono">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              Back to Profile
+            </a>
+          </header>
           
-          <a href="/teacher/view_profile/<%= student._id %>" class="absolute top-6 left-6 text-gray-600 hover:text-brand-purple font-semibold flex items-center gap-2 transition-colors z-10 glass-card px-4 py-2 rounded-full shadow-sm text-sm">
-            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
-            Back to Profile
-          </a>
-        </div>
-
-        <div class="p-8 sm:p-12 pt-0">
-          <div class="mb-10 -mt-20 relative z-10 flex flex-col sm:flex-row items-center sm:items-end gap-6 text-center sm:text-left">
-            <div class="p-2 glass-card rounded-full shadow-md">
-              <img id="current-photo" src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Current Profile Picture" class="w-32 h-32 rounded-full object-cover border-4 border-white" />
+          <div class="stat-card p-6 sm:p-10 max-w-3xl mx-auto mb-10">
+            <div class="mb-8 border-b border-theme-bd pb-6 flex items-center gap-4">
+              <div class="p-1 rounded-full bg-theme-bg2 border border-theme-bd">
+                <img id="current-photo" src="<%= student.profilePhoto || 'https://placehold.co/128x128/ffffff/5d3a9b?text=' + student.studentName.charAt(0) %>" alt="Current Profile Picture" class="w-16 h-16 rounded-full object-cover" />
+              </div>
+              <div>
+                <h2 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;"><%= student.studentName %></h2>
+                <p class="text-[10px] text-theme-fdd mt-1 font-mono uppercase tracking-wider font-bold"><%= student.studentId %></p>
+              </div>
             </div>
-            <div class="pb-2">
-              <h1 class="text-3xl font-black text-gray-900 tracking-tight">Edit Profile</h1>
-              <p class="text-gray-500 font-medium mt-1">Update <%= student.studentName %>'s information.</p>
-            </div>
-          </div>
 
           <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
@@ -52,53 +84,53 @@
             <div class="photo-upload-area rounded-2xl p-6 text-center cursor-pointer relative group">
               <input type="file" id="profile-photo" name="profilePhoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
               <div class="flex flex-col items-center gap-2 z-10 relative pointer-events-none">
-                <div class="w-12 h-12 rounded-full bg-purple-50 flex items-center justify-center text-brand-purple group-hover:scale-110 transition-transform">
+                <div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-theme-pt group-hover:scale-110 transition-transform">
                   <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                 </div>
                 <div>
-                  <span class="text-sm font-bold text-brand-purple">Click to upload new photo</span>
-                  <p class="text-xs text-gray-500 mt-1">PNG, JPG up to 5MB</p>
+                  <span class="text-sm font-bold text-theme-pt font-mono uppercase">Click to upload new photo</span>
+                  <p class="text-[10px] text-theme-fdd mt-1 font-semibold">PNG, JPG up to 5MB</p>
                 </div>
               </div>
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="student-id" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Student ID</label>
-                <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="soft-input mt-1 block w-full rounded-xl py-3 px-4 text-gray-500 cursor-not-allowed" />
+                <label for="student-id" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Student ID</label>
+                <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="w-full bg-theme-bgc text-theme-fdd border border-theme-b rounded-xl focus:outline-none py-3 px-4 font-semibold text-sm cursor-not-allowed opacity-70" />
               </div>
 
               <div>
-                <label for="student-name" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Student Name</label>
-                <input type="text" id="student-name" name="studentName" value="<%= student.studentName %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="student-name" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Student Name</label>
+                <input type="text" id="student-name" name="studentName" value="<%= student.studentName %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
 
               <div>
-                <label for="email" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Email Address</label>
-                <input type="email" id="email" name="email" value="<%= student.email || '' %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="email" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Email Address</label>
+                <input type="email" id="email" name="email" value="<%= student.email || '' %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
 
               <div>
-                <label for="standard" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Standard</label>
-                <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="standard" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Standard</label>
+                <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
 
               <div>
-                <label for="mobile-no" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Mobile No</label>
-                <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" />
+                <label for="mobile-no" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Mobile No</label>
+                <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>
 
               <div>
-                <label for="monthlyFee" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Monthly Fee (₹)</label>
-                <input type="number" id="monthlyFee" name="monthlyFee" value="<%= student.monthlyFee || 0 %>" min="0" class="soft-input mt-1 block w-full rounded-xl py-3 px-4 font-semibold text-gray-900 outline-none" required />
+                <label for="monthlyFee" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Monthly Fee (₹)</label>
+                <input type="number" id="monthlyFee" name="monthlyFee" value="<%= student.monthlyFee || 0 %>" min="0" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" required />
               </div>
             </div>
 
-            <div class="pt-6 border-t border-gray-100 flex gap-4">
-              <a href="/teacher/view_profile/<%= student._id %>" class="w-full py-4 px-4 rounded-xl text-center font-bold text-gray-600 bg-gray-100 hover:bg-gray-200 transition-colors">
+            <div class="pt-8 border-t border-theme-bd flex gap-4 mt-8">
+              <a href="/teacher/view_profile/<%= student._id %>" class="w-full py-3 px-6 rounded-xl text-center font-bold text-theme-fdd hover:text-theme-fg hover:bg-theme-bg2 transition-colors border border-transparent">
                 Cancel
               </a>
-              <button type="submit" class="w-full py-4 px-4 btn-solid-purple text-lg">
+              <button type="submit" class="w-full py-3 px-8 btn-solid-purple text-lg shadow-md">
                 Save Changes
               </button>
             </div>
@@ -107,8 +139,6 @@
           <div id="message-box" class="mt-6 p-4 rounded-md text-center hidden"></div>
         </div>
       </div>
-    </div>
-  </div>
       </main>
     </div>
   </div>

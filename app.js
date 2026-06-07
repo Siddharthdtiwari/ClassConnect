@@ -103,7 +103,7 @@ app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
 
 // HTTP Request Logging
-app.use(morgan('combined', { stream: { write: message => logger.info(message.trim()) } }));
+app.use(morgan('dev', { stream: { write: message => logger.info(message.trim()) } }));
 
 app.use(
   session({
@@ -341,6 +341,14 @@ app.use((req, res) => {
     url: req.originalUrl,
     method: req.method
   });
+});
+
+// CSRF Error Handler
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).send('Form tampered or session expired. Please refresh the page and try again.');
+  }
+  next(err);
 });
 
 // 500 Error Handler - General server errors

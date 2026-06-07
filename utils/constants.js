@@ -25,6 +25,18 @@ const EXAM_TYPES = [
 // User roles
 const USER_ROLES = ["student", "teacher", "admin"];
 
+// Academic months standard order
+const ACADEMIC_MONTHS = [
+  "May", "June", "July", "August", "September", "October",
+  "November", "December", "January", "February", "March", "April"
+];
+
+// Helper function to calculate score percentage consistently
+const calculatePercentage = (score, totalMarks) => {
+  if (!totalMarks || totalMarks <= 0) return 0;
+  return Math.round((score / totalMarks) * 10000) / 100;
+};
+
 module.exports = {
   STANDARDS,
   ACADEMIC_YEAR_REGEX,
@@ -32,4 +44,6 @@ module.exports = {
   ATTENDANCE_STATUS,
   EXAM_TYPES,
   USER_ROLES,
+  ACADEMIC_MONTHS,
+  calculatePercentage,
 };

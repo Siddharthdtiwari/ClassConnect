@@ -12,13 +12,16 @@ const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpe
 
 exports.renderManageStudents = async (req, res) => {
   try {
+    const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
+    batches.sort(sortBatches);
+
     const students = await User.find({ batch: { $in: req.viewingBatches } })
       .populate('batch')
       .lean();
 
     students.sort(sortStudentsByBatchAndId);
 
-    res.render("teacher/manage_students", { students });
+    res.render("teacher/manage_students", { students, batches });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading students");
@@ -26,14 +29,7 @@ exports.renderManageStudents = async (req, res) => {
 };
 
 exports.renderAddStudent = async (req, res) => {
-  try {
-    const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
-    batches.sort(sortBatches);
-    res.render("teacher/add_student", { batches });
-  } catch (err) {
-    console.error(err);
-    res.status(500).send("Error loading batches");
-  }
+  res.redirect("/teacher/manage_students?action=add");
 };
 
 exports.processAddStudent = async (req, res) => {
@@ -216,14 +212,16 @@ exports.processBulkSaveStudents = async (req, res) => {
       if (row.password && String(row.password).trim() !== "") {
         updateDoc.password = await bcrypt.hash(String(row.password).trim(), 12);
       } else {
-        if (!existingMap.has(String(row.studentId))) {
+        if (!row.id && !existingMap.has(String(row.studentId))) {
           updateDoc.password = await bcrypt.hash(String(row.mobileNo).trim(), 12);
         }
       }
 
+      const filter = row.id ? { _id: row.id } : { studentId: row.studentId, batch: row.batchId };
+
       bulkOps.push({
         updateOne: {
-          filter: { studentId: row.studentId, batch: { $in: req.currentBatches } },
+          filter,
           update: { $set: updateDoc },
           upsert: true
         }
@@ -394,6 +392,7 @@ exports.generateStudentReport = async (req, res) => {
       studentRank = rankIndex + 1;
     }
 
+    const disposition = req.query.dl === "1" ? "attachment" : "inline";
     await generateStudentReportPDF(
       student,
       {
@@ -406,7 +405,7 @@ exports.generateStudentReport = async (req, res) => {
         studentRank,
       },
       res,
-      "inline"
+      disposition
     );
   } catch (err) {
     console.error("Error generating student report:", err);

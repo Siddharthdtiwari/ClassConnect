@@ -1,19 +1,5 @@
 const mongoose = require("mongoose");
-
-const MONTHS = [
-  "January",
-  "February",
-  "March",
-  "April",
-  "May",
-  "June",
-  "July",
-  "August",
-  "September",
-  "October",
-  "November",
-  "December",
-];
+const { ACADEMIC_MONTHS } = require("../utils/constants");
 
 const feeSchema = new mongoose.Schema(
   {
@@ -32,7 +18,7 @@ const feeSchema = new mongoose.Schema(
     month: {
       type: String,
       required: true,
-      enum: MONTHS,
+      enum: ACADEMIC_MONTHS,
     },
     year: { type: Number, required: true },
     amount: { type: Number, required: true, min: 0 },

@@ -4,16 +4,143 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Detailed Attendance Report</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Detailed Attendance Report | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+
+    /* Report Matrix Table Styles */
+    .report-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+    }
+    .report-table th, .report-table td {
+      padding: 12px 14px;
+      border-bottom: 1px solid var(--bd);
+      border-right: 1px solid var(--bd);
+      text-align: center;
+      vertical-align: middle;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.8rem;
+    }
+    .report-table th {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+      color: white !important;
+      font-weight: 700;
+      text-transform: uppercase;
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+    }
+    .report-table tr:hover td {
+      background-color: var(--bgch) !important;
+    }
+
+    /* Sticky columns */
+    .sticky-col-left {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background: var(--bgc) !important;
+      text-align: left !important;
+      border-right: 2px solid var(--b) !important;
+      min-width: 200px;
+    }
+    .report-table th.sticky-col-left {
+      z-index: 20;
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+    }
+
+    .sticky-col-right-overall {
+      position: sticky;
+      right: 0;
+      z-index: 10;
+      border-left: 2px solid var(--b) !important;
+      border-right: none !important;
+      min-width: 100px;
+      background: var(--bgc) !important;
+    }
+    .report-table th.sticky-col-right-overall {
+      z-index: 20;
+      background: linear-gradient(135deg, var(--pm) 0%, var(--p) 100%) !important;
+      color: white !important;
+    }
+
+    /* Status classes */
+    .status-P {
+      color: rgb(52, 211, 153) !important;
+      background: rgba(52, 211, 153, 0.08) !important;
+    }
+    .status-A {
+      color: rgb(248, 113, 113) !important;
+      background: rgba(248, 113, 113, 0.08) !important;
+    }
+    .status-H {
+      color: rgb(129, 140, 248) !important;
+      background: rgba(99, 102, 241, 0.08) !important;
+    }
+    .status-N {
+      color: var(--fdd) !important;
+    }
+
+    .header-content {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    th.sticky-col-left .header-content {
+      justify-content: flex-start;
+    }
+    
+    .cell-content {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -22,134 +149,162 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8">
-      <h1 class="text-3xl md:text-4xl font-bold text-gray-900">
-        Detailed Attendance Report
-      </h1>
-      <p class="text-gray-600 mt-1">
-        View daily status, monthly, and overall attendance percentages.
-      </p>
-    </header>
+          
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div class="flex items-center gap-4">
+              <a href="/teacher/manage_attendance" class="btn-outline-purple p-2 rounded-xl flex items-center justify-center" title="Back to Attendance">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5L8.25 12l7.5-7.5"/></svg>
+              </a>
+              <div>
+                <h1 class="dash-greeting">Detailed <span style="color: var(--pt);">Ledger</span></h1>
+                <p class="dash-sub">Faculty Command Center · Complete Attendance Matrix</p>
+              </div>
+            </div>
+          </header>
 
-    <div class="glass-card p-6 sm:p-8 rounded-2xl shadow-sm border border-gray-100">
-      <div class="overflow-x-auto rounded-xl border border-gray-200 custom-scrollbar">
-        <table class="report-table w-full border-collapse min-w-max">
-          <thead>
-            <% 
-                          const dateKeys = {};
-                          allDates.forEach(date => {
-                              const monthYear = date.substring(0, 7);
-                              if (!dateKeys[monthYear]) {
-                                  dateKeys[monthYear] = [];
-                              }
-                              dateKeys[monthYear].push(date);
-                          });
-                          const sortedMonthYears = Object.keys(dateKeys).sort();
+          <!-- Attendance Ledger Table Card -->
+          <div class="stat-card p-6 sm:p-8 mb-10">
+            <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc custom-scrollbar">
+              <table class="report-table w-full border-collapse min-w-max">
+                <thead>
+                  <% 
+                    const dateKeys = {};
+                    allDates.forEach(date => {
+                        const monthYear = date.substring(0, 7);
+                        if (!dateKeys[monthYear]) {
+                            dateKeys[monthYear] = [];
+                        }
+                        dateKeys[monthYear].push(date);
+                    });
+                    const sortedMonthYears = Object.keys(dateKeys).sort();
 
-                          let totalDateAndPercentageColumns = 0;
-                          sortedMonthYears.forEach(monthYear => {
-                              totalDateAndPercentageColumns += dateKeys[monthYear].length + 1;
-                          });
-                        %>
+                    let totalDateAndPercentageColumns = 0;
+                    sortedMonthYears.forEach(monthYear => {
+                        totalDateAndPercentageColumns += dateKeys[monthYear].length + 1;
+                    });
+                  %>
 
-            <tr class="sticky-header row-1-header month-group-header">
-              <th class="sticky-col-left" rowspan="2">
-                <div class="header-content">Student Name / ID</div>
-              </th>
+                  <tr class="sticky-header row-1-header month-group-header">
+                    <th class="sticky-col-left" rowspan="2">
+                      <div class="header-content">Student Name / ID</div>
+                    </th>
 
-              <% sortedMonthYears.forEach(monthYear => { 
-                          const monthName = new Date(monthYear + '-01').toLocaleString('default', { month: 'long' });
-                        %>
-              <th colspan="<%= dateKeys[monthYear].length + 1 %>" class="border-l-2 border-r-2 border-gray-500">
-                <div class="header-content"><%= monthName %> <%= monthYear.substring(0, 4) %></div>
-              </th>
-              <% }) %>
+                    <% sortedMonthYears.forEach(monthYear => { 
+                        const monthName = new Date(monthYear + '-01').toLocaleString('default', { month: 'long' });
+                    %>
+                    <th colspan="<%= dateKeys[monthYear].length + 1 %>" class="border-l border-r border-theme-b">
+                      <div class="header-content"><%= monthName %> <%= monthYear.substring(0, 4) %></div>
+                    </th>
+                    <% }) %>
 
-              <th class="sticky-col-right-overall overall-final-col text-sm" rowspan="2">
-                <div class="header-content">OVERALL</div>
-              </th>
-            </tr>
+                    <th class="sticky-col-right-overall overall-final-col text-sm" rowspan="2">
+                      <div class="header-content">OVERALL</div>
+                    </th>
+                  </tr>
 
-            <tr class="sticky-header row-2-header day-header-row">
+                  <tr class="sticky-header row-2-header day-header-row">
+                    <% sortedMonthYears.forEach(monthYear => { %>
+                    <% dateKeys[monthYear].forEach(date => { 
+                        const dayNumber = new Date(date).getDate().toString().padStart(2, '0');
+                    %>
+                    <th style="background: rgba(124, 58, 237, 0.15) !important; color: var(--pt) !important;">
+                      <div class="header-content"><%= dayNumber %></div>
+                    </th>
+                    <% }) %>
+                    <th class="monthly-percentage-col border-r-2 border-theme-b font-bold" style="background: rgba(124, 58, 237, 0.25) !important; color: var(--pt) !important;">
+                      <div class="header-content">%</div>
+                    </th>
+                    <% }) %>
+                  </tr>
+                </thead>
+                <tbody>
+                  <% if (report && report.length > 0) { %>
+                  <% report.forEach(student => { %>
+                  <tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all">
+                    <td class="sticky-col-left font-bold text-theme-fg">
+                      <div class="cell-content">
+                        <div class="font-bold text-theme-fg text-sm"><%= student.studentName %></div>
+                        <span class="text-xs text-theme-pt font-mono font-bold">(<%= student.studentId %>)</span>
+                      </div>
+                    </td>
 
-              <% sortedMonthYears.forEach(monthYear => { %>
-              <% dateKeys[monthYear].forEach(date => { 
-                                const dayNumber = new Date(date).getDate().toString().padStart(2, '0');
-                              %>
-              <th>
-                <div class="header-content text-gray-700"><%= dayNumber %></div>
-              </th>
-              <% }) %>
-              <th class="monthly-percentage-col text-gray-700 font-bold border-r-2 border-gray-300">
-                <div class="header-content">%</div>
-              </th>
-              <% }) %>
-            </tr>
-          </thead>
-          <tbody>
-            <% if (report && report.length > 0) { %>
-            <% report.forEach(student => { %>
-            <tr class="hover:bg-gray-50">
-              <td class="sticky-col-left text-brand-purple">
-                <div class="cell-content">
-                  <div>
-                    <%= student.studentName %><br>
-                    <span class="text-xs text-gray-500 font-normal">(<%= student.studentId %>)</span>
-                  </div>
-                </div>
-              </td>
+                    <% sortedMonthYears.forEach(monthYear => { 
+                        let monthlyPresent = 0;
+                        let monthlyRecorded = 0;
+                    %>
+                    <% dateKeys[monthYear].forEach(date => { 
+                        const status = student.records[date] || '-';
+                        const cellClass = status === '-' ? 'status-N' : `status-${status}`;
 
-              <% sortedMonthYears.forEach(monthYear => { 
-                                  let monthlyPresent = 0;
-                                  let monthlyRecorded = 0;
-                                %>
-              <% dateKeys[monthYear].forEach(date => { 
-                                      const status = student.records[date] || '-';
-                                      const cellClass = status === '-' ? 'status-N' : `status-${status}`;
+                        if (status === 'P') monthlyPresent++;
+                        if (status === 'P' || status === 'A') monthlyRecorded++;
+                    %>
+                    <td class="text-xs font-bold <%= cellClass %> border-r border-theme-bd">
+                      <div class="cell-content"><%= status %></div>
+                    </td>
+                    <% }) %>
 
-                                      if (status === 'P') monthlyPresent++;
-                                      if (status === 'P' || status === 'A') monthlyRecorded++;
-                                    %>
-              <td class="text-xs font-bold <%= cellClass %>">
-                <div class="cell-content"><%= status %></div>
-              </td>
-              <% }) %>
+                    <% 
+                      const monthlyPercentage = monthlyRecorded > 0 
+                          ? ((monthlyPresent / monthlyRecorded) * 100).toFixed(1) 
+                          : 'N/A';
+                          
+                      let percentageStyle = "";
+                      if (monthlyRecorded > 0) {
+                        const pctVal = parseFloat(monthlyPercentage);
+                        if (pctVal >= 75) {
+                          percentageStyle = "background: rgba(16,185,129,0.08); color: rgb(52,211,153); border-right: 2px solid var(--b);";
+                        } else {
+                          percentageStyle = "background: rgba(239,68,68,0.08); color: rgb(248,113,113); border-right: 2px solid var(--b);";
+                        }
+                      } else {
+                        percentageStyle = "color: var(--fdd); border-right: 2px solid var(--b);";
+                      }
+                    %>
+                    <td class="monthly-percentage-col text-xs font-bold border-r border-theme-b font-mono" style="<%= percentageStyle %>">
+                      <div class="cell-content"><%= monthlyPercentage %><%= monthlyRecorded > 0 ? '%' : '' %></div>
+                    </td>
+                    <% }) %>
 
-              <% 
-                                    const monthlyPercentage = monthlyRecorded > 0 
-                                        ? ((monthlyPresent / monthlyRecorded) * 100).toFixed(1) 
-                                        : 'N/A';
-                                    const percentageColor = monthlyRecorded === 0 ? 'text-gray-500' :
-                                                              monthlyPercentage >= 75 ? 'text-green-700' : 'text-red-700';
-                                  %>
-              <td class="monthly-percentage-col text-sm <%= percentageColor %> border-r-2 border-gray-300">
-                <div class="cell-content"><%= monthlyPercentage %></div>
-              </td>
-              <% }) %>
+                    <% 
+                      const overallPercentage = student.totalRecordedDays > 0 
+                          ? ((student.presentCount / student.totalRecordedDays) * 100).toFixed(1) 
+                          : 'N/A';
+                          
+                      let overallStyle = "";
+                      if (student.totalRecordedDays > 0) {
+                        const ovVal = parseFloat(overallPercentage);
+                        if (ovVal >= 75) {
+                          overallStyle = "background: rgba(16,185,129,0.12); color: rgb(52,211,153); border: 1px solid rgba(16,185,129,0.2);";
+                        } else {
+                          overallStyle = "background: rgba(239,68,68,0.12); color: rgb(248,113,113); border: 1px solid rgba(239,68,68,0.2);";
+                        }
+                      } else {
+                        overallStyle = "background: rgba(255,255,255,0.03); color: var(--fdd);";
+                      }
+                    %>
+                    <td class="sticky-col-right-overall font-black text-xs font-mono">
+                      <div class="cell-content">
+                        <span class="inline-block px-2.5 py-1 rounded-md" style="<%= overallStyle %>"><%= overallPercentage %><%= student.totalRecordedDays > 0 ? '%' : '' %></span>
+                      </div>
+                    </td>
+                  </tr>
+                  <% }) %>
+                  <% } else { %>
+                  <tr>
+                    <td colspan="<%= totalDateAndPercentageColumns + 2 %>" class="text-center py-12 text-theme-fdd font-semibold text-sm">
+                      <div class="cell-content" style="justify-content: center;">No student or attendance records found.</div>
+                    </td>
+                  </tr>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
 
-              <% 
-                                  const overallPercentage = student.totalRecordedDays > 0 
-                                      ? ((student.presentCount / student.totalRecordedDays) * 100).toFixed(1) 
-                                      : 'N/A';
-                                  /* FIX: Replaced color classes with the ones from your CSS */
-                                  const overallColor = student.totalRecordedDays === 0 ? 'bg-gray-400 text-white' :
-                                                            overallPercentage >= 75 ? 'bg-green-600 text-white' : 'bg-red-600 text-white';
-                                %>
-              <td class="sticky-col-right-overall font-bold text-sm <%= overallColor %> overall-final-col">
-                <div class="cell-content"><%= overallPercentage %>%</div>
-              </td>
-            </tr>
-            <% }) %>
-            <% } else { %>
-            <tr>
-              <td colspan="<%= totalDateAndPercentageColumns + 2 %>" class="text-center py-8 text-gray-500">
-                <div class="cell-content" style="justify-content: center;">No student or attendance records found.</div>
-              </td>
-            </tr>
-            <% } %>
-          </tbody>
-        </table>
-      </div>
+        </div>
+      </main>
     </div>
   </div>
 
@@ -161,7 +316,6 @@
           if (!row1) return;
 
           const row1Height = row1.getBoundingClientRect().height - 1;
-
           const row2Headers = document.querySelectorAll('.row-2-header th');
 
           row2Headers.forEach(th => {
@@ -177,10 +331,6 @@
       window.addEventListener('resize', alignStickyHeaders);
     });
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 
 </html>

@@ -2,6 +2,7 @@ const StudyMaterial = require("../../models/StudyMaterial");
 const Batch = require("../../models/Batch");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { sortBatches } = require("../../utils/sortHelpers");
+const mongoose = require("mongoose");
 
 exports.renderStudyMaterial = async (req, res) => {
   try {
@@ -87,5 +88,122 @@ exports.processStudyMaterialDelete = async (req, res) => {
   } catch (err) {
     console.error("Study material delete API error:", err);
     res.status(500).json({ success: false, message: "Failed to delete study material." });
+  }
+};
+
+exports.repostSingleMaterial = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const currentYear = req.currentAcademicYear;
+
+    const sourceMaterial = await StudyMaterial.findById(id).populate('batch');
+    if (!sourceMaterial) {
+      return res.status(404).json({ success: false, message: "Resource not found." });
+    }
+
+    if (!sourceMaterial.batch) {
+      return res.status(400).json({ success: false, message: "Source batch not found." });
+    }
+
+    const batchName = sourceMaterial.batch.name;
+
+    // Find the corresponding batch in the current active academic year
+    const targetBatch = await Batch.findOne({
+      name: { $regex: new RegExp(`^${batchName.trim()}$`, "i") },
+      academicYear: currentYear
+    });
+
+    if (!targetBatch) {
+      return res.status(400).json({
+        success: false,
+        message: `No matching batch named "${batchName}" found in the current year ${currentYear}. Please create this batch in the current year first.`
+      });
+    }
+
+    // Check if duplicate already exists
+    const duplicate = await StudyMaterial.findOne({
+      batch: targetBatch._id,
+      subject: sourceMaterial.subject,
+      materialType: sourceMaterial.materialType,
+      filePath: sourceMaterial.filePath
+    });
+
+    if (duplicate) {
+      return res.status(400).json({ success: false, message: `This material has already been reposted to the current year (${currentYear}).` });
+    }
+
+    // Create the cloned record
+    await StudyMaterial.create({
+      batch: targetBatch._id,
+      subject: sourceMaterial.subject,
+      materialType: sourceMaterial.materialType,
+      description: sourceMaterial.description,
+      filePath: sourceMaterial.filePath
+    });
+
+    res.json({ success: true, message: `Successfully reposted "${sourceMaterial.subject}" to ${currentYear} (${batchName})!` });
+  } catch (err) {
+    console.error("Repost single material error:", err);
+    res.status(500).json({ success: false, message: "Failed to repost material." });
+  }
+};
+
+exports.repostMultipleMaterials = async (req, res) => {
+  try {
+    const { ids } = req.body;
+    const currentYear = req.currentAcademicYear;
+
+    if (!ids || !ids.length) {
+      return res.status(400).json({ success: false, message: "No material IDs provided." });
+    }
+
+    const sourceMaterials = await StudyMaterial.find({ _id: { $in: ids } }).populate('batch').lean();
+    
+    // Find all batches in current year
+    const currentBatches = await Batch.find({ academicYear: currentYear }).lean();
+    const batchMap = {};
+    currentBatches.forEach(b => {
+      batchMap[b.name.toLowerCase().trim()] = b._id;
+    });
+
+    let clonedCount = 0;
+    let skippedCount = 0;
+
+    for (const mat of sourceMaterials) {
+      const name = mat.batch ? mat.batch.name.toLowerCase().trim() : null;
+      if (!name || !batchMap[name]) {
+        skippedCount++;
+        continue;
+      }
+
+      const duplicate = await StudyMaterial.findOne({
+        batch: batchMap[name],
+        subject: mat.subject,
+        materialType: mat.materialType,
+        filePath: mat.filePath
+      });
+
+      if (duplicate) {
+        skippedCount++;
+        continue;
+      }
+
+      await StudyMaterial.create({
+        batch: batchMap[name],
+        subject: mat.subject,
+        materialType: mat.materialType,
+        description: mat.description,
+        filePath: mat.filePath
+      });
+      clonedCount++;
+    }
+
+    res.json({
+      success: true,
+      message: `Successfully reposted ${clonedCount} material(s) to ${currentYear}!${skippedCount ? ` (${skippedCount} skipped due to missing batches or duplicates)` : ''}`
+    });
+  } catch (err) {
+    console.error("Repost multiple materials error:", err);
+    res.status(500).json({ success: false, message: "Failed to repost materials." });
   }
 };

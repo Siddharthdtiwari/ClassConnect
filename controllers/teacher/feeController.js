@@ -2,72 +2,12 @@ const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Fee = require("../../models/Fee");
 const { getAvailableAcademicYears, calculateCurrentAcademicYear } = require("../../utils/academicYear");
-const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
-exports.renderDetailedFees = async (req, res) => {
-  try {
-    const students = await User.find(
-      { batch: { $in: req.viewingBatches } },
-      "studentId studentName batch monthlyFee"
-    ).populate('batch').lean();
-    students.sort(sortStudentsByBatchAndId);
-    
-    const allFees = await Fee.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
-
-    const months = [
-      "May", "June", "July", "August", "September", "October",
-      "November", "December", "January", "February", "March", "April",
-    ];
-
-    const report = students.map((student) => {
-      const studentFees = allFees.filter(f => f.studentId === student.studentId);
-
-      let totalPaid = 0;
-      const records = {};
-
-      months.forEach((month) => {
-        const feeRecord = studentFees.find((f) => f.month === month);
-
-        if (feeRecord) {
-          records[month] = {
-            status: "Paid",
-            amount: feeRecord.amount,
-            datePaid: new Date(feeRecord.datePaid),
-            method: feeRecord.method,
-          };
-          totalPaid += feeRecord.amount;
-        } else {
-          records[month] = { status: "Unpaid" };
-        }
-      });
-
-      const monthlyFee = student.monthlyFee || 0;
-      const totalDue = monthlyFee * months.length;
-      const balance = totalDue - totalPaid;
-
-      return {
-        studentName: student.studentName,
-        studentId: student.studentId,
-        standard: (student.batch ? student.batch.name : 'Unknown'),
-        records: records,
-        totalPaid: totalPaid,
-        totalDue: totalDue,
-        balance: balance,
-      };
-    });
-
-    res.render("teacher/detailed_fees", { report, months });
-  } catch (err) {
-    console.error("Error loading detailed fees report:", err);
-    res.status(500).send("Error generating fees report");
-  }
-};
-
+const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
+const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
+const { ACADEMIC_MONTHS } = require("../../utils/constants");
 exports.renderRevenueReport = async (req, res) => {
   try {
-    const months = [
-      "May", "June", "July", "August", "September", "October",
-      "November", "December", "January", "February", "March", "April"
-    ];
+    const months = ACADEMIC_MONTHS;
 
     const fees = await Fee.find({
       status: "Paid",
@@ -132,31 +72,69 @@ exports.renderRevenueReport = async (req, res) => {
 
 exports.renderManageFees = async (req, res) => {
   try {
-    const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
-    const batches = await Batch.find({ academicYear: req.viewingYear });
-    const batchIds = batches.map(b => b._id);
-    
-    const students = await User.find({ batch: { $in: batchIds } }).populate('batch');
-    students.sort(sortStudentsByBatchAndId);
-    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' });
+    const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
+    const getBatchOrderValue = (name) => {
+      if (!name) return 999;
+      const lowerName = name.toLowerCase();
+      if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+      const match = lowerName.match(/^(\d+)/);
+      if (match) return parseInt(match[1]);
+      return 100;
+    };
+    batches.sort((a, b) => getBatchOrderValue(a.name) - getBatchOrderValue(b.name));
 
-    const studentsWithFees = students.map(student => {
-      const studentFees = {};
-      fees.filter(f => f.studentId === student.studentId).forEach(f => {
-        studentFees[f.month] = f.datePaid ? new Date(f.datePaid).toLocaleDateString('en-IN') : "Paid";
+    const students = await User.find(
+      { batch: { $in: req.viewingBatches } },
+      "studentId studentName batch monthlyFee"
+    ).populate('batch').lean();
+    students.sort(sortStudentsByBatchAndId);
+    
+    const allFees = await Fee.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
+
+    const months = ACADEMIC_MONTHS;
+
+    const report = students.map((student) => {
+      const studentFees = allFees.filter(f => f.studentId === student.studentId);
+
+      let totalPaid = 0;
+      const records = {};
+
+      months.forEach((month) => {
+        const feeRecord = studentFees.find((f) => f.month === month);
+
+        if (feeRecord) {
+          records[month] = {
+            status: "Paid",
+            amount: feeRecord.amount,
+            datePaid: new Date(feeRecord.datePaid),
+            method: feeRecord.method,
+          };
+          totalPaid += feeRecord.amount;
+        } else {
+          records[month] = { status: "Unpaid" };
+        }
       });
+
+      const monthlyFee = student.monthlyFee || 0;
+      const totalDue = monthlyFee * months.length;
+      const balance = totalDue - totalPaid;
+
       return {
-        studentId: student.studentId,
+        _id: student._id,
         studentName: student.studentName,
-        standard: student.batch ? student.batch.name : 'Unknown',
-        fees: studentFees
+        studentId: student.studentId,
+        standard: (student.batch ? student.batch.name : 'Unknown'),
+        records: records,
+        totalPaid: totalPaid,
+        totalDue: totalDue,
+        balance: balance,
       };
     });
 
-    res.render("teacher/manage_fees", { studentsWithFees, months });
+    res.render("teacher/manage_fees", { report, months, students, batches });
   } catch (err) {
-    console.error("Error fetching fees:", err);
-    res.status(500).send("Error fetching fees");
+    console.error("Error loading fees manager:", err);
+    res.status(500).send("Error loading fees manager");
   }
 };
 
@@ -173,7 +151,7 @@ exports.renderFeeDefaulters = async (req, res) => {
     students.sort(sortStudentsByBatchAndId);
     const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
 
-    const allMonths = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+    const allMonths = ACADEMIC_MONTHS;
     
     let elapsedMonths = [...allMonths];
     const today = new Date();
@@ -249,7 +227,7 @@ exports.downloadFeeDefaulters = async (req, res) => {
     students.sort(sortStudentsByBatchAndId);
     const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
 
-    const allMonths = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+    const allMonths = ACADEMIC_MONTHS;
     
     let elapsedMonths = [...allMonths];
     const today = new Date();
@@ -328,21 +306,6 @@ exports.downloadFeeDefaulters = async (req, res) => {
     res.status(500).send("Error generating PDF");
   }
 };
-
-exports.renderAddFees = async (req, res) => {
-  try {
-    const batches = await Batch.find({ academicYear: req.viewingYear });
-    const batchIds = batches.map(b => b._id);
-    const users = await User.find({ batch: { $in: batchIds } }).populate('batch');
-    users.sort(sortStudentsByBatchAndId);
-    const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
-    res.render("teacher/add_fees", { users, months });
-  } catch (err) {
-    console.error("Add fees GET error:", err);
-    res.status(500).send("Server error");
-  }
-};
-
 exports.processAddFees = async (req, res) => {
   try {
     const { studentId, standard, amount, month, year, method, datePaid } = req.body;
@@ -402,10 +365,7 @@ exports.renderBulkFees = async (req, res) => {
     students.sort(sortStudentsByBatchAndId);
     const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
 
-    const months = [
-      "May", "June", "July", "August", "September", "October",
-      "November", "December", "January", "February", "March", "April",
-    ];
+    const months = ACADEMIC_MONTHS;
 
     const feeMap = {};
     students.forEach(student => {
@@ -442,7 +402,6 @@ exports.renderBulkFees = async (req, res) => {
 exports.processBulkSave = async (req, res) => {
   try {
     const { updates } = req.body;
-    console.log(`[Bulk Save] Received updates count: ${updates ? updates.length : 0}`);
     if (!updates || !Array.isArray(updates)) {
       return res.status(400).json({ success: false, message: "Invalid updates data." });
     }
@@ -451,11 +410,9 @@ exports.processBulkSave = async (req, res) => {
 
     for (const update of updates) {
       const { studentId, standard, amount, month, year, method, datePaid, deleteAction } = update;
-      console.log(`[Bulk Save] Processing update for studentId: ${studentId}, month: ${month}, year: ${year}, delete: ${deleteAction}`);
       
       if (deleteAction) {
         await Fee.findOneAndDelete({ studentId, month, year, batch: standard });
-        console.log(`[Bulk Save] Fee deleted successfully for studentId: ${studentId}, month: ${month}`);
         continue;
       }
       
@@ -490,7 +447,6 @@ exports.processBulkSave = async (req, res) => {
       }
 
       const savedFee = await fee.save();
-      console.log(`[Bulk Save] Fee saved successfully for studentId: ${studentId}. Email: ${studentObj.email}`);
 
       if (studentObj.email) {
         sendFeeReceipt(studentObj.email, studentObj.studentName, month, year, amount, {

@@ -4,16 +4,140 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Upload Study Material</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Study Material | Tuition Hub</title>
+  
+  <%- include('../partials/background') %>
   <script src="/js/subjects.js"></script>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      color: var(--b);
+      opacity: 0.15;
+      z-index: 0;
+    }
+
+    /* Study material badges custom styling */
+    .badge-textbook {
+      background: rgba(16, 185, 129, 0.08) !important;
+      color: rgb(52, 211, 153) !important;
+      border: 1px solid rgba(16, 185, 129, 0.15);
+    }
+    .badge-questionpaper {
+      background: rgba(245, 158, 11, 0.08) !important;
+      color: rgb(251, 191, 36) !important;
+      border: 1px solid rgba(245, 158, 11, 0.15);
+    }
+    .badge-notes {
+      background: rgba(59, 130, 246, 0.08) !important;
+      color: rgb(96, 165, 250) !important;
+      border: 1px solid rgba(59, 130, 246, 0.15);
+    }
+    .badge-default {
+      background: rgba(124, 58, 237, 0.08) !important;
+      color: rgb(167, 139, 250) !important;
+      border: 1px solid rgba(124, 58, 237, 0.15);
+    }
+
+    .class-badge {
+      background: rgba(124, 58, 237, 0.08);
+      color: var(--pt);
+      border: 1px solid rgba(124, 58, 237, 0.15);
+    }
+
+    /* Photo Upload Area overrides */
+    .photo-upload-area {
+      border: 2px dashed var(--b);
+      background: var(--bgc);
+      transition: all 0.3s;
+    }
+    .photo-upload-area:hover {
+      border-color: var(--p);
+      background: var(--bgch);
+    }
+
+    .download-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 8px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      background: rgba(16, 185, 129, 0.1) !important;
+      color: rgb(52, 211, 153) !important;
+      border: 1px solid rgba(16, 185, 129, 0.2) !important;
+      text-decoration: none;
+      transition: all 0.2s;
+    }
+    .download-btn:hover {
+      background: rgba(16, 185, 129, 0.2) !important;
+      transform: translateY(-1px);
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -22,213 +146,275 @@
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
         <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-10 text-center sm:text-left">
-      <h1 class="text-3xl md:text-5xl font-black text-gray-900 tracking-tight">
-        Study Material
-      </h1>
-      <p class="text-gray-500 mt-3 text-lg font-medium">
-        Add curriculum notes, presentations, and resources.
-      </p>
-    </header>
-
-    <div class="premium-card p-6 sm:p-10 mb-12">
-      <div class="mb-8 border-b border-gray-100 pb-6 flex items-center justify-between">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center text-brand-purple">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-          </div>
-          <h2 id="form-title" class="text-2xl font-bold text-gray-900">Upload New Resource</h2>
-        </div>
-        <button type="button" id="cancel-edit-btn" class="hidden text-sm font-semibold text-gray-500 hover:text-gray-800 transition-colors">Cancel Edit</button>
-      </div>
-
-      <form id="upload-form" class="space-y-8">
-        <input type="hidden" id="edit-id" name="editId" value="">
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          <div>
-            <label for="batchId" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Batch</label>
-            
-            <select id="batchId" name="batchId" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none" required onchange="handleBatchChange(this)">
-              <option value="" disabled selected>Select Batch</option>
-              <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
-                <% batches.forEach(batch => { %>
-                  <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
-                <% }) %>
-              <% } else { %>
-                <option value="" disabled>No active batches found</option>
-              <% } %>
-            </select>
-
-          </div>
-
-          <div>
-            <label for="subject-select" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Subject</label>
-            <select id="subject-select" name="subject" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none">
-              <option value="">-- Choose a Subject --</option>
-            </select>
-          </div>
-
-          <div class="sm:col-span-2 lg:col-span-1">
-            <label for="material-type" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Material Type</label>
-            <select id="material-type" name="materialType" class="soft-input w-full px-4 py-3 rounded-xl text-gray-700 font-medium appearance-none">
-              <option value="">-- Select Material Type --</option>
-              <option value="textbook">Textbook</option>
-              <option value="questionPaper">Question Paper</option>
-              <option value="notes">Study Material</option>
-            </select>
-          </div>
-        </div>
-
-        <div>
-          <label for="material-description" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Description <span class="text-gray-400 font-normal normal-case">(Optional)</span></label>
-          <textarea id="material-description" name="description" rows="2" placeholder="Briefly describe the content of the material..." class="soft-input mt-1 block w-full rounded-xl py-3 px-4 text-gray-700 font-medium"></textarea>
-        </div>
-
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
-          <div class="photo-upload-area rounded-2xl p-8 text-center cursor-pointer relative group h-48 flex flex-col justify-center items-center">
-            <input type="file" id="file-upload" name="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
-            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-brand-purple mb-3 group-hover:scale-110 transition-transform">
-              <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+          
+          <!-- Greeting Header -->
+          <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Study <span style="color: var(--pt);">Material</span></h1>
+              <p class="dash-sub">Faculty Command Center · Notes & Portions Repository</p>
             </div>
-            <span class="text-base font-bold text-brand-purple">Click or drag file to upload</span>
-            <p class="text-xs text-gray-500 mt-1">PDF, DOCX, or Images up to 10MB</p>
-          </div>
+            <% if (viewingYear === currentAcademicYear) { %>
+            <div class="p-3 bg-purple-500/10 text-theme-pt border border-purple-500/20 rounded-xl text-xs max-w-sm">
+              💡 <strong>Reposting Tip:</strong> Switch to a previous academic year using the sidebar selector, then click the repost button on any batch or material to clone it here.
+            </div>
+            <% } else { %>
+            <div class="p-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl text-xs max-w-md">
+              📂 <strong>Viewing Previous Year (<%= viewingYear %>):</strong> You can repost individual materials or entire batches to the current active year (<strong><%= currentAcademicYear %></strong>) using the buttons below.
+            </div>
+            <% } %>
+          </header>
 
-          <div class="h-48 flex flex-col justify-center relative">
-            <div class="absolute left-[-15px] md:left-[-1.5rem] top-1/2 -translate-y-1/2 glass-card px-2 text-xs font-bold text-gray-400 z-10 hidden md:block w-8 text-center bg-transparent">OR</div>
-            <div class="absolute bottom-[100%] left-1/2 -translate-x-1/2 glass-card px-2 text-xs font-bold text-gray-400 z-10 md:hidden pb-2 bg-transparent text-center h-4">OR</div>
-            
-            <div class="p-6 bg-[#f8f9fa] border border-[#e5e7eb] rounded-2xl h-full flex flex-col justify-center">
-              <label for="link-input" class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-3 flex items-center gap-2">
-                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
-                External Link
-              </label>
-              <input type="url" id="link-input" name="link" placeholder="https://example.com/resource.pdf" class="soft-input w-full rounded-xl py-3 px-4 font-medium" />
-              <p class="text-xs text-gray-400 mt-2">Paste a direct link to a Google Drive or external file.</p>
+          <%
+            // Group materials by standard
+            const grouped = {};
+            materials.forEach(mat => {
+              const key = mat.standard || 'Other';
+              if (!grouped[key]) grouped[key] = [];
+              grouped[key].push(mat);
+            });
+            const getBatchOrderValue = (name) => {
+              if (!name) return 999;
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+              const match = lowerName.match(/^(\d+)/);
+              if (match) return parseInt(match[1]);
+              return 100;
+            };
+            const sortedStandards = Object.keys(grouped).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+
+            let latestUploadDate = "—";
+            if (materials && materials.length > 0) {
+              const sortedByDate = [...materials].sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
+              if (sortedByDate[0].uploadDate) {
+                latestUploadDate = new Date(sortedByDate[0].uploadDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+              }
+            }
+          %>
+
+          <!-- Metrics Row (Dashboard Card style) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Total Materials -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M4 19.5A2.5 2.5 0 016.5 17H20M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= materials.length %></div>
+              <div class="stat-label">Total Resources</div>
+            </div>
+
+            <!-- Active Batches reached -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= sortedStandards.length %></div>
+              <div class="stat-label">Batches Reached</div>
+            </div>
+
+            <!-- Latest Upload -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--lt);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--lt);"><%= latestUploadDate %></div>
+              <div class="stat-label">Latest Upload</div>
             </div>
           </div>
-        </div>
 
-        <div class="pt-4 flex justify-end">
-          <button type="submit" id="submit-btn" class="btn-solid-purple w-full sm:w-auto text-lg px-8 flex items-center justify-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
-            Publish Material
-          </button>
-        </div>
-      </form>
-
-      <div id="message-box" class="mt-6 p-4 rounded-xl text-center hidden font-medium"></div>
-    </div>
-
-    <!-- Previous Uploads Section Header -->
-    <div class="mb-8 pl-2">
-      <h2 class="text-2xl font-bold text-gray-900">Previous Uploads</h2>
-      <p class="text-gray-500 mt-1">Review and manage currently uploaded study materials.</p>
-    </div>
-
-    <%
-        // Group materials by standard
-        const grouped = {};
-        materials.forEach(mat => {
-          const key = mat.standard || 'Other';
-          if (!grouped[key]) grouped[key] = [];
-          grouped[key].push(mat);
-        });
-        const getBatchOrderValue = (name) => {
-          if (!name) return 999;
-          const lowerName = name.toLowerCase();
-          if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-          const match = lowerName.match(/^(\d+)/);
-          if (match) return parseInt(match[1]);
-          return 100;
-        };
-        const sortedStandards = Object.keys(grouped).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
-      %>
-
-      <% if (sortedStandards.length === 0) { %>
-        <div class="text-center py-12 text-gray-400">
-          <p class="text-lg font-medium">No materials uploaded yet.</p>
-          <p class="text-sm mt-1">Use the form above to add your first resource.</p>
-        </div>
-      <% } %>
-
-      <% sortedStandards.forEach(std => { %>
-        <div class="mb-8" data-standard-section="<%= std %>">
-          <div class="flex items-center gap-3 mb-4">
-            <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold class-badge">Batch: <%= std %></span>
-            <span class="text-xs text-gray-400 font-medium"><%= grouped[std].length %> material<%= grouped[std].length !== 1 ? 's' : '' %></span>
-            <div class="flex-1 h-px bg-gray-200"></div>
-          </div>
-
-          <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-            <% grouped[std].forEach(mat => {
-              const typeLabels = {
-                textbook: 'Textbook',
-                questionPaper: 'Question Paper',
-                notes: 'Study Material'
-              };
-              const typeClass = {
-                textbook: 'badge-textbook',
-                questionPaper: 'badge-questionpaper',
-                notes: 'badge-notes'
-              }[mat.materialType] || 'badge-default';
-              const typeLabel = typeLabels[mat.materialType] || mat.materialType;
-            %>
-            <div class="glass-card p-4 rounded-xl border border-gray-100 shadow-sm flex items-start sm:items-center justify-between gap-4 group hover:shadow-md transition-shadow">
-                <div class="flex-1 min-w-0 pr-4">
-                  <div class="flex items-center gap-2 mb-1">
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider <%= typeClass %>">
-                      <%= typeLabels[mat.materialType] || mat.materialType %>
-                    </span>
-                    <span class="text-sm font-bold text-gray-800 truncate" title="<%= mat.subject %>"><%= mat.subject %></span>
-                  </div>
-                  <p class="text-sm text-gray-500 line-clamp-2 mt-1">
-                    <%= mat.description || 'No description provided.' %>
-                  </p>
-                  <p class="text-xs text-gray-400 mt-2">
-                    Uploaded: <%= (mat.uploadDate || new Date()).toLocaleDateString() %>
-                  </p>
+          <!-- Upload Form Container -->
+          <div class="stat-card p-6 sm:p-10 mb-12">
+            <div class="mb-8 border-b border-theme-bd pb-6 flex items-center justify-between">
+              <div class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-full bg-purple-500/10 flex items-center justify-center text-theme-pt">
+                  <svg class="w-5 h-5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg>
                 </div>
-                
-                <div class="flex flex-col sm:flex-row gap-2">
-                  <% if(mat.filePath) { %>
-                  <a href="<%= mat.filePath %>" target="_blank" class="download-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
-                    View
-                  </a>
-                  <% } else if(mat.link) { %>
-                  <a href="<%= mat.link %>" target="_blank" class="download-btn">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
-                    Link
-                  </a>
-                  <% } %>
-                  
-                  <!-- Edit Action -->
-                  <button type="button" 
-                    data-action="edit"
-                    data-id="<%= mat._id %>"
-                    data-standard="<%= mat.batch ? mat.batch._id : '' %>"
-                    data-batchname="<%= std %>"
-                    data-subject="<%= mat.subject %>"
-                    data-type="<%= mat.materialType %>"
-                    data-description="<%= mat.description || '' %>"
-                    data-link="<%= mat.filePath || mat.link || '' %>"
-                    class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-brand-purple bg-purple-50 hover:bg-purple-100 transition-colors border border-purple-100">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-                    Edit
-                  </button>
+                <h2 id="form-title" class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Upload New Resource</h2>
+              </div>
+              <button type="button" id="cancel-edit-btn" class="hidden text-xs font-bold font-mono text-red-400 hover:text-red-500 uppercase transition-all">Cancel Edit</button>
+            </div>
 
-                  <!-- Delete Action -->
-                  <button type="button" onclick="deleteMaterial('<%= mat._id %>')" class="flex-shrink-0 inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 transition-colors border border-red-100">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path></svg>
-                    Delete
-                  </button>
+            <form id="upload-form" class="space-y-8">
+              <input type="hidden" id="edit-id" name="editId" value="">
+              
+              <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                <div>
+                  <label for="batchId" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch</label>
+                  <select id="batchId" name="batchId" class="w-full px-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer" required onchange="handleBatchChange(this)">
+                    <option value="" disabled selected>Select Batch...</option>
+                    <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                      <% batches.forEach(batch => { %>
+                        <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
+                      <% }) %>
+                    <% } else { %>
+                      <option value="" disabled>No active batches found</option>
+                    <% } %>
+                  </select>
+                </div>
+
+                <div>
+                  <label for="subject-select" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Subject</label>
+                  <select id="subject-select" name="subject" class="w-full px-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer">
+                    <option value="">Choose a Subject...</option>
+                  </select>
+                </div>
+
+                <div class="sm:col-span-2 lg:col-span-1">
+                  <label for="material-type" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Material Type</label>
+                  <select id="material-type" name="materialType" class="w-full px-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer">
+                    <option value="">Select Material Type...</option>
+                    <option value="textbook">Textbook</option>
+                    <option value="questionPaper">Question Paper</option>
+                    <option value="notes">Study Material</option>
+                  </select>
                 </div>
               </div>
-            <% }) %>
+
+              <div>
+                <label for="material-description" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Description <span class="text-theme-fdd/60 font-normal normal-case">(Optional)</span></label>
+                <textarea id="material-description" name="description" rows="2" placeholder="Briefly describe the content of the material..." class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm"></textarea>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-6 items-start">
+                <div class="photo-upload-area rounded-2xl p-8 text-center cursor-pointer relative group h-48 flex flex-col justify-center items-center">
+                  <input type="file" id="file-upload" name="file" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
+                  <div class="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center text-theme-pt mb-3 group-hover:scale-110 transition-transform">
+                    <svg class="w-6 h-6 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+                  </div>
+                  <span class="text-sm font-bold text-theme-pt font-mono uppercase">Click or drag file to upload</span>
+                  <p class="text-[10px] text-theme-fdd mt-1 font-semibold">PDF, DOCX, or Images up to 10MB</p>
+                </div>
+
+                <div class="h-48 flex flex-col justify-center relative">
+                  <div class="absolute left-[-15px] md:left-[-1.5rem] top-1/2 -translate-y-1/2 bg-theme-bg2 border border-theme-bd rounded-md px-2 py-0.5 text-[10px] font-bold text-theme-fdd z-10 hidden md:block w-9 text-center">OR</div>
+                  <div class="absolute bottom-[100%] left-1/2 -translate-x-1/2 bg-theme-bg2 border border-theme-bd rounded-md px-2 py-0.5 text-[10px] font-bold text-theme-fdd z-10 md:hidden mb-2 text-center h-5 w-9">OR</div>
+                  
+                  <div class="p-6 bg-theme-bgc/50 border border-theme-b rounded-2xl h-full flex flex-col justify-center">
+                    <label for="link-input" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-3 flex items-center gap-2 font-mono">
+                      <svg class="w-4 h-4 text-theme-fdd" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"></path></svg>
+                      External Link
+                    </label>
+                    <input type="url" id="link-input" name="link" placeholder="https://example.com/resource.pdf" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-2.5 px-4 font-semibold text-sm" />
+                    <p class="text-[10px] text-theme-fdd mt-2">Paste a direct link to a Google Drive or external file.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div class="pt-4 flex justify-end">
+                <button type="submit" id="submit-btn" class="btn-solid-purple w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
+                  <span>Publish Material ✓</span>
+                </button>
+              </div>
+            </form>
+
+            <div id="message-box" class="mt-4 p-3 rounded-lg text-center hidden text-xs font-semibold"></div>
           </div>
+
+          <!-- Previous Uploads Header -->
+          <div class="mb-8 pl-2">
+            <h2 class="text-xl font-bold tracking-tight text-theme-fg uppercase font-mono" style="font-family: 'Space Mono', monospace;">Previous Uploads</h2>
+            <p class="text-xs text-theme-fdd mt-1">Review and manage currently uploaded study materials.</p>
+          </div>
+
+          <!-- Grouped Grid Lists -->
+          <% if (sortedStandards.length === 0) { %>
+            <div class="p-12 text-center text-theme-fdd border border-theme-b rounded-xl bg-theme-bgc/20">
+              <p class="text-3xl mb-2">📚</p>
+              <p class="font-semibold text-sm">No materials uploaded yet.</p>
+              <p class="text-xs mt-1 text-theme-fdd/70">Use the form above to add your first resource.</p>
+            </div>
+          <% } %>
+
+          <% sortedStandards.forEach(std => { %>
+            <div class="mb-10" data-standard-section="<%= std %>">
+              <div class="flex items-center gap-3 mb-6 pl-1">
+                <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+                <h3 class="text-md font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch: <span style="color: var(--pt);"><%= std %></span></h3>
+                <span class="text-xs font-semibold bg-purple-500/10 text-theme-pt border border-purple-500/20 px-2 py-0.5 rounded-full"><%= grouped[std].length %> material<%= grouped[std].length !== 1 ? 's' : '' %></span>
+                <% if (viewingYear !== currentAcademicYear && grouped[std].length > 0) { %>
+                <button type="button" onclick="repostBatch('<%= std %>')" class="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-mono font-bold uppercase text-purple-600 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all">
+                  📦 Repost Batch to <%= currentAcademicYear %>
+                </button>
+                <% } %>
+                <div class="flex-1 h-px bg-theme-bd ml-2"></div>
+              </div>
+
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <% grouped[std].forEach(mat => {
+                  const typeLabels = {
+                    textbook: 'Textbook',
+                    questionPaper: 'Question Paper',
+                    notes: 'Study Material'
+                  };
+                  const typeClass = {
+                    textbook: 'badge-textbook',
+                    questionPaper: 'badge-questionpaper',
+                    notes: 'badge-notes'
+                  }[mat.materialType] || 'badge-default';
+                  const typeLabel = typeLabels[mat.materialType] || mat.materialType;
+                %>
+                <div class="stat-card p-5 flex items-start justify-between gap-4 group hover:shadow-md transition-shadow">
+                    <div class="flex-1 min-w-0 pr-2">
+                      <div class="flex items-center gap-2 mb-2">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider <%= typeClass %>">
+                          <%= typeLabels[mat.materialType] || mat.materialType %>
+                        </span>
+                        <span class="text-sm font-black text-theme-fg truncate" title="<%= mat.subject %>"><%= mat.subject %></span>
+                      </div>
+                      <p class="text-xs text-theme-fdd line-clamp-2 mt-1">
+                        <%= mat.description || 'No description provided.' %>
+                      </p>
+                      <p class="text-[10px] text-theme-fdd/60 mt-3 font-semibold font-mono">
+                        🗓 <%= (mat.uploadDate || new Date()).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                      </p>
+                    </div>
+                    
+                    <div class="flex flex-col gap-2 shrink-0">
+                      <% if(mat.filePath) { %>
+                      <a href="<%= mat.filePath %>" target="_blank" class="download-btn">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+                        View
+                      </a>
+                      <% } else if(mat.link) { %>
+                      <a href="<%= mat.link %>" target="_blank" class="download-btn">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path></svg>
+                        Link
+                      </a>
+                      <% } %>
+                      
+                      <!-- Edit Action -->
+                      <button type="button" 
+                        data-action="edit"
+                        data-id="<%= mat._id %>"
+                        data-standard="<%= mat.batch ? mat.batch._id : '' %>"
+                        data-batchname="<%= std %>"
+                        data-subject="<%= mat.subject %>"
+                        data-type="<%= mat.materialType %>"
+                        data-description="<%= mat.description || '' %>"
+                        data-link="<%= mat.filePath || mat.link || '' %>"
+                        class="btn-outline-purple flex items-center justify-center gap-1.5 py-1 px-3 text-[10px] font-bold uppercase tracking-wider font-mono">
+                        ✏️ Edit
+                      </button>
+
+                      <!-- Delete Action -->
+                      <button type="button" onclick="deleteMaterial('<%= mat._id %>')" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all border border-red-500/20">
+                        🗑️ Delete
+                      </button>
+
+                      <!-- Repost Action -->
+                      <% if (viewingYear !== currentAcademicYear) { %>
+                      <button type="button" data-material-id="<%= mat._id %>" onclick="repostSingle('<%= mat._id %>', '<%= mat.subject %>')" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono uppercase text-theme-pt bg-purple-500/10 hover:bg-purple-500/20 transition-all border border-purple-500/20">
+                        📦 Repost
+                      </button>
+                      <% } %>
+                    </div>
+                  </div>
+                <% }) %>
+              </div>
+            </div>
+          <% }) %>
         </div>
-      <% }) %>
+      </main>
+    </div>
   </div>
 
   <script>
@@ -244,26 +430,27 @@
     document.addEventListener("DOMContentLoaded", () => {
       const uploadForm = document.getElementById("upload-form");
       const messageBox = document.getElementById("message-box");
-      const materialsContainer = document.querySelector(".space-y-4");
       const cancelEditBtn = document.getElementById("cancel-edit-btn");
       const formTitle = document.getElementById("form-title");
       const submitBtn = document.getElementById("submit-btn");
       const editIdInput = document.getElementById("edit-id");
 
-      function showMessage(message, type = "success") {
+      function showFormMessage(message, type) {
         messageBox.textContent = message;
-        messageBox.className = `mt-6 p-4 rounded-xl text-center font-medium block ${
-          type === "success"
-            ? "bg-green-100 text-green-800 border border-green-200"
-            : "bg-red-100 text-red-800 border border-red-200"
+        messageBox.className = `mt-4 p-3 rounded-lg text-center text-xs font-semibold ${
+          type === 'success' 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : 'bg-red-500/10 text-red-400 border border-red-500/20'
         }`;
+        messageBox.classList.remove('hidden');
+        setTimeout(() => messageBox.classList.add('hidden'), 3500);
       }
 
       function resetForm() {
         uploadForm.reset();
         editIdInput.value = "";
         formTitle.textContent = "Upload New Resource";
-        submitBtn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> Publish Material';
+        submitBtn.innerHTML = '<span>Publish Material ✓</span>';
         cancelEditBtn.classList.add("hidden");
       }
 
@@ -277,7 +464,7 @@
         const isEditing = !!editIdInput.value;
 
         if (!isEditing && !fileInput.files[0] && !linkInput.value.trim()) {
-          showMessage("Please upload a file or provide an external link.", "error");
+          showFormMessage("Please upload a file or provide an external link.", "error");
           return;
         }
 
@@ -288,7 +475,7 @@
           const method = isEditing ? "PUT" : "POST";
 
           submitBtn.disabled = true;
-          submitBtn.innerHTML = '<svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg> Saving...';
+          submitBtn.innerHTML = '<span>Saving...</span>';
 
           const res = await fetch(url, {
             method: method,
@@ -299,16 +486,16 @@
           submitBtn.disabled = false;
 
           if (data.success) {
-            showMessage(data.message, "success");
+            showFormMessage(data.message, "success");
             setTimeout(() => window.location.reload(), 1500);
           } else {
-            showMessage(data.message || data.error, "error");
-            submitBtn.innerHTML = isEditing ? '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Update Material' : '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"></path></svg> Publish Material';
+            showFormMessage(data.message || data.error, "error");
+            submitBtn.innerHTML = isEditing ? '<span>Update Material ✓</span>' : '<span>Publish Material ✓</span>';
           }
         } catch (error) {
-          showMessage(error.message, "error");
+          showFormMessage(error.message, "error");
           submitBtn.disabled = false;
-          submitBtn.innerHTML = isEditing ? 'Update Material' : 'Publish Material';
+          submitBtn.innerHTML = isEditing ? '<span>Update Material ✓</span>' : '<span>Publish Material ✓</span>';
         }
       });
     });
@@ -333,7 +520,7 @@
       }
 
       document.getElementById("form-title").textContent = "Edit Resource";
-      document.getElementById("submit-btn").innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg> Update Material';
+      document.getElementById("submit-btn").innerHTML = '<span>Update Material ✓</span>';
       document.getElementById("cancel-edit-btn").classList.remove("hidden");
       
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -367,7 +554,7 @@
         if (res.ok) {
           const btn = document.querySelector(`button[onclick="deleteMaterial('${id}')"]`);
           if (btn) {
-            const card = btn.closest('.glass-card.p-4.rounded-xl');
+            const card = btn.closest('.stat-card');
             if (card) {
               card.style.opacity = '0';
               setTimeout(() => card.remove(), 300);
@@ -381,11 +568,61 @@
         alert('An error occurred trying to delete the material.');
       }
     }
+
+    // Repost handlers
+    const currentAcademicYear = '<%= currentAcademicYear %>';
+
+    async function repostSingle(id, name) {
+      if (!confirm(`Are you sure you want to repost "${name}" to the current academic year (${currentAcademicYear})?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch(`/api/materials/repost-single/${id}`, {
+          method: 'POST'
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) {
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("Repost material error:", err);
+        alert("An error occurred while reposting the material.");
+      }
+    }
+
+    async function repostBatch(batchName) {
+      const section = document.querySelector(`[data-standard-section="${batchName}"]`);
+      if (!section) return;
+      const cards = section.querySelectorAll('button[data-material-id]');
+      const ids = Array.from(cards).map(btn => btn.dataset.materialId);
+      
+      if (!ids.length) {
+        alert("No materials found in this batch to repost.");
+        return;
+      }
+
+      if (!confirm(`Are you sure you want to repost all ${ids.length} materials of batch "${batchName}" to the current year (${currentAcademicYear})?`)) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/materials/repost-multiple', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ ids })
+        });
+        const data = await res.json();
+        alert(data.message);
+        if (data.success) {
+          window.location.reload();
+        }
+      } catch (err) {
+        console.error("Repost batch error:", err);
+        alert("An error occurred while reposting the batch.");
+      }
+    }
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
-
 </html>

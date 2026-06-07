@@ -5,15 +5,55 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title><%= student.studentName %> Profile</title>
+  <title><%= student.studentName %> Profile | Tuition Hub</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet" />
-  
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <style>
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+  </style>
 </head>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -26,243 +66,245 @@
             data: scoreData
         }) %>"></div>
 
-  <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
-    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between sm:items-center border-b pb-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 leading-tight">
-          <%= student.studentName %>
-        </h1>
-        <p class="text-sm text-gray-500">
-          ID: <%= student.studentId %> | Batch: <%= student.batch ? student.batch.name : 'Unassigned' %> |
-          Mobile: <%= student.mobileNo %>
-          <% if (student.email) { %> | Email: <%= student.email %> <% } %>
-        </p>
-      </div>
-
-      <div class="flex gap-3 mt-4 sm:mt-0">
-        <button onclick="window.open('/teacher/student_report/<%= student._id %>', '_blank')" class="py-2 px-6 glass-card border border-gray-300 text-gray-700 hover:bg-gray-50 font-semibold rounded-full transition-all shadow-sm text-sm flex items-center gap-2">
-          🖨️ Print Report
-        </button>
-        <button onclick="window.location.href='/teacher/edit_profile/<%= student._id %>'" class="py-2 px-6 btn-action text-sm shadow-md flex items-center gap-2">
-          ✏️ Edit Profile
-        </button>
-      </div>
-    </header>
-
-    <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <div class="lg:col-span-1 space-y-6">
-        <div class="glass-card p-6 border-t-8 border-brand-purple">
-          <div class="flex flex-col items-center text-center pb-4 border-b border-gray-100">
-            <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-brand-lime object-cover mb-3 shadow-md" />
-            <p class="text-xl font-bold text-gray-900">
-              <%= student.studentName %>
-            </p>
-            <p class="text-sm text-gray-600">
-              Mobile: <%= student.mobileNo %>
-              <% if (student.email) { %><br>Email: <%= student.email %><% } %>
-            </p>
-          </div>
-
-          <div class="space-y-4 pt-4 text-sm">
-            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
-              <span class="text-gray-600 font-medium">Monthly Fee:</span>
-              <span class="font-bold text-xl text-brand-purple">₹<%= (student.monthlyFee || 0).toLocaleString() %></span>
-            </div>
-            <div class="flex justify-between items-center pb-2 border-b border-dashed border-gray-200">
-              <span class="text-gray-600 font-medium">Reward Points:</span>
-              <span class="font-bold text-xl text-brand-lime">
-                <%= Math.trunc(student.points) %> ✨
-              </span>
-            </div>
-            <div class="flex justify-between items-center">
-              <span class="text-gray-600 font-medium">Leaderboard Rank:</span>
-              <span class="font-bold text-xl text-amber-500">
-                #<%= studentRank %> 🏆
-              </span>
-            </div>
-          </div>
-        </div>
-
-        <div class="glass-card p-6 border-t-8 border-brand-lime">
-          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-brand-purple">
-            Attendance Summary
-          </h3>
-
-          <div class="grid grid-cols-2 gap-4 items-center">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
-              <p class="text-5xl font-extrabold text-brand-purple leading-none">
-                <%= attendancePercentage %>%
+              <h1 class="dash-greeting"><span style="color: var(--pt);"><%= student.studentName %></span></h1>
+              <p class="dash-sub">
+                ID: <%= student.studentId %> &middot; Grade <%= student.batch ? student.batch.name : 'Unassigned' %>
               </p>
-              <p class="text-sm text-gray-600 mt-2">Overall Present</p>
             </div>
-            <div class="text-sm space-y-1 text-right">
-              <div class="flex justify-between">
-                <span class="font-medium">Present:</span>
-                <span class="font-bold text-green-600">
-                  <%= presentDays %>
-                </span>
+
+            <div class="flex gap-3 flex-wrap items-center">
+              <a href="/teacher/manage_students" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono py-2 px-4 rounded-xl shadow-sm">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                Back
+              </a>
+              <a href="/teacher/student_report/<%= student._id %>?dl=1" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono py-2 px-4 rounded-xl shadow-sm">
+                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+                Download Report
+              </a>
+              <a href="/teacher/edit_profile/<%= student._id %>" class="btn-solid-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono py-2 px-4 rounded-xl shadow-sm">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                Edit Profile
+              </a>
+            </div>
+          </header>
+
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-1 space-y-6">
+              <!-- Profile Info -->
+              <div class="stat-card border-t-4 border-[var(--p)]">
+                <div class="flex flex-col items-center text-center pb-4 border-b border-theme-bd">
+                  <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-theme-pt object-cover mb-3 shadow-md" />
+                  <p class="text-xl font-bold text-theme-fg font-sans"><%= student.studentName %></p>
+                  <p class="text-xs text-theme-fdd mt-1 font-mono uppercase tracking-wider font-bold">Student Account</p>
+                </div>
+
+                <div class="space-y-4 pt-4 text-xs">
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Mobile No</span>
+                    <span class="font-bold text-theme-fg font-mono"><%= student.mobileNo || '—' %></span>
+                  </div>
+                  <% if (student.email) { %>
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Email</span>
+                    <span class="font-bold text-theme-fg font-mono text-[10px]"><%= student.email %></span>
+                  </div>
+                  <% } %>
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Monthly Fee</span>
+                    <span class="font-black text-theme-pt font-mono text-sm">₹<%= (student.monthlyFee || 0).toLocaleString('en-IN') %></span>
+                  </div>
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Reward Points</span>
+                    <span class="font-black text-green-500 font-mono text-sm">
+                      <%= Math.trunc(student.points || 0) %> ✨
+                    </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Leaderboard Rank</span>
+                    <span class="font-black text-amber-500 font-mono text-sm">
+                      #<%= studentRank %> 🏆
+                    </span>
+                  </div>
+                </div>
               </div>
-              <div class="flex justify-between">
-                <span class="font-medium">Absent:</span>
-                <span class="font-bold text-red-500">
-                  <%= absentDays %>
-                </span>
+
+              <!-- Attendance Card -->
+              <div class="stat-card border-t-4 border-theme-pt">
+                <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-pt font-mono uppercase tracking-wider">
+                  Attendance Summary
+                </h3>
+
+                <div class="grid grid-cols-2 gap-4 items-center">
+                  <div>
+                    <p class="text-4xl font-black text-theme-fg leading-none font-mono">
+                      <%= attendancePercentage %>%
+                    </p>
+                    <p class="text-[10px] text-theme-fdd mt-2 font-mono uppercase tracking-wider">Overall Attendance</p>
+                  </div>
+                  <div class="text-xs space-y-1 text-right font-mono">
+                    <div class="flex justify-between gap-2">
+                      <span class="font-semibold text-theme-fdd">Present:</span>
+                      <span class="font-bold text-green-500"><%= presentDays %></span>
+                    </div>
+                    <div class="flex justify-between gap-2">
+                      <span class="font-semibold text-theme-fdd">Absent:</span>
+                      <span class="font-bold text-red-500"><%= absentDays %></span>
+                    </div>
+                    <div class="flex justify-between gap-2 pt-1 border-t border-theme-bd">
+                      <span class="font-semibold text-theme-fg">Total Days:</span>
+                      <span class="font-bold text-theme-fg"><%= presentDays + absentDays %></span>
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div class="flex justify-between pt-1 border-t">
-                <span class="font-medium">Total Days:</span>
-                <span class="font-bold"> <%= presentDays+absentDays %> </span>
+
+              <!-- Fee Payments Log -->
+              <div class="stat-card border-t-4 border-green-500">
+                <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider">
+                  Fee Payments Log
+                </h3>
+                <div class="divide-y divide-theme-bd max-h-64 overflow-y-auto pr-2 custom-scrollbar">
+                  <% if (recentFees.length > 0) { %> 
+                    <% recentFees.forEach(fee => { %>
+                      <div class="flex justify-between items-center py-3">
+                        <div class="flex flex-col">
+                          <span class="text-xs font-bold text-theme-fg font-sans">Fee for <%= fee.month %>, <%= fee.year %></span>
+                          <span class="text-[10px] text-theme-fdd font-mono mt-1"><%= fee.method %> &middot; <%= new Date(fee.datePaid).toLocaleDateString('en-IN') %></span>
+                        </div>
+                        <span class="text-sm font-black text-green-500 font-mono">₹<%= fee.amount.toLocaleString('en-IN') %></span>
+                      </div>
+                    <% }) %> 
+                  <% } else { %>
+                    <p class="py-4 text-theme-fdd text-center text-xs font-mono">No fee payments recorded.</p>
+                  <% } %>
+                </div>
+              </div>
+            </div>
+
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Score Trend Chart -->
+              <div class="stat-card border-t-4 border-[var(--p)]">
+                <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider">
+                  Performance Trend (Score History)
+                </h3>
+
+                <div class="main-chart-area h-64 relative">
+                  <canvas id="scoreChart"></canvas>
+                </div>
+
+                <% if (scoreLabels.length === 0) { %>
+                  <p class="text-center text-theme-fdd py-6 text-xs font-mono">No test scores available for chart history.</p>
+                <% } %>
+              </div>
+
+              <!-- All Test Results -->
+              <div class="stat-card border-t-4 border-theme-pt">
+                <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider flex justify-between items-center">
+                  <span>All Test Results Log</span>
+                  <span class="text-[9px] font-bold text-theme-pt bg-theme-bgch px-2.5 py-1 rounded-full font-mono"><%= recentScores.length %> Records</span>
+                </h3>
+                <div class="divide-y divide-theme-bd max-h-80 overflow-y-auto pr-2 custom-scrollbar">
+                  <% if (recentScores.length > 0) { %> 
+                    <% recentScores.forEach(score => { %>
+                      <div class="flex justify-between items-center py-3">
+                        <div class="flex flex-col">
+                          <span class="text-xs font-bold text-theme-fg"><%= score.testName %></span>
+                          <span class="text-[10px] text-theme-fdd font-mono mt-1">
+                            <%= score.subject %> &middot; <%= new Date(score.createdAt).toLocaleDateString('en-IN') %>
+                          </span>
+                        </div>
+                        <div class="flex flex-col items-end">
+                          <span class="text-xs font-black font-mono <%= score.percentage > 70 ? 'text-green-500' : 'text-orange-400' %>">
+                            <%= score.percentage %>%
+                          </span>
+                          <span class="text-[10px] text-theme-fdd font-mono mt-1">Score: <%= score.score %></span>
+                        </div>
+                      </div>
+                    <% }) %> 
+                  <% } else { %>
+                    <p class="py-4 text-theme-fdd text-center text-xs font-mono">No test results recorded yet.</p>
+                  <% } %>
+                </div>
               </div>
             </div>
           </div>
         </div>
-
-        <div class="glass-card p-6 rounded-xl shadow-xl border-t-8 border-green-500">
-          <h3 class="text-lg font-bold mb-4 border-b pb-2 text-gray-900">
-            Fee Payments Log
-          </h3>
-          <div class="divide-y divide-gray-100 max-h-64 overflow-y-auto pr-2 custom-scrollbar">
-            <% if (recentFees.length> 0) { %> <% recentFees.forEach(fee=> { %>
-            <div class="flex justify-between items-center py-3">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold">Fee for <%= fee.month %>, <%= fee.year %></span>
-                <span class="text-xs text-gray-500">Method: <%= fee.method %> | Paid <%= new
-                    Date(fee.datePaid).toLocaleDateString() %></span>
-              </div>
-              <span class="text-base font-bold text-green-600">₹<%= fee.amount.toLocaleString() %></span>
-            </div>
-            <% }) %> <% } else { %>
-            <p class="py-3 text-gray-500 text-sm">
-              No recent fee payments recorded.
-            </p>
-            <% } %>
-          </div>
-        </div>
-      </div>
-
-      <div class="lg:col-span-2 space-y-6">
-        <div class="glass-card p-6 rounded-xl shadow-2xl border-t-8 border-brand-purple-light">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900">
-            Performance Trend (Score History)
-          </h3>
-
-          <div class="main-chart-area">
-            <canvas id="scoreChart"></canvas>
-          </div>
-
-          <% if (scoreLabels.length===0) { %>
-          <p class="text-center text-gray-500 py-4">
-            No test scores available for chart history.
-          </p>
-          <% } %>
-        </div>
-
-        <div class="glass-card p-6 rounded-xl shadow-xl border-t-8 border-brand-lime">
-          <h3 class="text-xl font-bold mb-4 border-b pb-2 text-gray-900 flex justify-between items-center">
-            <span>All Test Results Log</span>
-            <span class="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full"><%= recentScores.length %> Records</span>
-          </h3>
-          <div class="divide-y divide-gray-100 max-h-80 overflow-y-auto pr-2 custom-scrollbar">
-            <% if (recentScores.length> 0) { %> <%
-              recentScores.forEach(score=> { %>
-            <div class="flex justify-between items-center py-2">
-              <div class="flex flex-col">
-                <span class="text-sm font-semibold text-brand-purple">
-                  <%= score.testName %>
-                </span>
-                <span class="text-xs text-gray-500">
-                  <%= score.subject %> | <%= new
-                    Date(score.createdAt).toLocaleDateString() %>
-                </span>
-              </div>
-              <div class="flex flex-col items-end">
-                <span class="text-base font-bold <%= score.percentage > 70 ? 'text-green-600' : 'text-orange-500' %>">
-                  <%= score.percentage %>%
-                </span>
-                <span class="text-xs text-gray-500">
-                  Score: <%= score.score %>
-                </span>
-              </div>
-            </div>
-            <% }) %> <% } else { %>
-            <p class="py-2 text-gray-500 text-sm">
-              No test results recorded yet.
-            </p>
-            <% } %>
-          </div>
-        </div>
-      </div>
+      </main>
     </div>
   </div>
 
   <script>
-    const dataWrapper = document.getElementById("chart-data-wrapper");
-    const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+    document.addEventListener("DOMContentLoaded", () => {
+      const dataWrapper = document.getElementById("chart-data-wrapper");
+      const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
 
-    const scoreLabels = chartDataObject.labels;
-    const scoreData = chartDataObject.data;
+      const scoreLabels = chartDataObject.labels;
+      const scoreData = chartDataObject.data;
 
-    const primaryColor = "#5d3a9b";
+      const primaryColor = "#5d3a9b";
 
-    if (scoreData.length > 0) {
-      new Chart(document.getElementById("scoreChart"), {
-        type: "line",
-        data: {
-          labels: scoreLabels,
-          datasets: [{
-            label: "Score Percentage",
-            data: scoreData,
-            borderColor: primaryColor,
-            backgroundColor: "rgba(93, 58, 155, 0.1)",
-            tension: 0.4,
-            fill: true,
-            pointBackgroundColor: primaryColor,
-            pointRadius: 5,
-            pointHoverRadius: 8,
-          }, ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              display: false,
-            },
+      if (scoreData.length > 0) {
+        new Chart(document.getElementById("scoreChart"), {
+          type: "line",
+          data: {
+            labels: scoreLabels,
+            datasets: [{
+              label: "Score Percentage",
+              data: scoreData,
+              borderColor: primaryColor,
+              backgroundColor: "rgba(93, 58, 155, 0.05)",
+              tension: 0.4,
+              fill: true,
+              pointBackgroundColor: primaryColor,
+              pointRadius: 4,
+              pointHoverRadius: 6,
+            }],
           },
-          scales: {
-            y: {
-              beginAtZero: true,
-              max: 100,
-              title: {
-                display: true,
-                text: "Percentage (%)",
-              },
-              grid: {
-                color: "#f3f4f6",
-              },
-            },
-            x: {
-              grid: {
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: {
                 display: false,
               },
-              ticks: {
-                display: scoreLabels.length > 1,
+            },
+            scales: {
+              y: {
+                beginAtZero: true,
+                max: 100,
+                ticks: {
+                  color: "#9ca3af",
+                  font: {
+                    family: "Space Mono",
+                    size: 9
+                  }
+                },
+                grid: {
+                  color: "rgba(0, 0, 0, 0.05)",
+                },
+              },
+              x: {
+                ticks: {
+                  color: "#9ca3af",
+                  font: {
+                    family: "Space Mono",
+                    size: 9
+                  },
+                  display: scoreLabels.length > 1
+                },
+                grid: {
+                  display: false,
+                },
               },
             },
           },
-          layout: {
-            padding: {
-              top: 10,
-              bottom: 10,
-            },
-          },
-        },
-      });
-    }
+        });
+      }
+    });
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 
 </html>

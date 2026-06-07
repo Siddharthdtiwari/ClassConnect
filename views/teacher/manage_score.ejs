@@ -4,16 +4,96 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Manage Scores</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <title>Manage Scores | Tuition Hub</title>
   
+  <%- include('../partials/background') %>
+
+  <style>
+    /* Premium Dashboard Styles */
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+      overflow: hidden;
+    }
+    .stat-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      opacity: 0;
+      transition: opacity 0.4s;
+      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
+      pointer-events: none;
+    }
+    .stat-card:hover::before { opacity: 1; }
+    .stat-card:hover {
+      border-color: rgba(124,58,237,0.25);
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px var(--pg2);
+    }
+    .stat-value {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.02em;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 10px;
+      position: relative;
+      z-index: 1;
+    }
+    .stat-icon {
+      position: absolute;
+      right: -10px;
+      bottom: -10px;
+      color: var(--b);
+      opacity: 0.15;
+      z-index: 0;
+    }
+    
+    /* Table headers fixed and customized */
+    .table-container {
+      max-height: 500px;
+      overflow-y: auto;
+      overflow-x: auto;
+    }
+    .grid-header-main {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%) !important;
+      color: white !important;
+    }
+    .grid-header-sub {
+      background: rgba(124, 58, 237, 0.15) !important;
+      color: var(--pt) !important;
+    }
+  </style>
 </head>
-
-<%- include('../partials/background') %>
-
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
   <div style="display: flex; height: 100vh; overflow: hidden;">
@@ -21,77 +101,106 @@
     
     <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
       <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
-        <div class="content-container container mx-auto p-6 min-h-screen">
-    <header class="mb-8 flex flex-col sm:flex-row sm:justify-between items-start sm:items-end gap-4">
-      <div>
-        <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 tracking-tight">
-          Manage Scores
-        </h1>
-        <p class="text-gray-500 mt-2 text-lg">
-          Add and manage student scores by test and batch.
-        </p>
-      </div>
-    </header>
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
 
-    <div class="glass-card p-6 sm:p-10 rounded-2xl shadow-xl border border-gray-100">
-      <div class="mb-10">
-        <h3 class="text-xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-          <svg class="w-6 h-6 text-brand-purple" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"></path></svg>
-          Add/Edit Test Scores
-        </h3>
-        <div class="flex flex-col sm:flex-row gap-4 mb-8 bg-gray-50 p-4 rounded-xl border border-gray-100">
-          <div class="flex-grow sm:flex-grow-0 sm:w-1/3">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Batch</label>
-            <select id="standard-filter" class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 glass-card shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 appearance-none font-medium">
-              <option value="">-- Select Batch --</option>
-              <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
-                <% batches.forEach(batch => { %>
-                  <option value="<%= batch._id %>"><%= batch.name %> (<%= batch.academicYear %>)</option>
-                <% }) %>
-              <% } %>
-            </select>
-          </div>
-          <div class="flex-grow sm:flex-grow-0 sm:w-2/3">
-            <label class="block text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">Test Name</label>
-            <select id="test-filter" class="w-full px-4 py-3 rounded-lg border border-gray-300 text-gray-700 glass-card shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50 appearance-none font-medium disabled:bg-gray-100 disabled:text-gray-400" disabled>
-              <option value="">-- Select Test --</option>
-            </select>
-          </div>
-        </div>
+          <!-- Greeting Header -->
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Manage <span style="color: var(--pt);">Scores</span></h1>
+              <p class="dash-sub">Faculty Command Center · Student Performance Ledger</p>
+            </div>
+          </header>
 
-        <div id="student-list-container" class="hidden">
-          <div class="report-table-wrapper mb-8">
-            <div class="overflow-x-auto">
-              <table class="table-auto">
-                <thead>
-                  <tr>
-                    <th>Student Name</th>
-                    <th>Student ID</th>
-                    <th class="w-32">Score</th>
-                  </tr>
-                </thead>
-                <tbody id="student-score-list"></tbody>
-              </table>
+          <!-- Metrics Row (Dashboard Card style) -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
+            <!-- Active Batches -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);"><%= batches.length %></div>
+              <div class="stat-label">Active Batches</div>
+            </div>
+
+            <!-- Total Tests -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--pt);" id="metric-total-tests">—</div>
+              <div class="stat-label">Total Graded Tests</div>
+            </div>
+
+            <!-- Avg Performance -->
+            <div class="stat-card">
+              <div class="stat-icon">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--lt);"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </div>
+              <div class="stat-value" style="color: var(--lt);" id="metric-average-score">—</div>
+              <div class="stat-label">Average Score</div>
             </div>
           </div>
-          
-          <div class="flex justify-end">
-            <button id="save-scores-btn" class="btn-solid-purple w-full sm:w-auto text-lg flex items-center justify-center gap-2">
-              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
-              Save Scores
-            </button>
+
+          <!-- Score Record Panel -->
+          <div class="stat-card p-6 sm:p-8 mb-10">
+            <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-theme-pt mb-6 flex items-center gap-2">
+              <span>📝</span> Record / Update Test Scores
+            </h3>
+            
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-theme-bgc/50 p-5 rounded-2xl border border-theme-bd mb-8">
+              <div>
+                <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Select Batch</label>
+                <select id="standard-filter" class="w-full px-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer">
+                  <option value="">Select Batch...</option>
+                  <% if (typeof batches !== 'undefined' && batches.length > 0) { %>
+                    <% batches.forEach(batch => { %>
+                      <option value="<%= batch._id %>"><%= batch.name %></option>
+                    <% }) %>
+                  <% } %>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Select Test</label>
+                <select id="test-filter" class="w-full px-4 py-3 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-sm cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed" disabled>
+                  <option value="">Select Test...</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Student Score Entry List -->
+            <div id="student-list-container" class="hidden animate-fade-in">
+              <div class="overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-6">
+                <table class="data-table">
+                  <thead>
+                    <tr>
+                      <th class="text-left font-mono">Student ID</th>
+                      <th class="text-left font-mono">Student Name</th>
+                      <th class="text-center font-mono w-44">Score Obtained</th>
+                    </tr>
+                  </thead>
+                  <tbody id="student-score-list"></tbody>
+                </table>
+              </div>
+              
+              <div class="flex justify-end">
+                <button id="save-scores-btn" class="btn-solid-purple w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
+                  <span>Save Test Scores ✓</span>
+                </button>
+              </div>
+            </div>
+
+            <div id="message-box" class="mt-4 p-3 rounded-lg text-center hidden text-xs font-semibold"></div>
           </div>
+
+          <!-- Consolidated Performance Ledger -->
+          <div id="all-scores-container" class="stat-card p-6 sm:p-8">
+            <h2 class="text-lg font-bold uppercase tracking-tight mb-2 font-unbounded text-theme-pt">Consolidated Performance Ledger</h2>
+            <p class="text-xs text-theme-fdd mb-8">Consolidated matrix of all tests and student percentages for this academic session.</p>
+            <div id="classwise-tables" class="space-y-12"></div>
+          </div>
+
         </div>
-
-        <div id="message-box" class="mt-6 p-4 rounded-xl text-center hidden font-medium"></div>
-      </div>
-
-      <div id="all-scores-container" class="mt-12">
-        <h3 class="text-2xl font-bold text-gray-900 mb-4">
-          Consolidated Test Scores
-        </h3>
-        <div id="classwise-tables" class="space-y-12 overflow-x-auto"></div>
-      </div>
+      </main>
     </div>
   </div>
 
@@ -99,32 +208,46 @@
     document.addEventListener("DOMContentLoaded", () => {
       const standardFilter = document.getElementById("standard-filter");
       const testFilter = document.getElementById("test-filter");
-      const studentListContainer = document.getElementById(
-        "student-list-container"
-      );
+      const studentListContainer = document.getElementById("student-list-container");
       const studentScoreList = document.getElementById("student-score-list");
       const saveScoresBtn = document.getElementById("save-scores-btn");
       const classwiseTables = document.getElementById("classwise-tables");
 
+      function showFormMessage(message, type) {
+        const box = document.getElementById('message-box');
+        box.textContent = message;
+        box.className = `mt-4 p-3 rounded-lg text-center text-xs font-semibold ${
+          type === 'success' 
+            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
+            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+        }`;
+        box.classList.remove('hidden');
+        setTimeout(() => box.classList.add('hidden'), 3500);
+      }
+
       standardFilter.addEventListener("change", async () => {
         const standard = standardFilter.value;
-        testFilter.innerHTML = '<option value="">-- Select Test --</option>';
+        testFilter.innerHTML = '<option value="">Select Test...</option>';
         testFilter.disabled = true;
         studentListContainer.classList.add("hidden");
 
         if (!standard) return;
 
-        const res = await fetch(`/api/tests/${standard}`);
-        const tests = await res.json();
+        try {
+          const res = await fetch(`/api/tests/${standard}`);
+          const tests = await res.json();
 
-        tests.forEach((t) => {
-          const option = document.createElement("option");
-          option.value = t._id;
-          option.textContent = `${t.testName} — ${t.subject} — ${t.topic}`;
-          testFilter.appendChild(option);
-        });
+          tests.forEach((t) => {
+            const option = document.createElement("option");
+            option.value = t._id;
+            option.textContent = `${t.testName} — ${t.subject} (${t.topic})`;
+            testFilter.appendChild(option);
+          });
 
-        testFilter.disabled = false;
+          testFilter.disabled = false;
+        } catch (err) {
+          console.error("Error fetching tests:", err);
+        }
       });
 
       testFilter.addEventListener("change", async () => {
@@ -132,32 +255,41 @@
         const standard = standardFilter.value;
         if (!testId || !standard) return;
 
-        const res = await fetch(`/api/scores/${standard}/${testId}`);
-        const studentScores = await res.json();
+        try {
+          const res = await fetch(`/api/scores/${standard}/${testId}`);
+          const studentScores = await res.json();
 
-        studentScoreList.innerHTML = "";
-        studentScores.forEach((s) => {
-          const row = document.createElement("tr");
-          row.dataset.studentId = s.studentId;
-          row.innerHTML = `
-                        <td>${s.studentName}</td>
-                        <td>${s.studentId}</td>
-                        <td>
-                            <input type="number" value="${s.score || ""}" 
-                                placeholder="Enter score" 
-                                class="score-input p-2 rounded-md border-gray-300 shadow-sm focus:border-brand-purple focus:ring focus:ring-brand-purple focus:ring-opacity-50">
-                        </td>
-                    `;
-          studentScoreList.appendChild(row);
-        });
+          studentScoreList.innerHTML = "";
+          studentScores.forEach((s) => {
+            const row = document.createElement("tr");
+            row.dataset.studentId = s.studentId;
+            row.className = "hover:bg-theme-bgch/40 border-b border-theme-bd transition-all";
+            row.innerHTML = `
+              <td class="font-mono text-xs text-theme-pt font-bold">${s.studentId}</td>
+              <td class="font-bold text-theme-fg">${s.studentName}</td>
+              <td class="text-center">
+                <input type="number" value="${s.score !== null ? s.score : ""}" 
+                  placeholder="Enter marks" min="0" step="any"
+                  class="score-input px-4 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p font-mono text-sm w-36 font-extrabold text-center transition-all focus:ring-2 focus:ring-theme-pm/20">
+              </td>
+            `;
+            studentScoreList.appendChild(row);
+          });
 
-        studentListContainer.classList.remove("hidden");
+          studentListContainer.classList.remove("hidden");
+        } catch (err) {
+          console.error("Error fetching scores:", err);
+        }
       });
 
       saveScoresBtn.addEventListener("click", async () => {
         const testId = testFilter.value;
         const standard = standardFilter.value;
         if (!testId || !standard) return alert("Select standard and test.");
+
+        saveScoresBtn.disabled = true;
+        const originalText = saveScoresBtn.innerHTML;
+        saveScoresBtn.innerHTML = `<span>Saving...</span>`;
 
         const rows = studentScoreList.querySelectorAll("tr");
         const scores = Array.from(rows).map((row) => {
@@ -168,108 +300,195 @@
           };
         });
 
-        const res = await fetch("/api/scores/save", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
-          body: JSON.stringify({
-            testId,
-            scores
-          }),
-        });
-        const data = await res.json();
-        alert(data.message);
-
-        renderConsolidatedClasswise();
+        try {
+          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+          const res = await fetch("/api/scores/save", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-csrf-token": csrfToken
+            },
+            body: JSON.stringify({
+              testId,
+              scores
+            }),
+          });
+          const data = await res.json();
+          if (data.success) {
+            showFormMessage(data.message, "success");
+          } else {
+            showFormMessage(data.message || "Failed to save scores.", "error");
+          }
+          renderConsolidatedClasswise();
+        } catch (err) {
+          console.error("Error saving scores:", err);
+          showFormMessage("Network Error: Failed to save scores.", "error");
+        } finally {
+          saveScoresBtn.disabled = false;
+          saveScoresBtn.innerHTML = originalText;
+        }
       });
 
       async function renderConsolidatedClasswise() {
-        const res = await fetch("/api/scores/consolidated_classwise");
-        const data = await res.json();
-        classwiseTables.innerHTML = "";
+        try {
+          const res = await fetch("/api/scores/consolidated_classwise");
+          const data = await res.json();
+          classwiseTables.innerHTML = "";
 
-        for (let cls in data) {
-          const { tests, students } = data[cls];
-          if (!tests.length || !students.length) continue;
+          // Calculate overall stats dynamically
+          let totalTestsCount = 0;
+          let totalStudentsCount = 0;
+          let sumStudentAverages = 0;
+          const testKeys = new Set();
 
-          const title = document.createElement("h4");
-          title.className = "text-xl font-bold text-gray-900 mb-3 mt-4 flex items-center gap-2";
-          title.innerHTML = `<span class="inline-block px-3 py-1 rounded-full text-white text-sm" style="background:#5d3a9b">Batch: ${cls}</span>`;
-          classwiseTables.appendChild(title);
-
-          const wrapper = document.createElement("div");
-          wrapper.className = "overflow-x-auto rounded-xl shadow-md mb-10 border border-gray-200";
-
-          const table = document.createElement("table");
-          table.className = "w-full border-collapse text-sm";
-
-          let header = `
-            <thead>
-              <tr style="background:#5d3a9b; color:#fff;">
-                <th class="px-4 py-3 text-left font-semibold whitespace-nowrap" rowspan="2">ID</th>
-                <th class="px-4 py-3 text-left font-semibold whitespace-nowrap" rowspan="2">Student Name</th>`;
-          tests.forEach(t => {
-            header += `<th class="px-4 py-3 text-center font-semibold whitespace-nowrap">${t.testName}</th>`;
-          });
-          header += `<th class="px-4 py-3 text-center font-semibold whitespace-nowrap" rowspan="2" style="background:#4b2d84">Avg %</th></tr>`;
-
-          header += `<tr style="background:#7c4dc0; color:#e9d8fd;">`;
-          tests.forEach(t => {
-            header += `<th class="px-3 py-1 text-center text-xs font-medium">${t.subject} &mdash; ${t.topic}</th>`;
-          });
-          header += `</tr></thead>`;
-
-          let body = "<tbody>";
-          students.forEach((st, idx) => {
-            const rowBg = idx % 2 === 0 ? "background:#fff" : "background:#f9f5ff";
-            body += `<tr style="${rowBg}" class="hover:bg-purple-50 transition-colors">`;
-            body += `<td class="px-4 py-3 font-mono text-gray-500 text-xs whitespace-nowrap border-b border-gray-100">${st.studentId}</td>`;
-            body += `<td class="px-4 py-3 font-semibold text-gray-800 whitespace-nowrap border-b border-gray-100">${st.studentName}</td>`;
-
-            let totalPct = 0, scoredCount = 0;
-            tests.forEach(t => {
-              const raw = st.scores[t._id];
-              if (raw !== undefined) {
-                const pct = parseFloat(raw);
-                totalPct += pct;
-                scoredCount++;
-                const color = pct >= 75 ? "color:#166534;background:#dcfce7"
-                            : pct >= 50 ? "color:#92400e;background:#fef3c7"
-                            : "color:#991b1b;background:#fee2e2";
-                body += `<td class="px-4 py-3 text-center font-bold border-b border-gray-100" style="${color}">${pct.toFixed(1)}%</td>`;
-              } else {
-                body += `<td class="px-4 py-3 text-center border-b border-gray-100" style="color:#9ca3af">&mdash;</td>`;
+          Object.keys(data).forEach(cls => {
+            const { tests, students } = data[cls];
+            if (!tests || !students) return;
+            tests.forEach(t => testKeys.add(t._id.toString()));
+            students.forEach(st => {
+              let stTotal = 0;
+              let stCount = 0;
+              tests.forEach(t => {
+                const raw = st.scores[t._id];
+                if (raw !== undefined) {
+                  stTotal += parseFloat(raw);
+                  stCount++;
+                }
+              });
+              if (stCount > 0) {
+                sumStudentAverages += (stTotal / stCount);
+                totalStudentsCount++;
               }
             });
-
-            if (scoredCount > 0) {
-              const avg = (totalPct / scoredCount).toFixed(1);
-              const avgColor = avg >= 75 ? "color:#166534;background:#dcfce7"
-                             : avg >= 50 ? "color:#92400e;background:#fef3c7"
-                             : "color:#991b1b;background:#fee2e2";
-              body += `<td class="px-4 py-3 text-center font-extrabold border-b border-gray-100" style="${avgColor}">${avg}%</td>`;
-            } else {
-              body += `<td class="px-4 py-3 text-center border-b border-gray-100 text-gray-400">&mdash;</td>`;
-            }
-
-            body += `</tr>`;
           });
-          body += "</tbody>";
 
-          table.innerHTML = header + body;
-          wrapper.appendChild(table);
-          classwiseTables.appendChild(wrapper);
+          document.getElementById("metric-total-tests").textContent = testKeys.size;
+          if (totalStudentsCount > 0) {
+            const avgPerf = (sumStudentAverages / totalStudentsCount).toFixed(1);
+            document.getElementById("metric-average-score").textContent = `${avgPerf}%`;
+          } else {
+            document.getElementById("metric-average-score").textContent = "—";
+          }
+
+          const sortedClsKeys = Object.keys(data).sort((a, b) => {
+            const getBatchOrderValue = (name) => {
+              if (!name) return 999;
+              const lowerName = name.toLowerCase();
+              if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+              const match = lowerName.match(/^(\d+)/);
+              if (match) return parseInt(match[1]);
+              return 100;
+            };
+            return getBatchOrderValue(a) - getBatchOrderValue(b);
+          });
+
+          if (sortedClsKeys.length === 0) {
+            classwiseTables.innerHTML = `
+              <div class="p-10 text-center text-theme-fdd border border-theme-b rounded-xl bg-theme-bgc/20">
+                <p class="text-3xl mb-2">📊</p>
+                <p class="font-semibold text-sm">No consolidated scores found.</p>
+              </div>
+            `;
+            return;
+          }
+
+          sortedClsKeys.forEach(cls => {
+            const { tests, students } = data[cls];
+            if (!tests.length || !students.length) return;
+
+            const headerWrapper = document.createElement("div");
+            headerWrapper.className = "flex items-center gap-3 mb-4 mt-6 pl-1";
+            headerWrapper.innerHTML = `
+              <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
+              <h3 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Batch: <span style="color: var(--pt);">${cls}</span></h3>
+              <span class="text-xs font-semibold bg-purple-500/10 text-theme-pt border border-purple-500/20 px-2.5 py-1 rounded-full">${students.length} student${students.length !== 1 ? 's' : ''}</span>
+            `;
+            classwiseTables.appendChild(headerWrapper);
+
+            const wrapper = document.createElement("div");
+            wrapper.className = "table-container overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-10";
+
+            const table = document.createElement("table");
+            table.className = "data-table w-full border-collapse text-sm";
+
+            let header = `
+              <thead>
+                <tr class="grid-header-main border-b border-theme-bd text-white">
+                  <th class="px-4 py-3 text-left font-semibold font-mono text-xs whitespace-nowrap" rowspan="2">ID</th>
+                  <th class="px-4 py-3 text-left font-semibold font-mono text-xs whitespace-nowrap" rowspan="2">Student Name</th>`;
+            tests.forEach(t => {
+              header += `<th class="px-4 py-3 text-center font-bold font-mono text-xs whitespace-nowrap">${t.testName}</th>`;
+            });
+            header += `<th class="px-4 py-3 text-center font-bold font-mono text-xs whitespace-nowrap" rowspan="2" style="background: var(--pm) !important;">Avg %</th></tr>`;
+
+            header += `<tr class="grid-header-sub border-b border-theme-bd">`;
+            tests.forEach(t => {
+              header += `<th class="px-3 py-1.5 text-center text-[10px] font-mono font-bold whitespace-nowrap">${t.subject} <span class="text-[9px] font-normal opacity-70">(${t.topic})</span></th>`;
+            });
+            header += `</tr></thead>`;
+
+            let body = "<tbody>";
+            students.forEach((st) => {
+              body += `<tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all">`;
+              body += `<td class="px-4 py-3 font-mono text-theme-pt text-xs font-bold whitespace-nowrap">${st.studentId}</td>`;
+              body += `<td class="px-4 py-3 font-bold text-theme-fg whitespace-nowrap">${st.studentName}</td>`;
+
+              let totalPct = 0, scoredCount = 0;
+              tests.forEach(t => {
+                const raw = st.scores[t._id];
+                if (raw !== undefined) {
+                  const pct = parseFloat(raw);
+                  totalPct += pct;
+                  scoredCount++;
+                  
+                  let colorStyles = "";
+                  if (pct >= 75) {
+                    colorStyles = "background: rgba(16,185,129,0.08); color: rgb(52,211,153); border: 1px solid rgba(16,185,129,0.15);";
+                  } else if (pct >= 50) {
+                    colorStyles = "background: rgba(245,158,11,0.08); color: rgb(251,191,36); border: 1px solid rgba(245,158,11,0.15);";
+                  } else {
+                    colorStyles = "background: rgba(239,68,68,0.08); color: rgb(248,113,113); border: 1px solid rgba(239,68,68,0.15);";
+                  }
+                  
+                  body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-xs font-extrabold" style="${colorStyles}">${pct.toFixed(1)}%</span></td>`;
+                } else {
+                  body += `<td class="px-4 py-3 text-center text-theme-fdd border-r border-theme-bd font-mono italic" style="padding: 10px 4px;">&mdash;</td>`;
+                }
+              });
+
+              if (scoredCount > 0) {
+                const avg = (totalPct / scoredCount).toFixed(1);
+                
+                let avgColorStyles = "";
+                if (avg >= 75) {
+                  avgColorStyles = "background: rgba(16,185,129,0.12); color: rgb(52,211,153); border: 1px solid rgba(16,185,129,0.2);";
+                } else if (avg >= 50) {
+                  avgColorStyles = "background: rgba(245,158,11,0.12); color: rgb(251,191,36); border: 1px solid rgba(245,158,11,0.2);";
+                } else {
+                  avgColorStyles = "background: rgba(239,68,68,0.12); color: rgb(248,113,113); border: 1px solid rgba(239,68,68,0.2);";
+                }
+                
+                body += `<td class="px-4 py-3 text-center font-mono" style="padding: 10px 4px;"><span class="inline-block px-2.5 py-0.5 rounded-md text-xs font-black" style="${avgColorStyles}">${avg}%</span></td>`;
+              } else {
+                body += `<td class="px-4 py-3 text-center text-theme-fdd font-mono italic" style="padding: 10px 4px;">&mdash;</td>`;
+              }
+
+              body += `</tr>`;
+            });
+            body += "</tbody>";
+
+            table.innerHTML = header + body;
+            wrapper.appendChild(table);
+            classwiseTables.appendChild(wrapper);
+          });
+        } catch (err) {
+          console.error("Error rendering consolidated scores:", err);
         }
       }
 
       renderConsolidatedClasswise();
     });
   </script>
-      </main>
-    </div>
-  </div>
 </body>
-
 
 </html>

@@ -36,9 +36,9 @@ exports.renderDashboard = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.session.userId);
     if (!teacher) return res.redirect("/teacher/login");
-    
+
     const academicYear = req.viewingYear;
-    
+
     const yearBatches = await Batch.find({ academicYear }).distinct('_id');
     const [totalStudents, upcomingTests, revenueAggregation] = await Promise.all([
       User.countDocuments({ batch: { $in: yearBatches } }),
@@ -48,10 +48,10 @@ exports.renderDashboard = async (req, res) => {
         { $group: { _id: null, total: { $sum: '$amount' } } }
       ])
     ]);
-    
+
     const totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].total : 0;
 
-    res.render("teacher/dashboard", { 
+    res.render("teacher/dashboard", {
       teacher,
       metrics: {
         totalStudents,

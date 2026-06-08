@@ -155,12 +155,12 @@
             </div>
             <% if (viewingYear === currentAcademicYear) { %>
             <div class="p-3 bg-purple-500/10 text-theme-pt border border-purple-500/20 rounded-xl text-xs max-w-sm">
-              💡 <strong>Reposting Tip:</strong> Switch to a previous academic year using the sidebar selector, then click the repost button on any batch or material to clone it here.
+              <strong>Reposting Tip:</strong> Switch to a previous academic year using the sidebar selector, then click the repost button on any batch or material to clone it here.
             </div>
             <% } else { %>
-            <div class="p-3 bg-yellow-500/10 text-yellow-400 border border-yellow-500/20 rounded-xl text-xs max-w-md">
-              📂 <strong>Viewing Previous Year (<%= viewingYear %>):</strong> You can repost individual materials or entire batches to the current active year (<strong><%= currentAcademicYear %></strong>) using the buttons below.
-            </div>
+             <div class="p-3 bg-[var(--lg)] text-brand-lime border border-[var(--lt)]/20 rounded-xl text-xs max-w-md">
+               <strong>Viewing Previous Year (<%= viewingYear %>):</strong> You can repost individual materials or entire batches to the current active year (<strong><%= currentAcademicYear %></strong>) using the buttons below.
+             </div>
             <% } %>
           </header>
 
@@ -230,7 +230,7 @@
                 </div>
                 <h2 id="form-title" class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;">Upload New Resource</h2>
               </div>
-              <button type="button" id="cancel-edit-btn" class="hidden text-xs font-bold font-mono text-red-400 hover:text-red-500 uppercase transition-all">Cancel Edit</button>
+               <button type="button" id="cancel-edit-btn" class="hidden text-xs font-bold font-mono text-brand-red hover:opacity-85 uppercase transition-all">Cancel Edit</button>
             </div>
 
             <form id="upload-form" class="space-y-8">
@@ -318,7 +318,7 @@
           <!-- Grouped Grid Lists -->
           <% if (sortedStandards.length === 0) { %>
             <div class="p-12 text-center text-theme-fdd border border-theme-b rounded-xl bg-theme-bgc/20">
-              <p class="text-3xl mb-2">📚</p>
+              <p class="text-3xl mb-2"></p>
               <p class="font-semibold text-sm">No materials uploaded yet.</p>
               <p class="text-xs mt-1 text-theme-fdd/70">Use the form above to add your first resource.</p>
             </div>
@@ -332,7 +332,7 @@
                 <span class="text-xs font-semibold bg-purple-500/10 text-theme-pt border border-purple-500/20 px-2 py-0.5 rounded-full"><%= grouped[std].length %> material<%= grouped[std].length !== 1 ? 's' : '' %></span>
                 <% if (viewingYear !== currentAcademicYear && grouped[std].length > 0) { %>
                 <button type="button" onclick="repostBatch('<%= std %>')" class="ml-2 inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-[10px] font-mono font-bold uppercase text-purple-600 bg-purple-500/10 hover:bg-purple-500/20 border border-purple-500/20 transition-all">
-                  📦 Repost Batch to <%= currentAcademicYear %>
+                  Repost Batch to <%= currentAcademicYear %>
                 </button>
                 <% } %>
                 <div class="flex-1 h-px bg-theme-bd ml-2"></div>
@@ -364,7 +364,7 @@
                         <%= mat.description || 'No description provided.' %>
                       </p>
                       <p class="text-[10px] text-theme-fdd/60 mt-3 font-semibold font-mono">
-                        🗓 <%= (mat.uploadDate || new Date()).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                        <%= (mat.uploadDate || new Date()).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
                       </p>
                     </div>
                     
@@ -392,18 +392,18 @@
                         data-description="<%= mat.description || '' %>"
                         data-link="<%= mat.filePath || mat.link || '' %>"
                         class="btn-outline-purple flex items-center justify-center gap-1.5 py-1 px-3 text-[10px] font-bold uppercase tracking-wider font-mono">
-                        ✏️ Edit
+                         Edit
                       </button>
 
                       <!-- Delete Action -->
-                      <button type="button" onclick="deleteMaterial('<%= mat._id %>')" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all border border-red-500/20">
-                        🗑️ Delete
+                       <button type="button" onclick="deleteMaterial('<%= mat._id %>')" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono uppercase text-brand-red bg-[var(--rg)] border border-[var(--rt)]/20 hover:bg-[var(--rt)]/20 transition-all">
+                         Delete
                       </button>
 
                       <!-- Repost Action -->
                       <% if (viewingYear !== currentAcademicYear) { %>
                       <button type="button" data-material-id="<%= mat._id %>" onclick="repostSingle('<%= mat._id %>', '<%= mat.subject %>')" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-3 py-1.5 rounded-lg text-[10px] font-bold font-mono uppercase text-theme-pt bg-purple-500/10 hover:bg-purple-500/20 transition-all border border-purple-500/20">
-                        📦 Repost
+                        Repost
                       </button>
                       <% } %>
                     </div>
@@ -439,8 +439,8 @@
         messageBox.textContent = message;
         messageBox.className = `mt-4 p-3 rounded-lg text-center text-xs font-semibold ${
           type === 'success' 
-            ? 'bg-green-500/10 text-green-400 border border-green-500/20' 
-            : 'bg-red-500/10 text-red-400 border border-red-500/20'
+            ? 'bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20' 
+            : 'bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20'
         }`;
         messageBox.classList.remove('hidden');
         setTimeout(() => messageBox.classList.add('hidden'), 3500);

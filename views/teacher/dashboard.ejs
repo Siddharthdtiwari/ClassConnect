@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
 <head>
+  <script>
+    // Anti-FOUC: apply saved theme BEFORE any CSS is parsed
+    (function(){
+      var t = localStorage.getItem('classconnect_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Faculty Dashboard | Tuition Hub</title>
@@ -9,125 +16,59 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
-    /* Dashboard-specific styles */
+    /* Custom Styling variables */
     .dash-greeting {
       font-family: 'Unbounded', sans-serif;
-      font-size: clamp(1.8rem, 4vw, 3rem);
       font-weight: 900;
-      line-height: 1;
       letter-spacing: -0.03em;
     }
-    .dash-sub {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.65rem;
-      letter-spacing: 0.15em;
-      text-transform: uppercase;
-      color: var(--fdd);
-      margin-top: 8px;
+    .font-unbounded {
+      font-family: 'Unbounded', sans-serif;
     }
+    .font-mono-space {
+      font-family: 'Space Mono', monospace;
+    }
+    
+    /* Stat cards with glassmorphic properties */
     .stat-card {
       background: var(--bgc);
-      backdrop-filter: blur(16px);
+      backdrop-filter: blur(20px);
       border: 1px solid var(--bd);
-      border-radius: 18px;
-      padding: 28px;
-      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
-      position: relative;
-      overflow: hidden;
+      transition: all 0.4s cubic-bezier(.34,1.56,.64,1);
     }
-    .stat-card::before {
-      content: '';
-      position: absolute;
-      inset: 0;
-      opacity: 0;
-      transition: opacity 0.4s;
-      background: radial-gradient(circle at 20% 30%, var(--pg2) 0%, transparent 60%);
-      pointer-events: none;
-    }
-    .stat-card:hover::before { opacity: 1; }
     .stat-card:hover {
-      border-color: rgba(124,58,237,0.25);
-      transform: translateY(-4px);
-      box-shadow: 0 12px 40px var(--pg2);
+      border-color: rgba(124,58,237,0.3);
+      transform: translateY(-5px);
+      box-shadow: 0 15px 35px var(--pg2);
     }
-    .stat-value {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 2.2rem;
-      font-weight: 900;
-      line-height: 1;
-      position: relative;
-      z-index: 1;
-    }
-    .stat-label {
-      font-family: 'Space Mono', monospace;
-      font-size: 0.58rem;
-      letter-spacing: 0.12em;
-      text-transform: uppercase;
-      color: var(--fdd);
-      margin-top: 6px;
-      position: relative;
-      z-index: 1;
-    }
-    .stat-icon {
-      position: absolute;
-      top: 20px;
-      right: 20px;
-      opacity: 0.15;
-      z-index: 0;
-    }
-    .quick-link {
-      display: flex;
-      align-items: center;
-      gap: 14px;
-      padding: 16px 20px;
-      border-radius: 14px;
-      text-decoration: none;
-      color: var(--fg);
+    
+    /* Quick Action buttons with transitions */
+    .action-btn {
       background: var(--bgc);
       border: 1px solid var(--bd);
       backdrop-filter: blur(12px);
-      transition: all 0.3s cubic-bezier(.34,1.56,.64,1);
+      transition: all 0.3s cubic-bezier(.25, .8, .25, 1);
     }
-    .quick-link:hover {
-      border-color: var(--p);
-      transform: translateX(6px);
+    .action-btn:hover {
+      border-color: var(--pt);
+      transform: translateY(-2px);
       background: var(--bgch);
-      box-shadow: 0 6px 20px var(--pg2);
+      box-shadow: 0 4px 15px var(--pg2);
     }
-    .quick-link:hover .ql-arrow {
-      opacity: 1;
-      transform: translateX(0);
+    
+    /* Scrollbar customization */
+    ::-webkit-scrollbar {
+      width: 6px;
     }
-    .ql-icon {
-      width: 40px;
-      height: 40px;
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      background: rgba(124,58,237,0.08);
-      border: 1px solid rgba(124,58,237,0.12);
-      color: var(--pt);
+    ::-webkit-scrollbar-track {
+      background: transparent;
     }
-    .ql-title {
-      font-family: 'Unbounded', sans-serif;
-      font-size: 0.78rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: 0.02em;
+    ::-webkit-scrollbar-thumb {
+      background: var(--bd);
+      border-radius: 10px;
     }
-    .ql-desc {
-      font-size: 0.72rem;
-      color: var(--fdd);
-      margin-top: 2px;
-    }
-    .ql-arrow {
-      margin-left: auto;
-      opacity: 0;
-      transform: translateX(-8px);
-      transition: all 0.3s;
-      color: var(--pt);
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--fdd);
     }
   </style>
 </head>
@@ -135,169 +76,360 @@
 <%- include('../partials/background') %>
 
 <body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
-  <div style="display: flex; height: 100vh; overflow: hidden;">
+  <div class="flex h-screen overflow-hidden">
     <%- include('../partials/teacher_sidebar') %>
     
-    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
-      <main class="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 lg:p-8">
-
-        <!-- Greeting -->
-        <div style="margin-bottom: 40px;">
-          <h1 class="dash-greeting">
-            Welcome back, <span style="color: var(--pt);"><%= teacher.teacherName.split(' ')[0] %></span>
-          </h1>
-          <p class="dash-sub">Faculty Command Center · Tuition Hub Education Centre</p>
-        </div>
-
-        <!-- Stats Row -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 mb-10">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
-            </div>
-            <div class="stat-value" style="color: var(--pt);"><%= typeof metrics !== 'undefined' ? metrics.totalStudents : 0 %></div>
-            <div class="stat-label">Active Students</div>
+    <div class="flex-1 flex flex-col overflow-hidden relative">
+      <main class="flex-1 overflow-y-auto overflow-x-hidden p-6 lg:p-10">
+        
+        <!-- Header / Greeting Row -->
+        <header class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-8">
+          <div>
+            <h1 class="dash-greeting text-3xl sm:text-4xl lg:text-5xl leading-tight">
+              Welcome back, <span style="color: var(--pt);"><%= teacher.teacherName.split(' ')[0] %></span>
+            </h1>
+            <p class="font-mono-space text-[0.65rem] tracking-wider text-theme-fdd uppercase mt-2">
+              Faculty Command Center • Tuition Hub • Academic Year <%= viewingYear %>
+            </p>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+          <!-- Current Date Display -->
+          <div class="stat-card px-4 py-3 rounded-2xl flex items-center gap-3">
+            <div class="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping"></div>
+            <div class="text-xs font-mono-space tracking-wide text-theme-fdd">
+              <%= new Date().toLocaleDateString('en-IN', { weekday: 'short', day: 'numeric', month: 'short' }) %>
             </div>
-            <div class="stat-value" style="color: var(--lt);">₹<%= typeof metrics !== 'undefined' ? metrics.totalRevenue.toLocaleString() : 0 %></div>
-            <div class="stat-label">Total Revenue</div>
           </div>
-          <div class="stat-card">
-            <div class="stat-icon">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
-            </div>
-            <div class="stat-value" style="color: var(--pt);"><%= typeof metrics !== 'undefined' ? metrics.upcomingTests : 0 %></div>
-            <div class="stat-label">Upcoming Tests</div>
-          </div>
-        </div>
+        </header>
 
-        <!-- Quick Actions -->
-        <div style="margin-bottom: 16px;">
-          <h2 style="font-family: 'Space Mono', monospace; font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--fdd); margin-bottom: 16px; display: flex; align-items: center; gap: 10px;">
-            <span style="width: 20px; height: 1px; background: var(--pt);"></span>
-            Quick Actions
-          </h2>
-        </div>
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+        <!-- Stats Overview Grid -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           
-          <a href="/teacher/manage_students" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          <!-- Card 1: Active Students -->
+          <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
+            <div class="absolute right-4 top-4 opacity-10 text-theme-pt">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
             </div>
             <div>
-              <div class="ql-title">Manage Students</div>
-              <div class="ql-desc">View, edit, and organize profiles</div>
+              <div class="text-[0.6rem] font-mono-space tracking-widest uppercase text-theme-fdd mb-1">Active Students</div>
+              <div class="font-unbounded text-3xl sm:text-4xl font-black" style="color: var(--pt);"><%= metrics.totalStudents %></div>
             </div>
-            <span class="ql-arrow">→</span>
-          </a>
+            <div class="flex items-center gap-2 mt-4 text-[0.65rem] text-theme-fdd">
+               <span class="px-2 py-0.5 rounded-full bg-[var(--pg2)] text-brand-purple font-mono-space">Active Enrolled</span>
+              <span>across all batches</span>
+            </div>
+          </div>
 
-          <a href="/teacher/manage_attendance" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <!-- Card 2: Total Revenue -->
+          <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
+            <div class="absolute right-4 top-4 opacity-10 text-theme-lt">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
             </div>
             <div>
-              <div class="ql-title">Attendance</div>
-              <div class="ql-desc">Record & analyze daily presence</div>
+              <div class="text-[0.6rem] font-mono-space tracking-widest uppercase text-theme-fdd mb-1">Total Revenue</div>
+              <div class="font-unbounded text-3xl sm:text-4xl font-black" style="color: var(--gt);">₹<%= metrics.totalRevenue.toLocaleString('en-IN') %></div>
             </div>
-            <span class="ql-arrow">→</span>
-          </a>
+            <div class="flex items-center gap-2 mt-4 text-[0.65rem] text-theme-fdd">
+              <span class="px-2 py-0.5 rounded-full bg-theme-gg text-brand-green font-mono-space">Paid Invoices</span>
+              <span>secured this year</span>
+            </div>
+          </div>
 
-          <a href="/teacher/manage_tests" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+          <!-- Card 3: Upcoming Tests -->
+          <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
+            <div class="absolute right-4 top-4 opacity-10 text-theme-pt">
+              <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
             </div>
             <div>
-              <div class="ql-title">Assessments</div>
-              <div class="ql-desc">Create tests & assignments</div>
+              <div class="text-[0.6rem] font-mono-space tracking-widest uppercase text-theme-fdd mb-1">Upcoming Assessments</div>
+              <div class="font-unbounded text-3xl sm:text-4xl font-black" style="color: var(--pt);"><%= metrics.upcomingTests %></div>
             </div>
-            <span class="ql-arrow">→</span>
-          </a>
+            <div class="flex items-center gap-2 mt-4 text-[0.65rem] text-theme-fdd">
+              <span class="px-2 py-0.5 rounded-full bg-theme-bg2 text-brand-purple font-mono-space">Active Tests</span>
+              <span>awaiting score uploads</span>
+            </div>
+          </div>
 
-          <a href="/teacher/manage_score" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-            </div>
-            <div>
-              <div class="ql-title">Performance</div>
-              <div class="ql-desc">Upload & analyze scores</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
+        </section>
 
-          <a href="/teacher/manage_fees" class="quick-link">
-            <div class="ql-icon" style="background: rgba(189,224,69,0.08); border-color: rgba(189,224,69,0.15); color: var(--lt);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
-            </div>
-            <div>
-              <div class="ql-title">Fee Tracking</div>
-              <div class="ql-desc">Track balances & payments</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
+        <!-- Two-Column Dynamic Work Hub -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
+          
+          <!-- LEFT COLUMN: Assessments & Student Distribution (7 Cols) -->
+          <div class="lg:col-span-7 flex flex-col gap-8">
+            
+            <!-- Section: Upcoming Tests -->
+            <div class="stat-card p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-unbounded text-xs font-bold uppercase tracking-wider text-theme-fg flex items-center gap-2">
+                  <span class="w-1.5 h-4 bg-theme-p rounded-full"></span>
+                  Upcoming Assessments Schedule
+                </h3>
+                <a href="/teacher/manage_tests" class="text-[0.65rem] font-mono-space text-theme-pt hover:underline">View All →</a>
+              </div>
 
-          <a href="/teacher/revenue_report" class="quick-link">
-            <div class="ql-icon" style="background: rgba(189,224,69,0.08); border-color: rgba(189,224,69,0.15); color: var(--lt);">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              <% if (upcomingTests && upcomingTests.length > 0) { %>
+                <div class="flex flex-col gap-3">
+                  <% upcomingTests.forEach(test => { %>
+                    <div class="flex items-center justify-between p-3 rounded-xl bg-theme-bg2/40 border border-theme-bd/30 hover:border-theme-pt/30 transition-all">
+                      <div class="flex items-center gap-3">
+                        <div class="flex flex-col items-center justify-center w-11 h-11 rounded-lg bg-theme-bg2 text-brand-purple border border-theme-bd">
+                          <span class="text-xs font-black font-unbounded leading-none"><%= new Date(test.testDate).getDate() %></span>
+                          <span class="text-[0.55rem] font-mono-space uppercase tracking-wider mt-0.5"><%= new Date(test.testDate).toLocaleDateString('en-IN', { month: 'short' }) %></span>
+                        </div>
+                        <div>
+                          <h4 class="text-xs font-semibold text-theme-fg"><%= test.testName %></h4>
+                          <p class="text-[0.65rem] text-theme-fdd mt-0.5"><%= test.subject || 'Syllabus' %> • Max Marks: <%= test.maxMarks %></p>
+                        </div>
+                      </div>
+                      <span class="px-2.5 py-1 rounded-full text-[0.6rem] font-mono-space bg-theme-bg2 text-theme-fg border border-theme-bd">
+                        <%= test.batch ? test.batch.name : 'All' %>
+                      </span>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <div class="text-center py-8 opacity-60">
+                  <div class="text-2xl mb-2"></div>
+                  <p class="text-xs text-theme-fdd">No assessments scheduled for the coming weeks.</p>
+                  <a href="/teacher/manage_tests" class="inline-flex items-center gap-1.5 mt-3 text-xs text-theme-pt hover:underline">
+                    Create a test paper <span class="text-xs">→</span>
+                  </a>
+                </div>
+              <% } %>
             </div>
-            <div>
-              <div class="ql-title">Analytics</div>
-              <div class="ql-desc">Revenue trends & reports</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
 
-          <a href="/teacher/study_material" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
-            </div>
-            <div>
-              <div class="ql-title">Study Material</div>
-              <div class="ql-desc">Upload resources & lessons</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
+            <!-- Section: Batch Distribution -->
+            <div class="stat-card p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-5">
+                <h3 class="font-unbounded text-xs font-bold uppercase tracking-wider text-theme-fg flex items-center gap-2">
+                  <span class="w-1.5 h-4 bg-theme-gt rounded-full"></span>
+                  Active Batch Distribution
+                </h3>
+                <a href="/teacher/manage_batches" class="text-[0.65rem] font-mono-space text-theme-pt hover:underline">Manage Batches →</a>
+              </div>
 
-          <a href="/teacher/manage_batches" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              <% if (batchCounts && batchCounts.length > 0) { %>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <% batchCounts.forEach(b => { %>
+                    <div class="p-3.5 rounded-xl bg-theme-bg2/40 border border-theme-bd/30 flex flex-col justify-between">
+                      <div class="flex items-center justify-between mb-2">
+                        <span class="text-xs font-bold text-theme-fg"><%= b.name %></span>
+                        <span class="text-[0.65rem] font-mono-space text-theme-fdd"><%= b.count %> <%= b.count === 1 ? 'Student' : 'Students' %></span>
+                      </div>
+                      <div class="w-full bg-theme-bg3/60 rounded-full h-1.5 overflow-hidden">
+                        <% 
+                          const maxCount = Math.max(...batchCounts.map(x => x.count), 1);
+                          const pct = Math.round((b.count / maxCount) * 100);
+                        %>
+                        <div class="h-1.5 rounded-full bg-gradient-to-r from-theme-p to-theme-pm" data-width="<%= pct %>"></div>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <p class="text-xs text-theme-fdd text-center py-6">No active batches created for <%= viewingYear %>.</p>
+              <% } %>
             </div>
-            <div>
-              <div class="ql-title">Manage Batches</div>
-              <div class="ql-desc">Configure academic year batches</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
 
-          <a href="/teacher/timetable" class="quick-link">
-            <div class="ql-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-            </div>
-            <div>
-              <div class="ql-title">Exam Timetable</div>
-              <div class="ql-desc">Schedule exam dates</div>
-            </div>
-            <span class="ql-arrow">→</span>
-          </a>
+          </div>
 
-          <a href="/teacher/manage_students?action=add" class="quick-link">
-            <div class="ql-icon" style="background: rgba(52,211,153,0.08); border-color: rgba(52,211,153,0.15); color: #34d399;">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          <!-- RIGHT COLUMN: Audits & Payments (5 Cols) -->
+          <div class="lg:col-span-5 flex flex-col gap-8">
+            
+            <!-- Section: System Audit Trail -->
+            <div class="stat-card p-6 rounded-2xl flex-1 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center justify-between mb-4">
+                  <h3 class="font-unbounded text-xs font-bold uppercase tracking-wider text-theme-fg flex items-center gap-2">
+                    <span class="w-1.5 h-4 bg-theme-rt rounded-full"></span>
+                    Recent System Actions
+                  </h3>
+                  <a href="/teacher/reports/audit" class="text-[0.65rem] font-mono-space text-theme-pt hover:underline">Audit Trail →</a>
+                </div>
+
+                <% if (recentAudits && recentAudits.length > 0) { %>
+                  <div class="flex flex-col gap-3">
+                    <% recentAudits.forEach(log => { %>
+                      <div class="flex items-start gap-3 text-xs leading-relaxed">
+                        <div class="mt-1 flex-shrink-0">
+                          <% if (log.action === 'CREATE') { %>
+                            <span class="w-2 h-2 rounded-full bg-theme-gt inline-block"></span>
+                          <% } else if (log.action === 'UPDATE') { %>
+                            <span class="w-2 h-2 rounded-full bg-amber-400 inline-block"></span>
+                          <% } else if (log.action === 'DELETE') { %>
+                            <span class="w-2 h-2 rounded-full bg-theme-rt inline-block"></span>
+                          <% } else { %>
+                            <span class="w-2 h-2 rounded-full bg-theme-p inline-block"></span>
+                          <% } %>
+                        </div>
+                        <div class="flex-1">
+                          <p class="text-theme-fg font-medium text-[0.72rem]"><%= log.details %></p>
+                          <p class="text-[0.55rem] font-mono-space text-theme-fdd uppercase tracking-wider mt-0.5">
+                            <%= log.entityType %> • <%= new Date(log.createdAt).toLocaleDateString('en-IN', { hour: '2-digit', minute: '2-digit' }) %>
+                          </p>
+                        </div>
+                      </div>
+                    <% }) %>
+                  </div>
+                <% } else { %>
+                  <p class="text-xs text-theme-fdd text-center py-10">No recent system events logged.</p>
+                <% } %>
+              </div>
             </div>
-            <div>
-              <div class="ql-title">Add Student</div>
-              <div class="ql-desc">Enroll a new student</div>
+
+            <!-- Section: Recent Fee Payments -->
+            <div class="stat-card p-6 rounded-2xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-unbounded text-xs font-bold uppercase tracking-wider text-theme-fg flex items-center gap-2">
+                  <span class="w-1.5 h-4 bg-theme-gt rounded-full"></span>
+                  Recent Fee Payments
+                </h3>
+                <a href="/teacher/revenue_report" class="text-[0.65rem] font-mono-space text-theme-pt hover:underline">Revenue →</a>
+              </div>
+
+              <% if (recentPayments && recentPayments.length > 0) { %>
+                <div class="flex flex-col gap-3">
+                  <% recentPayments.forEach(p => { %>
+                    <div class="flex items-center justify-between text-xs">
+                      <div>
+                        <p class="font-semibold text-theme-fg"><%= p.studentName %></p>
+                        <p class="text-[0.58rem] font-mono-space text-theme-fdd mt-0.5"><%= p.batch ? p.batch.name : '' %> • <%= p.month %> (<%= p.method %>)</p>
+                      </div>
+                      <div class="text-right">
+                        <span class="font-unbounded font-bold text-brand-green">₹<%= p.amount %></span>
+                        <p class="text-[0.58rem] font-mono-space text-theme-fdd mt-0.5"><%= new Date(p.datePaid).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %></p>
+                      </div>
+                    </div>
+                  <% }) %>
+                </div>
+              <% } else { %>
+                <p class="text-xs text-theme-fdd text-center py-6">No fee collections recorded recently.</p>
+              <% } %>
             </div>
-            <span class="ql-arrow">→</span>
-          </a>
+
+          </div>
 
         </div>
+
+        <!-- Section: Command Console (Quick Actions Bar) -->
+        <section class="mt-4">
+          <h2 class="font-mono-space text-[0.65rem] tracking-widest text-theme-fdd uppercase mb-4 flex items-center gap-2">
+            <span class="w-12 h-px bg-theme-bd"></span>
+            Administrative Command Console
+          </h2>
+          
+          <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+            
+            <a href="/teacher/manage_students" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Students</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Directory</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_attendance" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Attendance</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Record</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_tests" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Exams</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Generator</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_score" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Ledger</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Scores</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_fees" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Invoicing</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Fees Hub</div>
+              </div>
+            </a>
+
+            <a href="/teacher/study_material" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Resources</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Repository</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_batches" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Settings</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Batches</div>
+              </div>
+            </a>
+
+            <a href="/teacher/timetable" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Schedule</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Exams</div>
+              </div>
+            </a>
+
+            <a href="/teacher/reports" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
+              <span class="text-theme-pt text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-theme-fdd uppercase">Analytics</div>
+                <div class="text-xs font-semibold text-theme-fg mt-0.5">Reports Hub</div>
+              </div>
+            </a>
+
+            <a href="/teacher/manage_students?action=add" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left" style="border-color: rgba(52, 211, 153, 0.25); background: var(--gg);">
+              <span class="text-brand-green text-sm">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              </span>
+              <div>
+                <div class="font-mono-space text-[0.55rem] tracking-wider text-brand-green uppercase">Enroll</div>
+                <div class="text-xs font-semibold text-brand-green mt-0.5">Add Student</div>
+              </div>
+            </a>
+
+          </div>
+        </section>
 
       </main>
     </div>
   </div>
+  <script>
+    document.querySelectorAll('[data-width]').forEach(function(el) {
+      el.style.width = el.dataset.width + '%';
+    });
+  </script>
 </body>
 </html>

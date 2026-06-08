@@ -159,7 +159,7 @@
               <div class="stat-icon">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
               </div>
-              <div class="stat-value" style="color: #34d399;">₹<%= totalCollected.toLocaleString() %></div>
+              <div class="stat-value" style="color: var(--gt);">₹<%= totalCollected.toLocaleString() %></div>
               <div class="stat-label">Total Collected</div>
             </div>
 
@@ -168,7 +168,7 @@
               <div class="stat-icon">
                 <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
               </div>
-              <div class="stat-value" style="color: #f87171;">₹<%= totalPending.toLocaleString() %></div>
+              <div class="stat-value" style="color: var(--rt);">₹<%= totalPending.toLocaleString() %></div>
               <div class="stat-label">Total Outstanding</div>
             </div>
           </div>
@@ -191,11 +191,11 @@
               <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-3 font-mono">Filter by Batch:</span>
               <button onclick="filterBatch('All')" 
                 class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono"
-                data-class="All">🗓 All</button>
+                data-class="All">All</button>
               <% batches.forEach((cls) => { %>
               <button onclick="filterBatch('<%= cls.name %>')" 
                 class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono"
-                data-class="<%= cls.name %>">🏫 <%= cls.name %></button>
+                data-class="<%= cls.name %>"><%= cls.name %></button>
               <% }) %>
             </div>
             <% } %>
@@ -205,7 +205,7 @@
           <div id="fees-container">
             <% if (report.length === 0) { %>
             <div class="stat-card p-16 text-center text-theme-fdd">
-              <p class="text-5xl mb-4">💳</p>
+              <p class="text-5xl mb-4"></p>
               <p class="text-xl font-bold">No students or fees recorded</p>
               <p class="text-sm mt-1">Enroll students and record payments to build the grid.</p>
             </div>
@@ -268,11 +268,11 @@
                       <td class="col-summary text-right">
                         <div class="flex flex-col items-end gap-0.5 text-xs">
                           <div class="text-theme-fd font-medium">Due: <span class="font-mono text-theme-fg">₹<%= student.totalDue.toLocaleString() %></span></div>
-                          <div class="text-emerald-400 font-bold">Paid: <span class="font-mono">₹<%= student.totalPaid.toLocaleString() %></span></div>
+                          <div class="text-brand-green font-bold">Paid: <span class="font-mono">₹<%= student.totalPaid.toLocaleString() %></span></div>
                           <% if (student.balance > 0) { %>
-                          <div class="text-red-400 font-extrabold">Bal: <span class="font-mono">₹<%= student.balance.toLocaleString() %></span></div>
+                          <div class="text-brand-red font-extrabold">Bal: <span class="font-mono">₹<%= student.balance.toLocaleString() %></span></div>
                           <% } else { %>
-                          <div class="text-emerald-400 font-extrabold">Clear ✓</div>
+                          <div class="text-brand-green font-extrabold">Clear ✓</div>
                           <% } %>
                         </div>
                       </td>
@@ -284,7 +284,7 @@
 
               <!-- Empty state for search filtering per class -->
               <div class="no-results-msg hidden p-10 text-center text-theme-fdd stat-card border border-t-0 rounded-b-xl">
-                <p class="text-3xl mb-2">🔍</p>
+                <p class="text-3xl mb-2"></p>
                 <p class="font-semibold text-sm">No students match your search in <%= batch.name %>.</p>
               </div>
             </div>
@@ -479,18 +479,18 @@
 
           if (result.success) {
             messageBox.textContent = result.message;
-            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-green-500/10 text-green-400 border border-green-500/20";
+            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20 text-xs font-semibold";
             messageBox.classList.remove("hidden");
             this.reset();
             setTimeout(() => { window.location.reload(); }, 1200);
           } else {
             messageBox.textContent = result.message;
-            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-red-500/10 text-red-400 border border-red-500/20";
+            messageBox.className = "mt-4 p-3 rounded-lg text-center bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20 text-xs font-semibold";
             messageBox.classList.remove("hidden");
           }
         } catch(err) {
           messageBox.textContent = "Network Error: Could not connect to server";
-          messageBox.className = "mt-4 p-3 rounded-lg text-center bg-red-500/10 text-red-400 border border-red-500/20";
+          messageBox.className = "mt-4 p-3 rounded-lg text-center bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20 text-xs font-semibold";
           messageBox.classList.remove("hidden");
         }
       });

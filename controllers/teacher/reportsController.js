@@ -5,6 +5,8 @@ const Test = require("../../models/Test");
 const Attendance = require("../../models/Attendance");
 const StudyMaterial = require("../../models/StudyMaterial");
 const ExamTimetable = require("../../models/ExamTimetable");
+const EmailLog = require("../../models/EmailLog");
+const AuditLog = require("../../models/AuditLog");
 
 exports.renderReports = async (req, res) => {
   try {
@@ -20,6 +22,9 @@ exports.renderReports = async (req, res) => {
       paidFees,
       recentFees,
       allBatches,
+      totalEmails,
+      failedEmails,
+      totalAudits,
     ] = await Promise.all([
       User.countDocuments({ batch: { $in: batchIds } }),
       Batch.countDocuments({ academicYear: req.viewingYear }),
@@ -33,6 +38,9 @@ exports.renderReports = async (req, res) => {
         .limit(8)
         .lean(),
       Batch.find({ academicYear: req.viewingYear }).lean(),
+      EmailLog.countDocuments({ academicYear: req.viewingYear }),
+      EmailLog.countDocuments({ academicYear: req.viewingYear, status: "Failed" }),
+      AuditLog.countDocuments({ academicYear: req.viewingYear }),
     ]);
 
     const totalRevenue = paidFees.reduce((sum, f) => sum + (f.amount || 0), 0);
@@ -114,6 +122,9 @@ exports.renderReports = async (req, res) => {
         totalPresent,
         totalAbsent,
         totalRecords,
+        totalEmails,
+        failedEmails,
+        totalAudits,
       },
       recentFees,
       batchEnrollment,

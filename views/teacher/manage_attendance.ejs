@@ -137,27 +137,27 @@
       transform: translateY(-1px);
     }
     .attendance-status-btn.active[data-status="P"] {
-      background: rgba(52,211,153,0.15) !important;
-      color: rgb(52,211,153) !important;
-      border-color: rgba(52,211,153,0.3) !important;
-      box-shadow: 0 0 10px rgba(52,211,153,0.1);
+      background: var(--gg) !important;
+      color: var(--gt) !important;
+      border-color: rgba(52, 211, 153, 0.25) !important;
+      box-shadow: 0 0 10px var(--gg);
     }
     .attendance-status-btn.active[data-status="A"] {
-      background: rgba(248,113,113,0.15) !important;
-      color: rgb(248,113,113) !important;
-      border-color: rgba(248,113,113,0.3) !important;
-      box-shadow: 0 0 10px rgba(248,113,113,0.1);
+      background: var(--rg) !important;
+      color: var(--rt) !important;
+      border-color: rgba(248, 113, 113, 0.25) !important;
+      box-shadow: 0 0 10px var(--rg);
     }
     .attendance-status-btn.active[data-status="H"] {
-      background: rgba(99,102,241,0.15) !important;
-      color: rgb(129,140,248) !important;
-      border-color: rgba(99,102,241,0.3) !important;
-      box-shadow: 0 0 10px rgba(99,102,241,0.1);
+      background: var(--pg2) !important;
+      color: var(--pt) !important;
+      border-color: rgba(124, 58, 237, 0.25) !important;
+      box-shadow: 0 0 10px var(--pg2);
     }
 
-    .day-present { background: rgba(52,211,153,0.08); color: rgb(52,211,153); border: 1px solid rgba(52,211,153,0.15); }
-    .day-absent { background: rgba(248,113,113,0.08); color: rgb(248,113,113); border: 1px solid rgba(248,113,113,0.15); }
-    .day-holiday { background: rgba(99,102,241,0.08); color: rgb(129,140,248); border: 1px solid rgba(99,102,241,0.15); }
+    .day-present { background: var(--gg) !important; color: var(--gt) !important; border: 1px solid rgba(52, 211, 153, 0.15) !important; }
+    .day-absent { background: var(--rg) !important; color: var(--rt) !important; border: 1px solid rgba(248, 113, 113, 0.15) !important; }
+    .day-holiday { background: var(--pg2) !important; color: var(--pt) !important; border: 1px solid rgba(124, 58, 237, 0.15) !important; }
   </style>
 </head>
 
@@ -177,13 +177,13 @@
             </div>
             <div class="flex gap-3 flex-wrap items-center">
               <button id="send-attendance-emails-btn" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
-                ✉️ Email Monthly Report
+                 Email Monthly Report
               </button>
               <button onclick="window.location.href='/teacher/detailed_attendance'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
-                📊 Detailed Ledger
+                Detailed Ledger
               </button>
               <button onclick="window.location.href='/teacher/bulk_attendance'" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
-                ✏️ Bulk Attendance
+                 Bulk Attendance
               </button>
             </div>
           </header>
@@ -284,7 +284,7 @@
               <!-- Defaulters Card -->
               <div class="stat-card p-6 sm:p-8">
                 <h3 class="text-sm font-bold uppercase tracking-wider font-mono text-theme-pt mb-6 flex items-center gap-2">
-                  <span>⚠️</span> Monthly Defaulter Checker
+                  <span></span> Monthly Defaulter Checker
                 </h3>
 
                 <form id="defaulterForm" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -344,9 +344,9 @@
 
                   <!-- Quick Set Buttons -->
                   <div class="flex gap-2">
-                    <button id="mark-all-p" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-green-500/10 text-green-400 border border-green-500/20 hover:bg-green-500/25 transition-all font-mono uppercase">All P</button>
-                    <button id="mark-all-a" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-red-500/10 text-red-400 border border-red-500/20 hover:bg-red-500/25 transition-all font-mono uppercase">All A</button>
-                    <button id="mark-all-h" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 hover:bg-indigo-500/25 transition-all font-mono uppercase">All H</button>
+                    <button id="mark-all-p" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20 hover:bg-[var(--gt)]/20 transition-all font-mono uppercase">All P</button>
+                    <button id="mark-all-a" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20 hover:bg-[var(--rt)]/20 transition-all font-mono uppercase">All A</button>
+                    <button id="mark-all-h" class="px-3 py-1.5 text-[10px] font-bold rounded-lg bg-[var(--pg2)] text-brand-purple border border-[var(--pt)]/20 hover:bg-[var(--pt)]/20 transition-all font-mono uppercase">All H</button>
                   </div>
                 </div>
 
@@ -418,8 +418,8 @@
         messageBox.textContent = message;
         messageBox.className = `fixed bottom-10 right-10 z-[100] p-3 rounded-lg text-center text-xs font-semibold shadow-lg ${
             type === "success"
-              ? "bg-green-500/10 text-green-400 border border-green-500/20"
-              : "bg-red-500/10 text-red-400 border border-red-500/20"
+              ? "bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20"
+              : "bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20"
           }`;
         messageBox.classList.remove("hidden");
         setTimeout(() => messageBox.classList.add("hidden"), 3500);

@@ -153,9 +153,9 @@
       const studentBatchName = "<%= typeof studentBatchName !== 'undefined' ? studentBatchName : '' %>";
       
       const subjects = typeof getSubjectsForBatch !== 'undefined' ? getSubjectsForBatch(studentBatchName) : [];
-      let tabsHtml = `<button class="tab-pill active" data-subject="overall">📋 Overall</button>`;
+      let tabsHtml = `<button class="tab-pill active" data-subject="overall">Overall</button>`;
       subjects.forEach(sub => {
-        tabsHtml += `<button class="tab-pill" data-subject="${sub}">📚 ${sub}</button>`;
+        tabsHtml += `<button class="tab-pill" data-subject="${sub}">${sub}</button>`;
       });
       tabs.innerHTML = tabsHtml;
 
@@ -193,7 +193,7 @@
         if (!tests.length) {
           scoresArea.innerHTML = `
             <div class="text-center py-16 border-2 border-dashed border-theme-bd rounded-2xl">
-              <div class="text-5xl mb-4 drop-shadow-md">📝</div>
+              <div class="text-5xl mb-4 drop-shadow-md"></div>
               <h3 class="text-lg font-unbounded font-bold text-theme-fg">No Scores Yet</h3>
               <p class="mt-2 text-theme-fdd font-mono text-xs uppercase tracking-widest">No test scores available for <strong class="text-theme-fd">${subject === 'overall' ? 'any subject' : subject}</strong> yet.</p>
             </div>`;

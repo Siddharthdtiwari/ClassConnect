@@ -118,15 +118,13 @@
                   </div>
                   <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Reward Points</span>
-                    <span class="font-black text-green-500 font-mono text-sm">
-                      <%= Math.trunc(student.points || 0) %> ✨
-                    </span>
+                    <span class="font-black text-brand-green font-mono text-sm">
+                      <%= Math.trunc(student.points || 0) %> </span>
                   </div>
                   <div class="flex justify-between items-center">
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Leaderboard Rank</span>
-                    <span class="font-black text-amber-500 font-mono text-sm">
-                      #<%= studentRank %> 🏆
-                    </span>
+                    <span class="font-black text-brand-purple font-mono text-sm">
+                      #<%= studentRank %> </span>
                   </div>
                 </div>
               </div>
@@ -147,11 +145,11 @@
                   <div class="text-xs space-y-1 text-right font-mono">
                     <div class="flex justify-between gap-2">
                       <span class="font-semibold text-theme-fdd">Present:</span>
-                      <span class="font-bold text-green-500"><%= presentDays %></span>
+                       <span class="font-bold text-brand-green"><%= presentDays %></span>
                     </div>
                     <div class="flex justify-between gap-2">
                       <span class="font-semibold text-theme-fdd">Absent:</span>
-                      <span class="font-bold text-red-500"><%= absentDays %></span>
+                       <span class="font-bold text-brand-red"><%= absentDays %></span>
                     </div>
                     <div class="flex justify-between gap-2 pt-1 border-t border-theme-bd">
                       <span class="font-semibold text-theme-fg">Total Days:</span>
@@ -162,7 +160,7 @@
               </div>
 
               <!-- Fee Payments Log -->
-              <div class="stat-card border-t-4 border-green-500">
+              <div class="stat-card border-t-4 border-[var(--gt)]">
                 <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider">
                   Fee Payments Log
                 </h3>
@@ -174,7 +172,7 @@
                           <span class="text-xs font-bold text-theme-fg font-sans">Fee for <%= fee.month %>, <%= fee.year %></span>
                           <span class="text-[10px] text-theme-fdd font-mono mt-1"><%= fee.method %> &middot; <%= new Date(fee.datePaid).toLocaleDateString('en-IN') %></span>
                         </div>
-                        <span class="text-sm font-black text-green-500 font-mono">₹<%= fee.amount.toLocaleString('en-IN') %></span>
+                        <span class="text-sm font-black text-brand-green font-mono">₹<%= fee.amount.toLocaleString('en-IN') %></span>
                       </div>
                     <% }) %> 
                   <% } else { %>
@@ -217,7 +215,7 @@
                           </span>
                         </div>
                         <div class="flex flex-col items-end">
-                          <span class="text-xs font-black font-mono <%= score.percentage > 70 ? 'text-green-500' : 'text-orange-400' %>">
+                          <span class="text-xs font-black font-mono <%= score.percentage > 70 ? 'text-brand-green' : 'text-brand-purple' %>">
                             <%= score.percentage %>%
                           </span>
                           <span class="text-[10px] text-theme-fdd font-mono mt-1">Score: <%= score.score %></span>

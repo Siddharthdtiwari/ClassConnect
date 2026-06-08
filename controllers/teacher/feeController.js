@@ -5,6 +5,7 @@ const { getAvailableAcademicYears, calculateCurrentAcademicYear } = require("../
 const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
 const { ACADEMIC_MONTHS } = require("../../utils/constants");
+const { logAudit } = require("../../utils/auditService");
 exports.renderRevenueReport = async (req, res) => {
   try {
     const months = ACADEMIC_MONTHS;
@@ -345,6 +346,14 @@ exports.processAddFees = async (req, res) => {
       }).catch(err => console.error("Error sending fee receipt email:", err));
     }
 
+    await logAudit({
+      action: "CREATE",
+      entityType: "Fee",
+      entityId: savedFee._id,
+      details: `Collected fee for ${studentObj.studentName} (${month} ${year}): ₹${amount}`,
+      academicYear: req.viewingYear
+    });
+
     res.json({ success: true, message: "Fee added successfully" });
   } catch (err) {
     console.error(err);
@@ -455,6 +464,13 @@ exports.processBulkSave = async (req, res) => {
         }).catch(err => console.error(`[Bulk Save] Error sending email to ${studentObj.email}:`, err));
       }
     }
+
+    await logAudit({
+      action: "BULK_UPDATE",
+      entityType: "Fee",
+      details: `Bulk saved fee records (${updates.length} updates).`,
+      academicYear: req.viewingYear
+    });
 
     res.json({ success: true, message: "Bulk fees updated successfully" });
   } catch (err) {

@@ -120,7 +120,7 @@
           <!-- TOP 3 -->
           <div class="mb-16">
             <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-12 text-center flex items-center justify-center gap-3">
-              <span class="text-3xl drop-shadow-md">🌟</span> Top Performers
+              <span class="text-3xl drop-shadow-md"></span> Top Performers
             </h2>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
               <% topThree.forEach((student, index)=> { 
@@ -128,7 +128,7 @@
                 let sizeClass = index === 0 ? 'w-32 h-32' : 'w-24 h-24'; 
                 let borderColor = index === 0 ? 'border-amber-400' : index === 1 ? 'border-stone-400' : 'border-amber-700'; 
                 let textColor = index === 0 ? 'text-amber-500' : index === 1 ? 'text-stone-400' : 'text-amber-700';
-                let crownIcon = index === 0 ? '👑' : '';
+                let crownIcon = index === 0 ? '' : '';
               %>
               <div class="rank-card <%= rankClass %> rounded-2xl shadow-lg relative overflow-visible p-8 pt-12 flex flex-col items-center mt-4">
                 <div class="absolute -top-7 w-full flex justify-center">
@@ -159,7 +159,7 @@
           <% if(rest.length > 0) { %>
           <div>
             <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-6 flex items-center gap-3 border-b border-theme-bd pb-4">
-              <span class="text-3xl drop-shadow-md">📊</span> All Rankings
+              <span class="text-3xl drop-shadow-md"></span> All Rankings
             </h2>
             <div class="bg-theme-bgc border border-theme-b shadow-sm rounded-2xl overflow-hidden">
               <div class="flex flex-col">

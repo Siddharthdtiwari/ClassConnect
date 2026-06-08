@@ -15,6 +15,8 @@ const feeController = require("../controllers/teacher/feeController");
 const testController = require("../controllers/teacher/testController");
 const resourceController = require("../controllers/teacher/resourceController");
 const reportsController = require("../controllers/teacher/reportsController");
+const communicationController = require("../controllers/teacher/communicationController");
+const auditController = require("../controllers/teacher/auditController");
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -104,5 +106,7 @@ router.delete("/api/materials/:id", ensureDBConnection, requireTeacherLogin, cat
 
 // Reports Hub
 router.get("/teacher/reports", ensureDBConnection, requireTeacherLogin, catchAsync(reportsController.renderReports));
+router.get("/teacher/reports/communications", ensureDBConnection, requireTeacherLogin, catchAsync(communicationController.renderCommunicationLogs));
+router.get("/teacher/reports/audit", ensureDBConnection, requireTeacherLogin, catchAsync(auditController.renderAuditTrail));
 
 module.exports = router;

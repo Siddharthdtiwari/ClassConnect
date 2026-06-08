@@ -25,8 +25,48 @@ h1, h2, h3, h4 {
 /* Brand colors mapped to theme */
 .text-brand-purple { color: var(--pt) !important; }
 .text-brand-lime   { color: var(--lt) !important; }
-.text-green-600, .text-green-800 { color: #34d399 !important; }
-.text-red-600, .text-red-800     { color: #f87171 !important; }
+.text-brand-green  { color: var(--gt) !important; }
+.text-brand-red    { color: var(--rt) !important; }
+.text-green-600, .text-green-800 { color: var(--gt) !important; }
+.text-red-600, .text-red-800     { color: var(--rt) !important; }
+
+/* ── Global Color Harmonization ──
+   Overriding tailwind colors to match brand purple, brand green, and brand red */
+.text-green-400, .text-green-500, .text-green-600, .text-green-700, .text-green-800 {
+  color: var(--gt) !important;
+}
+.text-red-400, .text-red-500, .text-red-600, .text-red-700, .text-red-800 {
+  color: var(--rt) !important;
+}
+.text-purple-400, .text-purple-500, .text-purple-600, .text-purple-700 {
+  color: var(--pt) !important;
+}
+.text-blue-400, .text-blue-500 {
+  color: var(--pt) !important;
+}
+
+.bg-green-500\/10, .bg-green-100 {
+  background: var(--gg) !important;
+}
+.bg-red-500\/10, .bg-red-100, .bg-red-50 {
+  background: var(--rg) !important;
+}
+.bg-purple-500\/10, .bg-purple-50 {
+  background: rgba(124, 58, 237, 0.08) !important;
+}
+.bg-purple-700, .bg-purple-600 {
+  background: var(--p) !important;
+}
+
+.border-green-500\/20, .border-green-200 {
+  border-color: rgba(52, 211, 153, 0.25) !important;
+}
+.border-red-500\/20, .border-red-200 {
+  border-color: rgba(248, 113, 113, 0.25) !important;
+}
+.border-purple-500\/20 {
+  border-color: rgba(124, 58, 237, 0.15) !important;
+}
 
 /* ── Background Overrides ──
    Kill all hardcoded whites and grays */
@@ -408,3 +448,25 @@ a.text-brand-purple:hover, a.text-sm.font-medium:hover {
   cursor: pointer; display: inline-block;
 }
 .add-row-btn:hover { text-decoration: underline; }
+
+/* ── Smooth Theme Transition ──
+   When [data-theme] switches, all CSS-variable-driven colours
+   animate gently instead of snapping. Applied on <html> so it
+   covers every element without needing individual transitions. */
+html {
+  transition:
+    background-color 0.35s ease,
+    color 0.35s ease;
+}
+*, *::before, *::after {
+  transition-property: background-color, color, border-color, box-shadow, fill, stroke;
+  transition-duration: 0.3s;
+  transition-timing-function: ease;
+}
+/* But don't override elements that have their own specific transitions */
+[style*="transition"], .glass-card, .sb-link, .btn-primary, .btn-outline,
+.stat-card, .data-table tbody tr, button {
+  /* Keep their own transitions by not overriding */
+  transition-property: background-color, color, border-color, box-shadow, fill, stroke,
+    transform, opacity, width, padding, backdrop-filter;
+}

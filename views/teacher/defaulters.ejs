@@ -90,9 +90,9 @@
                   <td class="font-mono text-theme-pt text-xs"><%= d.studentId %></td>
                   <td class="font-bold text-theme-fdd text-xs uppercase tracking-wider"><%= d.standard %></td>
                   <td class="text-theme-fd text-xs font-medium"><%= d.mobileNo %></td>
-                  <td class="text-center text-green-500 font-black font-mono"><%= d.present %></td>
-                  <td class="text-center text-red-500 font-black font-mono"><%= d.absent %></td>
-                  <td class="text-center font-black font-mono <%= danger ? 'text-red-500' : 'text-orange-400' %>">
+                  <td class="text-center text-brand-green font-black font-mono"><%= d.present %></td>
+                  <td class="text-center text-brand-red font-black font-mono"><%= d.absent %></td>
+                  <td class="text-center font-black font-mono <%= danger ? 'text-brand-red' : 'text-brand-purple' %>">
                     <%= percentage %>%
                   </td>
                 </tr>
@@ -103,7 +103,7 @@
       </div>
     <% } else { %>
       <div class="stat-card p-16 text-center text-theme-fdd">
-        <span class="text-5xl mb-4 block">🎉</span>
+        <span class="text-5xl mb-4 block"></span>
         <h3 class="text-xl font-bold mb-1">Excellent Attendance!</h3>
         <p class="text-sm mt-1">No students fell below the 75% attendance threshold for <%= printMonthName %> <%= year %>.</p>
       </div>

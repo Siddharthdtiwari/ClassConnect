@@ -7,6 +7,7 @@ const ExamTimetable = require("../../models/ExamTimetable");
 const mongoose = require("mongoose");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { uploadToCloudinary } = require("../../utils/upload");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderManageTests = async (req, res) => {
   try {
@@ -46,6 +47,13 @@ exports.processDeleteTest = async (req, res) => {
   try {
     await Test.findByIdAndDelete(req.params.id);
     await Score.deleteMany({ testId: req.params.id });
+    await logAudit({
+      action: "DELETE",
+      entityType: "Test",
+      entityId: req.params.id,
+      details: `Deleted test`,
+      academicYear: req.viewingYear
+    });
     res.redirect("/teacher/manage_tests");
   } catch (err) {
     console.error("Delete test error:", err);
@@ -139,6 +147,12 @@ exports.apiSaveScores = async (req, res) => {
 
     if (operations.length > 0) {
       await Score.bulkWrite(operations);
+      await logAudit({
+        action: "BULK_UPDATE",
+        entityType: "Score",
+        details: `Saved scores for test: ${test.testName}`,
+        academicYear: req.viewingYear
+      });
     }
 
     res.json({ success: true, message: "Scores saved successfully!" });
@@ -297,6 +311,12 @@ exports.processTimetableBulk = async (req, res) => {
 
     if (operations.length > 0) {
       await ExamTimetable.insertMany(operations);
+      await logAudit({
+        action: "CREATE",
+        entityType: "Test",
+        details: `Scheduled ${operations.length} exams for ${batch.name}`,
+        academicYear: req.viewingYear
+      });
       req.session.success = `Successfully scheduled ${operations.length} exams for ${batch.name}!`;
     } else {
       req.session.error = "No valid exam rows to add.";
@@ -340,6 +360,13 @@ exports.processTimetableEdit = async (req, res) => {
       }
     );
 
+    await logAudit({
+      action: "UPDATE",
+      entityType: "Test",
+      details: `Updated exam timetable entry for ${subject}`,
+      academicYear: req.viewingYear
+    });
+
     req.session.success = "Successfully updated exam entry!";
     res.redirect("/teacher/timetable");
   } catch (err) {
@@ -353,6 +380,12 @@ exports.processTimetableDelete = async (req, res) => {
   try {
     const examIds = req.params.id.split(",");
     await ExamTimetable.deleteMany({ _id: { $in: examIds } });
+    await logAudit({
+      action: "DELETE",
+      entityType: "Test",
+      details: `Deleted ${examIds.length} exam timetable entries`,
+      academicYear: req.viewingYear
+    });
     req.session.success = "Successfully deleted exam entry!";
     res.redirect("/teacher/timetable");
   } catch (err) {
@@ -389,6 +422,13 @@ exports.processAddTest = async (req, res) => {
     });
 
     await newTest.save();
+    await logAudit({
+      action: "CREATE",
+      entityType: "Test",
+      entityId: newTest._id,
+      details: `Created new test: ${testName}`,
+      academicYear: req.viewingYear
+    });
     res.json({ success: true, message: "Test added successfully!" });
   } catch (err) {
     console.error("Add test process error:", err);
@@ -706,6 +746,14 @@ exports.processEditTest = async (req, res) => {
     test.questionPaper = questionPaperUrl;
 
     await test.save(); // Triggers save hooks for score percentage recalculation
+
+    await logAudit({
+      action: "UPDATE",
+      entityType: "Test",
+      entityId: test._id,
+      details: `Updated test: ${testName}`,
+      academicYear: req.viewingYear
+    });
 
     res.json({ success: true, message: "Test updated successfully!" });
   } catch (err) {

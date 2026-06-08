@@ -241,7 +241,55 @@
     .sb.open .sb-user { padding: 10px 14px; }
     .sb-avatar { width: 28px; height: 28px; font-size: 0.75rem; }
   }
+
+  /* ── Theme Toggle ── */
+  .sb-theme-row {
+    padding: 6px 10px;
+    border-top: 1px solid var(--bd);
+    flex-shrink: 0;
+  }
+  .sb-theme-btn {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    cursor: pointer;
+    color: var(--fdd);
+    transition: all 0.2s ease;
+    justify-content: center;
+  }
+  .sb.open .sb-theme-btn { justify-content: flex-start; padding: 10px 14px; }
+  .sb-theme-btn:hover { background: var(--bgch); color: var(--pt); }
+  .sb-theme-icon { width: 20px; height: 20px; flex-shrink: 0; }
+  /* Sun shown only in dark mode, Moon shown only in light mode */
+  .sb-theme-btn .theme-icon-sun  { display: none; }
+  .sb-theme-btn .theme-icon-moon { display: block; }
+  [data-theme="dark"] .sb-theme-btn .theme-icon-sun  { display: block; }
+  [data-theme="dark"] .sb-theme-btn .theme-icon-moon { display: none; }
+  .sb-theme-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 0.68rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    overflow: hidden;
+    width: 0; opacity: 0;
+    transition: opacity 0.25s, width 0.35s;
+  }
+  .sb.open .sb-theme-label { width: 120px; opacity: 1; }
+  /* Label text: show "Dark Mode" by default, "Light Mode" in dark theme */
+  .theme-label-dark  { display: none; }
+  .theme-label-light { display: inline; }
+  [data-theme="dark"] .theme-label-dark  { display: inline; }
+  [data-theme="dark"] .theme-label-light { display: none; }
+
 </style>
+
 
 <aside id="sb" class="sb">
 
@@ -272,7 +320,30 @@
     <% }) %>
   </nav>
 
+  <!-- Theme Toggle -->
+  <div class="sb-theme-row">
+    <button class="sb-theme-btn" title="Toggle theme" id="sb-theme-toggle">
+      <!-- Sun icon — shown when in dark mode (switch to light) -->
+      <svg class="sb-theme-icon theme-icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/>
+        <line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/>
+        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+        <line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/>
+        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+      </svg>
+      <!-- Moon icon — shown when in light mode (switch to dark) -->
+      <svg class="sb-theme-icon theme-icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+      </svg>
+      <span class="sb-theme-label">
+        <span class="theme-label-light">Dark Mode</span>
+        <span class="theme-label-dark">Light Mode</span>
+      </span>
+    </button>
+  </div>
+
   <!-- User -->
+
   <div class="sb-footer">
     <div id="sb-user" class="sb-user" title="Profile & Settings">
       <div class="sb-avatar">
@@ -326,6 +397,26 @@
   }
 
   document.addEventListener('DOMContentLoaded', () => {
+    /* ── Theme toggle: wired via addEventListener for reliability ── */
+    var themeBtn = document.getElementById('sb-theme-toggle');
+    if (themeBtn) {
+      themeBtn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        var html = document.documentElement;
+        var current = html.getAttribute('data-theme') || 'light';
+        var next = current === 'dark' ? 'light' : 'dark';
+        // 1. Set data-theme attribute (triggers CSS variable overrides)
+        html.setAttribute('data-theme', next);
+        // 2. Toggle class for Tailwind darkMode: 'class' compatibility
+        html.classList.toggle('dark', next === 'dark');
+        // 3. Directly update body background/color as final fallback
+        document.body.style.background = next === 'dark' ? '#05050a' : '#F5F1FC';
+        document.body.style.color = next === 'dark' ? '#F0EBE0' : '#0C0C0C';
+        // 4. Persist
+        try { localStorage.setItem('classconnect_theme', next); } catch (err) {}
+      });
+    }
+
     const sb = document.getElementById('sb');
     const pin = document.getElementById('sb-pin');
     const pinIcon = document.getElementById('sb-pin-icon');
@@ -372,3 +463,4 @@
     });
   });
 </script>
+

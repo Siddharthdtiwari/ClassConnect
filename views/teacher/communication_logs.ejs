@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Emails & Notifications Log | Tuition Hub</title>
+  <%- include('../partials/background') %>
+  <style>
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .status-sent {
+      background: var(--gg);
+      color: var(--gt);
+      border: 1px solid rgba(52, 211, 153, 0.2);
+    }
+    .status-failed {
+      background: var(--rg);
+      color: var(--rt);
+      border: 1px solid rgba(248, 113, 113, 0.2);
+    }
+  </style>
+</head>
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden;">
+      <main style="flex: 1; overflow-y: auto;">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+          
+          <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
+                <a href="/teacher/reports" class="text-theme-fdd hover:text-theme-pt transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <h1 class="dash-greeting">Email <span style="color: var(--pt);">Logs</span></h1>
+              </div>
+              <p class="dash-sub">Tracking Outbound Communications & Notifications</p>
+            </div>
+            
+            <form action="/teacher/reports/communications" method="GET" class="flex gap-3">
+              <select name="type" class="bg-theme-bgc text-theme-fg border border-theme-b rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-theme-p">
+                <option value="">All Types</option>
+                <option value="Fee Receipt" <%= queryType === 'Fee Receipt' ? 'selected' : '' %>>Fee Receipt</option>
+                <option value="Test Score" <%= queryType === 'Test Score' ? 'selected' : '' %>>Test Score</option>
+                <option value="Attendance Report" <%= queryType === 'Attendance Report' ? 'selected' : '' %>>Attendance Report</option>
+              </select>
+              <button type="submit" class="btn-solid-purple px-4 py-2">Filter</button>
+            </form>
+          </header>
+
+          <div class="stat-card p-0 overflow-hidden border border-theme-bd">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-theme-bg2 border-b border-theme-bd text-[10px] uppercase font-mono tracking-widest text-theme-fdd">
+                    <th class="p-4 font-bold">Date & Time</th>
+                    <th class="p-4 font-bold">Recipient</th>
+                    <th class="p-4 font-bold">Type</th>
+                    <th class="p-4 font-bold">Subject</th>
+                    <th class="p-4 font-bold text-center">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="text-sm font-semibold divide-y divide-theme-bd">
+                  <% if (logs.length === 0) { %>
+                    <tr>
+                      <td colspan="5" class="p-8 text-center text-theme-fdd">No emails found for this period.</td>
+                    </tr>
+                  <% } else { %>
+                    <% logs.forEach(log => { %>
+                      <tr class="hover:bg-theme-bgch transition-colors group">
+                        <td class="p-4">
+                          <div class="flex flex-col">
+                            <span class="text-theme-fg"><%= new Date(log.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %></span>
+                            <span class="text-xs text-theme-fdd font-mono"><%= new Date(log.createdAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'}) %></span>
+                          </div>
+                        </td>
+                        <td class="p-4">
+                          <div class="flex flex-col">
+                            <% if (log.studentRef) { %>
+                              <span class="text-theme-fg"><%= log.studentRef.studentName %></span>
+                            <% } %>
+                            <span class="text-xs text-theme-fdd truncate max-w-[200px]" title="<%= log.to %>"><%= log.to %></span>
+                          </div>
+                        </td>
+                        <td class="p-4">
+                          <span class="text-xs px-2 py-1 bg-theme-bg2 border border-theme-bd rounded text-theme-pt font-bold uppercase tracking-wider font-mono">
+                            <%= log.emailType %>
+                          </span>
+                        </td>
+                        <td class="p-4 text-theme-fg truncate max-w-[250px]" title="<%= log.subject %>">
+                          <%= log.subject %>
+                        </td>
+                        <td class="p-4 text-center">
+                          <span class="status-badge <%= log.status === 'Sent' ? 'status-sent' : 'status-failed' %>" title="<%= log.errorMessage || 'Sent successfully' %>">
+                            <%= log.status === 'Sent' ? '✓ Sent' : '✗ Failed' %>
+                          </span>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

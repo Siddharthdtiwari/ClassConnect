@@ -5,27 +5,33 @@
   --p: #7c3aed; --pm: #5d3a9b;
   --pg: rgba(124,58,237,.32); --pg2: rgba(93,58,155,.18);
   --l: #bde045; --lg: rgba(189,224,69,.22);
+  --g: #34d399; --gg: rgba(52,211,153,.12);
+  --r: #f87171; --rg: rgba(248,113,113,.12);
   --ease: cubic-bezier(.34,1.56,.64,1);
   --trans: background .4s,color .4s,border-color .3s,box-shadow .3s;
 }
 
-/* We will default to light theme for the student portal, but support data-theme="dark" */
-[data-theme="dark"] {
-  --bg:#05050a; --bg2:#0b0b14; --bgc:rgba(255,255,255,.03); --bgch:rgba(124,58,237,.07);
-  --fg:#F0EBE0; --fd:rgba(240,235,224,.75); --fdd:rgba(240,235,224,.55);
-  --b:rgba(240,235,224,.09); --bd:rgba(240,235,224,.055);
-  --nav:rgba(5,5,10,.25); --cop:.55;
-  --pt:var(--p); --lt:var(--l);
-  --tks:rgba(240,235,224,.18);
-}
+/* Light is the default — applied via :root (always) and [data-theme="light"] */
 :root, [data-theme="light"] {
   --bg:#F5F1FC; --bg2:#EDE8F5; --bgc:rgba(255,255,255,.8); --bgch:rgba(255,255,255,.98);
   --fg:#0C0C0C; --fd:rgba(12,12,12,.80); --fdd:rgba(12,12,12,.60);
   --b:rgba(12,12,12,.12); --bd:rgba(12,12,12,.07);
   --nav:rgba(245,241,252,.8); --cop:.12;
   --pt:#5d3a9b; --lt:#6e8e00;
+  --gt:#059669; --rt:#dc2626;
   --tks:rgba(100,90,90,.16);
 }
+/* Dark overrides when data-theme="dark" — comes AFTER light so it wins on equal specificity */
+[data-theme="dark"] {
+  --bg:#05050a; --bg2:#0b0b14; --bgc:rgba(255,255,255,.03); --bgch:rgba(124,58,237,.07);
+  --fg:#F0EBE0; --fd:rgba(240,235,224,.75); --fdd:rgba(240,235,224,.55);
+  --b:rgba(240,235,224,.09); --bd:rgba(240,235,224,.055);
+  --nav:rgba(5,5,10,.25); --cop:.55;
+  --pt:var(--p); --lt:var(--l);
+  --gt:var(--g); --rt:var(--r);
+  --tks:rgba(240,235,224,.18);
+}
+
 
 /* ── BASE ── */
 body {

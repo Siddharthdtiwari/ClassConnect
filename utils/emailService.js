@@ -2,6 +2,7 @@ const nodemailer = require("nodemailer");
 require("dotenv").config();
 const path = require("path");
 const { buildReceiptPDFBuffer } = require("./pdfUtils");
+const EmailLog = require("../models/EmailLog");
 
 const transporter = nodemailer.createTransport({
   service: "gmail",
@@ -11,8 +12,10 @@ const transporter = nodemailer.createTransport({
   },
 });
 
-const sendEmail = async (to, subject, htmlContent, attachments = []) => {
+const sendEmail = async (to, subject, htmlContent, attachments = [], logOptions = {}) => {
   if (!to) return; // Skip if no email is provided
+  let status = "Sent";
+  let errorMessage = "";
   try {
     await transporter.sendMail({
       from: `"Tuition Hub Education Centre" <${process.env.CONTACT_EMAIL_USER}>`,
@@ -23,7 +26,25 @@ const sendEmail = async (to, subject, htmlContent, attachments = []) => {
     });
     console.log(`Email sent successfully to ${to}`);
   } catch (error) {
+    status = "Failed";
+    errorMessage = error.message || String(error);
     console.error(`Failed to send email to ${to}:`, error);
+  }
+
+  // Save to EmailLog
+  try {
+    const { emailType = "General", studentRef, academicYear } = logOptions;
+    await EmailLog.create({
+      to,
+      subject,
+      emailType,
+      status,
+      errorMessage,
+      studentRef,
+      academicYear
+    });
+  } catch (logErr) {
+    console.error("Failed to save email log:", logErr);
   }
 };
 
@@ -88,10 +109,15 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, re
     }
   }
 
-  await sendEmail(studentEmail, subject, htmlContent, attachments);
+  const logOptions = {
+    emailType: "Fee Receipt",
+    studentRef: receiptData && receiptData.student ? receiptData.student._id : undefined,
+    academicYear: receiptData && receiptData.fee ? receiptData.fee.year : undefined // Assuming fee year is academic year string or similar
+  };
+  await sendEmail(studentEmail, subject, htmlContent, attachments, logOptions);
 };
 
-const sendTestMarks = async (studentEmail, studentName, testName, subjectName, score, maxMarks, percentage) => {
+const sendTestMarks = async (studentEmail, studentName, testName, subjectName, score, maxMarks, percentage, logMeta = {}) => {
   const emailSubject = `Test Results: ${testName} - Tuition Hub Education Centre`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -123,10 +149,15 @@ const sendTestMarks = async (studentEmail, studentName, testName, subjectName, s
       </div>
     </div>
   `;
-  await sendEmail(studentEmail, emailSubject, htmlContent);
+  const logOptions = {
+    emailType: "Test Score",
+    studentRef: logMeta.studentRef,
+    academicYear: logMeta.academicYear
+  };
+  await sendEmail(studentEmail, emailSubject, htmlContent, [], logOptions);
 };
 
-const sendMonthEndAttendance = async (studentEmail, studentName, month, year, presentDays, absentDays, percentage) => {
+const sendMonthEndAttendance = async (studentEmail, studentName, month, year, presentDays, absentDays, percentage, logMeta = {}) => {
   const emailSubject = `Monthly Attendance Report: ${month} ${year} - Tuition Hub Education Centre`;
   const htmlContent = `
     <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
@@ -157,7 +188,12 @@ const sendMonthEndAttendance = async (studentEmail, studentName, month, year, pr
       </div>
     </div>
   `;
-  await sendEmail(studentEmail, emailSubject, htmlContent);
+  const logOptions = {
+    emailType: "Attendance Report",
+    studentRef: logMeta.studentRef,
+    academicYear: logMeta.academicYear || year
+  };
+  await sendEmail(studentEmail, emailSubject, htmlContent, [], logOptions);
 };
 
 const sendContactConfirmation = async (toEmail, toName, message) => {
@@ -197,7 +233,8 @@ const sendContactConfirmation = async (toEmail, toName, message) => {
     path: require('path').join(__dirname, '..', 'public', 'images', 'logo.png'),
     cid: 'tuitionhublogo'
   }];
-  await sendEmail(toEmail, subject, htmlContent, attachments);
+  const logOptions = { emailType: "Contact Confirmation" };
+  await sendEmail(toEmail, subject, htmlContent, attachments, logOptions);
 };
 
 module.exports = {

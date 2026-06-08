@@ -274,10 +274,10 @@
             tbody.innerHTML += `
               <tr class="border-b border-theme-bd">
                 <td class="text-theme-fdd text-xs font-mono">${index + 1}</td>
-                <td class="font-bold text-theme-fg">${row.studentName || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
-                <td class="font-mono text-xs text-theme-pt font-bold">${row.studentId || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
-                <td class="text-xs text-theme-fd">${row.batchId || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
-                <td class="text-xs text-theme-fd">${row.mobileNo || '<span class="text-red-500 font-semibold">Missing</span>'}</td>
+                <td class="font-bold text-theme-fg">${row.studentName || '<span class="text-brand-red font-semibold">Missing</span>'}</td>
+                <td class="font-mono text-xs text-theme-pt font-bold">${row.studentId || '<span class="text-brand-red font-semibold">Missing</span>'}</td>
+                <td class="text-xs text-theme-fd">${row.batchId || '<span class="text-brand-red font-semibold">Missing</span>'}</td>
+                <td class="text-xs text-theme-fd">${row.mobileNo || '<span class="text-brand-red font-semibold">Missing</span>'}</td>
                 <td class="text-theme-fg font-semibold">&#8377;${row.monthlyFee || '0'}</td>
                 <td class="text-xs text-theme-fdd">${row.email || '—'}</td>
               </tr>
@@ -389,10 +389,10 @@
         const result = await res.json();
         
         if (result.success) {
-          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-green-600 block mt-4';
+          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-brand-green block mt-4';
           let msg = `Successfully processed ${result.inserted} student(s)!`;
           if(result.errors && result.errors.length > 0) {
-            msg += `<br><span class="text-red-500 mt-2 block">Found ${result.errors.length} skipped row(s):<br>${result.errors.join('<br>')}</span>`;
+            msg += `<br><span class="text-brand-red mt-2 block">Found ${result.errors.length} skipped row(s):<br>${result.errors.join('<br>')}</span>`;
             status.innerHTML = msg;
             btn.innerText = 'Completed with errors';
           } else {
@@ -401,13 +401,13 @@
             setTimeout(() => { window.location.reload(); }, 1500);
           }
         } else {
-          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-red-500 block mt-2';
+          status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-brand-red block mt-2';
           status.innerHTML = 'Error: ' + (result.error || 'Unknown error');
           btn.disabled = false;
           btn.innerHTML = originalBtnText;
         }
       } catch (e) {
-        status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-red-500 block mt-2';
+        status.className = 'text-xs font-bold font-mono uppercase tracking-wider text-brand-red block mt-2';
         status.innerHTML = 'Network Error: ' + e.message;
         btn.disabled = false;
         btn.innerHTML = originalBtnText;

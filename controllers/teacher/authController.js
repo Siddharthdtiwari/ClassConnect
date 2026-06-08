@@ -3,6 +3,7 @@ const Batch = require("../../models/Batch");
 const User = require("../../models/User");
 const Test = require("../../models/Test");
 const Fee = require("../../models/Fee");
+const AuditLog = require("../../models/AuditLog");
 const bcrypt = require("bcrypt");
 
 exports.renderLogin = (req, res) => {
@@ -40,24 +41,61 @@ exports.renderDashboard = async (req, res) => {
     const academicYear = req.viewingYear;
 
     const yearBatches = await Batch.find({ academicYear }).distinct('_id');
-    const [totalStudents, upcomingTests, revenueAggregation] = await Promise.all([
+    const [
+      totalStudents,
+      upcomingTestsCount,
+      revenueAggregation,
+      upcomingTests,
+      recentPayments,
+      recentAudits,
+      activeBatches,
+    ] = await Promise.all([
       User.countDocuments({ batch: { $in: yearBatches } }),
       Test.countDocuments({ batch: { $in: yearBatches }, testDate: { $gte: new Date() } }),
       Fee.aggregate([
         { $match: { batch: { $in: yearBatches }, status: 'Paid' } },
         { $group: { _id: null, total: { $sum: '$amount' } } }
-      ])
+      ]),
+      Test.find({ batch: { $in: yearBatches }, testDate: { $gte: new Date() } })
+        .populate('batch')
+        .sort({ testDate: 1 })
+        .limit(3)
+        .lean(),
+      Fee.find({ batch: { $in: yearBatches }, status: 'Paid' })
+        .populate('batch')
+        .sort({ datePaid: -1 })
+        .limit(4)
+        .lean(),
+      AuditLog.find({ academicYear })
+        .sort({ createdAt: -1 })
+        .limit(4)
+        .lean(),
+      Batch.find({ academicYear, isActive: true }).lean(),
     ]);
 
     const totalRevenue = revenueAggregation.length > 0 ? revenueAggregation[0].total : 0;
+
+    // Calculate dynamic student count per active batch
+    const batchCounts = await Promise.all(
+      activeBatches.map(async (b) => {
+        const count = await User.countDocuments({ batch: b._id });
+        return { name: b.name, count };
+      })
+    );
+    batchCounts.sort((a, b) => b.count - a.count);
 
     res.render("teacher/dashboard", {
       teacher,
       metrics: {
         totalStudents,
-        upcomingTests,
+        upcomingTests: upcomingTestsCount,
         totalRevenue
-      }
+      },
+      upcomingTests,
+      recentPayments,
+      recentAudits,
+      batchCounts,
+      viewingYear: academicYear,
     });
   } catch (err) {
     console.error("Teacher dashboard error:", err);

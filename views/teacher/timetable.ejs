@@ -92,11 +92,11 @@
     }
 
     /* Timetable row badges */
-    .badge-ut1 { background: rgba(59, 130, 246, 0.08) !important; color: rgb(96, 165, 250) !important; border: 1px solid rgba(59, 130, 246, 0.15); }
-    .badge-ut2 { background: rgba(139, 92, 246, 0.08) !important; color: rgb(167, 139, 250) !important; border: 1px solid rgba(139, 92, 246, 0.15); }
-    .badge-sem1 { background: rgba(16, 185, 129, 0.08) !important; color: rgb(52, 211, 153) !important; border: 1px solid rgba(16, 185, 129, 0.15); }
-    .badge-sem2 { background: rgba(245, 158, 11, 0.08) !important; color: rgb(251, 191, 36) !important; border: 1px solid rgba(245, 158, 11, 0.15); }
-    .badge-ct { background: rgba(239, 68, 68, 0.08) !important; color: rgb(248, 113, 113) !important; border: 1px solid rgba(239, 68, 68, 0.15); }
+    .badge-ut1 { background: rgba(124, 58, 237, 0.08) !important; color: var(--pt) !important; border: 1px solid rgba(124, 58, 237, 0.15); }
+    .badge-ut2 { background: rgba(124, 58, 237, 0.12) !important; color: var(--pt) !important; border: 1px solid rgba(124, 58, 237, 0.20); }
+    .badge-sem1 { background: rgba(52, 211, 153, 0.08) !important; color: var(--gt) !important; border: 1px solid rgba(52, 211, 153, 0.15); }
+    .badge-sem2 { background: rgba(189, 224, 69, 0.08) !important; color: var(--lt) !important; border: 1px solid rgba(189, 224, 69, 0.15); }
+    .badge-ct { background: rgba(248, 113, 113, 0.08) !important; color: var(--rt) !important; border: 1px solid rgba(248, 113, 113, 0.15); }
   </style>
 </head>
 
@@ -136,12 +136,12 @@
 
           <!-- Toast Notifications -->
           <% if (success) { %>
-          <div id="toast-success" class="mb-6 flex items-center gap-3 bg-green-500/10 border border-green-500/20 text-green-400 rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
+          <div id="toast-success" class="mb-6 flex items-center gap-3 bg-[var(--gg)] border border-[var(--gt)]/20 text-brand-green rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
             <span>✓</span> <%= success %>
           </div>
           <% } %>
           <% if (error) { %>
-          <div id="toast-error" class="mb-6 flex items-center gap-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
+          <div id="toast-error" class="mb-6 flex items-center gap-3 bg-[var(--rg)] border border-[var(--rt)]/20 text-brand-red rounded-xl px-5 py-3 shadow-md text-xs font-semibold">
             <span>✗</span> <%= error %>
           </div>
           <% } %>
@@ -205,7 +205,7 @@
             <% ['All','Unit Test 1','Unit Test 2','Semester 1','Semester 2','Class Test'].forEach((t, i) => { %>
             <button onclick="filterExams('<%= t %>')" 
               class="tab-filter border transition-all <%= i===0 ? 'bg-purple-500/10 text-theme-pt border-purple-500/20' : 'bg-transparent text-theme-fdd border-theme-b hover:bg-theme-bgch hover:text-theme-fg' %>"
-              data-type="<%= t %>"><%= t === 'All' ? '🗓 All Exams' : t %></button>
+              data-type="<%= t %>"><%= t === 'All' ? 'All Exams' : t %></button>
             <% }) %>
           </div>
 
@@ -222,7 +222,7 @@
 
             <% if (standards.length === 0) { %>
             <div class="p-12 text-center text-theme-fdd border border-theme-b rounded-xl bg-theme-bgc/20">
-              <p class="text-3xl mb-2">📋</p>
+              <p class="text-3xl mb-2"></p>
               <p class="font-semibold text-sm">No Exam Entries Yet</p>
               <p class="text-xs mt-1 text-theme-fdd/70">Click "+ Add Exams" in the header to schedule portions.</p>
             </div>
@@ -264,8 +264,8 @@
                         </td>
                         <td class="px-4 py-3 text-theme-fdd text-xs font-semibold"><%= group.chapters %></td>
                         <td class="px-4 py-3">
-                          <span class="text-[10px] font-bold uppercase tracking-wider <%= group.isTeacherAdded ? 'text-purple-400' : 'text-blue-400' %>">
-                            <%= group.isTeacherAdded ? '👨‍🏫 Teacher' : '🎓 ' + group.studentNames.join(', ') %>
+                          <span class="text-[10px] font-bold uppercase tracking-wider <%= group.isTeacherAdded ? 'text-brand-purple' : 'text-brand-lime' %>">
+                            <%= group.isTeacherAdded ? 'Teacher' : '' + group.studentNames.join(', ') %>
                           </span>
                           <% if (group.ids.length > 1) { %>
                           <div class="mt-1"><span class="text-[9px] bg-theme-bg2 text-theme-fdd px-1.5 py-0.5 rounded-md font-bold font-mono"><%= group.ids.length %> students</span></div>
@@ -280,10 +280,10 @@
                               data-subject="<%= group.subject %>"
                               data-date="<%= inputDate %>"
                               data-chapters="<%= group.chapters %>"
-                              class="btn-outline-purple py-1 px-2.5 text-[9px] font-bold uppercase tracking-wider font-mono">✏️ Edit</button>
+                              class="btn-outline-purple py-1 px-2.5 text-[9px] font-bold uppercase tracking-wider font-mono"> Edit</button>
                             <form method="POST" action="/teacher/timetable/delete/<%= group.ids.join(',') %>" onsubmit="return confirm('Delete this exam layout?')">
                               <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
-                              <button type="submit" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold font-mono uppercase text-red-400 bg-red-500/10 hover:bg-red-500/20 transition-all border border-red-500/20">🗑️</button>
+                              <button type="submit" class="flex-shrink-0 inline-flex items-center justify-center gap-1 px-2 py-1 rounded-lg text-[9px] font-bold font-mono uppercase text-brand-red bg-[var(--rg)] border border-[var(--rt)]/20 hover:bg-[var(--rt)]/20 transition-all"></button>
                             </form>
                           </div>
                         </td>
@@ -311,7 +311,7 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-2xl">📅</span>
+              <span class="text-2xl"></span>
               <h2 class="text-xl font-extrabold tracking-tight">Schedule Exams</h2>
             </div>
             <p class="text-purple-200 text-xs font-semibold">Add multiple subjects at once for any batch &amp; exam type</p>
@@ -340,7 +340,7 @@
           <div class="mb-6">
             <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-3 font-mono">② Exam Type</label>
             <div class="flex flex-wrap gap-2" id="etype-pills">
-              <% [['Unit Test 1','🧪'],['Unit Test 2','🧫'],['Semester 1','📘'],['Semester 2','📗'],['Class Test','✍️']].forEach(([t,icon]) => { %>
+              <% [['Unit Test 1',''],['Unit Test 2',''],['Semester 1',''],['Semester 2',''],['Class Test','']].forEach(([t,icon]) => { %>
               <button type="button" class="etype-pill" data-val="<%= t %>" onclick="selectEtype(this)"><%= icon %> <%= t %></button>
               <% }) %>
             </div>
@@ -368,7 +368,7 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-xl">✏️</span>
+              <span class="text-xl"></span>
               <h2 class="text-lg font-extrabold tracking-tight">Edit Exam Entry</h2>
             </div>
             <p class="text-purple-200 text-xs font-semibold">Modify portions or exam details</p>
@@ -473,7 +473,7 @@
         </select>
         <input name="dates[]" type="date" required class="srow-input py-1.5 focus:ring-0" />
         <input name="chapters[]" type="text" placeholder="Ch. 1, 2…" class="srow-input py-1.5 focus:ring-0" />
-        <button type="button" onclick="removeRow(this)" class="text-red-400 hover:text-red-500 text-xl font-bold leading-none">&times;</button>`;
+        <button type="button" onclick="removeRow(this)" class="text-brand-red hover:opacity-80 text-xl font-bold leading-none">&times;</button>`;
       rows.appendChild(div);
       renumberRows();
     }

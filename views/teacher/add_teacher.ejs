@@ -106,18 +106,11 @@
 
       function showMessage(message, type = "success") {
         messageBox.textContent = message;
-        messageBox.classList.remove(
-          "hidden",
-          "bg-red-100",
-          "text-red-700",
-          "bg-green-100",
-          "text-green-700"
-        );
-        if (type === "success") {
-          messageBox.classList.add("bg-green-100", "text-green-700");
-        } else if (type === "error") {
-          messageBox.classList.add("bg-red-100", "text-red-700");
-        }
+        messageBox.className = `mt-6 p-4 rounded-xl text-center text-xs font-semibold ${
+          type === "success"
+            ? "bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20"
+            : "bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20"
+        }`;
         messageBox.classList.remove("hidden");
         setTimeout(() => {
           messageBox.classList.add("hidden");

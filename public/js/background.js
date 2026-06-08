@@ -1,3 +1,27 @@
+/* ─── Theme Management ─────────────────────────────── */
+(function () {
+  var KEY = 'classconnect_theme';
+
+  function getTheme() {
+    return localStorage.getItem(KEY) || 'light';
+  }
+
+  function applyTheme(t) {
+    document.documentElement.setAttribute('data-theme', t);
+    localStorage.setItem(KEY, t);
+  }
+
+  // Expose toggle for sidebar button
+  window.__toggleTheme = function () {
+    applyTheme(getTheme() === 'dark' ? 'light' : 'dark');
+  };
+
+  // Ensure the attribute is correct (the inline script already set it,
+  // but this guarantees consistency if background.js loads on a page
+  // that doesn't include background.ejs)
+  applyTheme(getTheme());
+})();
+
 const particlesContainer = document.getElementById("particles-container");
 
 // Detect if user is on a mobile device or small screen

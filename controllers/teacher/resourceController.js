@@ -3,6 +3,7 @@ const Batch = require("../../models/Batch");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { sortBatches } = require("../../utils/sortHelpers");
 const mongoose = require("mongoose");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderStudyMaterial = async (req, res) => {
   try {
@@ -46,6 +47,13 @@ exports.processStudyMaterialUpload = async (req, res) => {
     });
 
     await material.save();
+    await logAudit({
+      action: "CREATE",
+      entityType: "StudyMaterial",
+      entityId: material._id,
+      details: `Uploaded new study material for ${subject}`,
+      academicYear: req.viewingYear
+    });
     res.json({ success: true, message: "Study material published successfully!" });
   } catch (err) {
     console.error("Study material add error:", err);
@@ -74,6 +82,13 @@ exports.processStudyMaterialUpdate = async (req, res) => {
     }
 
     await material.save();
+    await logAudit({
+      action: "UPDATE",
+      entityType: "StudyMaterial",
+      entityId: material._id,
+      details: `Updated study material for ${subject}`,
+      academicYear: req.viewingYear
+    });
     res.json({ success: true, message: "Study material updated successfully!" });
   } catch (err) {
     console.error("Study material update API error:", err);
@@ -84,6 +99,12 @@ exports.processStudyMaterialUpdate = async (req, res) => {
 exports.processStudyMaterialDelete = async (req, res) => {
   try {
     await StudyMaterial.findByIdAndDelete(req.params.id);
+    await logAudit({
+      action: "DELETE",
+      entityType: "StudyMaterial",
+      details: `Deleted study material`,
+      academicYear: req.viewingYear
+    });
     res.json({ success: true, message: "Study material deleted successfully!" });
   } catch (err) {
     console.error("Study material delete API error:", err);
@@ -132,13 +153,19 @@ exports.repostSingleMaterial = async (req, res) => {
       return res.status(400).json({ success: false, message: `This material has already been reposted to the current year (${currentYear}).` });
     }
 
-    // Create the cloned record
     await StudyMaterial.create({
       batch: targetBatch._id,
       subject: sourceMaterial.subject,
       materialType: sourceMaterial.materialType,
       description: sourceMaterial.description,
       filePath: sourceMaterial.filePath
+    });
+
+    await logAudit({
+      action: "REPOST",
+      entityType: "StudyMaterial",
+      details: `Reposted "${sourceMaterial.subject}" from previous year to ${currentYear} (${batchName})`,
+      academicYear: currentYear
     });
 
     res.json({ success: true, message: `Successfully reposted "${sourceMaterial.subject}" to ${currentYear} (${batchName})!` });
@@ -197,6 +224,13 @@ exports.repostMultipleMaterials = async (req, res) => {
       });
       clonedCount++;
     }
+
+    await logAudit({
+      action: "REPOST",
+      entityType: "StudyMaterial",
+      details: `Bulk reposted ${clonedCount} material(s) to ${currentYear}`,
+      academicYear: currentYear
+    });
 
     res.json({
       success: true,

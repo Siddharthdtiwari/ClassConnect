@@ -1,4 +1,11 @@
 <head>
+  <script>
+    // Anti-FOUC: apply saved theme BEFORE any CSS is parsed
+    (function(){
+      var t = localStorage.getItem('classconnect_theme') || 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="/css/background.css" />
   <link rel="stylesheet" href="/css/style.css" />
@@ -29,6 +36,8 @@
               bd: 'var(--bd)',
               pt: 'var(--pt)',
               lt: 'var(--lt)',
+              gt: 'var(--gt)',
+              rt: 'var(--rt)',
               p: 'var(--p)',
               pm: 'var(--pm)'
             }

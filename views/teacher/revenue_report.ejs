@@ -125,7 +125,7 @@
                   <div class="stat-icon">
                     <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="color: var(--pt);"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
                   </div>
-                  <div class="stat-value" style="color: #34d399;">₹<%= totalRevenue.toLocaleString() %></div>
+                  <div class="stat-value" style="color: var(--gt);">₹<%= totalRevenue.toLocaleString() %></div>
                   <div class="stat-label">Total Revenue</div>
                   <p class="text-[9px] text-theme-fdd font-mono tracking-wider uppercase mt-3">Total collected in period</p>
                 </div>
@@ -208,7 +208,7 @@
                       <span class="text-xs text-theme-fdd font-mono"><%= p.batch ? p.batch.name : 'Unknown' %> • <%= p.method %></span>
                     </div>
                     <div class="flex flex-col items-end">
-                      <span class="text-sm font-bold text-emerald-400 font-mono"><%= amountString %></span>
+                      <span class="text-sm font-bold text-brand-green font-mono"><%= amountString %></span>
                       <span class="text-[10px] text-theme-fdd font-mono"><%= dateString %></span>
                     </div>
                   </div>

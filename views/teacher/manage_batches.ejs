@@ -170,14 +170,14 @@
       flex-shrink: 0;
     }
     .batch-status.active {
-      background: rgba(16,185,129,0.12);
-      color: #10b981;
-      border: 1px solid rgba(16,185,129,0.25);
+      background: rgba(52,211,153,0.12);
+      color: var(--gt);
+      border: 1px solid rgba(52,211,153,0.25);
     }
     .batch-status.inactive {
-      background: rgba(239,68,68,0.1);
-      color: #ef4444;
-      border: 1px solid rgba(239,68,68,0.2);
+      background: rgba(248,113,113,0.10);
+      color: var(--rt);
+      border: 1px solid rgba(248,113,113,0.20);
     }
     .batch-card-meta {
       display: flex;
@@ -302,18 +302,18 @@
     }
     .status-opt:hover { background: var(--bgch); }
     .status-opt.selected.active-opt {
-      border-color: rgba(16,185,129,0.4);
-      background: rgba(16,185,129,0.08);
+      border-color: rgba(52,211,153,0.4);
+      background: rgba(52,211,153,0.08);
     }
     .status-opt.selected.inactive-opt {
-      border-color: rgba(239,68,68,0.4);
-      background: rgba(239,68,68,0.08);
+      border-color: rgba(248,113,113,0.4);
+      background: rgba(248,113,113,0.08);
     }
     .status-opt .sdot {
       width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0;
     }
-    .status-opt .sdot.green { background: #10b981; }
-    .status-opt .sdot.red { background: #ef4444; }
+    .status-opt .sdot.green { background: var(--gt); }
+    .status-opt .sdot.red { background: var(--rt); }
     .status-opt .slabel {
       font-family: 'Space Mono', monospace;
       font-size: 0.65rem;
@@ -364,10 +364,10 @@
               </div>
             </div>
             <div class="stat-card">
-              <div class="stat-value" style="color: #10b981;"><%= activeBatches %></div>
+              <div class="stat-value" style="color: var(--gt);"><%= activeBatches %></div>
               <div class="stat-label">Active Batches</div>
               <div class="stat-icon">
-                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="#10b981" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="var(--gt)" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
               </div>
             </div>
             <div class="stat-card">
@@ -395,7 +395,7 @@
           <!-- Batch Cards Grid -->
           <% if (!batches || batches.length === 0) { %>
           <div class="empty-state">
-            <div class="empty-state-icon">📁</div>
+            <div class="empty-state-icon"></div>
             <div class="empty-state-title">No Batches Found</div>
             <div class="empty-state-sub">Create your first batch to get started</div>
           </div>
@@ -425,7 +425,13 @@
               <div class="batch-card-desc" style="opacity:0.4; font-style: italic;">No description added</div>
               <% } %>
               <div class="batch-card-actions">
-                <button class="batch-edit-btn" onclick="openEditModal('<%= batch._id %>', '<%= batch.name.replace(/'/g, "\\'") %>', '<%= (batch.description || '').replace(/'/g, "\\'").replace(/\n/g, "\\n") %>', <%= batch.isActive %>, '<%= batch.academicYear %>')">
+                <button class="batch-edit-btn"
+                  data-id="<%= batch._id %>"
+                  data-name="<%- batch.name.replace(/"/g, '&quot;') %>"
+                  data-description="<%- (batch.description || '').replace(/"/g, '&quot;') %>"
+                  data-active="<%= batch.isActive %>"
+                  data-year="<%= batch.academicYear %>"
+                  onclick="openEditModal(this)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   Edit Details
                 </button>
@@ -437,7 +443,7 @@
 
           <!-- No search results -->
           <div id="no-results-msg" class="empty-state" style="display: none; margin-top: 20px;">
-            <div class="empty-state-icon">🔍</div>
+            <div class="empty-state-icon"></div>
             <div class="empty-state-title">No Matches Found</div>
             <div class="empty-state-sub">Try refining your search terms</div>
           </div>
@@ -454,7 +460,7 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-2xl">📁</span>
+              <span class="text-2xl"></span>
               <h2 class="text-xl font-extrabold tracking-tight">New Batch</h2>
             </div>
             <p class="text-purple-200 text-xs font-semibold">Create a new academic batch for the current session</p>
@@ -475,7 +481,7 @@
           </div>
 
           <div class="mb-5">
-            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch Name <span style="color:#ef4444;">*</span></label>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch Name <span style="color: var(--rt);">*</span></label>
             <input type="text" name="name" placeholder="e.g. 9th Grade Science, Math Advanced" required class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs" />
           </div>
 
@@ -497,7 +503,7 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center gap-2 mb-1">
-              <span class="text-xl">✏️</span>
+              <span class="text-xl"></span>
               <h2 class="text-lg font-extrabold tracking-tight">Edit Batch</h2>
             </div>
             <p class="text-purple-200 text-xs font-semibold">Update configuration or toggle active status</p>
@@ -519,7 +525,7 @@
           </div>
 
           <div class="mb-5">
-            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch Name <span style="color:#ef4444;">*</span></label>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch Name <span style="color: var(--rt);">*</span></label>
             <input type="text" name="name" id="edit-name" required class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs" />
           </div>
 
@@ -568,11 +574,16 @@
     });
 
     // Edit modal
-    function openEditModal(id, name, description, isActive, year) {
+    function openEditModal(btn) {
+      const id          = btn.dataset.id;
+      const name        = btn.dataset.name;
+      const description = btn.dataset.description;
+      const isActive    = btn.dataset.active === 'true';
+      const year        = btn.dataset.year;
       const form = document.getElementById('edit-batch-form');
       form.action = '/teacher/edit_batch/' + id;
       document.getElementById('edit-name').value = name;
-      document.getElementById('edit-description').value = description.replace(/\\n/g, '\n');
+      document.getElementById('edit-description').value = description;
       document.getElementById('edit-year-display').textContent = year;
       setEditStatus(isActive);
       document.getElementById('edit-modal').classList.add('open');

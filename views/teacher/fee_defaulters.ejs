@@ -68,7 +68,7 @@
 
           <% if (defaulters.length === 0) { %>
           <div class="stat-card p-16 text-center text-theme-fdd">
-            <p class="text-5xl mb-4">🎉</p>
+            <p class="text-5xl mb-4"></p>
             <p class="text-xl font-bold">No defaulters!</p>
             <p class="text-sm mt-1">All students are up to date for this period.</p>
           </div>
@@ -77,8 +77,8 @@
           <!-- Navigation Pills -->
           <div class="stat-card p-4 mb-10 flex items-center gap-3 overflow-x-auto custom-scrollbar">
             <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-2 font-mono">Quick Navigation:</span>
-            <a href="#class-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">🏫 Batch-wise Overview</a>
-            <a href="#month-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">📅 Month-wise Breakdown</a>
+            <a href="#class-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">Batch-wise Overview</a>
+            <a href="#month-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">Month-wise Breakdown</a>
           </div>
 
           <!-- CLASS-WISE SECTION -->
@@ -115,7 +115,7 @@
                 <div class="flex items-center gap-3">
                   <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
                   <h3 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;" class="class-header-marker" data-print-title="Batch <%= cls %> Fee Defaulters">Batch: <span class="class-header" style="color: var(--pt);"><%= cls %></span></h3>
-                  <span class="text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full"><%= byClass[cls].length %> student<%= byClass[cls].length !== 1 ? 's' : '' %></span>
+                  <span class="text-xs font-semibold bg-red-500/10 text-brand-red border border-red-500/20 px-2.5 py-1 rounded-full"><%= byClass[cls].length %> student<%= byClass[cls].length !== 1 ? 's' : '' %></span>
                 </div>
                 <button type="button" class="btn-outline-purple print-btn flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider font-mono py-1 px-2.5">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -145,11 +145,11 @@
                       <td>
                         <div class="flex flex-wrap gap-1.5">
                           <% d.unpaidMonths.forEach(m => { %>
-                          <span class="bg-red-500/10 text-red-400 border border-red-500/20 px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase"><%= m %></span>
+                          <span class="bg-red-500/10 text-brand-red border border-red-500/20 px-2 py-0.5 rounded text-[9px] font-mono font-bold tracking-wider uppercase"><%= m %></span>
                           <% }) %>
                         </div>
                       </td>
-                      <td class="text-right font-extrabold text-red-400 font-mono">₹<%= d.balance.toLocaleString('en-IN') %></td>
+                      <td class="text-right font-extrabold text-brand-red font-mono">₹<%= d.balance.toLocaleString('en-IN') %></td>
                     </tr>
                     <% }) %>
                   </tbody>
@@ -180,7 +180,7 @@
                 <div class="flex items-center gap-3">
                   <div class="w-2.5 h-6 bg-[var(--p)] rounded-full shadow-sm"></div>
                   <h3 class="text-lg font-bold tracking-tight text-theme-fg" style="font-family: 'Unbounded', sans-serif;" class="month-badge-marker" data-print-title="Month: <%= month %> <%= selectedYear %>-<%= selectedYear+1 %> Defaulters">Month: <span class="month-badge" style="color: var(--pt);"><%= month %></span></h3>
-                  <span class="text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20 px-2.5 py-1 rounded-full"><%= rows.length %> student<%= rows.length !== 1 ? 's' : '' %> unpaid</span>
+                  <span class="text-xs font-semibold bg-red-500/10 text-brand-red border border-red-500/20 px-2.5 py-1 rounded-full"><%= rows.length %> student<%= rows.length !== 1 ? 's' : '' %> unpaid</span>
                 </div>
                 <button type="button" class="btn-outline-purple print-btn flex items-center gap-1.5 text-[9px] font-bold uppercase tracking-wider font-mono py-1 px-2.5">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -206,7 +206,7 @@
                       <td class="font-bold text-theme-pt"><%= r.standard %></td>
                       <td class="font-mono text-theme-fdd text-xs"><%= r.studentId %></td>
                       <td class="font-bold text-theme-fg"><%= r.studentName %></td>
-                      <td class="text-right font-bold text-red-400 font-mono">₹<%= r.balance.toLocaleString('en-IN') %></td>
+                      <td class="text-right font-bold text-brand-red font-mono">₹<%= r.balance.toLocaleString('en-IN') %></td>
                     </tr>
                     <% }) %>
                   </tbody>

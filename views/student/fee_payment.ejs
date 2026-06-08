@@ -120,7 +120,7 @@
           <!-- Amount Due Card -->
           <div class="<%= totalDue > 0 ? 'due-card' : 'cleared-card' %> rounded-2xl p-8 text-center shadow-sm">
             <p class="text-xs font-mono font-bold uppercase tracking-widest mb-4 <%= totalDue > 0 ? 'text-amber-600' : 'text-emerald-600' %>">
-              <%= totalDue > 0 ? '⚠️ Amount Due' : '✅ All Cleared' %>
+              <%= totalDue > 0 ? ' Amount Due' : 'All Cleared' %>
             </p>
             <p class="text-5xl font-unbounded font-extrabold <%= totalDue > 0 ? 'text-amber-600' : 'text-emerald-600' %> my-3 tracking-tight drop-shadow-sm">
               ₹<%= totalDue.toLocaleString() %>
@@ -131,8 +131,7 @@
             </p>
             <% } else { %>
             <p class="text-xs font-mono tracking-wide text-emerald-600 font-bold mt-4 bg-emerald-500/10 inline-block px-3 py-1 rounded border border-emerald-500/20 uppercase">
-              No outstanding dues 🎉
-            </p>
+              No outstanding dues </p>
             <% } %>
           </div>
 
@@ -154,7 +153,7 @@
           <% } %>
 
           <p class="text-[10px] font-mono tracking-widest uppercase text-theme-fdd text-center -mt-4">
-            🔒 Secured via Razorpay gateway
+            Secured via Razorpay gateway
           </p>
 
           <!-- Payment Summary Stats -->
@@ -186,7 +185,7 @@
       <div class="lg:col-span-2">
         <div class="glass-card p-6 sm:p-10 rounded-2xl h-full">
           <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-8 flex items-center gap-3 border-b border-theme-bd pb-4">
-            <span class="text-3xl drop-shadow-md">🧾</span> Payment History
+            <span class="text-3xl drop-shadow-md"></span> Payment History
           </h2>
           <div class="space-y-4">
             <% feesByMonth.forEach(f=> { %>

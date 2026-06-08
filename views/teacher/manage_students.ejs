@@ -178,11 +178,11 @@
               <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-3 font-mono">Filter by Batch:</span>
               <button onclick="filterBatch('All')" 
                 class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all bg-purple-700 text-white border-purple-700 font-mono"
-                data-class="All">🗓 All</button>
+                data-class="All">All</button>
               <% sortedBatches.forEach((cls) => { %>
               <button onclick="filterBatch('<%= cls %>')" 
                 class="batch-tab-filter py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono"
-                data-class="<%= cls %>">🏫 <%= cls %></button>
+                data-class="<%= cls %>"><%= cls %></button>
               <% }) %>
             </div>
             <% } %>
@@ -192,7 +192,7 @@
           <div id="students-container">
             <% if (students.length === 0) { %>
             <div class="stat-card p-16 text-center text-theme-fdd">
-              <p class="text-5xl mb-4">👤</p>
+              <p class="text-5xl mb-4"></p>
               <p class="text-xl font-bold">No students found</p>
               <p class="text-sm mt-1">Add a new student or use bulk import to get started.</p>
             </div>
@@ -260,7 +260,7 @@
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
                             Profile
                           </a>
-                          <a href="/teacher/student_report/<%= student._id %>" target="_blank" class="py-1.5 px-3 text-[10px] uppercase tracking-wider flex items-center gap-1.5 font-bold rounded-lg bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 hover:bg-emerald-600 hover:text-white transition-all shadow-sm font-mono">
+                          <a href="/teacher/student_report/<%= student._id %>" target="_blank" class="py-1.5 px-3 text-[10px] uppercase tracking-wider flex items-center gap-1.5 font-bold rounded-lg bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20 hover:bg-[var(--gt)]/20 transition-all shadow-sm font-mono">
                             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
                             Report
                           </a>
@@ -274,7 +274,7 @@
 
               <!-- Empty state for search filtering per class -->
               <div class="no-results-msg hidden p-10 text-center text-theme-fdd stat-card border border-t-0 rounded-b-xl">
-                <p class="text-3xl mb-2">🔍</p>
+                <p class="text-3xl mb-2"></p>
                 <p class="font-semibold text-sm">No students match your search in <%= cls %>.</p>
               </div>
             </div>

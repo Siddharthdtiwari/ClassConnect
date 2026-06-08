@@ -125,6 +125,35 @@
       color: var(--fdd) !important;
     }
 
+    .pct-good {
+      background: rgba(52, 211, 153, 0.08) !important;
+      color: var(--gt) !important;
+      border-right: 2px solid var(--b) !important;
+    }
+    .pct-poor {
+      background: rgba(248, 113, 113, 0.08) !important;
+      color: var(--rt) !important;
+      border-right: 2px solid var(--b) !important;
+    }
+    .pct-na {
+      color: var(--fdd) !important;
+      border-right: 2px solid var(--b) !important;
+    }
+    .overall-good {
+      background: rgba(52, 211, 153, 0.12) !important;
+      color: var(--gt) !important;
+      border: 1px solid rgba(52, 211, 153, 0.2) !important;
+    }
+    .overall-poor {
+      background: rgba(248, 113, 113, 0.12) !important;
+      color: var(--rt) !important;
+      border: 1px solid rgba(248, 113, 113, 0.2) !important;
+    }
+    .overall-na {
+      background: rgba(255, 255, 255, 0.03) !important;
+      color: var(--fdd) !important;
+    }
+
     .header-content {
       display: flex;
       align-items: center;
@@ -235,34 +264,36 @@
                     %>
                     <% dateKeys[monthYear].forEach(date => { 
                         const status = student.records[date] || '-';
-                        const cellClass = status === '-' ? 'status-N' : `status-${status}`;
-
                         if (status === 'P') monthlyPresent++;
                         if (status === 'P' || status === 'A') monthlyRecorded++;
                     %>
-                    <td class="text-xs font-bold <%= cellClass %> border-r border-theme-bd">
-                      <div class="cell-content"><%= status %></div>
-                    </td>
+                     <% if (status === 'P') { %>
+                     <td class="text-xs font-bold border-r border-theme-bd status-P">
+                     <% } else if (status === 'A') { %>
+                     <td class="text-xs font-bold border-r border-theme-bd status-A">
+                     <% } else if (status === 'H') { %>
+                     <td class="text-xs font-bold border-r border-theme-bd status-H">
+                     <% } else { %>
+                     <td class="text-xs font-bold border-r border-theme-bd status-N">
+                     <% } %>
+                       <div class="cell-content"><%= status %></div>
+                     </td>
                     <% }) %>
 
                     <% 
                       const monthlyPercentage = monthlyRecorded > 0 
                           ? ((monthlyPresent / monthlyRecorded) * 100).toFixed(1) 
                           : 'N/A';
-                          
-                      let percentageStyle = "";
-                      if (monthlyRecorded > 0) {
-                        const pctVal = parseFloat(monthlyPercentage);
-                        if (pctVal >= 75) {
-                          percentageStyle = "background: rgba(16,185,129,0.08); color: rgb(52,211,153); border-right: 2px solid var(--b);";
-                        } else {
-                          percentageStyle = "background: rgba(239,68,68,0.08); color: rgb(248,113,113); border-right: 2px solid var(--b);";
-                        }
-                      } else {
-                        percentageStyle = "color: var(--fdd); border-right: 2px solid var(--b);";
-                      }
                     %>
-                    <td class="monthly-percentage-col text-xs font-bold border-r border-theme-b font-mono" style="<%= percentageStyle %>">
+                    <% if (monthlyRecorded > 0) { %>
+                      <% if (parseFloat(monthlyPercentage) >= 75) { %>
+                        <td class="monthly-percentage-col text-xs font-bold border-r border-theme-b font-mono pct-good">
+                      <% } else { %>
+                        <td class="monthly-percentage-col text-xs font-bold border-r border-theme-b font-mono pct-poor">
+                      <% } %>
+                    <% } else { %>
+                      <td class="monthly-percentage-col text-xs font-bold border-r border-theme-b font-mono pct-na">
+                    <% } %>
                       <div class="cell-content"><%= monthlyPercentage %><%= monthlyRecorded > 0 ? '%' : '' %></div>
                     </td>
                     <% }) %>
@@ -271,22 +302,20 @@
                       const overallPercentage = student.totalRecordedDays > 0 
                           ? ((student.presentCount / student.totalRecordedDays) * 100).toFixed(1) 
                           : 'N/A';
-                          
-                      let overallStyle = "";
-                      if (student.totalRecordedDays > 0) {
-                        const ovVal = parseFloat(overallPercentage);
-                        if (ovVal >= 75) {
-                          overallStyle = "background: rgba(16,185,129,0.12); color: rgb(52,211,153); border: 1px solid rgba(16,185,129,0.2);";
-                        } else {
-                          overallStyle = "background: rgba(239,68,68,0.12); color: rgb(248,113,113); border: 1px solid rgba(239,68,68,0.2);";
-                        }
-                      } else {
-                        overallStyle = "background: rgba(255,255,255,0.03); color: var(--fdd);";
-                      }
                     %>
                     <td class="sticky-col-right-overall font-black text-xs font-mono">
                       <div class="cell-content">
-                        <span class="inline-block px-2.5 py-1 rounded-md" style="<%= overallStyle %>"><%= overallPercentage %><%= student.totalRecordedDays > 0 ? '%' : '' %></span>
+                        <% if (student.totalRecordedDays > 0) { %>
+                          <% if (parseFloat(overallPercentage) >= 75) { %>
+                            <span class="inline-block px-2.5 py-1 rounded-md overall-good">
+                          <% } else { %>
+                            <span class="inline-block px-2.5 py-1 rounded-md overall-poor">
+                          <% } %>
+                        <% } else { %>
+                          <span class="inline-block px-2.5 py-1 rounded-md overall-na">
+                        <% } %>
+                          <%= overallPercentage %><%= student.totalRecordedDays > 0 ? '%' : '' %>
+                        </span>
                       </div>
                     </td>
                   </tr>

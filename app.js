@@ -63,38 +63,55 @@ const { sendContactConfirmation } = require("./utils/emailService");
 
 const app = express();
 app.set("trust proxy", 1);
-// app.use(
-//   helmet({
-//     contentSecurityPolicy: {
-//       directives: {
-//         defaultSrc: ["'self'"],
-//         scriptSrc: [
-//           "'self'",
-//           "'unsafe-inline'",
-//           "'unsafe-eval'",
-//           "https://cdn.tailwindcss.com",
-//           "https://cdn.jsdelivr.net",
-//           "https://cdnjs.cloudflare.com",
-//         ],
-//         styleSrc: [
-//           "'self'",
-//           "'unsafe-inline'",
-//           "https://fonts.googleapis.com",
-//           "https://cdn.tailwindcss.com",
-//         ],
-//         fontSrc: ["'self'", "https://fonts.gstatic.com"],
-//         imgSrc: [
-//           "'self'",
-//           "data:",
-//           "https://placehold.co",
-//           "https://images.unsplash.com",
-//           "https://*",
-//         ],
-//         connectSrc: ["'self'"],
-//       },
-//     },
-//   })
-// );
+app.use(
+  helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://cdn.tailwindcss.com",
+          "https://cdn.jsdelivr.net",
+          "https://cdnjs.cloudflare.com",
+          "https://checkout.razorpay.com",
+        ],
+        // Helmet 8.x separates inline event handler (onclick=) policy from
+        // script-src-elem. We need 'unsafe-inline' here to allow onclick attrs.
+        scriptSrcAttr: ["'unsafe-inline'"],
+        styleSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdn.tailwindcss.com",
+        ],
+        fontSrc: [
+          "'self'",
+          "https://fonts.gstatic.com",
+          "https://fonts.googleapis.com",
+        ],
+        imgSrc: [
+          "'self'",
+          "data:",
+          "https://placehold.co",
+          "https://images.unsplash.com",
+          "https://res.cloudinary.com",
+          "https://*",
+        ],
+        connectSrc: [
+          "'self'",
+          "https://api.razorpay.com",
+        ],
+        frameSrc: [
+          "'self'",
+          "https://api.razorpay.com",
+          "https://checkout.razorpay.com",
+        ],
+      },
+    },
+  })
+);
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 

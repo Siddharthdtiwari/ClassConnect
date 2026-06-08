@@ -91,7 +91,7 @@
       <div id="tests-area">
         <% if (tests.length===0) { %>
         <div class="text-center py-16 border-2 border-dashed border-theme-bd rounded-2xl">
-          <div class="text-5xl mb-4 drop-shadow-md">📭</div>
+          <div class="text-5xl mb-4 drop-shadow-md"></div>
           <h3 class="text-lg font-unbounded font-bold text-theme-fg">No Tests Found</h3>
           <p class="mt-2 text-theme-fdd font-mono text-xs uppercase tracking-widest">No tests available for <strong><%= subject==='overall' ? ('Batch ' + studentStandard) : subject %></strong> yet.</p>
         </div>
@@ -112,7 +112,7 @@
                   <span class="text-xs font-mono text-theme-fd uppercase tracking-wide">• <span class="font-bold text-theme-fg"><%= test.totalMarks %></span> MARKS</span>
                   <% if (test.testDate) { %>
                   <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/30 uppercase tracking-widest">
-                    📅 <%= new Date(test.testDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %>
+                    <%= new Date(test.testDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %>
                   </span>
                   <% } %>
                 </div>
@@ -141,11 +141,11 @@
       
       const subjects = typeof getSubjectsForBatch !== 'undefined' ? getSubjectsForBatch(studentBatchName) : [];
       
-      let html = `<a href="/student/take_test?subject=overall" class="tab-pill ${currentSubject === 'overall' ? 'active' : ''}">📋 Overall</a>`;
+      let html = `<a href="/student/take_test?subject=overall" class="tab-pill ${currentSubject === 'overall' ? 'active' : ''}">Overall</a>`;
       
       subjects.forEach(sub => {
         const isActive = currentSubject === sub ? 'active' : '';
-        html += `<a href="/student/take_test?subject=${encodeURIComponent(sub)}" class="tab-pill ${isActive}">📚 ${sub}</a>`;
+        html += `<a href="/student/take_test?subject=${encodeURIComponent(sub)}" class="tab-pill ${isActive}">${sub}</a>`;
       });
       
       filtersDiv.innerHTML = html;

@@ -205,11 +205,11 @@
       border-color: rgba(52,211,153,0.15);
     }
     .paid-existing .amount-input {
-      color: #34d399 !important;
+      color: var(--gt) !important;
     }
-    .paid-existing .currency-symbol { color: #34d399; opacity: 1; }
+    .paid-existing .currency-symbol { color: var(--gt); opacity: 1; }
     .paid-existing .meta-select, .paid-existing .meta-date {
-      color: #34d399 !important;
+      color: var(--gt) !important;
     }
     
     /* Dirty Changes */
@@ -347,9 +347,9 @@
                 <div class="flex flex-col sm:flex-none">
                   <label class="ctrl-label">Default Method</label>
                   <select id="global-method" class="ctrl-input">
-                    <option value="Cash">💵 Cash</option>
-                    <option value="UPI" selected>📱 UPI</option>
-                    <option value="Razorpay">🌐 Razorpay</option>
+                    <option value="Cash">Cash</option>
+                    <option value="UPI" selected>UPI</option>
+                    <option value="Razorpay">Razorpay</option>
                   </select>
                 </div>
               </div>
@@ -552,7 +552,7 @@
           const result = await res.json();
 
           if (result.success) {
-            showToast("Saved Successfully!", "bg-[#10b981]");
+            showToast("Saved Successfully!", "bg-[var(--gt)]");
             changedCells.forEach(cell => {
               cell.classList.remove('changed-cell');
               
@@ -569,11 +569,11 @@
             unsavedCount = 0;
             updateFloatingBar();
           } else {
-            showToast("Error saving data.", "bg-red-600");
+            showToast("Error saving data.", "bg-[var(--rt)]");
           }
         } catch (e) {
           console.error(e);
-          showToast("Network Error", "bg-red-600");
+          showToast("Network Error", "bg-[var(--rt)]");
         }
       }
 

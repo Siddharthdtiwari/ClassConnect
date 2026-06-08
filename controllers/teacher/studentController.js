@@ -9,6 +9,7 @@ const PDFDocument = require("pdfkit");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { generateStudentReportPDF, drawStudentReport } = require("../../utils/pdfUtils");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderManageStudents = async (req, res) => {
   try {
@@ -62,6 +63,13 @@ exports.processAddStudent = async (req, res) => {
       profilePhoto: profilePhotoUrl,
     });
     await newStudent.save();
+    await logAudit({
+      action: "CREATE",
+      entityType: "User",
+      entityId: newStudent._id,
+      details: `Added new student: ${studentName} (${studentId})`,
+      academicYear: req.viewingYear
+    });
     res.redirect("/teacher/manage_students");
   } catch (err) {
     console.error(err);
@@ -91,6 +99,13 @@ exports.processEditProfile = async (req, res) => {
     }
 
     await User.findByIdAndUpdate(req.params.id, updateData);
+    await logAudit({
+      action: "UPDATE",
+      entityType: "User",
+      entityId: req.params.id,
+      details: `Updated student profile: ${studentName}`,
+      academicYear: req.viewingYear
+    });
     res.redirect(`/teacher/view_profile/${req.params.id}`);
   } catch (err) {
     console.error(err);
@@ -231,6 +246,12 @@ exports.processBulkSaveStudents = async (req, res) => {
 
     if (bulkOps.length > 0) {
       await User.bulkWrite(bulkOps);
+      await logAudit({
+        action: "BULK_UPDATE",
+        entityType: "User",
+        details: `Bulk saved ${processed} student records.`,
+        academicYear: req.viewingYear
+      });
     }
 
     res.json({

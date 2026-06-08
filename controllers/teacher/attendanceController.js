@@ -2,6 +2,7 @@ const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Attendance = require("../../models/Attendance");
 const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderManageAttendance = async (req, res) => {
   try {
@@ -54,6 +55,14 @@ exports.processManageAttendance = async (req, res) => {
       });
     }
     await attendance.save();
+
+    await logAudit({
+      action: "UPDATE",
+      entityType: "Attendance",
+      details: `Saved attendance for ${date}`,
+      academicYear: req.viewingYear
+    });
+
     res.json({ success: true, message: "Attendance saved successfully!" });
   } catch (err) {
     console.error("Error saving attendance:", err);
@@ -344,6 +353,13 @@ exports.processBulkSaveAttendance = async (req, res) => {
         await attendance.save();
       }
     }
+
+    await logAudit({
+      action: "BULK_UPDATE",
+      entityType: "Attendance",
+      details: `Bulk saved attendance records`,
+      academicYear: req.viewingYear
+    });
 
     res.json({ success: true, message: "Attendance saved successfully" });
   } catch (err) {

@@ -1,6 +1,7 @@
 const Batch = require("../../models/Batch");
 const User = require("../../models/User");
 const { sortBatches } = require("../../utils/sortHelpers");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderManageBatches = async (req, res) => {
   try {
@@ -44,6 +45,13 @@ exports.processAddBatch = async (req, res) => {
     });
 
     await newBatch.save();
+    await logAudit({
+      action: "CREATE",
+      entityType: "Batch",
+      entityId: newBatch._id,
+      details: `Created new batch: ${newBatch.name}`,
+      academicYear
+    });
     res.redirect("/teacher/manage_batches");
   } catch (err) {
     console.error("Add batch error:", err);
@@ -76,6 +84,13 @@ exports.processEditBatch = async (req, res) => {
     batch.isActive = isActive === "true" || isActive === true;
 
     await batch.save();
+    await logAudit({
+      action: "UPDATE",
+      entityType: "Batch",
+      entityId: batch._id,
+      details: `Updated batch: ${batch.name}`,
+      academicYear: batch.academicYear
+    });
     res.redirect("/teacher/manage_batches");
   } catch (err) {
     console.error("Edit batch POST error:", err);

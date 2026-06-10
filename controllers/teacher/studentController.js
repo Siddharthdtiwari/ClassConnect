@@ -7,7 +7,7 @@ const bcrypt = require("bcrypt");
 const archiver = require("archiver");
 const PDFDocument = require("pdfkit");
 const { uploadToCloudinary } = require("../../utils/upload");
-const { generateStudentReportPDF, drawStudentReport } = require("../../utils/pdfUtils");
+const { generateStudentReportPDF, drawStudentReport, generateStudentDirectoryPDF } = require("../../utils/pdfUtils");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { logAudit } = require("../../utils/auditService");
 
@@ -81,7 +81,9 @@ exports.renderEditProfile = async (req, res) => {
   try {
     const student = await User.findById(req.params.id).lean();
     if (!student) return res.status(404).send("Student not found");
-    res.render("teacher/edit_profile", { student });
+    const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
+    batches.sort(sortBatches);
+    res.render("teacher/edit_profile", { student, batches });
   } catch (err) {
     console.error(err);
     res.status(500).send("Error loading student");
@@ -432,6 +434,24 @@ exports.generateStudentReport = async (req, res) => {
     console.error("Error generating student report:", err);
     if (!res.headersSent) {
       res.status(500).send("Error generating student report");
+    }
+  }
+};
+
+exports.printStudentDirectory = async (req, res) => {
+  try {
+    const students = await User.find({ batch: { $in: req.viewingBatches } })
+      .populate('batch')
+      .lean();
+
+    students.sort(sortStudentsByBatchAndId);
+
+    const disposition = req.query.dl === "1" ? "attachment" : "inline";
+    await generateStudentDirectoryPDF(students, req.viewingYear, res, disposition);
+  } catch (err) {
+    console.error("Error printing student directory:", err);
+    if (!res.headersSent) {
+      res.status(500).send("Error printing directory");
     }
   }
 };

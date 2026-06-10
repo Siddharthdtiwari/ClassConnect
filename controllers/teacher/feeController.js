@@ -183,6 +183,7 @@ exports.renderFeeDefaulters = async (req, res) => {
           studentName: student.studentName,
           mobileNo: student.mobileNo,
           standard: student.batch ? student.batch.name : 'Unknown',
+          profilePhoto: student.profilePhoto,
           unpaidMonths,
           balance
         };
@@ -259,6 +260,7 @@ exports.downloadFeeDefaulters = async (req, res) => {
           studentName: student.studentName,
           mobileNo: student.mobileNo,
           standard: student.batch ? student.batch.name : 'Unknown',
+          profilePhoto: student.profilePhoto,
           unpaidMonths,
           balance
         };
@@ -269,6 +271,7 @@ exports.downloadFeeDefaulters = async (req, res) => {
             standard: student.batch ? student.batch.name : 'Unknown',
             studentId: student.studentId,
             studentName: student.studentName,
+            profilePhoto: student.profilePhoto,
             balance: monthlyFee
           });
         });

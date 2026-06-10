@@ -74,11 +74,11 @@
       </div>
 
       <div class="relative z-10 flex flex-wrap items-center justify-center sm:justify-end gap-2.5 mt-6 sm:mt-0 w-full sm:w-auto">
-        <button onclick="window.open('/student/report', '_blank')" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
-           Print Report
+        <button onclick="window.open('/student/report', '_blank')" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg> Print Report
         </button>
-        <button onclick="window.location.href='/student/edit_profile'" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
-           Edit Profile
+        <button onclick="window.location.href='/student/edit_profile'" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt flex items-center gap-2">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg> Edit Profile
         </button>
         <button onclick="window.location.href='/student/logout'" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
           Logout
@@ -123,7 +123,7 @@
             <div class="flex justify-between items-center stat-box p-3 rounded-lg">
               <span class="text-theme-fd font-mono text-xs uppercase tracking-widest">Rank</span>
               <span class="font-unbounded font-extrabold text-theme-pt flex items-center gap-1">
-                <span class="text-sm text-theme-fdd font-normal">#</span><%= studentRank %> </span>
+                <span class="text-sm text-theme-fdd font-normal">#</span><%= studentRank %> <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-theme-lt"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" fill="currentColor"/></svg></span>
             </div>
           </div>
         </div>
@@ -242,23 +242,23 @@
           </h3>
           <div class="grid grid-cols-2 md:grid-cols-5 gap-4">
             <a href="/student/leader_board" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"></div>
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Rankings</span>
             </a>
             <a href="/student/content" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"></div>
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2zM22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Materials</span>
             </a>
             <a href="/student/take_test" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"></div>
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Tests</span>
             </a>
             <a href="/student/timetable" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"></div>
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="4"/><polyline points="12 14 12 16 14 16"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Timetable</span>
             </a>
             <a href="/student/report" target="_blank" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"></div>
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Report</span>
             </a>
           </div>

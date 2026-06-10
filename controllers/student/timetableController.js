@@ -11,7 +11,13 @@ exports.renderTimetable = async (req, res) => {
       return res.render("student/timetable", { student, entries: [], success: null, error: "No batch assigned to your profile." });
     }
 
-    const entries = await ExamTimetable.find({ batch: studentBatchId })
+    const entries = await ExamTimetable.find({
+      batch: studentBatchId,
+      $or: [
+        { addedBy: "teacher" },
+        { addedBy: "student", addedById: student.studentId }
+      ]
+    })
       .sort({ examDate: 1 })
       .lean();
 

@@ -78,7 +78,7 @@
               </div>
             </div>
 
-          <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>" method="POST" enctype="multipart/form-data" class="space-y-6">
+          <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data" class="space-y-6">
 <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
             
             <div class="photo-upload-area rounded-2xl p-6 text-center cursor-pointer relative group">
@@ -111,8 +111,12 @@
               </div>
 
               <div>
-                <label for="standard" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Standard</label>
-                <input type="text" id="standard" name="standard" value="<%= student.standard %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
+                <label for="batchId" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch</label>
+                <select id="batchId" name="batchId" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" required>
+                  <% batches.forEach(b => { %>
+                    <option value="<%= b._id %>" <%= String(student.batch) === String(b._id) ? 'selected' : '' %>><%= b.name %></option>
+                  <% }) %>
+                </select>
               </div>
 
               <div>

@@ -140,7 +140,7 @@ app.use(
 // 3. CSRF Protection
 const { csrfSynchronisedProtection } = csrfSync({
   getTokenFromRequest: (req) => {
-    return req.body["_csrf"] || req.query["_csrf"] || req.headers["x-csrf-token"];
+    return req.body?._csrf || req.query?._csrf || req.headers["x-csrf-token"];
   }
 });
 app.use(csrfSynchronisedProtection);

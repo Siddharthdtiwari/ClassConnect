@@ -48,6 +48,7 @@ router.post("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, 
 
 // Student Management
 router.get("/teacher/manage_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderManageStudents));
+router.get("/teacher/print_student_directory", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.printStudentDirectory));
 router.get("/teacher/add_student", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderAddStudent));
 router.post("/teacher/add_student", ensureDBConnection, requireTeacherLogin, upload.single("profilePhoto"), catchAsync(studentController.processAddStudent));
 router.get("/teacher/edit_profile/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderEditProfile));

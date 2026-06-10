@@ -196,3 +196,74 @@ body {
   border-color: var(--p);
   color: var(--pt);
 }
+
+/* ── FLOATING THEME TOGGLE ── */
+.floating-theme-toggle {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bgc);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid var(--b);
+  border-radius: 9999px;
+  padding: 4px;
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.floating-theme-toggle:hover {
+  transform: scale(1.05) translateY(-2px);
+  border-color: var(--p);
+  box-shadow: 0 20px 25px -5px var(--pg2), 0 10px 10px -5px var(--pg2);
+}
+.ft-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 9999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--fd);
+  transition: all 0.25s ease;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+.ft-btn:hover {
+  color: var(--pt);
+  background: var(--bgch);
+}
+[data-theme="light"] .ft-btn-light,
+[data-theme="dark"] .ft-btn-dark {
+  background: var(--p) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 10px var(--pg);
+}
+@media (max-width: 640px) {
+  .floating-theme-toggle {
+    bottom: 16px;
+    right: 16px;
+  }
+}
+
+/* ── SELECT OPTION THEME HARMONIZATION ── */
+select option,
+.sb-year-select option {
+  background-color: var(--bg2);
+  color: var(--fg);
+}
+[data-theme="dark"] select option,
+[data-theme="dark"] .sb-year-select option {
+  background-color: #0b0b14 !important;
+  color: #F0EBE0 !important;
+}
+[data-theme="light"] select option,
+[data-theme="light"] .sb-year-select option {
+  background-color: #ffffff !important;
+  color: #0C0C0C !important;
+}

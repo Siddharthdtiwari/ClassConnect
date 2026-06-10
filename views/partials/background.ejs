@@ -4,6 +4,7 @@
     (function(){
       var t = localStorage.getItem('classconnect_theme') || 'light';
       document.documentElement.setAttribute('data-theme', t);
+      document.documentElement.classList.toggle('dark', t === 'dark');
     })();
   </script>
   <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@300;400;700;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -65,8 +66,3 @@
     };
   </script>
 </head>
-
-<div class="grain"></div>
-<div class="orb orb1"></div>
-<div class="orb orb2"></div>
-<div id="particles-container"></div>

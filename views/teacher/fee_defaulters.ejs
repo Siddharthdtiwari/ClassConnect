@@ -140,7 +140,12 @@
                     <% byClass[cls].forEach(d => { %>
                     <tr class="hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
                       <td class="font-mono text-theme-pt text-xs"><%= d.studentId %></td>
-                      <td class="font-bold text-theme-fg"><%= d.studentName %></td>
+                      <td class="font-bold text-theme-fg">
+                        <div class="flex items-center gap-2.5">
+                          <img src="<%= d.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(d.studentName.charAt(0)) %>" alt="Profile" class="w-8 h-8 rounded-full border border-theme-bd object-cover shadow-sm flex-shrink-0 bg-theme-bg2" />
+                          <span><%= d.studentName %></span>
+                        </div>
+                      </td>
                       <td class="text-theme-fd text-xs font-medium"><%= d.mobileNo || '—' %></td>
                       <td>
                         <div class="flex flex-wrap gap-1.5">
@@ -205,7 +210,12 @@
                     <tr class="hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
                       <td class="font-bold text-theme-pt"><%= r.standard %></td>
                       <td class="font-mono text-theme-fdd text-xs"><%= r.studentId %></td>
-                      <td class="font-bold text-theme-fg"><%= r.studentName %></td>
+                      <td class="font-bold text-theme-fg">
+                        <div class="flex items-center gap-2.5">
+                          <img src="<%= r.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(r.studentName.charAt(0)) %>" alt="Profile" class="w-8 h-8 rounded-full border border-theme-bd object-cover shadow-sm flex-shrink-0 bg-theme-bg2" />
+                          <span><%= r.studentName %></span>
+                        </div>
+                      </td>
                       <td class="text-right font-bold text-brand-red font-mono">₹<%= r.balance.toLocaleString('en-IN') %></td>
                     </tr>
                     <% }) %>

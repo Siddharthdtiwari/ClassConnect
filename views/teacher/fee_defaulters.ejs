@@ -252,7 +252,7 @@
               }
 
               const url = `/teacher/fee_defaulters/download?year=<%= selectedYearStr %>&type=${filterType}&value=${encodeURIComponent(filterValue)}&title=${encodeURIComponent(titleText)}`;
-              window.location.href = url;
+              window.open(url, '_blank');
             });
           });
 
@@ -266,7 +266,7 @@
               let filterType = sectionId === 'class-section' ? 'allBatches' : 'allMonths';
 
               const url = `/teacher/fee_defaulters/download?year=<%= selectedYearStr %>&type=${filterType}&title=${encodeURIComponent(sectionTitle)}`;
-              window.location.href = url;
+              window.open(url, '_blank');
             });
           });
         </script>

@@ -34,21 +34,80 @@ const sendEmail = async (to, subject, htmlContent, attachments = [], logOptions 
   // Save to EmailLog
   try {
     const { emailType = "General", studentRef, academicYear } = logOptions;
-    await EmailLog.create({
-      to,
+    const logData = {
+      to: Array.isArray(to) ? to.join(', ') : to,
       subject,
       emailType,
       status,
       errorMessage,
-      studentRef,
-      academicYear
-    });
+    };
+    if (studentRef && studentRef !== "") logData.studentRef = studentRef;
+    if (academicYear && academicYear !== "") logData.academicYear = academicYear;
+
+    await EmailLog.create(logData);
   } catch (logErr) {
     console.error("Failed to save email log:", logErr);
   }
 };
 
+const Fee = require("../models/Fee");
+
 const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, receiptData = null) => {
+  let feeSummaryHtml = "";
+  if (receiptData && receiptData.student) {
+    try {
+      const student = receiptData.student;
+      const fees = await Fee.find({ studentId: student.studentId, batch: student.batch }).lean();
+
+      const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
+      const calendarToAcademic = { 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11 };
+      
+      const now = new Date();
+      const currentMonthIndex = now.getMonth();
+      const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
+      const FEE_DUE_DAY = 10;
+      const monthsElapsed = now.getDate() >= FEE_DUE_DAY ? currentAcademicIndex + 1 : currentAcademicIndex;
+      
+      let academicStartYear;
+      if (student.batch && student.batch.academicYear) {
+        academicStartYear = parseInt(student.batch.academicYear.split("-")[0]);
+      } else {
+        academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+      }
+      
+      const yearForMonthIndex = (idx) => idx < 8 ? academicStartYear : academicStartYear + 1;
+      
+      let dueMonths = [];
+      for (let idx = 0; idx < monthsElapsed; idx++) {
+        const m = months[idx];
+        const feeYear = yearForMonthIndex(idx);
+        const feeRecord = fees.find((f) => f.month === m && Number(f.year) === feeYear && f.status === "Paid");
+        if (!feeRecord) {
+          dueMonths.push(m);
+        }
+      }
+      
+      const monthlyFee = Number(student.monthlyFee || 0);
+      const totalDue = monthlyFee * dueMonths.length;
+      
+      if (dueMonths.length > 0) {
+        feeSummaryHtml = `
+        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
+          <h3 style="margin-top: 0; color: #e11d48; font-size: 16px; margin-bottom: 10px;">Fee Summary</h3>
+          <p style="margin: 0; color: #881337; font-size: 15px;">You have outstanding dues of <strong>₹${totalDue.toLocaleString()}</strong> for the following months: <strong>${dueMonths.join(", ")}</strong>.</p>
+        </div>`;
+      } else {
+        feeSummaryHtml = `
+        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
+          <h3 style="margin-top: 0; color: #16a34a; font-size: 16px; margin-bottom: 10px;">Fee Summary</h3>
+          <p style="margin: 0; color: #166534; font-size: 15px;">You have <strong>no outstanding dues</strong> at the moment. All fees are cleared!</p>
+        </div>`;
+      }
+    } catch (e) {
+      console.error("Error generating fee summary for email:", e);
+    }
+  }
+
   const subject = `Fee Receipt: ${month} ${year} - Tuition Hub Education Centre`;
   const htmlContent = `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 680px; margin: 0 auto; border: 1px solid #e2e8f0; border-radius: 18px; overflow: hidden; color: #334155; background: #ffffff;">
@@ -77,6 +136,8 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, re
             </tr>
           </table>
         </div>
+
+        ${feeSummaryHtml}
 
         <p style="font-size: 15px; line-height: 1.7; margin-bottom: 24px; color: #475569;">If you have any questions, please reply to this email or contact the office during working hours.</p>
 
@@ -109,10 +170,22 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, re
     }
   }
 
+  let computedAcademicYear;
+  const feeMonth = (receiptData && receiptData.fee && receiptData.fee.month) ? receiptData.fee.month : month;
+  const feeYear = parseInt((receiptData && receiptData.fee && receiptData.fee.year) ? receiptData.fee.year : year);
+  
+  if (feeMonth && feeYear) {
+    const earlyMonths = ["January", "February", "March", "April"];
+    const startYear = earlyMonths.includes(feeMonth) ? feeYear - 1 : feeYear;
+    computedAcademicYear = `${startYear}-${(startYear + 1).toString().slice(-2)}`;
+  } else if (receiptData && receiptData.academicYear) {
+    computedAcademicYear = receiptData.academicYear;
+  }
+
   const logOptions = {
     emailType: "Fee Receipt",
     studentRef: receiptData && receiptData.student ? receiptData.student._id : undefined,
-    academicYear: receiptData && receiptData.fee ? receiptData.fee.year : undefined // Assuming fee year is academic year string or similar
+    academicYear: computedAcademicYear
   };
   await sendEmail(studentEmail, subject, htmlContent, attachments, logOptions);
 };

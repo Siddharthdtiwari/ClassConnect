@@ -1240,4 +1240,450 @@ async function generateStudentDirectoryPDF(students, selectedYearStr, res, dispo
   doc.end();
 }
 
-module.exports = { generateReceiptPDF, buildReceiptPDFBuffer, drawStudentReport, generateStudentReportPDF, generateFeeDefaultersPDF, generateAttendanceDefaultersPDF, generateStudentDirectoryPDF };
+
+
+async function drawFeeCollectionSheet(doc, data) {
+  const { month, year, nextMonth, students } = data;
+  const W = doc.page.width;
+  const H = doc.page.height;
+  const M = 40;
+
+  const byBatch = {};
+  students.forEach(s => {
+    const batchName = s.batch ? s.batch.name : 'Unassigned';
+    if (!byBatch[batchName]) byBatch[batchName] = [];
+    byBatch[batchName].push(s);
+  });
+
+  const getBatchOrderValue = (name) => {
+    if (!name) return 999;
+    const lowerName = name.toLowerCase();
+    if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
+    const match = lowerName.match(/^(\d+)/);
+    if (match) return parseInt(match[1]);
+    return 100;
+  };
+  const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
+
+  const group1 = sortedBatches.filter(b => getBatchOrderValue(b) <= 4);
+  const group2 = sortedBatches.filter(b => getBatchOrderValue(b) > 4);
+
+  let cursorY = M;
+  let headerImageBuffer = null;
+
+  try {
+    const headerUrl = process.env.CLOUDINARY_HEADER_URL;
+    if (headerUrl) {
+      const axios = require("axios");
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      headerImageBuffer = Buffer.from(response.data, "binary");
+    }
+  } catch(err) {}
+
+  function drawWatermark() {
+    doc.save();
+    doc.fillOpacity(0.06);
+    doc.fillColor("#4b2d84");
+    doc.font("Times-Bold").fontSize(10);
+    const watermarkText = `TUITION HUB EDU CENTER - FEE COLLECTION SHEET    `;
+    const stepX = 180;
+    const stepY = 80;
+    for (let y = -50; y < H + 100; y += stepY) {
+      for (let x = -50; x < W + 100; x += stepX) {
+        doc.save(); doc.translate(x, y); doc.rotate(-30); doc.text(watermarkText, 0, 0); doc.restore();
+      }
+    }
+    doc.restore();
+  }
+
+  function drawPageHeader() {
+    doc.rect(0, 0, W, H).fill("#fafafa");
+    drawWatermark();
+    
+    let headerHeight = 185;
+    const primaryGrad = doc.linearGradient(0, 0, W, headerHeight);
+    primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
+
+    doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
+
+    doc.save();
+    doc.fillOpacity(0.1);
+    doc.circle(W - 40, 40, 80).fill("white");
+    doc.circle(W - 80, 100, 50).fill("white");
+    doc.circle(40, 20, 60).fill("white");
+    doc.restore();
+
+    if (headerImageBuffer) {
+      doc.image(headerImageBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
+    }
+
+    doc.fillColor("white").font("Times-Bold").fontSize(34)
+      .text(`${month.toUpperCase()} ${year}`, M, 105, { align: "center", width: W - 2 * M });
+
+    doc.fillColor("#e9d5ff").font("Times-Bold").fontSize(14)
+      .text(`TO BE PAID BETWEEN 1ST AND 10TH ${nextMonth.toUpperCase()}`, M, 150, { align: "center", width: W - 2 * M });
+
+    cursorY = headerHeight + 20;
+  }
+
+  const cols = ["STD", "ROLL NO.", "NAME", "DATE", "AMOUNT", "MODE"];
+  const widths = [40, 65, 175, 75, 75, 85];
+  const tableWidth = widths.reduce((a, b) => a + b, 0);
+  const tableM = (W - tableWidth) / 2;
+  const rowH = 20;
+
+  function checkPageAdd(heightNeeded) {
+    if (cursorY + heightNeeded > H - 40) {
+      // Close the previous table border
+      doc.lineWidth(1).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#d1d5db");
+      doc.addPage();
+      drawPageHeader();
+      drawTableHeader();
+    }
+  }
+
+  function drawTableHeader() {
+    doc.rect(tableM, cursorY, tableWidth, 24).fill("#ede9fe");
+    doc.lineWidth(1);
+    doc.rect(tableM, cursorY, tableWidth, 24).stroke("#d1d5db");
+    
+    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
+    let curX = tableM;
+    cols.forEach((col, i) => {
+      if (i > 0) {
+        doc.moveTo(curX, cursorY).lineTo(curX, cursorY + 24).stroke("#d1d5db");
+      }
+      doc.text(col, curX, cursorY + 8, { width: widths[i], align: "center" });
+      curX += widths[i];
+    });
+    cursorY += 24;
+  }
+
+  async function renderGroup(batches) {
+    drawTableHeader();
+
+    let globalRowIndex = 0;
+
+    for (const cls of batches) {
+      const batchStudents = byBatch[cls];
+      const batchHeight = batchStudents.length * rowH;
+
+      checkPageAdd(batchHeight); 
+
+      let batchStartY = cursorY;
+
+      for (let i = 0; i < batchStudents.length; i++) {
+        const s = batchStudents[i];
+        const isEven = globalRowIndex % 2 === 0;
+        
+        // Fill row background
+        doc.rect(tableM + widths[0], cursorY, tableWidth - widths[0], rowH).fill(isEven ? "white" : "#f9fafb");
+        // Fill STD column background (white for the whole merged cell block)
+        if (i === 0) {
+          doc.rect(tableM, batchStartY, widths[0], batchHeight).fill("white");
+        }
+
+        // Horizontal line
+        if (i === 0) {
+          doc.lineWidth(2.5).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#9ca3af");
+        } else {
+          doc.lineWidth(1).moveTo(tableM + widths[0], cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#d1d5db");
+        }
+
+        let curX = tableM + widths[0]; 
+        
+        // Vertical lines
+        doc.lineWidth(1).moveTo(tableM, cursorY).lineTo(tableM, cursorY + rowH).stroke("#d1d5db"); // left border
+        for (let j = 1; j < cols.length; j++) {
+          doc.moveTo(curX, cursorY).lineTo(curX, cursorY + rowH).stroke("#d1d5db");
+          curX += widths[j];
+        }
+        doc.lineWidth(1).moveTo(tableM + tableWidth, cursorY).lineTo(tableM + tableWidth, cursorY + rowH).stroke("#d1d5db"); // right border
+
+        const textY = cursorY + 6;
+        
+        doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+        doc.text(s.studentId, tableM + widths[0] + 5, textY, { width: widths[1] - 10 });
+        
+        doc.fillColor("#111827").font("Times-Bold");
+        doc.text(s.studentName.toUpperCase(), tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10 });
+
+        cursorY += rowH;
+        globalRowIndex++;
+      }
+      
+      const batchCenterY = batchStartY + (batchHeight / 2) - 5;
+      let shortCls = cls.toUpperCase();
+      if (shortCls.includes("PRE PRIMARY")) shortCls = "JR SR";
+      
+      doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
+      doc.text(shortCls, tableM, batchCenterY, { width: widths[0], align: "center" });
+    }
+    
+    doc.lineWidth(2.5).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#9ca3af");
+  }
+
+  async function renderTeachers(teachersList) {
+    if (!teachersList || teachersList.length === 0) return;
+    
+    // Add a bit of space before the teacher section if there's room
+    if (cursorY + rowH + 24 > H - 40) {
+      checkPageAdd(H); // force a new page
+    } else {
+      cursorY += 10;
+    }
+
+    doc.rect(tableM, cursorY, tableWidth, 24).fill("#ede9fe");
+    doc.lineWidth(1);
+    doc.rect(tableM, cursorY, tableWidth, 24).stroke("#d1d5db");
+    
+    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
+    let curX = tableM;
+    const teacherCols = ["TYPE", "ID", "NAME", "DATE", "AMOUNT", "MODE"];
+    teacherCols.forEach((col, i) => {
+      if (i > 0) {
+        doc.moveTo(curX, cursorY).lineTo(curX, cursorY + 24).stroke("#d1d5db");
+      }
+      doc.text(col, curX, cursorY + 8, { width: widths[i], align: "center" });
+      curX += widths[i];
+    });
+    cursorY += 24;
+
+    const batchHeight = teachersList.length * rowH;
+    checkPageAdd(batchHeight);
+    
+    let batchStartY = cursorY;
+
+    for (let i = 0; i < teachersList.length; i++) {
+      const t = teachersList[i];
+      const isEven = i % 2 === 0;
+      
+      doc.rect(tableM + widths[0], cursorY, tableWidth - widths[0], rowH).fill(isEven ? "white" : "#f9fafb");
+      if (i === 0) {
+        doc.rect(tableM, batchStartY, widths[0], batchHeight).fill("white");
+      }
+
+      if (i === 0) {
+        doc.lineWidth(2.5).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#9ca3af");
+      } else {
+        doc.lineWidth(1).moveTo(tableM + widths[0], cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#d1d5db");
+      }
+
+      let tCurX = tableM + widths[0]; 
+      
+      doc.lineWidth(1).moveTo(tableM, cursorY).lineTo(tableM, cursorY + rowH).stroke("#d1d5db");
+      for (let j = 1; j < cols.length; j++) {
+        doc.moveTo(tCurX, cursorY).lineTo(tCurX, cursorY + rowH).stroke("#d1d5db");
+        tCurX += widths[j];
+      }
+      doc.lineWidth(1).moveTo(tableM + tableWidth, cursorY).lineTo(tableM + tableWidth, cursorY + rowH).stroke("#d1d5db");
+
+      const textY = cursorY + 6;
+      
+      doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+      doc.text(t.teacherId || "TCH", tableM + widths[0] + 5, textY, { width: widths[1] - 10 });
+      
+      doc.fillColor("#111827").font("Times-Bold");
+      doc.text((t.teacherName || t.name || "").toUpperCase(), tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10 });
+
+      cursorY += rowH;
+    }
+    
+    const batchCenterY = batchStartY + (batchHeight / 2) - 5;
+    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
+    doc.text("STAFF", tableM, batchCenterY, { width: widths[0], align: "center" });
+    
+    doc.lineWidth(2.5).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#9ca3af");
+  }
+
+  drawPageHeader();
+  if (group1.length > 0) {
+    await renderGroup(group1);
+  }
+  
+  if (group2.length > 0) {
+    doc.addPage();
+    drawPageHeader();
+    await renderGroup(group2);
+  }
+
+  if (data.teachers && data.teachers.length > 0) {
+    await renderTeachers(data.teachers);
+  }
+}
+
+async function generateFeeCollectionSheetPDF(data, res, disposition = 'inline') {
+  const doc = new PDFDocument({ size: 'A4', margin: 0, bufferPages: true });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', disposition + `; filename=fee-collection-sheet-${data.month}-${data.year}.pdf`);
+  doc.pipe(res);
+  await drawFeeCollectionSheet(doc, data);
+  doc.end();
+}
+
+async function drawFeeSummaryReport(doc, student, feesByMonth, totalDue) {
+  const W = doc.page.width;
+  const H = doc.page.height;
+  const M = 40;
+
+  function drawWatermark() {
+    doc.save();
+    doc.fillOpacity(0.06);
+    doc.fillColor('#4b2d84');
+    doc.font('Times-Bold').fontSize(10);
+
+    const watermarkText = `TUITION HUB EDU CENTER - ${student.studentName.toUpperCase()} FEE SUMMARY    `;
+    const stepX = 180;
+    const stepY = 80;
+
+    for (let y = -50; y < H + 100; y += stepY) {
+      for (let x = -50; x < W + 100; x += stepX) {
+        doc.save();
+        doc.translate(x, y);
+        doc.rotate(-30);
+        doc.text(watermarkText, 0, 0);
+        doc.restore();
+      }
+    }
+    doc.restore();
+  }
+
+  doc.rect(0, 0, W, H).fill('#fafafa');
+  drawWatermark();
+
+  const primaryGrad = doc.linearGradient(0, 0, W, 120);
+  primaryGrad.stop(0, '#4b2d84').stop(1, '#6b46c1');
+
+  let headerHeight = 150;
+  doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
+
+  doc.save();
+  doc.fillOpacity(0.1);
+  doc.circle(W - 40, 40, 80).fill('white');
+  doc.circle(W - 80, 100, 50).fill('white');
+  doc.circle(40, 20, 60).fill('white');
+  doc.restore();
+
+  const headerUrl = process.env.CLOUDINARY_HEADER_URL;
+  if (headerUrl) {
+    try {
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const imgBuffer = Buffer.from(response.data, "binary");
+      doc.image(imgBuffer, M, 18, { fit: [W - 2 * M, 70], align: "center" });
+    } catch (_) {
+      // Fallback to text
+    }
+  }
+
+  doc.fillColor('white').font('Times-Bold').fontSize(24)
+    .text('FEE SUMMARY', M, 110, { align: 'left', characterSpacing: 1 });
+
+  doc.fillColor('white').font('Times-Bold').fontSize(10)
+    .text(`Date: ${new Date().toLocaleDateString('en-IN')}`, W - M - 150, 115, { align: 'right', width: 150 });
+  doc.fillColor('#e9d5ff').font('Times-Bold').fontSize(10)
+    .text(`Student ID: ${student.studentId}`, W - M - 150, 130, { align: 'right', width: 150 });
+
+  let cursorY = headerHeight + 30;
+
+  const cardW = W - 2 * M;
+  doc.roundedRect(M, cursorY, cardW, 90, 8).fill('white').stroke('#e5e7eb');
+  doc.save();
+  doc.roundedRect(M, cursorY, cardW, 90, 8).clip();
+  doc.rect(M, cursorY, 6, 90).fill('#bde045');
+  doc.restore();
+
+  doc.fillColor('#4b2d84').font('Times-Bold').fontSize(11)
+    .text('STUDENT PROFILE', M + 25, cursorY + 15, { characterSpacing: 1 });
+  doc.fillColor('#111827').font('Times-Bold').fontSize(22)
+    .text(student.studentName, M + 25, cursorY + 35);
+
+  const col1 = M + 25;
+  const col2 = M + 160;
+  const col3 = M + 295;
+
+  doc.fontSize(10);
+  const dataY = cursorY + 60;
+  doc.fillColor('#6b7280').font('Times-Roman').text('Batch', col1, dataY)
+    .fillColor('#111827').font('Times-Bold').text(student.batch ? student.batch.name : 'Unassigned', col1, dataY + 15);
+  doc.fillColor('#6b7280').font('Times-Roman').text('Monthly Fee', col2, dataY)
+    .fillColor('#111827').font('Times-Bold').text(`Rs. ${(student.monthlyFee || 0).toLocaleString('en-IN')}`, col2, dataY + 15);
+  doc.fillColor('#6b7280').font('Times-Roman').text('Total Outstanding', col3, dataY)
+    .fillColor(totalDue > 0 ? '#dc2626' : '#059669').font('Times-Bold').text(`Rs. ${totalDue.toLocaleString('en-IN')}`, col3, dataY + 15);
+
+  cursorY += 120;
+
+  doc.fillColor('#4b2d84').font('Times-Bold').fontSize(12)
+    .text('FEE PAYMENT HISTORY', M, cursorY, { characterSpacing: 1 });
+  cursorY += 20;
+
+  doc.roundedRect(M, cursorY, cardW, 25, 4).fill('#ede9fe');
+  const feeCols = ['For Month', 'Status', 'Date Paid', 'Amount'];
+  const feeWidths = [120, 100, 130, 100];
+  
+  doc.fillColor('#4b2d84').font('Times-Bold').fontSize(9);
+  let curX = M + 15;
+  feeCols.forEach((col, i) => {
+    doc.text(col.toUpperCase(), curX, cursorY + 8, { width: feeWidths[i] });
+    curX += feeWidths[i];
+  });
+  cursorY += 25;
+
+  feesByMonth.forEach((item, i) => {
+    if (cursorY + 30 > H - 50) {
+      doc.addPage();
+      doc.rect(0, 0, W, H).fill('#fafafa');
+      drawWatermark();
+      doc.rect(0, 0, W, 40).fill(primaryGrad);
+      doc.fillColor('white').font('Times-Bold').fontSize(14).text('FEE SUMMARY', M, 13);
+      doc.fillColor('#e9d5ff').font('Times-Roman').fontSize(10).text(student.studentName, W - M - 200, 15, { align: 'right', width: 200 });
+      cursorY = 70;
+    }
+
+    const isEven = i % 2 === 0;
+    doc.rect(M, cursorY, cardW, 25).fill(isEven ? 'white' : '#f3f4f6');
+    doc.rect(M, cursorY + 25, cardW, 0.5).fill('#e5e7eb');
+
+    curX = M + 15;
+    doc.fillColor('#111827').font('Times-Bold').fontSize(9).text(item.month, curX, cursorY + 8, { width: feeWidths[0] });
+    curX += feeWidths[0];
+
+    if (item.status === 'Paid') {
+      doc.roundedRect(curX, cursorY + 5, 40, 15, 6).fill('#d1fae5');
+      doc.fillColor('#065f46').fontSize(8).text('PAID', curX, cursorY + 9, { width: 40, align: 'center' });
+    } else if (item.status === 'Due') {
+      doc.roundedRect(curX, cursorY + 5, 40, 15, 6).fill('#fee2e2');
+      doc.fillColor('#991b1b').fontSize(8).text('DUE', curX, cursorY + 9, { width: 40, align: 'center' });
+    } else {
+      doc.roundedRect(curX, cursorY + 5, 60, 15, 6).fill('#f3f4f6');
+      doc.fillColor('#4b5563').fontSize(8).text('UPCOMING', curX, cursorY + 9, { width: 60, align: 'center' });
+    }
+    curX += feeWidths[1];
+
+    doc.fillColor('#4b5563').font('Times-Roman').fontSize(9);
+    doc.text(item.datePaid ? new Date(item.datePaid).toLocaleDateString('en-IN') : '-', curX, cursorY + 8, { width: feeWidths[2] });
+    curX += feeWidths[2];
+
+    doc.fillColor('#4b2d84').font('Times-Bold');
+    doc.text(`Rs. ${Number(item.amount).toLocaleString('en-IN')}`, curX, cursorY + 8, { width: feeWidths[3] });
+
+    cursorY += 25;
+  });
+
+  for (let p = 0; p < doc.bufferedPageRange().count; p++) {
+    doc.switchToPage(p);
+    doc.rect(0, H - 50, W, 2).fill('#e9d5ff');
+    doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
+      .text('This is a computer-generated report and does not require a signature.', M, H - 40, { align: 'center', width: W - M * 2 });
+  }
+}
+
+async function generateFeeSummaryPDF(student, feesByMonth, totalDue, res, disposition = 'inline') {
+  const doc = new PDFDocument({ size: 'A4', margin: 0, bufferPages: true });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', disposition + `; filename=fee-summary-${student.studentId}.pdf`);
+  doc.pipe(res);
+  await drawFeeSummaryReport(doc, student, feesByMonth, totalDue);
+  doc.end();
+}
+
+module.exports = { generateReceiptPDF, buildReceiptPDFBuffer, drawStudentReport, generateStudentReportPDF, generateFeeDefaultersPDF, generateAttendanceDefaultersPDF, generateStudentDirectoryPDF, generateFeeCollectionSheetPDF, generateFeeSummaryPDF };

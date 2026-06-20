@@ -4,7 +4,7 @@ const Razorpay = require("razorpay");
 const User = require("../../models/User");
 const Fee = require("../../models/Fee");
 const { sendFeeReceipt } = require("../../utils/emailService");
-const { generateReceiptPDF } = require("../../utils/pdfUtils");
+const { generateReceiptPDF, generateFeeSummaryPDF } = require("../../utils/pdfUtils");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -245,7 +245,7 @@ exports.downloadReceipt = async (req, res) => {
     const student = fee.userRef
       ? await User.findById(fee.userRef).populate('batch').lean()
       : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
-    await generateReceiptPDF(fee, student, res, "attachment");
+    await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error(err);
     res.send("Error generating receipt");
@@ -263,5 +263,87 @@ exports.viewReceipt = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Error generating receipt");
+  }
+};
+
+exports.downloadFeeSummary = async (req, res) => {
+  try {
+    const student = await User.findById(req.session.userId).populate('batch').lean();
+    if (!student) return res.send("Student not found");
+
+    const months = [
+      "May", "June", "July", "August", "September", "October",
+      "November", "December", "January", "February", "March", "April"
+    ];
+
+    const calendarToAcademic = {
+      4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5,
+      10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11,
+    };
+
+    const now = new Date();
+    const currentMonthIndex = now.getMonth();
+    const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
+    const FEE_DUE_DAY = 10;
+    const monthsElapsed =
+      now.getDate() >= FEE_DUE_DAY
+        ? currentAcademicIndex + 1
+        : currentAcademicIndex;
+
+    let academicStartYear;
+    if (student.batch && student.batch.academicYear) {
+      academicStartYear = parseInt(student.batch.academicYear.split("-")[0]);
+    } else {
+      academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
+    }
+    
+    const yearForMonthIndex = (idx) =>
+      idx < 8 ? academicStartYear : academicStartYear + 1;
+
+    const fees = await Fee.find({ studentId: student.studentId, batch: student.batch._id }).lean();
+
+    const feesByMonth = months.map((month, idx) => {
+      const feeYear = yearForMonthIndex(idx);
+      const feeRecord = fees.find(
+        (f) => f.month === month && Number(f.year) === feeYear
+      );
+
+      if (feeRecord) {
+        return {
+          _id: feeRecord._id,
+          month,
+          amount: Number(feeRecord.amount || 0),
+          status: feeRecord.status || "Paid",
+          datePaid: feeRecord.datePaid,
+          year: feeYear,
+        };
+      } else if (idx < monthsElapsed) {
+        return {
+          month,
+          amount: Number(student.monthlyFee || 0),
+          status: "Due",
+          datePaid: null,
+          year: feeYear,
+        };
+      } else {
+        return {
+          month,
+          amount: Number(student.monthlyFee || 0),
+          status: "Not Yet Due",
+          datePaid: null,
+          year: feeYear,
+        };
+      }
+    });
+
+    const monthlyFee = Number(student.monthlyFee || 0);
+    const dueMonthsCount = feesByMonth.filter((f) => f.status === "Due").length;
+    const totalDue = monthlyFee * dueMonthsCount;
+
+    const disposition = req.query.dl ? "attachment" : "inline";
+    await generateFeeSummaryPDF(student, feesByMonth, totalDue, res, disposition);
+  } catch (err) {
+    console.error(err);
+    res.send("Error generating fee summary");
   }
 };

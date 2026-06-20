@@ -77,6 +77,8 @@ router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, c
 router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));
 router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderBulkFees));
 router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(feeController.processBulkSave));
+router.get("/teacher/print_fee_sheet", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeCollectionSheet));
+router.get("/teacher/fee_summary/:id", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeSummaryTeacher));
 
 // Test Management & Scores & Timetable
 router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));

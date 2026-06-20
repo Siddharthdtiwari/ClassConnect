@@ -44,6 +44,7 @@ router.get("/student/take_test", ensureDBConnection, requireStudentLogin, catchA
 
 // Fees
 router.get("/student/fee_payment", ensureDBConnection, requireStudentLogin, catchAsync(feeController.renderFeePayment));
+router.get("/student/fee_summary", ensureDBConnection, requireStudentLogin, catchAsync(feeController.downloadFeeSummary));
 router.post("/create-order", ensureDBConnection, requireStudentLogin, catchAsync(feeController.createOrder));
 router.post("/verify-payment", ensureDBConnection, requireStudentLogin, catchAsync(feeController.verifyPayment));
 

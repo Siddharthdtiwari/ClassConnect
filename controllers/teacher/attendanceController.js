@@ -237,7 +237,7 @@ exports.downloadDefaulters = async (req, res) => {
       .sort((a, b) => Number(a.percentage) - Number(b.percentage));
 
     const { generateAttendanceDefaultersPDF } = require("../../utils/pdfUtils");
-    await generateAttendanceDefaultersPDF({ defaulters, month, year }, res, "attachment");
+    await generateAttendanceDefaultersPDF({ defaulters, month, year }, res, "inline");
   } catch (err) {
     console.error("Attendance defaulters download error:", err);
     res.status(500).send("Error generating PDF");

@@ -8,6 +8,7 @@ const mongoose = require("mongoose");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { logAudit } = require("../../utils/auditService");
+const { sendTestMarks } = require("../../utils/emailService");
 
 exports.renderManageTests = async (req, res) => {
   try {
@@ -122,6 +123,7 @@ exports.apiSaveScores = async (req, res) => {
     }
 
     const operations = [];
+    const emailsToSend = [];
     for (const s of scores) {
       const student = await User.findOne({ studentId: s.studentId });
       if (!student) continue;
@@ -143,6 +145,16 @@ exports.apiSaveScores = async (req, res) => {
           upsert: true
         }
       });
+      
+      if (student.email) {
+        emailsToSend.push({
+          email: student.email,
+          name: student.studentName,
+          score: s.score,
+          percentage,
+          studentRef: student._id
+        });
+      }
     }
 
     if (operations.length > 0) {
@@ -152,6 +164,21 @@ exports.apiSaveScores = async (req, res) => {
         entityType: "Score",
         details: `Saved scores for test: ${test.testName}`,
         academicYear: req.viewingYear
+      });
+      
+      // Send emails asynchronously
+      emailsToSend.forEach(record => {
+        const logMeta = { studentRef: record.studentRef, academicYear: req.viewingYear };
+        sendTestMarks(
+          record.email, 
+          record.name, 
+          test.testName, 
+          test.subject, 
+          record.score, 
+          test.totalMarks, 
+          record.percentage, 
+          logMeta
+        ).catch(e => console.error("Failed to send test marks email:", e));
       });
     }
 

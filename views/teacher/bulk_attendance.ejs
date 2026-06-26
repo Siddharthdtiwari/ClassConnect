@@ -236,7 +236,7 @@
                        if(status === 'A') statusClass = 'status-A';
                        if(status === 'H') statusClass = 'status-H';
                     %>
-                    <td class="status-cell <%= statusClass %> border-r border-theme-bd" data-date="<%= date %>" data-student="<%= student.studentId %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
+                    <td class="status-cell <%= statusClass %> border-r border-theme-bd" data-date="<%= date %>" data-student="<%= student.studentId %>" data-batch="<%= student.batch %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
                       <%= status || '-' %>
                     </td>
                     <% }) %>
@@ -301,6 +301,7 @@
         const date = cell.dataset.date;
         const studentId = cell.dataset.student;
         const status = cell.getAttribute('data-status');
+        const batch = cell.dataset.batch;
 
         if (status) {
           if (!attendanceData[date]) {
@@ -308,6 +309,7 @@
           }
           attendanceData[date].push({
             studentId,
+            batch,
             status
           });
         }

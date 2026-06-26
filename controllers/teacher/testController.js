@@ -125,7 +125,7 @@ exports.apiSaveScores = async (req, res) => {
     const operations = [];
     const emailsToSend = [];
     for (const s of scores) {
-      const student = await User.findOne({ studentId: s.studentId });
+      const student = await User.findOne({ studentId: s.studentId, batch: test.batch });
       if (!student) continue;
 
       const percentage = calculatePercentage(s.score, test.totalMarks);
@@ -166,10 +166,10 @@ exports.apiSaveScores = async (req, res) => {
         academicYear: req.viewingYear
       });
       
-      // Send emails asynchronously
-      emailsToSend.forEach(record => {
+      // Send emails asynchronously but wait for them to finish before responding in Serverless env
+      await Promise.all(emailsToSend.map(record => {
         const logMeta = { studentRef: record.studentRef, academicYear: req.viewingYear };
-        sendTestMarks(
+        return sendTestMarks(
           record.email, 
           record.name, 
           test.testName, 
@@ -179,7 +179,7 @@ exports.apiSaveScores = async (req, res) => {
           record.percentage, 
           logMeta
         ).catch(e => console.error("Failed to send test marks email:", e));
-      });
+      }));
     }
 
     res.json({ success: true, message: "Scores saved successfully!" });
@@ -688,7 +688,7 @@ OUTPUT FORMAT REQUIREMENTS:
     }
 
     const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash:generateContent`,
       {
         contents: [
           {

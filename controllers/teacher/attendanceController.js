@@ -314,7 +314,7 @@ exports.processBulkSaveAttendance = async (req, res) => {
       const recordsByBatch = {};
 
       for (const r of records) {
-        const student = await User.findOne({ studentId: r.studentId });
+        const student = await User.findOne({ studentId: r.studentId, batch: r.batch });
         if (student && student.batch) {
           const batchId = student.batch.toString();
           if (!recordsByBatch[batchId]) {

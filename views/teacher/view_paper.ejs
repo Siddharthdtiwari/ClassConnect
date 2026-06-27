@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= test.testName %> - View Paper</title>
+  <link rel="stylesheet" href="/css/style.css">
+  <style>
+    body {
+      margin: 0;
+      padding: 40px;
+      background: #525659;
+      display: flex;
+      justify-content: center;
+      font-family: 'Times New Roman', Times, serif;
+    }
+    .paper-wrapper {
+      background: #fff;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+      width: 210mm;
+      min-height: 297mm;
+      overflow: hidden;
+      position: relative;
+    }
+    @media print {
+      body {
+        background: transparent;
+        padding: 0;
+        display: block;
+      }
+      .paper-wrapper {
+        box-shadow: none;
+        width: 100%;
+        margin: 0;
+      }
+    }
+    .print-btn-container {
+      position: fixed;
+      bottom: 30px;
+      right: 30px;
+      z-index: 1000;
+    }
+    .print-btn {
+      background-color: #4b2d84;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 60px;
+      height: 60px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 4px 12px rgba(75, 45, 132, 0.4);
+      cursor: pointer;
+      transition: transform 0.2s;
+    }
+    .print-btn:hover {
+      transform: scale(1.05);
+    }
+    @media print {
+      .print-btn-container {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  
+  <div class="print-btn-container">
+    <button class="print-btn" onclick="window.print()" title="Print Paper">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="6 9 6 2 18 2 18 9"></polyline>
+        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+        <rect x="6" y="14" width="12" height="8"></rect>
+      </svg>
+    </button>
+  </div>
+
+  <div class="paper-wrapper">
+    <%- test.htmlContent %>
+  </div>
+
+</body>
+</html>

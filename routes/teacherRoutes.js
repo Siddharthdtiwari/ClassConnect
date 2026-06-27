@@ -82,6 +82,7 @@ router.get("/teacher/fee_summary/:id", ensureDBConnection, requireTeacherLogin, 
 
 // Test Management & Scores & Timetable
 router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));
+router.get("/teacher/view_paper/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderViewPaper));
 router.get("/teacher/generate_paper", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderGeneratePaper));
 router.post("/teacher/add_test", ensureDBConnection, requireTeacherLogin, upload.single("questionPaperFile"), catchAsync(testController.processAddTest));
 router.post("/teacher/delete_test/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processDeleteTest));

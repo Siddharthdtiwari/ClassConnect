@@ -12,7 +12,8 @@ const testSchema = new mongoose.Schema(
     topic: { type: String, required: true, trim: true },
     totalMarks: { type: Number, required: true, min: 1 },
     testDate: { type: Date, required: true },
-    questionPaper: { type: String, required: true },
+    questionPaper: { type: String, required: false },
+    htmlContent: { type: String, default: "" },
   },
   { timestamps: true }
 );

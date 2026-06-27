@@ -603,7 +603,6 @@
           if (result.success) {
             showFormMessage('add-message-box', result.message, 'success');
             this.reset();
-            document.getElementById("add-ai-paper-status").classList.add("hidden");
             setTimeout(() => { window.location.reload(); }, 1200);
           } else {
             showFormMessage('add-message-box', result.message, 'error');

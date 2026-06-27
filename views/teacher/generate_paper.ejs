@@ -179,19 +179,49 @@
                         <textarea id="ai-context" rows="4" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all placeholder-theme-fdd custom-scrollbar" placeholder="Paste source chapters or sample questions here..." required></textarea>
                       </div>
 
-                      <div class="grid grid-cols-3 gap-2">
+                      <div class="grid grid-cols-2 gap-2">
+                        <div>
+                          <label for="ai-batch" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Batch</label>
+                          <select id="ai-batch" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" required onchange="handleAiBatchChange(this)">
+                            <option value="" disabled selected>Select Batch...</option>
+                            <% batches.forEach(batch => { %>
+                            <option value="<%= batch.name %>"><%= batch.name %></option>
+                            <% }) %>
+                          </select>
+                        </div>
                         <div>
                           <label for="ai-subject" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Subject</label>
-                          <input type="text" id="ai-subject" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="Science" required />
+                          <select id="ai-subject" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" required>
+                            <option value="" disabled selected>Select Subject...</option>
+                          </select>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-3 gap-2 mt-2">
+                        <div>
+                          <label for="ai-test-name" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Test Name / No.</label>
+                          <input type="text" id="ai-test-name" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="e.g. Class Test: 02" required />
                         </div>
                         <div>
-                          <label for="ai-topic" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Topic</label>
-                          <input type="text" id="ai-topic" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="Optics" required />
+                          <label for="ai-time" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Time (Optional)</label>
+                          <input type="text" id="ai-time" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="e.g. 1 Hours" />
                         </div>
                         <div>
-                          <label for="ai-marks" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Marks</label>
-                          <input type="number" id="ai-marks" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="25" required min="1" />
+                          <label for="ai-marks" class="block text-[8px] font-bold text-theme-fdd mb-1 font-mono uppercase tracking-widest">Marks (Optional)</label>
+                          <input type="number" id="ai-marks" class="w-full text-xs border border-theme-b rounded-lg p-2 bg-theme-bgc focus:outline-none focus:border-theme-p transition-all" placeholder="50" min="1" />
                         </div>
+                      </div>
+
+                      <!-- Checkboxes -->
+                      <div class="flex flex-col gap-2 mt-2 border border-theme-bd rounded p-2 bg-theme-bgc/30">
+                        <label class="flex items-center gap-1.5 text-[10px] font-bold text-theme-fg cursor-pointer">
+                          <input type="checkbox" id="ai-include-logo" class="form-checkbox text-theme-p rounded" checked />
+                          Include Watermark Logo
+                        </label>
+                        <label class="flex items-center gap-1.5 text-[10px] font-bold text-theme-fg cursor-pointer">
+                          <input type="checkbox" id="ai-include-slanting" class="form-checkbox text-theme-p rounded" checked />
+                          Include Slanting "Tuition Hub Edu Center"
+                        </label>
                       </div>
 
                       <div>
@@ -295,6 +325,14 @@
       }
     }
 
+    function handleAiBatchChange(selectEl) {
+      const batchName = selectEl.value;
+      const subjectDropdown = document.getElementById('ai-subject');
+      if (typeof updateSubjectDropdowns !== 'undefined') {
+        updateSubjectDropdowns([subjectDropdown], batchName);
+      }
+    }
+
     function showRecordMessage(message, type) {
       const box = document.getElementById('record-message-box');
       box.textContent = message;
@@ -354,23 +392,23 @@
         selector: '#tinymce-editor',
         height: '100%',
         plugins: 'table lists link image preview code',
-        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | table image | removeformat',
+        toolbar: 'undo redo | blocks | bold italic underline | alignleft aligncenter alignright alignjustify | bullist numlist | table image | removeformat | code',
         branding: false,
         promotion: false,
+        valid_elements: '*[*]',
+        valid_children: '+body[style]',
         content_style: `
           body {
             font-family: 'Inter', sans-serif;
-            font-size: 14px;
-            line-height: 1.5;
+            background-color: #f3f4f6;
+            margin: 0;
             padding: 20px;
-            color: #333;
-            background-color: #fff;
           }
-          h1, h2, h3 { margin-top: 10px; margin-bottom: 5px; }
-          table { width: 100%; border-collapse: collapse; margin: 10px 0; }
-          table, th, td { border: 1px solid #ccc; }
-          th, td { padding: 6px 10px; text-align: left; }
-          th { background-color: #f5f5f5; }
+          .paper-container {
+             box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+             margin: 0 auto;
+             max-width: 800px;
+          }
         `
       });
 
@@ -397,7 +435,7 @@
           </div>
         `;
         
-        chatMessages.insertBefore(msgDiv, chatLoader);
+        chatMessages.appendChild(msgDiv);
         chatMessages.scrollTop = chatMessages.scrollHeight;
       }
 
@@ -417,6 +455,12 @@
 
         const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
+        const batchName = document.getElementById("ai-batch").value;
+        const testName = document.getElementById("ai-test-name").value;
+        const time = document.getElementById("ai-time").value;
+        const includeLogo = document.getElementById("ai-include-logo").checked;
+        const includeSlanting = document.getElementById("ai-include-slanting").checked;
+
         try {
           const res = await fetch("/api/ai/generate_paper", {
             method: "POST",
@@ -426,10 +470,14 @@
             },
             body: JSON.stringify({
               contextText,
+              batchName,
               subject: aiSubject.value,
-              topic: aiTopic.value,
+              testName,
+              time,
               totalMarks: aiMarks.value,
-              instructions: aiInstructions.value
+              instructions: aiInstructions.value,
+              includeLogo,
+              includeSlanting
             })
           });
 
@@ -437,15 +485,14 @@
           chatLoader.classList.add("hidden");
 
           if (data.success) {
-            appendChatMessage('user', `Generate a ${aiMarks.value} marks question paper for ${aiSubject.value} on "${aiTopic.value}".`);
+            appendChatMessage('user', `Generate a ${aiMarks.value} marks question paper for ${aiSubject.value}.`);
             appendChatMessage('bot', `I've successfully generated your question paper! You can view and edit the text directly on the canvas to the left. If you need any adjustments, type them in the box below.`);
 
             botSetupArea.classList.add("hidden");
             botRefineArea.classList.remove("hidden");
             
             // Prefill side form parameters
-            document.getElementById('record-test-name').value = `${aiSubject.value} Test — ${aiTopic.value}`;
-            document.getElementById('record-topic').value = aiTopic.value;
+            document.getElementById('record-test-name').value = testName;
             document.getElementById('record-total-marks').value = aiMarks.value;
 
             if (tinymce.get("tinymce-editor")) {

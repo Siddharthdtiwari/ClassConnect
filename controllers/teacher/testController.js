@@ -465,7 +465,10 @@ exports.processAddTest = async (req, res) => {
 
 exports.generatePaperAI = async (req, res) => {
   try {
-    const { contextText, subject, topic, totalMarks, instructions, currentHtml, refinePrompt } = req.body;
+    const { 
+      contextText, subject, topic, totalMarks, instructions, currentHtml, refinePrompt,
+      batchName, testName, time, includeLogo, includeSlanting
+    } = req.body;
 
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
@@ -503,9 +506,12 @@ Follow these constraints strictly:
 You are an expert school teacher. Generate a professional, print-ready question paper based on the textbook context and parameters provided below.
 
 PARAMETERS:
+- Batch / Class: ${batchName || ""}
 - Subject: ${subject || "General Science"}
+- Class Test Name/Number: ${testName || ""}
+- Time: ${time || ""}
+- Total Marks: ${totalMarks || ""}
 - Topic/Chapter: ${topic || "General"}
-- Total Marks: ${totalMarks || "25"}
 - Custom Instructions: ${instructions || "None"}
 
 TEXTBOOK CONTEXT / SOURCE QUESTIONS:
@@ -517,98 +523,78 @@ OUTPUT FORMAT REQUIREMENTS:
 1. Return ONLY valid HTML that can be directly inserted inside a div container.
 2. DO NOT wrap the output in markdown code blocks like \`\`\`html ... \`\`\`. Start directly with the HTML tag (e.g., <div> or <header>).
 3. Do not include <html>, <head>, or <body> tags. Just the content elements.
-4. The HTML MUST contain an embedded <style> tag. Customize the styles to match a premium report or fee receipt theme using the CSS classes below:
+4. The HTML MUST contain an embedded <style> tag. Customize the styles to match a premium report theme using the CSS classes below:
 
 \`\`\`css
 /* Embedded Stylesheet for the Question Paper */
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
 .paper-container {
-  background-color: #fafafa;
-  padding: 30px;
+  background-color: white;
+  padding: 40px;
   position: relative;
   font-family: 'Inter', sans-serif;
   color: #1f2937;
   line-height: 1.6;
+  min-height: 1000px;
 }
 .watermark {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   pointer-events: none;
-  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='150' viewBox='0 0 250 150'><text fill='rgba(75, 45, 132, 0.04)' font-family='sans-serif' font-size='10' dy='12' transform='rotate(-30 125 75)' text-anchor='middle'>TUITION HUB EDUCATION CENTRE</text></svg>");
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='250' height='150' viewBox='0 0 250 150'><text fill='rgba(75, 45, 132, 0.04)' font-family='sans-serif' font-size='10' dy='12' transform='rotate(-30 125 75)' text-anchor='middle'>TUITION HUB EDU CENTER</text></svg>");
   background-repeat: repeat;
   z-index: 0;
 }
+.watermark-logo {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 400px; height: 400px;
+  background-image: url("https://res.cloudinary.com/dcb40l6ou/image/upload/v1731653835/yep84k7z6k0yozh4sptd.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  opacity: 0.05;
+  pointer-events: none;
+  z-index: 0;
+}
 .paper-header {
-  background: linear-gradient(135deg, #4b2d84 0%, #6b46c1 100%);
-  color: white;
-  padding: 24px;
-  border-radius: 12px;
+  border-bottom: 2px solid #4b2d84;
+  padding-bottom: 16px;
   margin-bottom: 24px;
+  text-align: center;
   position: relative;
-  overflow: hidden;
   z-index: 1;
 }
 .paper-header h1 {
   font-family: 'Playfair Display', serif;
-  font-size: 24px;
-  margin: 0 0 6px 0;
-  text-align: center;
-  font-weight: 700;
-  letter-spacing: 1px;
-}
-.paper-header h2 {
-  font-size: 13px;
-  margin: 0 0 16px 0;
-  text-align: center;
-  font-weight: 500;
-  color: #e9d5ff;
-}
-.info-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.info-table td {
-  border: none !important;
-  color: white;
-  padding: 4px 8px;
-  font-size: 12px;
-}
-.info-table td strong {
-  color: #e9d5ff;
-}
-.info-underline {
-  border-bottom: 1px dashed rgba(255, 255, 255, 0.6);
-  display: inline-block;
-  width: 120px;
-  margin-left: 5px;
-}
-.instructions-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-left: 5px solid #bde045;
-  padding: 16px;
-  border-radius: 8px;
-  margin-bottom: 24px;
-  font-size: 13px;
-  position: relative;
-  z-index: 1;
-}
-.instructions-card h3 {
-  margin-top: 0;
-  margin-bottom: 8px;
+  font-size: 26px;
+  margin: 0 0 10px 0;
   color: #4b2d84;
   font-weight: 700;
-  font-size: 14px;
+  text-transform: uppercase;
 }
-.instructions-card ul {
-  margin: 0;
-  padding-left: 20px;
+.info-row {
+  display: flex;
+  justify-content: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  font-size: 14px;
+  font-weight: 600;
+  color: #374151;
+}
+.info-item {
+  display: flex;
+  gap: 5px;
+}
+.info-item span {
+  color: #4b2d84;
 }
 .section-title {
   font-family: 'Playfair Display', serif;
   color: #4b2d84;
-  font-size: 16px;
-  border-bottom: 2px solid #6b46c1;
+  font-size: 18px;
+  border-bottom: 1.5px solid #e5e7eb;
   padding-bottom: 4px;
   margin-top: 25px;
   margin-bottom: 15px;
@@ -641,48 +627,27 @@ OUTPUT FORMAT REQUIREMENTS:
   white-space: nowrap;
   margin-left: 10px;
 }
-.mcq-options {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 8px;
-  margin-top: 8px;
-  list-style-type: none;
-  padding-left: 0;
-}
-.option-item {
-  font-size: 13px;
-}
 \`\`\`
 
 5. Use the following structure for the HTML body:
 \`\`\`html
 <div class="paper-container">
-  <div class="watermark"></div>
+  ${includeSlanting ? '<div class="watermark"></div>' : ''}
+  ${includeLogo ? '<div class="watermark-logo"></div>' : ''}
   <div class="paper-header">
     <h1>TUITION HUB EDUCATION CENTRE</h1>
-    <h2>TEST PAPER: SUBJECT - TOPIC</h2>
-    <table class="info-table">
-      <tr>
-        <td><strong>Student Name:</strong> <span class="info-underline"></span></td>
-        <td><strong>Roll No:</strong> <span class="info-underline"></span></td>
-      </tr>
-      <tr>
-        <td><strong>Date:</strong> <span class="info-underline"></span></td>
-        <td><strong>Marks:</strong> ______ / TOTAL_MARKS</td>
-      </tr>
-    </table>
-  </div>
-  <div class="instructions-card">
-    <h3>INSTRUCTIONS</h3>
-    <ul>
-      <li>All questions are compulsory.</li>
-      <li>Custom instructions from parameters...</li>
-    </ul>
+    <div class="info-row">
+      <div class="info-item">Class: <span>${batchName || '____'}</span></div>
+      <div class="info-item">Subject: <span>${subject || '____'}</span></div>
+      ${time ? `<div class="info-item">Time: <span>${time}</span></div>` : ''}
+      ${totalMarks ? `<div class="info-item">Marks: <span>${totalMarks}</span></div>` : ''}
+      <div class="info-item">${testName ? `<span>${testName}</span>` : 'Class Test: ____'}</div>
+    </div>
   </div>
   <!-- Sections and questions using .section-title, .question-list, .question-item, etc. -->
 </div>
 \`\`\`
-6. Clearly denote marks for each question at the end of the question (e.g., [2 Marks]).
+6. Clearly denote marks for each question at the end of the question (e.g., [2]).
 7. Make sure the total marks of all questions sum up to exactly the specified total marks.
 `;
     }

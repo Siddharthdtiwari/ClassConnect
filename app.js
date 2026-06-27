@@ -77,23 +77,34 @@ app.use(
           "https://cdnjs.cloudflare.com",
           "https://checkout.razorpay.com",
         ],
-        // Helmet 8.x separates inline event handler (onclick=) policy from
-        // script-src-elem. We need 'unsafe-inline' here to allow onclick attrs.
         scriptSrcAttr: ["'unsafe-inline'"],
         styleSrc: [
           "'self'",
           "'unsafe-inline'",
           "https://fonts.googleapis.com",
           "https://cdn.tailwindcss.com",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
+        ],
+        styleSrcElem: [
+          "'self'",
+          "'unsafe-inline'",
+          "https://fonts.googleapis.com",
+          "https://cdn.tailwindcss.com",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
         ],
         fontSrc: [
           "'self'",
           "https://fonts.gstatic.com",
           "https://fonts.googleapis.com",
+          "https://cdnjs.cloudflare.com",
+          "https://cdn.jsdelivr.net",
         ],
         imgSrc: [
           "'self'",
           "data:",
+          "blob:",
           "https://placehold.co",
           "https://images.unsplash.com",
           "https://res.cloudinary.com",
@@ -102,6 +113,7 @@ app.use(
         connectSrc: [
           "'self'",
           "https://api.razorpay.com",
+          "https://cdnjs.cloudflare.com",
         ],
         frameSrc: [
           "'self'",

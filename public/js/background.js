@@ -87,6 +87,15 @@ document.addEventListener("DOMContentLoaded", () => {
     document.body.appendChild(toggleContainer);
   }
 
+  // 4. Add Powered By ClassConnect Footer
+  if (!document.getElementById('global-powered-by') && !document.querySelector('.footer-powered')) {
+    const poweredBy = document.createElement('div');
+    poweredBy.id = 'global-powered-by';
+    poweredBy.innerHTML = `Powered by <a href="https://classconnects.vercel.app" target="_blank" style="color:var(--pt);text-decoration:none;font-weight:700;">ClassConnect</a>`;
+    poweredBy.style.cssText = "position:fixed;bottom:16px;left:50%;transform:translateX(-50%);font-family:'Space Mono',monospace;font-size:0.6rem;color:var(--fdd);z-index:9999;letter-spacing:0.05em;pointer-events:auto;transition:color 0.3s;backdrop-filter:blur(4px);padding:4px 8px;border-radius:4px;";
+    document.body.appendChild(poweredBy);
+  }
+
   // 3. Initialize particles if not on mobile
   const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
   if (!isMobile && particlesContainer) {

@@ -97,24 +97,27 @@
       <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
       <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
       <div class="relative z-10">
-        <div class="flex justify-center sm:justify-start mb-6 gap-3">
-          <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
-            </svg>
-            Dashboard
-          </a>
-          <a href="/student/fee_summary" target="_blank" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
-            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
-            </svg>
-            Fee Summary
-          </a>
+        <div class="flex flex-col sm:flex-row justify-between items-center sm:items-start w-full">
+          <div>
+            <div class="flex items-center justify-center sm:justify-start gap-4 mb-2">
+              <a href="/student/dashboard" class="text-white/70 hover:text-white transition-colors drop-shadow-sm" title="Back to Dashboard">
+                <svg class="w-8 h-8 md:w-10 md:h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+              </a>
+              <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight tracking-tight m-0">
+                Fee <span class="text-theme-lt">Payment</span>
+              </h1>
+            </div>
+            <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4 text-center sm:text-left">Manage your tuition fees and view payment history</p>
+          </div>
+          <div class="mt-6 sm:mt-0">
+            <a href="/student/fee_summary" target="_blank" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt backdrop-blur-md shadow-sm">
+              <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+              </svg>
+              Fee Summary
+            </a>
+          </div>
         </div>
-        <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight mb-2 tracking-tight">
-          Fee <span class="text-theme-lt">Payment</span>
-        </h1>
-        <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4">Manage your tuition fees and view payment history</p>
       </div>
     </header>
 

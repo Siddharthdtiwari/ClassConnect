@@ -15,7 +15,7 @@
       font-family: 'Times New Roman', Times, serif;
     }
     .paper-wrapper {
-      background: #fff;
+      background-color: #fff;
       box-shadow: 0 4px 10px rgba(0,0,0,0.5);
       width: 210mm;
       min-height: 297mm;
@@ -33,6 +33,16 @@
         width: 100%;
         margin: 0;
       }
+    }
+    .watermark-img {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 60%;
+      transform: translate(-50%, -50%);
+      opacity: 0.08;
+      pointer-events: none;
+      z-index: 10;
     }
     .print-btn-container {
       position: fixed;
@@ -77,7 +87,11 @@
   </div>
 
   <div class="paper-wrapper">
+    <img src="/images/logo.png" class="watermark-img" alt="Tuition Hub Watermark" />
     <%- test.htmlContent %>
+    <div style="text-align: right; margin-top: 40px; padding-right: 10px; font-family: Arial, sans-serif; font-size: 10px; color: #777;">
+      Powered by <strong style="color: #4b2d84;">ClassConnect</strong>
+    </div>
   </div>
 
 </body>

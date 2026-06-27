@@ -54,15 +54,16 @@
 
           <!-- Header (Dashboard Style) -->
           <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div>
-              <h1 class="dash-greeting">Fee <span style="color: var(--pt);">Defaulters</span></h1>
+            <div class="flex items-center gap-3 mb-2">
+                <a href="/teacher/manage_fees" class="text-theme-fdd hover:text-theme-pt transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <h1 class="dash-greeting m-0" style="margin-bottom: 0;">Fee <span style="color: var(--pt);">Defaulters</span></h1>
+              </div>
               <p class="dash-sub">Unpaid fees up to <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %></p>
             </div>
             <div class="flex gap-3 flex-wrap items-center">
-              <a href="/teacher/manage_fees" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
-                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back
-              </a>
+              
             </div>
           </header>
 

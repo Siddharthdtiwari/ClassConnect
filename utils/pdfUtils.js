@@ -135,7 +135,8 @@ async function renderReceiptPDF(doc, fee, student) {
   const footerY = totalY + rowH + 18;
   doc.rect(0, footerY + 26, W, 2).fill("#e9d5ff");
   doc.fillColor("#9ca3af").font("Helvetica-Oblique").fontSize(9)
-    .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 34, { align: "center", width: W - M * 2 });
+    .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 34, { align: "center", width: W - M * 2, continued: true })
+    .fillColor("#7c3aed").text(" | Powered by ClassConnect", { link: "https://classconnects.vercel.app" });
   doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
     .text("Tuition Hub Education Centre · Andheri (East), Mumbai 400059 · 9967466955", M, footerY + 50, { align: "center", width: W - M * 2 });
 }
@@ -482,7 +483,8 @@ async function drawStudentReport(doc, student, stats) {
   // Footer
   doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
   doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2 });
+    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
+    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
 }
 
 async function generateStudentReportPDF(student, stats, res, disposition) {
@@ -814,7 +816,8 @@ async function drawFeeDefaultersReport(doc, data) {
       doc.switchToPage(p);
       doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
       doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-        .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2 });
+    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
+    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
     }
   }
 
@@ -982,7 +985,8 @@ async function drawAttendanceDefaultersReport(doc, data) {
       doc.switchToPage(p);
       doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
       doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-        .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2 });
+    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
+    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
     }
   }
 

@@ -59,8 +59,13 @@ exports.renderViewPaper = async (req, res) => {
 
 exports.processDeleteTest = async (req, res) => {
   try {
+    const test = await Test.findById(req.params.id);
+    const batchId = test ? test.batch : null;
     await Test.findByIdAndDelete(req.params.id);
     await Score.deleteMany({ testId: req.params.id });
+    if (batchId) {
+      await User.recalculatePoints(batchId);
+    }
     await logAudit({
       action: "DELETE",
       entityType: "Test",
@@ -193,6 +198,8 @@ exports.apiSaveScores = async (req, res) => {
           logMeta
         ).catch(e => console.error("Failed to send test marks email:", e));
       }));
+
+      await User.recalculatePoints(test.batch);
     }
 
     res.json({ success: true, message: "Scores saved successfully!" });

@@ -47,3 +47,17 @@ exports.renderTakeTest = async (req, res) => {
     res.status(500).send("Error loading tests");
   }
 };
+
+exports.renderViewPaper = async (req, res) => {
+  try {
+    const test = await Test.findById(req.params.id);
+    if (!test || !test.htmlContent) {
+      return res.status(404).send("Paper not found or it is a PDF.");
+    }
+    // Reuse teacher's view_paper since it has no teacher-specific layout
+    res.render("teacher/view_paper", { test });
+  } catch (err) {
+    console.error("View paper error:", err);
+    res.status(500).send("Error rendering paper");
+  }
+};

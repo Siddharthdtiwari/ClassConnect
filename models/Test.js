@@ -51,6 +51,10 @@ testSchema.post("save", async function () {
     }));
 
     await Score.bulkWrite(operations);
+
+    // Recalculate points for the affected batch
+    const User = mongoose.model("User");
+    await User.recalculatePoints(this.batch);
   } catch (err) {
     console.error("Error recalculating scores after test update:", err);
   }

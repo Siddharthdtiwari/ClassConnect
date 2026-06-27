@@ -57,7 +57,7 @@ router.get("/teacher/view_profile/:id", ensureDBConnection, requireTeacherLogin,
 router.get("/teacher/bulk_add_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderBulkAddStudents));
 router.post("/teacher/bulk_save_students", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(studentController.processBulkSaveStudents));
 router.get("/teacher/bulk_student_reports", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateBulkStudentReports));
-router.get("/teacher/student_report/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateStudentReport));
+router.get("/teacher/student_report/:id", ensureDBConnection, catchAsync(studentController.generateStudentReport));
 
 // Attendance Management
 router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderManageAttendance));
@@ -82,7 +82,7 @@ router.get("/teacher/fee_summary/:id", ensureDBConnection, requireTeacherLogin, 
 
 // Test Management & Scores & Timetable
 router.get("/teacher/manage_tests", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderManageTests));
-router.get("/teacher/view_paper/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderViewPaper));
+router.get("/teacher/view_paper/:id", ensureDBConnection, catchAsync(testController.renderViewPaper));
 router.get("/teacher/generate_paper", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderGeneratePaper));
 router.post("/teacher/add_test", ensureDBConnection, requireTeacherLogin, upload.single("questionPaperFile"), catchAsync(testController.processAddTest));
 router.post("/teacher/delete_test/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processDeleteTest));

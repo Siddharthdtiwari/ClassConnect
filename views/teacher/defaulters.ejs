@@ -44,18 +44,19 @@
         <% const printMonthName = typeof month !== 'undefined' ? new Date(year, parseInt(month) - 1).toLocaleString('default', { month: 'long' }) : 'Unknown'; %>
   <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
     <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-      <div>
-        <h1 class="dash-greeting">Attendance <span style="color: var(--pt);">Defaulters</span></h1>
+      <div class="flex items-center gap-3 mb-2">
+                <a href="/teacher/manage_attendance" class="text-theme-fdd hover:text-theme-pt transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <h1 class="dash-greeting m-0" style="margin-bottom: 0;">Attendance <span style="color: var(--pt);">Defaulters</span></h1>
+              </div>
         <p class="dash-sub">
           Below 75% for <%= printMonthName %> <%= year %>
         </p>
       </div>
 
       <div class="flex gap-3 flex-wrap items-center">
-        <a href="/teacher/manage_attendance" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono px-4 py-2 rounded-xl">
-          <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-          Back
-        </a>
+        
         <% if (defaulters.length > 0) { %>
           <a href="/teacher/defaulters/download/<%= year %>/<%= month %>" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono px-4 py-2 rounded-xl">
             <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>

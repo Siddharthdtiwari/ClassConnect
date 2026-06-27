@@ -29,4 +29,24 @@ userSchema.index({ studentId: 1, batch: 1 }, { unique: true });
 userSchema.index({ batch: 1 });
 userSchema.index({ createdAt: -1 });
 
+userSchema.statics.recalculatePoints = async function(batchId) {
+  const Score = mongoose.model("Score");
+  const scores = await Score.find({ batch: batchId });
+  const pointsMap = {};
+  scores.forEach(s => {
+    pointsMap[s.studentId] = (pointsMap[s.studentId] || 0) + Math.round(s.percentage || 0);
+  });
+  
+  const users = await this.find({ batch: batchId });
+  const ops = users.map(u => ({
+    updateOne: {
+      filter: { _id: u._id },
+      update: { $set: { points: pointsMap[u.studentId] || 0 } }
+    }
+  }));
+  if (ops.length > 0) {
+    await this.bulkWrite(ops);
+  }
+};
+
 module.exports = mongoose.model("User", userSchema);

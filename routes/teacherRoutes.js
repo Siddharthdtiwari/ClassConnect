@@ -17,6 +17,7 @@ const resourceController = require("../controllers/teacher/resourceController");
 const reportsController = require("../controllers/teacher/reportsController");
 const communicationController = require("../controllers/teacher/communicationController");
 const auditController = require("../controllers/teacher/auditController");
+const syllabusController = require("../controllers/teacher/syllabusController");
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -98,6 +99,11 @@ router.get("/teacher/timetable", ensureDBConnection, requireTeacherLogin, catchA
 router.post("/teacher/timetable/bulk", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableBulk));
 router.post("/teacher/timetable/edit/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableEdit));
 router.post("/teacher/timetable/delete/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableDelete));
+
+// Syllabus Tracker
+router.get("/teacher/syllabus", ensureDBConnection, requireTeacherLogin, catchAsync(syllabusController.renderTracker));
+router.post("/api/syllabus/update", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(syllabusController.updateChapterStatus));
+router.post("/api/syllabus/update_count", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(syllabusController.updateChapterCount));
 
 // Resource Management (Study Materials)
 router.get("/teacher/study_material", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.renderStudyMaterial));

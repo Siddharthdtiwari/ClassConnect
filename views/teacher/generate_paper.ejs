@@ -72,7 +72,7 @@
   </style>
 </head>
 
-<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);" data-edit-mode="<%= (typeof editTest !== 'undefined' && editTest) ? 'true' : 'false' %>">
   <div style="display: flex; height: 100vh; overflow: hidden;">
     <%- include('../partials/teacher_sidebar') %>
     
@@ -83,14 +83,15 @@
           <!-- Header -->
           <header class="mb-6 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 shrink-0">
             <div>
-              <h1 class="dash-greeting">AI Paper <span style="color: var(--pt);">Generator</span></h1>
+              <div class="flex items-center gap-3 mb-2">
+                <a href="/teacher/manage_tests" class="text-theme-fdd hover:text-theme-pt transition-colors">
+                  <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                </a>
+                <h1 class="dash-greeting m-0" style="margin-bottom: 0;">AI Paper <span style="color: var(--pt);">Generator</span></h1>
+              </div>
               <p class="dash-sub">Faculty Command Center · Automated Assessment Builder</p>
             </div>
             <div class="flex gap-3 flex-wrap items-center">
-              <a href="/teacher/manage_tests" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
-                <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
-                Back to Tests
-              </a>
             </div>
           </header>
 
@@ -256,50 +257,53 @@
 
                 <!-- Panel 2: Register & Save (Hidden by default) -->
                 <div id="panel-save" class="hidden space-y-4 h-full flex flex-col justify-between">
-                  <form id="create-test-form" class="space-y-3">
+                  <% if (typeof editTest !== 'undefined' && editTest) { %>
+                    <div id="initial-html-content" style="display:none;"><%- editTest.htmlContent %></div>
+                  <% } %>
+                  <form id="create-test-form" class="space-y-3" data-mode="<%= typeof editTest !== 'undefined' && editTest ? 'edit' : 'create' %>" data-testid="<%= typeof editTest !== 'undefined' && editTest ? editTest._id : '' %>">
                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
 
                     <div>
                       <label for="record-test-name" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Test Name</label>
-                      <input type="text" id="record-test-name" name="testName" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required />
+                      <input type="text" id="record-test-name" name="testName" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" value="<%= typeof editTest !== 'undefined' && editTest ? editTest.testName : '' %>" required />
                     </div>
 
                     <div>
                       <label for="record-batchId" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Select Batch</label>
                       <select id="record-batchId" name="batchId" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required onchange="handleBatchChange(this)">
-                        <option value="" disabled selected>Select Batch...</option>
+                        <option value="" disabled <%= typeof editTest !== 'undefined' && editTest ? '' : 'selected' %>>Select Batch...</option>
                         <% batches.forEach(batch => { %>
-                        <option value="<%= batch._id %>"><%= batch.name %></option>
+                        <option value="<%= batch._id %>" <%= typeof editTest !== 'undefined' && editTest && editTest.batch && editTest.batch._id.toString() === batch._id.toString() ? 'selected' : '' %>><%= batch.name %></option>
                         <% }) %>
                       </select>
                     </div>
 
                     <div>
                       <label for="record-subject" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Subject</label>
-                      <select id="record-subject" name="subject" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required>
+                      <select id="record-subject" name="subject" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required data-prefill="<%= typeof editTest !== 'undefined' && editTest ? editTest.subject : '' %>">
                         <option value="" disabled selected>Select Subject...</option>
                       </select>
                     </div>
 
                     <div>
                       <label for="record-test-date" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Test Conduct Date</label>
-                      <input type="date" id="record-test-date" name="testDate" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required />
+                      <input type="date" id="record-test-date" name="testDate" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" value="<%= typeof editTest !== 'undefined' && editTest && editTest.testDate ? new Date(editTest.testDate).toISOString().split('T')[0] : '' %>" required />
                     </div>
 
                     <!-- Hidden parameters pre-filled from Step 1 form now made visible -->
                     <div class="grid grid-cols-2 gap-2">
                       <div>
                         <label for="record-topic" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Topic</label>
-                        <input type="text" id="record-topic" name="topic" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required />
+                        <input type="text" id="record-topic" name="topic" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" value="<%= typeof editTest !== 'undefined' && editTest ? editTest.topic : '' %>" required />
                       </div>
                       <div>
                         <label for="record-total-marks" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Total Marks</label>
-                        <input type="number" id="record-total-marks" name="totalMarks" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" required min="1" />
+                        <input type="number" id="record-total-marks" name="totalMarks" class="w-full px-3 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p text-sm font-semibold" value="<%= typeof editTest !== 'undefined' && editTest ? editTest.totalMarks : '' %>" required min="1" />
                       </div>
                     </div>
 
                     <button type="submit" id="submit-record-btn" class="w-full py-3 btn-solid-purple flex justify-center items-center gap-2 shadow-md mt-2">
-                      <span>Create Test Record ✓</span>
+                      <span><%= typeof editTest !== 'undefined' && editTest ? 'Update Test Record ✓' : 'Create Test Record ✓' %></span>
                     </button>
                   </form>
 
@@ -356,11 +360,26 @@
       box.classList.remove('hidden');
     }
 
+    // EJS variables are passed down via data attributes on the body (or other elements)
     document.addEventListener("DOMContentLoaded", () => {
-      // Set default testDate to today
-      const today = new Date().toISOString().split('T')[0];
-      const dateInput = document.getElementById('record-test-date');
-      dateInput.value = today;
+      // Create a hidden data container for our EJS variables to avoid IDE syntax errors
+      const isEditMode = document.body.dataset.editMode === 'true';
+
+      if (isEditMode) {
+        const batchSelect = document.getElementById('record-batchId');
+        if (batchSelect.value) {
+          handleBatchChange(batchSelect);
+          const subjSelect = document.getElementById('record-subject');
+          setTimeout(() => {
+            if (subjSelect) subjSelect.value = subjSelect.dataset.prefill;
+          }, 200);
+        }
+      } else {
+        // Set default testDate to today
+        const today = new Date().toISOString().split('T')[0];
+        const dateInput = document.getElementById('record-test-date');
+        if (dateInput) dateInput.value = today;
+      }
 
       // LocalStorage Persistence for AI Form Fields
       const formFields = [
@@ -554,10 +573,23 @@
         `,
         setup: function (editor) {
           editor.on('init', function () {
-            // Restore editor content if it exists
-            const savedContent = localStorage.getItem('aiPaperContent');
-            if (savedContent) {
-              editor.setContent(savedContent);
+            if (document.body.dataset.editMode === 'true') {
+              const initialContentElement = document.getElementById('initial-html-content');
+              if (initialContentElement) {
+                const initialContent = initialContentElement.innerHTML;
+                editor.setContent(initialContent);
+              }
+              
+              const setupArea = document.getElementById("bot-setup-area");
+              const refineArea = document.getElementById("bot-refine-area");
+              if (setupArea) setupArea.classList.add("hidden");
+              if (refineArea) refineArea.classList.remove("hidden");
+            } else {
+              // Restore editor content if it exists
+              const savedContent = localStorage.getItem('aiPaperContent');
+              if (savedContent) {
+                editor.setContent(savedContent);
+              }
             }
           });
           editor.on('change', function () {
@@ -797,7 +829,11 @@
           const formData = new FormData(this);
           formData.append("htmlContent", content);
 
-          const res = await fetch("/teacher/add_test", {
+          const mode = this.dataset.mode;
+          const testId = this.dataset.testid;
+          const url = mode === 'edit' ? '/teacher/edit_test/' + testId : '/teacher/add_test';
+
+          const res = await fetch(url, {
             method: "POST",
             body: formData,
           });

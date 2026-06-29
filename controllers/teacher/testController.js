@@ -33,9 +33,14 @@ exports.renderManageTests = async (req, res) => {
 };
 exports.renderGeneratePaper = async (req, res) => {
   try {
+    const editId = req.query.editId;
+    let editTest = null;
+    if (editId) {
+      editTest = await Test.findById(editId).populate('batch');
+    }
     const batches = await Batch.find({ academicYear: req.viewingYear });
     batches.sort(sortBatches);
-    res.render("teacher/generate_paper", { batches });
+    res.render("teacher/generate_paper", { batches, editTest });
   } catch (err) {
     console.error("Render generate paper page error:", err);
     res.status(500).send("Error");
@@ -215,16 +220,23 @@ exports.apiConsolidatedScores = async (req, res) => {
     batches.sort(sortBatches);
     const responseData = {};
 
+    const batchIds = batches.map(b => b._id);
+    const [allTests, allStudents, allScores] = await Promise.all([
+      Test.find({ batch: { $in: batchIds } }).sort({ testDate: 1 }).lean(),
+      User.find({ batch: { $in: batchIds } }).populate('batch').lean(),
+      Score.find({ batch: { $in: batchIds } }).lean()
+    ]);
+
     for (const batch of batches) {
-      const tests = await Test.find({ batch: batch._id }).sort({ testDate: 1 });
-      const students = await User.find({ batch: batch._id }).populate('batch').lean();
+      const tests = allTests.filter(t => String(t.batch) === String(batch._id));
+      const students = allStudents.filter(s => s.batch && String(s.batch._id) === String(batch._id));
       students.sort(sortStudentsByBatchAndId);
 
       if (tests.length === 0 || students.length === 0) continue;
 
       const studentScoresData = [];
-      const testIds = tests.map(t => t._id);
-      const scores = await Score.find({ batch: batch._id, testId: { $in: testIds } });
+      const testIds = tests.map(t => String(t._id));
+      const scores = allScores.filter(s => String(s.batch) === String(batch._id) && testIds.includes(String(s.testId)));
 
       const scoreMap = {};
       scores.forEach(s => {
@@ -646,7 +658,7 @@ OUTPUT FORMAT REQUIREMENTS:
 
 exports.processEditTest = async (req, res) => {
   try {
-    const { testName, batchId, subject, topic, totalMarks, testDate, questionPaperLink } = req.body;
+    const { testName, batchId, subject, topic, totalMarks, testDate, questionPaperLink, htmlContent } = req.body;
     const testId = req.params.id;
 
     const test = await Test.findById(testId);
@@ -673,6 +685,9 @@ exports.processEditTest = async (req, res) => {
     test.totalMarks = Number(totalMarks);
     test.testDate = testDate ? new Date(testDate) : test.testDate;
     test.questionPaper = questionPaperUrl;
+    if (htmlContent !== undefined) {
+      test.htmlContent = htmlContent;
+    }
 
     await test.save(); // Triggers save hooks for score percentage recalculation
 

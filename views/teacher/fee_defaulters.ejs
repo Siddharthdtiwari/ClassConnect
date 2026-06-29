@@ -54,7 +54,8 @@
 
           <!-- Header (Dashboard Style) -->
           <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-            <div class="flex items-center gap-3 mb-2">
+            <div>
+              <div class="flex items-center gap-3 mb-2">
                 <a href="/teacher/manage_fees" class="text-theme-fdd hover:text-theme-pt transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </a>
@@ -63,7 +64,9 @@
               <p class="dash-sub">Unpaid fees up to <%= new Date().toLocaleString('default', { month: 'long', year: 'numeric' }) %></p>
             </div>
             <div class="flex gap-3 flex-wrap items-center">
-              
+              <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-2 font-mono hidden md:inline-block">Quick Navigation:</span>
+              <a href="#class-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono bg-theme-bgc">Batch-wise Overview</a>
+              <a href="#month-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono bg-theme-bgc">Month-wise Breakdown</a>
             </div>
           </header>
 
@@ -74,13 +77,6 @@
             <p class="text-sm mt-1">All students are up to date for this period.</p>
           </div>
           <% } else { %>
-
-          <!-- Navigation Pills -->
-          <div class="stat-card p-4 mb-10 flex items-center gap-3 overflow-x-auto custom-scrollbar">
-            <span class="text-[0.62rem] font-bold text-theme-fdd uppercase tracking-widest mr-2 font-mono">Quick Navigation:</span>
-            <a href="#class-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">Batch-wise Overview</a>
-            <a href="#month-section" class="py-1.5 px-4 rounded-full text-[0.68rem] font-bold uppercase tracking-wider border transition-all text-theme-pt border-theme-bd hover:bg-theme-bgch font-mono">Month-wise Breakdown</a>
-          </div>
 
           <!-- CLASS-WISE SECTION -->
           <section id="class-section" class="mb-16 printable-section" data-print-title="ALL BATCHES FEE DEFAULTERS">

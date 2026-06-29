@@ -513,11 +513,14 @@
       document.getElementById('edit-total-marks').value = marks;
       document.getElementById('edit-test-date').value = testDate || '';
 
-      const isLink = qpUrl && !qpUrl.includes('cloudinary');
+      const isHtmlContent = qpUrl === 'HTML_CONTENT';
+      const isLink = qpUrl && !qpUrl.includes('cloudinary') && !isHtmlContent;
       document.getElementById('edit-question-paper-link').value = isLink ? qpUrl : '';
 
       const qpLinkContainer = document.getElementById('edit-current-qp-link');
-      if (qpUrl && qpUrl.trim() !== '') {
+      if (isHtmlContent) {
+        qpLinkContainer.innerHTML = `<span class="flex items-center gap-3"><a href="/teacher/generate_paper?editId=${id}" class="text-[10px] font-mono font-bold text-theme-pt hover:opacity-85 underline">Edit Paper &rarr;</a> <a href="/teacher/view_paper/${id}" target="_blank" class="text-[10px] font-mono font-bold text-brand-green hover:opacity-85 underline">View current QP &rarr;</a></span>`;
+      } else if (qpUrl && qpUrl.trim() !== '') {
         qpLinkContainer.innerHTML = `<a href="${qpUrl}" target="_blank" class="text-[10px] font-mono font-bold text-brand-green hover:opacity-85 underline">View current QP &rarr;</a>`;
       } else {
         qpLinkContainer.innerHTML = `<span class="text-[10px] font-mono italic text-theme-fdd">No QP attached</span>`;

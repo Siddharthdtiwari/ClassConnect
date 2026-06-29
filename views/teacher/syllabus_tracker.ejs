@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Syllabus Tracker | Tuition Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;900&family=Space+Mono:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <script src="/js/subjects.js"></script>
+  <%- include('../partials/background') %>
+  
+  <style>
+    .dash-greeting {
+      font-family: 'Unbounded', sans-serif;
+      font-size: clamp(1.8rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1;
+      letter-spacing: -0.03em;
+    }
+    .dash-sub {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      margin-top: 8px;
+    }
+    .stat-card {
+      background: var(--bgc);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--bd);
+      border-radius: 18px;
+      padding: 24px;
+      transition: all 0.35s cubic-bezier(.34,1.56,.64,1);
+      position: relative;
+    }
+    
+    /* Chapter Pill Styles */
+    .chapter-pill {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      user-select: none;
+      transition: all 0.2s ease;
+      border: 2px solid transparent;
+    }
+    
+    /* Statuses */
+    .status-incomplete {
+      background-color: var(--bg2);
+      color: var(--fdd);
+      border-color: var(--bd);
+    }
+    
+    .status-completed {
+      background-color: #10B981; /* Emerald 500 */
+      color: white;
+      box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+      border-color: #059669; /* Emerald 600 */
+    }
+    
+    .status-na {
+      background-color: #374151; /* Gray 700 */
+      color: #9CA3AF; /* Gray 400 */
+      text-decoration: line-through;
+      opacity: 0.8;
+      border-color: #1F2937; /* Gray 800 */
+    }
+
+    .chapter-pill:hover {
+      transform: scale(1.05);
+    }
+    
+    .chapter-pill:active {
+      transform: scale(0.95);
+    }
+  </style>
+</head>
+
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background: var(--bg);">
+  <div style="display: flex; height: 100vh; overflow: hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    
+    <div style="flex: 1; display: flex; flex-direction: column; overflow: hidden; position: relative;">
+      <main style="flex: 1; overflow-y: auto; overflow-x: hidden;">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+          
+          <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+            <div>
+              <h1 class="dash-greeting">Syllabus <span style="color: var(--pt);">Tracker</span></h1>
+              <p class="dash-sub">Master Chapter Completion</p>
+            </div>
+            
+            <div class="flex items-center gap-4 bg-theme-bgc p-2 rounded-2xl border border-theme-bd shadow-sm">
+              <span class="text-xs font-mono font-bold uppercase text-theme-fdd px-2">Select Batch:</span>
+              <% batches.forEach(batch => { %>
+                <a href="?batchId=<%= batch._id %>" class="px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-300 <%= selectedBatchId === batch._id.toString() ? 'bg-theme-p text-white shadow-md' : 'text-theme-fdd hover:bg-theme-bg2' %>">
+                  <%= batch.name %>
+                </a>
+              <% }) %>
+            </div>
+          </header>
+
+          <% if (batches.length === 0) { %>
+            <div class="stat-card flex flex-col items-center justify-center p-12 text-center">
+              <div class="w-16 h-16 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center mb-4 text-theme-fdd">
+                <svg class="w-8 h-8" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6v6m0 0v6m0-6h6m-6 0H6"></path></svg>
+              </div>
+              <h3 class="text-xl font-bold font-mono uppercase tracking-wider mb-2">No Active Batches</h3>
+              <p class="text-sm text-theme-fdd">Create a batch first to start tracking syllabus.</p>
+            </div>
+          <% } else if (selectedBatchId) { %>
+            
+            <div class="mb-6 flex gap-4 text-xs font-mono font-bold text-theme-fdd uppercase">
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-theme-bg2 border border-theme-bd"></div> Incomplete (Default)</div>
+              <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-emerald-500"></div> Completed (Double Click)</div>
+            </div>
+
+            <!-- Subject Container: Will be populated by JS -->
+            <div id="subjects-container" class="space-y-6" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-batch-name="<%= selectedBatchName %>" data-batch-id="<%= selectedBatchId %>"></div>
+
+            <script>
+              const container = document.getElementById('subjects-container');
+              const selectedBatchName = container.dataset.batchName;
+              const selectedBatchId = container.dataset.batchId;
+              
+              // Safely parse from the data attribute
+              const syllabusMap = JSON.parse(container.dataset.syllabus || "{}");
+              
+              // Determine which subjects to show
+              const subjects = getSubjectsForBatch(selectedBatchName);
+              
+              subjects.forEach(subject => {
+                const subjectData = syllabusMap[subject] || {};
+                const statuses = subjectData.chapterStatuses || {};
+                const totalChapters = subjectData.totalChapters || 10;
+                
+                let gridHtml = '';
+                for (let i = 1; i <= totalChapters; i++) {
+                  const status = statuses[i.toString()] || 'incomplete';
+                  
+                  let displayContent = i;
+                  if (status === 'completed') displayContent = `${i} ✓`;
+                  
+                  gridHtml += `
+                    <div 
+                      class="chapter-pill status-${status}" 
+                      data-subject="${subject}" 
+                      data-chapter="${i}" 
+                      data-status="${status}"
+                      ondblclick="toggleStatus(this)"
+                      title="Chapter ${i}"
+                    >
+                      ${displayContent}
+                    </div>
+                  `;
+                }
+
+                const subjectCard = `
+                  <div class="stat-card">
+                    <div class="flex justify-between items-center mb-6">
+                      <h2 class="text-xl font-bold font-mono tracking-tight" style="color: var(--fg);">${subject}</h2>
+                      <div class="flex items-center gap-2">
+                        <button onclick="updateChapterCount('${subject}', 'remove')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" ${totalChapters <= 1 ? 'disabled' : ''}>
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                        </button>
+                        <button onclick="updateChapterCount('${subject}', 'add')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-emerald-500 hover:text-white transition-colors">
+                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="flex flex-wrap gap-3">
+                      ${gridHtml}
+                    </div>
+                  </div>
+                `;
+                
+                container.insertAdjacentHTML('beforeend', subjectCard);
+              });
+
+              function updateChapterCount(subject, action) {
+                fetch('/api/syllabus/update_count', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ batchId: selectedBatchId, subject: subject, action: action })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (data.success) {
+                    window.location.reload();
+                  } else {
+                    alert('Error updating chapters.');
+                  }
+                })
+                .catch(err => console.error('Error updating count:', err));
+              }
+
+              // Status Toggle Logic
+              function toggleStatus(element) {
+                const subject = element.dataset.subject;
+                const chapterNo = element.dataset.chapter;
+                let currentStatus = element.dataset.status;
+                
+                // Cycle: incomplete -> completed -> incomplete
+                let newStatus = 'incomplete';
+                let displayContent = chapterNo;
+
+                if (currentStatus === 'incomplete') {
+                  newStatus = 'completed';
+                  displayContent = `${chapterNo} ✓`;
+                }
+
+                // Optimistic UI Update
+                element.className = `chapter-pill status-${newStatus}`;
+                element.dataset.status = newStatus;
+                element.innerHTML = displayContent;
+                
+                // Add a small bounce animation effect
+                element.style.transform = 'scale(1.15)';
+                setTimeout(() => { element.style.transform = ''; }, 150);
+
+                // Save to Backend
+                fetch('/api/syllabus/update', {
+                  method: 'POST',
+                  headers: {
+                    'Content-Type': 'application/json'
+                  },
+                  body: JSON.stringify({
+                    batchId: selectedBatchId,
+                    subject: subject,
+                    chapterNo: chapterNo,
+                    status: newStatus
+                  })
+                })
+                .then(res => res.json())
+                .then(data => {
+                  if (!data.success) {
+                    console.error('Failed to update status', data.message);
+                    // Revert UI if needed, but omitted for simplicity
+                  }
+                })
+                .catch(err => console.error('Error saving status:', err));
+              }
+            </script>
+          <% } %>
+          
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

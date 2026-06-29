@@ -155,11 +155,18 @@ const { csrfSynchronisedProtection } = csrfSync({
     return req.body?._csrf || req.query?._csrf || req.headers["x-csrf-token"];
   }
 });
-app.use(csrfSynchronisedProtection);
+
+// Conditional CSRF Middleware (skip for API routes)
+app.use((req, res, next) => {
+  if (req.path.startsWith('/api/')) return next();
+  csrfSynchronisedProtection(req, res, next);
+});
 
 // Inject CSRF Token into all views
 app.use((req, res, next) => {
-  res.locals.csrfToken = req.csrfToken();
+  if (!req.path.startsWith('/api/')) {
+    res.locals.csrfToken = req.csrfToken();
+  }
   next();
 });
 
@@ -359,6 +366,16 @@ app.post("/contact", contactLimiter, async (req, res) => {
 // Mount Routes
 const studentRoutes = require('./routes/studentRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
+
+// API Routes
+const apiAuthRoutes = require('./routes/api/authRoutes');
+const apiStudentRoutes = require('./routes/api/studentRoutes');
+const apiTeacherRoutes = require('./routes/api/teacherRoutes');
+
+app.use('/api/v1/auth', apiAuthRoutes);
+app.use('/api/v1/student', apiStudentRoutes);
+app.use('/api/v1/teacher', apiTeacherRoutes);
+
 app.use(studentRoutes);
 app.use(teacherRoutes);
 

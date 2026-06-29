@@ -380,6 +380,9 @@ app.use('/api', cors({
   allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
+// IMPORTANT: Vercel serverless cold starts need to ensure DB connection before handling API requests
+app.use('/api', ensureDBConnection);
+
 app.use('/api/v1/auth', apiAuthRoutes);
 app.use('/api/v1/student', apiStudentRoutes);
 app.use('/api/v1/teacher', apiTeacherRoutes);

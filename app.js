@@ -12,6 +12,7 @@ const winston = require("winston");
 require("winston-daily-rotate-file");
 const { csrfSync } = require("csrf-sync");
 require("dotenv").config();
+const cors = require("cors");
 
 // 1. Environment Variable Validation
 const requiredEnv = ["MONGODB_URI", "SESSION_SECRET"];
@@ -371,6 +372,13 @@ const teacherRoutes = require('./routes/teacherRoutes');
 const apiAuthRoutes = require('./routes/api/authRoutes');
 const apiStudentRoutes = require('./routes/api/studentRoutes');
 const apiTeacherRoutes = require('./routes/api/teacherRoutes');
+
+// Enable CORS for all API routes (required for mobile/web app communication)
+app.use('/api', cors({
+  origin: '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization']
+}));
 
 app.use('/api/v1/auth', apiAuthRoutes);
 app.use('/api/v1/student', apiStudentRoutes);

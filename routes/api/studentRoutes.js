@@ -274,4 +274,27 @@ router.get('/profile', async (req, res) => {
   }
 });
 
+router.put('/profile', async (req, res) => {
+  try {
+    const { name, email, mobileNo, password } = req.body;
+    const student = await User.findById(req.user._id);
+    
+    if (name) {
+      student.studentName = name;
+      student.name = name;
+    }
+    if (email) student.email = email;
+    if (mobileNo) student.mobileNo = mobileNo;
+    if (password) {
+      const bcrypt = require('bcrypt');
+      student.password = await bcrypt.hash(password, 12);
+    }
+    
+    await student.save();
+    res.json({ success: true, student });
+  } catch (err) {
+    res.status(500).json({ error: 'Error updating profile' });
+  }
+});
+
 module.exports = router;

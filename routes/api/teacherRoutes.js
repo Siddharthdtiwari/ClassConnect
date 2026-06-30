@@ -11,7 +11,7 @@ const Fee = require('../../models/Fee');
 const Score = require('../../models/Score');
 const Attendance = require('../../models/Attendance');
 const AuditLog = require('../../models/AuditLog');
-const CommunicationLog = require('../../models/CommunicationLog');
+const EmailLog = require('../../models/EmailLog');
 const ExamTimetable = require('../../models/ExamTimetable');
 const StudyMaterial = require('../../models/StudyMaterial');
 const Syllabus = require('../../models/Syllabus');
@@ -749,7 +749,7 @@ router.get('/reports/audit', async (req, res) => {
 router.get('/reports/communications', async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
-    const logs = await CommunicationLog.find({ academicYear }).sort({ dateSent: -1 }).limit(50).lean();
+    const logs = await EmailLog.find({ academicYear }).sort({ dateSent: -1 }).limit(50).lean();
     res.json({ logs });
   } catch (err) {
     res.status(500).json({ error: 'Error loading communication logs' });

@@ -23,11 +23,27 @@ const generateToken = (user, role) => {
 router.post('/student/login', async (req, res) => {
   try {
     const { studentId, password } = req.body;
-    
-    // We assume the mobile app doesn't know the academic year initially,
-    // so we'll just find the latest batch or the active batches.
-    const student = await User.findOne({ studentId }).select('+password').populate('batch');
-    
+
+    let targetStudentId = studentId;
+    let targetAcademicYear = req.currentAcademicYear || '2026-27'; // fallback just in case
+
+    // Cheat code: THEC1012526 -> THEC101 and 2025-26
+    const cheatMatch = studentId.match(/^([a-zA-Z]+[0-9]+)([0-9]{4})$/);
+    if (cheatMatch) {
+      targetStudentId = cheatMatch[1];
+      const yearPart = cheatMatch[2];
+      const startYear = "20" + yearPart.substring(0, 2);
+      const endYear = yearPart.substring(2, 4);
+      targetAcademicYear = `${startYear}-${endYear}`;
+    }
+
+    const activeBatches = await Batch.find({ academicYear: targetAcademicYear }).distinct('_id');
+
+    const student = await User.findOne({
+      studentId: targetStudentId,
+      batch: { $in: activeBatches }
+    }).select('+password').populate('batch');
+
     if (!student) {
       return res.status(401).json({ error: 'Invalid ID or password' });
     }
@@ -38,7 +54,7 @@ router.post('/student/login', async (req, res) => {
     }
 
     const token = generateToken(student, 'student');
-    
+
     res.json({
       token,
       user: {
@@ -60,7 +76,7 @@ router.post('/student/login', async (req, res) => {
 router.post('/teacher/login', async (req, res) => {
   try {
     const { teacherId, password } = req.body;
-    
+
     const teacher = await Teacher.findOne({ teacherId }).select('+password');
     if (!teacher) {
       return res.status(401).json({ error: 'Invalid ID or password' });
@@ -72,7 +88,7 @@ router.post('/teacher/login', async (req, res) => {
     }
 
     const token = generateToken(teacher, 'teacher');
-    
+
     res.json({
       token,
       user: {

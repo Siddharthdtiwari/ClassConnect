@@ -15,6 +15,7 @@ const feeController = require("../controllers/student/feeController");
 const contentController = require("../controllers/student/contentController");
 const timetableController = require("../controllers/student/timetableController");
 const leaderboardController = require("../controllers/student/leaderboardController");
+const solutionController = require("../controllers/solutionController");
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -58,6 +59,10 @@ router.post("/student/timetable/delete/:id", ensureDBConnection, requireStudentL
 
 // Leaderboard
 router.get("/student/leader_board", ensureDBConnection, requireStudentLogin, catchAsync(leaderboardController.renderLeaderboard));
+
+// Solutions
+router.get("/student/solutions", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderSolutions));
+router.get("/student/view_solution/:id", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderViewSolution));
 
 // Receipts
 router.get("/student/receipt/:feeId", ensureDBConnection, catchAsync(feeController.downloadReceipt));

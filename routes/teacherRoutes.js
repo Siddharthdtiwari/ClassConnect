@@ -18,6 +18,7 @@ const reportsController = require("../controllers/teacher/reportsController");
 const communicationController = require("../controllers/teacher/communicationController");
 const auditController = require("../controllers/teacher/auditController");
 const syllabusController = require("../controllers/teacher/syllabusController");
+const solutionController = require("../controllers/solutionController");
 
 const loginLimiter = rateLimit({
   windowMs: 15 * 60 * 1000,
@@ -118,5 +119,9 @@ router.delete("/api/materials/:id", ensureDBConnection, requireTeacherLogin, cat
 router.get("/teacher/reports", ensureDBConnection, requireTeacherLogin, catchAsync(reportsController.renderReports));
 router.get("/teacher/reports/communications", ensureDBConnection, requireTeacherLogin, catchAsync(communicationController.renderCommunicationLogs));
 router.get("/teacher/reports/audit", ensureDBConnection, requireTeacherLogin, catchAsync(auditController.renderAuditTrail));
+
+// Solutions
+router.get("/teacher/solutions", ensureDBConnection, requireTeacherLogin, catchAsync(solutionController.renderSolutions));
+router.get("/teacher/view_solution/:id", ensureDBConnection, requireTeacherLogin, catchAsync(solutionController.renderViewSolution));
 
 module.exports = router;

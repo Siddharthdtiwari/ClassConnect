@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<%- include('../partials/background') %>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Textbook Solutions | Tuition Hub</title>
+  <style>
+    .premium-banner {
+      background: linear-gradient(135deg, var(--p) 0%, var(--pm) 100%);
+      box-shadow: 0 10px 30px var(--pg);
+    }
+    .content-card {
+      transition: all 0.3s ease;
+      border-radius: 12px;
+      border: 1px solid var(--b);
+      background: var(--bgc);
+    }
+    .content-card:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px var(--pg);
+      border-color: var(--p);
+      background: var(--bgch);
+    }
+    .icon-wrapper {
+      background: linear-gradient(135deg, rgba(124,58,237,0.1), rgba(124,58,237,0.05));
+      border: 1px solid rgba(124,58,237,0.2);
+    }
+    .search-input {
+      width: 100%;
+      padding: 12px 20px;
+      border-radius: 8px;
+      background: var(--bg);
+      border: 1px solid var(--b);
+      color: var(--fg);
+      outline: none;
+      font-family: 'Inter', sans-serif;
+    }
+    .search-input:focus {
+      border-color: var(--p);
+    }
+  </style>
+</head>
+
+<body class="text-theme-fg wrap">
+  <div class="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+    <!-- Premium Banner Header -->
+    <header class="mb-10 premium-banner rounded-2xl p-6 sm:p-12 text-center relative overflow-hidden">
+      <div class="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 rounded-full bg-white opacity-10"></div>
+      <div class="absolute bottom-0 left-0 -ml-20 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
+      <div class="relative z-10">
+        <div class="flex justify-center sm:justify-start mb-6">
+          <a href="/student/dashboard" class="btn-outline bg-white/10 border-white/20 text-white hover:bg-white hover:text-theme-pt">
+            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+            Dashboard
+          </a>
+        </div>
+        <h1 class="text-3xl sm:text-4xl md:text-5xl font-unbounded font-extrabold text-white leading-tight mb-2 tracking-tight">
+          Textbook <span class="text-theme-lt">Solutions</span>
+        </h1>
+        <p class="text-white/80 font-mono tracking-widest text-xs uppercase mt-4">Verified answers and study guides</p>
+      </div>
+    </header>
+
+    <!-- Glass Container -->
+    <div class="glass-card p-6 sm:p-10 mb-10">
+      
+      <form method="GET" action="/student/solutions" class="mb-8 flex gap-4">
+        <input type="text" name="search" class="search-input" placeholder="Search for solutions by chapter or topic..." value="<%= searchQuery.search || '' %>">
+        <button type="submit" class="btn-primary px-6 py-2">Search</button>
+      </form>
+
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <% if(solutions && solutions.length > 0) { %>
+          <% solutions.forEach(function(sol) { %>
+            <div class="content-card w-full p-6 flex flex-col justify-between">
+              <div>
+                <div class="flex items-center gap-2 flex-wrap mb-3">
+                  <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-theme-p/10 text-theme-pt border border-theme-p/30 uppercase tracking-widest"><%= sol.subject %></span>
+                  <% if(sol.classLevel) { %>
+                    <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-theme-lt/10 text-theme-lt border border-theme-lt/30 uppercase tracking-widest">Class <%= sol.classLevel %></span>
+                  <% } %>
+                </div>
+                <h3 class="font-unbounded font-bold text-theme-fg text-lg leading-snug mb-2"><%= sol.title %></h3>
+                <p class="text-sm text-theme-fd mb-6"><%= sol.chapter || 'Comprehensive Solution' %></p>
+              </div>
+              
+              <div class="flex gap-3">
+                <% if(sol.formatType === 'PDF' && sol.pdfUrl) { %>
+                  <a href="<%= sol.pdfUrl %>" target="_blank" class="btn-primary w-full text-center py-2 shadow flex-1">View PDF</a>
+                <% } else if (sol.formatType === 'DriveLink' && sol.driveLink) { %>
+                  <a href="<%= sol.driveLink %>" target="_blank" class="btn-primary w-full text-center py-2 shadow flex-1">Open Drive</a>
+                <% } else if (sol.formatType === 'HTML') { %>
+                  <a href="/student/view_solution/<%= sol._id %>" target="_blank" class="btn-primary w-full text-center py-2 shadow flex-1 text-xs">View Solution</a>
+                <% } %>
+
+                <% if(sol.youtubeLink) { %>
+                  <a href="<%= sol.youtubeLink %>" target="_blank" class="btn-outline w-12 flex justify-center items-center rounded" style="color:red; border-color:red;" title="Watch Video">
+                    <svg class="w-5 h-5" fill="currentColor" viewBox="0 0 24 24"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.5 12 3.5 12 3.5s-7.505 0-9.377.55a3.015 3.015 0 0 0-2.122 2.136C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.55 9.376.55 9.376.55s7.505 0 9.377-.55a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+                  </a>
+                <% } %>
+              </div>
+            </div>
+          <% }); %>
+        <% } else { %>
+          <div class="col-span-full p-8 text-center text-theme-fdd border-2 border-dashed border-theme-bd rounded-2xl font-mono text-sm uppercase tracking-widest">
+            No solutions found.
+          </div>
+        <% } %>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

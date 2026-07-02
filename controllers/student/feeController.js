@@ -3,7 +3,8 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const User = require("../../models/User");
 const Fee = require("../../models/Fee");
-const { sendFeeReceipt } = require("../../utils/emailService");
+const { logAudit } = require("../../utils/auditService");
+const { sendFeeReceiptEmail } = require("../../utils/emailService");
 const { generateReceiptPDF, generateFeeSummaryPDF } = require("../../utils/pdfUtils");
 
 const razorpay = new Razorpay({
@@ -262,6 +263,27 @@ exports.viewReceipt = async (req, res) => {
     await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error(err);
+    res.send("Error generating receipt");
+  }
+};
+
+exports.viewPublicReceipt = async (req, res) => {
+  try {
+    const { id, signature } = req.params;
+    
+    const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
+    if (signature !== expectedSignature) {
+      return res.status(403).send("Invalid or expired receipt link");
+    }
+
+    const fee = await Fee.findById(id).lean();
+    if (!fee) return res.send("Receipt not found");
+    const student = fee.userRef
+      ? await User.findById(fee.userRef).populate('batch').lean()
+      : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
+    await generateReceiptPDF(fee, student, res, "inline");
+  } catch (err) {
+    console.error("View public receipt error:", err);
     res.send("Error generating receipt");
   }
 };

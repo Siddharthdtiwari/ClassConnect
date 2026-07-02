@@ -847,23 +847,6 @@ router.post('/ai/generate_paper', async (req, res) => {
 
 // ========== EDIT & DELETE ENDPOINTS ==========
 
-// Edit Batch
-router.put('/batches/:id', async (req, res) => {
-  try {
-    const { name, description, isActive } = req.body;
-    const batch = await Batch.findById(req.params.id);
-    if (!batch) return res.status(404).json({ error: 'Batch not found' });
-    if (name) batch.name = name.trim();
-    if (description !== undefined) batch.description = description.trim();
-    if (isActive !== undefined) batch.isActive = isActive;
-    await batch.save();
-    await logAudit({ action: 'UPDATE', entityType: 'Batch', entityId: batch._id, details: `Updated batch: ${batch.name}`, academicYear: batch.academicYear });
-    res.json({ success: true, batch });
-  } catch (err) {
-    res.status(500).json({ error: 'Error updating batch' });
-  }
-});
-
 // Edit Student
 router.put('/students/:id', async (req, res) => {
   try {

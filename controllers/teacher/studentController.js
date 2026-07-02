@@ -10,6 +10,7 @@ const { uploadToCloudinary } = require("../../utils/upload");
 const { generateStudentReportPDF, drawStudentReport, generateStudentDirectoryPDF } = require("../../utils/pdfUtils");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { logAudit } = require("../../utils/auditService");
+const crypto = require("crypto");
 
 exports.renderManageStudents = async (req, res) => {
   try {
@@ -364,94 +365,169 @@ exports.generateBulkStudentReports = async (req, res) => {
   } catch (err) {
     console.error("Error generating bulk student reports:", err);
     if (!res.headersSent) {
-      res.status(500).send("Error generating bulk reports");
+      res.status(500).send("Error generating bulk report");
+    }
+  };
+
+  exports.generatePublicStudentReport = async (req, res) => {
+    try {
+      const { id, signature } = req.params;
+
+      // Verify signature
+      const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
+      if (signature !== expectedSignature) {
+        return res.status(403).send("Invalid or expired report link");
+      }
+
+      const student = await User.findById(id).populate('batch').lean();
+      if (!student) return res.status(404).send("Student not found");
+
+      const studentId = student.studentId;
+
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: student.batch._id })
+        .populate('batch')
+        .sort({ datePaid: 1 })
+        .lean();
+
+      const recentScores = await Score.find({ studentId: studentId, batch: student.batch._id })
+        .populate("testId", "subject topic testDate")
+        .sort({ createdAt: 1 })
+        .lean();
+
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+        batch: student.batch._id,
+      }).lean();
+
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
+
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") presentDays++;
+        if (record && record.status === "A") absentDays++;
+      });
+
+      const attendancePercentage = totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+      const allStudents = await User.find({ batch: student.batch._id })
+        .populate('batch')
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
+      }
+
+      const disposition = req.query.dl === "1" ? "attachment" : "inline";
+      await generateStudentReportPDF(
+        student,
+        {
+          recentFees,
+          recentScores,
+          attendancePercentage,
+          presentDays,
+          absentDays,
+          totalDays,
+          studentRank,
+        },
+        res,
+        disposition
+      );
+    } catch (err) {
+      console.error("Error generating public student report:", err);
+      res.status(500).send("Error generating public student report");
+    }
+  };
+
+  exports.generateStudentReport = async (req, res) => {
+    try {
+      const student = await User.findById(req.params.id).populate('batch').lean();
+      if (!student) return res.status(404).send("Student not found");
+
+      const studentId = student.studentId;
+
+      const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: student.batch._id })
+        .populate('batch')
+        .sort({ datePaid: 1 })
+        .lean();
+
+      const recentScores = await Score.find({ studentId: studentId, batch: student.batch._id })
+        .populate("testId", "subject topic testDate")
+        .sort({ createdAt: 1 })
+        .lean();
+
+      const allAttendanceRecords = await Attendance.find({
+        "records.studentId": studentId,
+        batch: student.batch._id,
+      }).lean();
+
+      let presentDays = 0;
+      let absentDays = 0;
+      let totalDays = 0;
+
+      allAttendanceRecords.forEach((dayRecord) => {
+        totalDays++;
+        const record = dayRecord.records.find((r) => r.studentId === studentId);
+        if (record && record.status === "P") presentDays++;
+        if (record && record.status === "A") absentDays++;
+      });
+
+      const attendancePercentage = totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
+
+      const allStudents = await User.find({ batch: student.batch._id })
+        .populate('batch')
+        .sort({ points: -1 })
+        .lean();
+
+      let studentRank = "-";
+      const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+      if (rankIndex !== -1) {
+        studentRank = rankIndex + 1;
+      }
+
+      const disposition = req.query.dl === "1" ? "attachment" : "inline";
+      await generateStudentReportPDF(
+        student,
+        {
+          recentFees,
+          recentScores,
+          attendancePercentage,
+          presentDays,
+          absentDays,
+          totalDays,
+          studentRank,
+        },
+        res,
+        disposition
+      );
+    } catch (err) {
+      console.error("Error generating student report:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error generating student report");
+      }
+    }
+  };
+
+  exports.printStudentDirectory = async (req, res) => {
+    try {
+      const students = await User.find({ batch: { $in: req.viewingBatches } })
+        .populate('batch')
+        .lean();
+
+      students.sort(sortStudentsByBatchAndId);
+
+      const disposition = req.query.dl === "1" ? "attachment" : "inline";
+      await generateStudentDirectoryPDF(students, req.viewingYear, res, disposition);
+    } catch (err) {
+      console.error("Error printing student directory:", err);
+      if (!res.headersSent) {
+        res.status(500).send("Error printing directory");
+      }
     }
   }
-};
-
-exports.generateStudentReport = async (req, res) => {
-  try {
-    const student = await User.findById(req.params.id).populate('batch').lean();
-    if (!student) return res.status(404).send("Student not found");
-
-    const studentId = student.studentId;
-
-    const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: student.batch._id })
-      .populate('batch')
-      .sort({ datePaid: 1 })
-      .lean();
-
-    const recentScores = await Score.find({ studentId: studentId, batch: student.batch._id })
-      .populate("testId", "subject topic testDate")
-      .sort({ createdAt: 1 })
-      .lean();
-
-    const allAttendanceRecords = await Attendance.find({
-      "records.studentId": studentId,
-      batch: student.batch._id,
-    }).lean();
-
-    let presentDays = 0;
-    let absentDays = 0;
-    let totalDays = 0;
-
-    allAttendanceRecords.forEach((dayRecord) => {
-      totalDays++;
-      const record = dayRecord.records.find((r) => r.studentId === studentId);
-      if (record && record.status === "P") presentDays++;
-      if (record && record.status === "A") absentDays++;
-    });
-
-    const attendancePercentage = totalDays > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
-
-    const allStudents = await User.find({ batch: student.batch._id })
-      .populate('batch')
-      .sort({ points: -1 })
-      .lean();
-
-    let studentRank = "-";
-    const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
-    if (rankIndex !== -1) {
-      studentRank = rankIndex + 1;
-    }
-
-    const disposition = req.query.dl === "1" ? "attachment" : "inline";
-    await generateStudentReportPDF(
-      student,
-      {
-        recentFees,
-        recentScores,
-        attendancePercentage,
-        presentDays,
-        absentDays,
-        totalDays,
-        studentRank,
-      },
-      res,
-      disposition
-    );
-  } catch (err) {
-    console.error("Error generating student report:", err);
-    if (!res.headersSent) {
-      res.status(500).send("Error generating student report");
-    }
-  }
-};
-
-exports.printStudentDirectory = async (req, res) => {
-  try {
-    const students = await User.find({ batch: { $in: req.viewingBatches } })
-      .populate('batch')
-      .lean();
-
-    students.sort(sortStudentsByBatchAndId);
-
-    const disposition = req.query.dl === "1" ? "attachment" : "inline";
-    await generateStudentDirectoryPDF(students, req.viewingYear, res, disposition);
-  } catch (err) {
-    console.error("Error printing student directory:", err);
-    if (!res.headersSent) {
-      res.status(500).send("Error printing directory");
-    }
-  }
-};
+}

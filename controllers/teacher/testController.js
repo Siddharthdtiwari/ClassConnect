@@ -8,7 +8,25 @@ const mongoose = require("mongoose");
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { logAudit } = require("../../utils/auditService");
+const crypto = require("crypto");
 const { sendTestMarks } = require("../../utils/emailService");
+const sanitizeHtml = require("sanitize-html");
+
+// Broader than the ClassConnect solution sanitizer since the AI test-paper prompt
+// template instructs Gemini to emit a branding <img> plus inline layout styles.
+const TEST_HTML_SANITIZE_OPTIONS = {
+  allowedTags: ['h1', 'h2', 'h3', 'h4', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote', 'code', 'pre', 'sup', 'sub', 'span', 'div', 'img'],
+  allowedAttributes: {
+    '*': ['style', 'class'],
+    img: ['src', 'alt', 'class']
+  },
+  allowedSchemes: ['https'],
+  allowedStyles: {
+    '*': {
+      '.*': [/.*/]
+    }
+  }
+};
 
 exports.renderManageTests = async (req, res) => {
   try {
@@ -56,6 +74,27 @@ exports.renderViewPaper = async (req, res) => {
     res.render("teacher/view_paper", { test });
   } catch (err) {
     console.error("View paper error:", err);
+    res.status(500).send("Error rendering paper");
+  }
+};
+
+exports.viewPublicPaper = async (req, res) => {
+  try {
+    const { id, signature } = req.params;
+    
+    const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
+    if (signature !== expectedSignature) {
+      return res.status(403).send("Invalid or expired test paper link");
+    }
+
+    const test = await Test.findById(id);
+    if (!test || !test.htmlContent) {
+      return res.status(404).send("Paper not found or it is a PDF.");
+    }
+    // Render using the existing teacher view since it doesn't actually display sensitive teacher data
+    res.render("teacher/view_paper", { test });
+  } catch (err) {
+    console.error("View public paper error:", err);
     res.status(500).send("Error rendering paper");
   }
 };
@@ -480,7 +519,7 @@ exports.processAddTest = async (req, res) => {
       totalMarks: totalMarks ? Number(totalMarks) : 100,
       testDate: testDate || new Date(),
       questionPaper: questionPaperUrl,
-      htmlContent: htmlContent || ""
+      htmlContent: htmlContent ? sanitizeHtml(htmlContent, TEST_HTML_SANITIZE_OPTIONS) : ""
     });
 
     await newTest.save();
@@ -646,7 +685,7 @@ OUTPUT FORMAT REQUIREMENTS:
     if (htmlContent.endsWith("```")) {
       htmlContent = htmlContent.substring(0, htmlContent.length - 3);
     }
-    htmlContent = htmlContent.trim();
+    htmlContent = sanitizeHtml(htmlContent.trim(), TEST_HTML_SANITIZE_OPTIONS);
 
     res.json({ success: true, html: htmlContent });
   } catch (err) {
@@ -686,7 +725,7 @@ exports.processEditTest = async (req, res) => {
     test.testDate = testDate ? new Date(testDate) : test.testDate;
     test.questionPaper = questionPaperUrl;
     if (htmlContent !== undefined) {
-      test.htmlContent = htmlContent;
+      test.htmlContent = htmlContent ? sanitizeHtml(htmlContent, TEST_HTML_SANITIZE_OPTIONS) : htmlContent;
     }
 
     await test.save(); // Triggers save hooks for score percentage recalculation

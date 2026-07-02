@@ -257,7 +257,7 @@
                       <td>
                         <% if (test.questionPaper) { %>
                         <% if (test.questionPaper === 'HTML_CONTENT') { %>
-                        <a href="/teacher/view_paper/<%= test._id %>" target="_blank" class="text-brand-green hover:opacity-85 font-semibold text-xs flex items-center gap-1 leading-none">
+                        <a href="/public/test/<%= test._id %>/<%= signId(test._id) %>" target="_blank" class="text-brand-green hover:opacity-85 font-semibold text-xs flex items-center gap-1 leading-none">
                           <svg class="w-3.5 h-3.5 text-brand-green" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
@@ -278,7 +278,7 @@
                       </td>
                       <td class="text-center">
                         <div class="flex items-center justify-center gap-3">
-                          <button type="button" onclick="openEditModal('<%= test._id %>', `<%= test.testName %>`, `<%= test.subject %>`, `<%= test.topic %>`, `<%= test.totalMarks %>`, `<%= test.questionPaper || '' %>`, `<%= test.testDate ? new Date(test.testDate).toISOString().split('T')[0] : '' %>`, `<%= cls %>`, `<%= test.batch ? test.batch._id : '' %>`)" class="text-theme-pt hover:text-theme-p text-xs font-bold uppercase tracking-wider font-mono">Edit</button>
+                          <button type="button" onclick="openEditModal('<%= test._id %>', `<%= test.testName %>`, `<%= test.subject %>`, `<%= test.topic %>`, `<%= test.totalMarks %>`, `<%= test.questionPaper || '' %>`, `<%= test.testDate ? new Date(test.testDate).toISOString().split('T')[0] : '' %>`, `<%= cls %>`, `<%= test.batch ? test.batch._id : '' %>`, `<%= signId(test._id) %>`)" class="text-theme-pt hover:text-theme-p text-xs font-bold uppercase tracking-wider font-mono">Edit</button>
                           <span class="text-theme-bd">|</span>
                           <form action="/teacher/delete_test/<%= test._id %>" method="POST" class="inline m-0" onsubmit="return confirm('WARNING: Are you sure you want to delete this test? This cannot be undone.');">
                             <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
@@ -497,7 +497,7 @@
       document.getElementById('add-test-modal').classList.add('open');
     }
 
-    function openEditModal(id, name, subject, topic, marks, qpUrl, testDate, batchName, batchId) {
+    function openEditModal(id, name, subject, topic, marks, qpUrl, testDate, batchName, batchId, signature) {
       document.getElementById('edit-test-name').value = name;
       
       const batchSelect = document.getElementById('edit-batchId');
@@ -519,7 +519,7 @@
 
       const qpLinkContainer = document.getElementById('edit-current-qp-link');
       if (isHtmlContent) {
-        qpLinkContainer.innerHTML = `<span class="flex items-center gap-3"><a href="/teacher/generate_paper?editId=${id}" class="text-[10px] font-mono font-bold text-theme-pt hover:opacity-85 underline">Edit Paper &rarr;</a> <a href="/teacher/view_paper/${id}" target="_blank" class="text-[10px] font-mono font-bold text-brand-green hover:opacity-85 underline">View current QP &rarr;</a></span>`;
+        qpLinkContainer.innerHTML = `<span class="flex items-center gap-3"><a href="/teacher/generate_paper?editId=${id}" class="text-[10px] font-mono font-bold text-theme-pt hover:opacity-85 underline">Edit Paper &rarr;</a> <a href="/public/test/${id}/${signature}" target="_blank" class="text-[10px] font-mono font-bold text-brand-green hover:opacity-85 underline">View current QP &rarr;</a></span>`;
       } else if (qpUrl && qpUrl.trim() !== '') {
         qpLinkContainer.innerHTML = `<a href="${qpUrl}" target="_blank" class="text-[10px] font-mono font-bold text-brand-green hover:opacity-85 underline">View current QP &rarr;</a>`;
       } else {

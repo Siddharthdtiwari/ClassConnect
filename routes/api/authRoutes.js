@@ -3,12 +3,20 @@ const router = express.Router();
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
+const rateLimit = require('express-rate-limit');
 
 const User = require('../../models/User');
 const Teacher = require('../../models/Teacher');
 const Batch = require('../../models/Batch');
 
-const JWT_SECRET = process.env.SESSION_SECRET || 'secret';
+// app.js hard-fails at boot if SESSION_SECRET is unset, so no fallback is needed here.
+const JWT_SECRET = process.env.SESSION_SECRET;
+
+const loginLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000,
+  max: 20,
+  message: { error: 'Too many login attempts, please try again after 15 minutes' }
+});
 
 // Helper to generate token
 const generateToken = (user, role) => {
@@ -20,7 +28,7 @@ const generateToken = (user, role) => {
 };
 
 // Student Login API
-router.post('/student/login', async (req, res) => {
+router.post('/student/login', loginLimiter, async (req, res) => {
   try {
     const { studentId, password } = req.body;
 
@@ -73,7 +81,7 @@ router.post('/student/login', async (req, res) => {
 });
 
 // Teacher Login API
-router.post('/teacher/login', async (req, res) => {
+router.post('/teacher/login', loginLimiter, async (req, res) => {
   try {
     const { teacherId, password } = req.body;
 

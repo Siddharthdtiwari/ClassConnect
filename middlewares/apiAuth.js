@@ -19,7 +19,7 @@ const requireStudentApiLogin = async (req, res, next) => {
       return res.status(401).json({ error: 'No token provided. Please log in.' });
     }
 
-    const decoded = jwt.verify(token, process.env.SESSION_SECRET || 'secret');
+    const decoded = jwt.verify(token, process.env.SESSION_SECRET);
     if (decoded.role !== 'student') {
       return res.status(403).json({ error: 'Access denied. Students only.' });
     }
@@ -47,7 +47,7 @@ const requireTeacherApiLogin = async (req, res, next) => {
       return res.status(401).json({ error: 'No token provided. Please log in.' });
     }
 
-    const decoded = jwt.verify(token, process.env.SESSION_SECRET || 'secret');
+    const decoded = jwt.verify(token, process.env.SESSION_SECRET);
     if (decoded.role !== 'teacher') {
       return res.status(403).json({ error: 'Access denied. Teachers only.' });
     }

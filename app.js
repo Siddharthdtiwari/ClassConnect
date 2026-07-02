@@ -128,6 +128,14 @@ app.use(
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
 
+// Safely embeds a JSON value inside a <script type="application/json"> block.
+// Unlike a plain JSON.stringify, this escapes '<' so a value containing
+// "</script>" can't break out of the script tag and inject markup.
+app.locals.safeJson = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c');
+app.locals.sanitizeHtml = require('sanitize-html');
+const { signId } = require('./utils/hashUtils');
+app.locals.signId = signId;
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));
@@ -365,6 +373,7 @@ app.post("/contact", contactLimiter, async (req, res) => {
 // =====================
 
 // Mount Routes
+const publicRoutes = require('./routes/publicRoutes');
 const studentRoutes = require('./routes/studentRoutes');
 const teacherRoutes = require('./routes/teacherRoutes');
 
@@ -387,6 +396,7 @@ app.use('/api/v1/auth', apiAuthRoutes);
 app.use('/api/v1/student', apiStudentRoutes);
 app.use('/api/v1/teacher', apiTeacherRoutes);
 
+app.use(publicRoutes);
 app.use(studentRoutes);
 app.use(teacherRoutes);
 

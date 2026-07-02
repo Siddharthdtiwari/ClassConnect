@@ -258,7 +258,7 @@
                 <!-- Panel 2: Register & Save (Hidden by default) -->
                 <div id="panel-save" class="hidden space-y-4 h-full flex flex-col justify-between">
                   <% if (typeof editTest !== 'undefined' && editTest) { %>
-                    <div id="initial-html-content" style="display:none;"><%- editTest.htmlContent %></div>
+                    <div id="initial-html-content" style="display:none;"><%- sanitizeHtml(editTest.htmlContent) %></div>
                   <% } %>
                   <form id="create-test-form" class="space-y-3" data-mode="<%= typeof editTest !== 'undefined' && editTest ? 'edit' : 'create' %>" data-testid="<%= typeof editTest !== 'undefined' && editTest ? editTest._id : '' %>">
                     <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">

@@ -429,8 +429,8 @@
               <div class="batch-card-actions">
                 <button class="batch-edit-btn"
                   data-id="<%= batch._id %>"
-                  data-name="<%- batch.name.replace(/"/g, '&quot;') %>"
-                  data-description="<%- (batch.description || '').replace(/"/g, '&quot;') %>"
+                  data-name="<%= batch.name %>"
+                  data-description="<%= batch.description || '' %>"
                   data-active="<%= batch.isActive %>"
                   data-year="<%= batch.academicYear %>"
                   onclick="openEditModal(this)">

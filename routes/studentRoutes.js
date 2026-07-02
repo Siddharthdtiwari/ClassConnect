@@ -42,7 +42,6 @@ router.get("/student/attendance", ensureDBConnection, requireStudentLogin, catch
 // Test Scores
 router.get("/student/test_score", ensureDBConnection, requireStudentLogin, catchAsync(testController.renderTestScore));
 router.get("/student/take_test", ensureDBConnection, requireStudentLogin, catchAsync(testController.renderTakeTest));
-router.get("/student/view_paper/:id", ensureDBConnection, catchAsync(testController.renderViewPaper));
 
 // Fees
 router.get("/student/fee_payment", ensureDBConnection, requireStudentLogin, catchAsync(feeController.renderFeePayment));
@@ -63,9 +62,5 @@ router.get("/student/leader_board", ensureDBConnection, requireStudentLogin, cat
 // Solutions
 router.get("/student/solutions", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderSolutions));
 router.get("/student/view_solution/:id", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderViewSolution));
-
-// Receipts
-router.get("/student/receipt/:feeId", ensureDBConnection, catchAsync(feeController.downloadReceipt));
-router.get("/student/receipt/:feeId/view", ensureDBConnection, catchAsync(feeController.viewReceipt));
 
 module.exports = router;

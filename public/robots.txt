@@ -1,0 +1,9 @@
+User-agent: *
+Allow: /
+Disallow: /public/report/
+Disallow: /public/test/
+Disallow: /public/fee/
+Disallow: /student/
+Disallow: /teacher/
+
+Sitemap: https://tuitionhub.vercel.app/sitemap.xml

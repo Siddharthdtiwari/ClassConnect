@@ -367,7 +367,8 @@ exports.generateBulkStudentReports = async (req, res) => {
     if (!res.headersSent) {
       res.status(500).send("Error generating bulk report");
     }
-  };
+  }
+};
 
   exports.generatePublicStudentReport = async (req, res) => {
     try {
@@ -529,5 +530,4 @@ exports.generateBulkStudentReports = async (req, res) => {
         res.status(500).send("Error printing directory");
       }
     }
-  }
-}
+  };

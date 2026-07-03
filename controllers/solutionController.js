@@ -1,7 +1,7 @@
 const sanitizeHtml = require('sanitize-html');
 
 const CLASSCONNECT_API = process.env.CLASSCONNECT_API_URL || 'http://localhost:3000/api';
-const API_TIMEOUT_MS = 8000;
+const API_TIMEOUT_MS = 15000;
 
 const SOLUTION_HTML_SANITIZE_OPTIONS = {
   allowedTags: ['h1', 'h2', 'h3', 'h4', 'p', 'ul', 'ol', 'li', 'strong', 'em', 'b', 'i', 'br', 'table', 'thead', 'tbody', 'tr', 'th', 'td', 'blockquote', 'code', 'pre', 'sup', 'sub', 'span', 'div'],
@@ -53,8 +53,8 @@ exports.renderSolutions = async (req, res) => {
       searchQuery: req.query 
     });
   } catch (err) {
-    console.error("renderSolutions API fetch error:", err);
-    res.status(500).send("Error loading solutions from ClassConnect API");
+    console.error(`renderSolutions API fetch error (${CLASSCONNECT_API}/solutions):`, err);
+    res.status(500).send(`Error loading solutions from ClassConnect API.<br><br><small><strong>Debug Info:</strong> Attempted to fetch from ${CLASSCONNECT_API}.<br><strong>Error:</strong> ${err.message}</small>`);
   }
 };
 
@@ -65,13 +65,15 @@ exports.renderViewSolution = async (req, res) => {
     const data = await response.json();
     const solution = data.success ? data.data : null;
 
-    if (!solution || solution.formatType !== 'HTML' || !solution.htmlContent) {
-      return res.status(404).send("HTML Solution not found on ClassConnect servers.");
+    if (!solution) {
+      return res.status(404).send("Solution not found on ClassConnect servers.");
     }
 
     // Defense-in-depth: sanitize even though the source API also sanitizes on save,
     // since this content originates from a separate service we don't control.
-    solution.htmlContent = sanitizeHtml(solution.htmlContent, SOLUTION_HTML_SANITIZE_OPTIONS);
+    if (solution.formatType === 'HTML' && solution.htmlContent) {
+      solution.htmlContent = sanitizeHtml(solution.htmlContent, SOLUTION_HTML_SANITIZE_OPTIONS);
+    }
 
     res.render("shared/view_solution", { solution });
   } catch (err) {

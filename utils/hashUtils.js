@@ -2,7 +2,8 @@ const crypto = require("crypto");
 
 const signId = (id) => {
   if (!id) return "";
-  return crypto.createHmac("sha256", process.env.SESSION_SECRET).update(id.toString()).digest("hex");
+  const secret = process.env.SESSION_SECRET || 'secret';
+  return crypto.createHmac("sha256", secret).update(id.toString()).digest("hex");
 };
 
 const verifySignature = (id, signature) => {

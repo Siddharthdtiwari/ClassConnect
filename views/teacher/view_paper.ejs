@@ -75,20 +75,44 @@
   </style>
 </head>
 <body>
-  
-  <div class="print-btn-container">
-    <button class="print-btn" onclick="window.print()" title="Print Paper">
-      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="6 9 6 2 18 2 18 9"></polyline>
-        <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-        <rect x="6" y="14" width="12" height="8"></rect>
-      </svg>
-    </button>
-  </div>
-
   <div class="paper-wrapper">
     <img src="/images/logo.png" class="watermark-img" alt="Tuition Hub Watermark" />
-    <%- test.htmlContent %>
+    <% if (test.questionPaper === 'HTML_CONTENT' || test.htmlContent) { %>
+      <div class="print-btn-container">
+        <button class="print-btn" onclick="window.print()" title="Print Paper">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 6 2 18 2 18 9"></polyline>
+            <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+            <rect x="6" y="14" width="12" height="8"></rect>
+          </svg>
+        </button>
+      </div>
+        <%- test.htmlContent %>
+    <% } else if (test.questionPaper.includes('drive.google.com')) { %>
+        <% 
+          let embedUrl = test.questionPaper || '';
+          if (embedUrl.includes('drive.google.com/file/d/')) {
+              embedUrl = embedUrl.replace(/\/view.*/, '/preview');
+          }
+        %>
+        <div style="text-align: center; width: 100%; margin-top: 40px;">
+          <iframe src="<%= embedUrl %>" width="100%" height="800px" allow="autoplay" style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px;"></iframe>
+          <br>
+          <a href="<%= test.questionPaper %>" target="_blank" style="display:inline-block; padding:12px 24px; background:#4b2d84; color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-family: Arial, sans-serif;">
+              <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+              Open in Google Drive
+          </a>
+        </div>
+    <% } else { %>
+        <div style="text-align: center; width: 100%; margin-top: 40px;">
+          <iframe src="<%= test.questionPaper %>" width="100%" height="800px" style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px;"></iframe>
+          <br>
+          <a href="<%= test.questionPaper %>" target="_blank" style="display:inline-block; padding:12px 24px; background:#4b2d84; color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-family: Arial, sans-serif;">
+              <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Download / View Paper in New Tab
+          </a>
+        </div>
+    <% } %>
     <div style="text-align: right; margin-top: 40px; padding-right: 10px; font-family: Arial, sans-serif; font-size: 10px; color: #777;">
       Powered by <strong style="color: #4b2d84;">ClassConnect</strong>
     </div>

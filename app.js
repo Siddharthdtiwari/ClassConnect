@@ -120,6 +120,8 @@ app.use(
           "'self'",
           "https://api.razorpay.com",
           "https://checkout.razorpay.com",
+          "https://drive.google.com",
+          "https://docs.google.com",
         ],
       },
     },

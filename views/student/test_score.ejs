@@ -255,7 +255,7 @@
                     <!-- Right: score + Q.Paper -->
                     <div class="flex-shrink-0 flex flex-col sm:items-end items-start gap-2 sm:mt-0 mt-4 border-t sm:border-t-0 border-theme-bd pt-4 sm:pt-0">
                       <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
-                        ${test.questionPaper ? `<a href="${test.questionPaper}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
+                        ${test.questionPaper ? `<a href="/public/test/${test.testId}/${test.signature}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
                         <div class="text-right">
                            <p class="text-3xl font-unbounded font-extrabold text-theme-fg leading-none drop-shadow-sm">${score}<span class="text-sm font-mono font-bold text-theme-fd uppercase tracking-widest ml-1">/ ${total}</span></p>
                            <p class="text-xs font-mono font-bold uppercase tracking-widest mt-1" style="color: ${percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444'}">${percent.toFixed(1)}% SCORE</p>

@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const Test = require("../../models/Test");
 const Score = require("../../models/Score");
-
+const crypto = require("crypto");
 exports.renderTestScore = async (req, res) => {
   try {
     const studentId = req.user.studentId;
@@ -12,7 +12,11 @@ exports.renderTestScore = async (req, res) => {
     scores.forEach((score) => {
       const subject = score.testId?.subject || "Unknown";
       if (!scoresBySubject[subject]) scoresBySubject[subject] = [];
+      const testIdStr = score.testId?._id ? score.testId._id.toString() : "";
+      const signId = testIdStr ? crypto.createHmac('sha256', process.env.SESSION_SECRET || 'secret').update(testIdStr).digest('hex') : "";
       scoresBySubject[subject].push({
+        testId: testIdStr,
+        signature: signId,
         testName: score.testName,
         topic: score.testId?.topic || "No topic",
         score: score.score,
@@ -51,8 +55,8 @@ exports.renderTakeTest = async (req, res) => {
 exports.renderViewPaper = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
-    if (!test || !test.htmlContent) {
-      return res.status(404).send("Paper not found or it is a PDF.");
+    if (!test || (!test.htmlContent && !test.questionPaper)) {
+      return res.status(404).send("Paper not found.");
     }
     // Reuse teacher's view_paper since it has no teacher-specific layout
     res.render("teacher/view_paper", { test });

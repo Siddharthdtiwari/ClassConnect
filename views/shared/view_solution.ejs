@@ -99,8 +99,39 @@
         </p>
     </div>
 
-    <div style="line-height: 1.6; font-size: 12pt; color: #000;">
-        <%- solution.htmlContent %>
+    <div style="line-height: 1.6; font-size: 12pt; color: #000; display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 200px;">
+        <% if (solution.formatType === 'HTML') { %>
+            <div style="width: 100%;">
+                <%- solution.htmlContent %>
+            </div>
+        <% } else if (solution.formatType === 'DriveLink') { %>
+            <% 
+              let embedUrl = solution.driveLink || '';
+              if (embedUrl.includes('drive.google.com/file/d/')) {
+                  embedUrl = embedUrl.replace(/\/view.*/, '/preview');
+              }
+            %>
+            <iframe src="<%= embedUrl %>" width="100%" height="600px" allow="autoplay" style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px;"></iframe>
+            <a href="<%= solution.driveLink %>" target="_blank" style="display:inline-block; padding:12px 24px; background:#4b2d84; color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-family: Arial, sans-serif;">
+                <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"></path><polyline points="15 3 21 3 21 9"></polyline><line x1="10" y1="14" x2="21" y2="3"></line></svg>
+                Open in Google Drive
+            </a>
+        <% } else if (solution.formatType === 'PDF') { %>
+            <iframe src="<%= solution.pdfUrl %>" width="100%" height="600px" style="border: 1px solid #ccc; border-radius: 8px; margin-bottom: 20px;"></iframe>
+            <a href="<%= solution.pdfUrl %>" target="_blank" style="display:inline-block; padding:12px 24px; background:#4b2d84; color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-family: Arial, sans-serif;">
+                <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Download / View PDF in New Tab
+            </a>
+        <% } %>
+
+        <% if (solution.youtubeLink) { %>
+            <hr style="width: 100%; margin:30px 0; border:none; border-top:1px dashed #ccc;"/>
+            <p style="text-align: center; color: #555; margin-bottom: 20px; font-family: Arial, sans-serif;">A video explanation is also available for this solution.</p>
+            <a href="<%= solution.youtubeLink %>" target="_blank" style="display:inline-block; padding:12px 24px; background:#ff0000; color:white; text-decoration:none; border-radius:8px; font-weight: bold; font-family: Arial, sans-serif;">
+                <svg style="width: 18px; height: 18px; vertical-align: middle; margin-right: 8px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.42a2.78 2.78 0 0 0-1.94 2C1 8.18 1 12 1 12s0 3.82.46 5.58a2.78 2.78 0 0 0 1.94 2C5.12 20 12 20 12 20s6.88 0 8.6-.42a2.78 2.78 0 0 0 1.94-2C23 15.82 23 12 23 12s0-3.82-.46-5.58z"></path><polygon points="9.75 15.02 15.5 12 9.75 8.98 9.75 15.02"></polygon></svg>
+                Watch on YouTube
+            </a>
+        <% } %>
     </div>
     
     <div style="text-align: right; margin-top: 40px; border-top: 1px solid #eee; padding-top: 10px; font-family: Arial, sans-serif; font-size: 10px; color: #777;">

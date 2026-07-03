@@ -68,8 +68,8 @@ exports.renderGeneratePaper = async (req, res) => {
 exports.renderViewPaper = async (req, res) => {
   try {
     const test = await Test.findById(req.params.id);
-    if (!test || !test.htmlContent) {
-      return res.status(404).send("Paper not found or it is a PDF.");
+    if (!test || (!test.htmlContent && !test.questionPaper)) {
+      return res.status(404).send("Paper not found.");
     }
     res.render("teacher/view_paper", { test });
   } catch (err) {
@@ -82,14 +82,15 @@ exports.viewPublicPaper = async (req, res) => {
   try {
     const { id, signature } = req.params;
     
-    const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
+    const secret = process.env.SESSION_SECRET || 'secret';
+    const expectedSignature = crypto.createHmac('sha256', secret).update(id).digest('hex');
     if (signature !== expectedSignature) {
       return res.status(403).send("Invalid or expired test paper link");
     }
 
     const test = await Test.findById(id);
-    if (!test || !test.htmlContent) {
-      return res.status(404).send("Paper not found or it is a PDF.");
+    if (!test || (!test.htmlContent && !test.questionPaper)) {
+      return res.status(404).send("Paper not found.");
     }
     // Render using the existing teacher view since it doesn't actually display sensitive teacher data
     res.render("teacher/view_paper", { test });

@@ -4,7 +4,7 @@ const Razorpay = require("razorpay");
 const User = require("../../models/User");
 const Fee = require("../../models/Fee");
 const { logAudit } = require("../../utils/auditService");
-const { sendFeeReceiptEmail } = require("../../utils/emailService");
+const { sendFeeReceipt } = require("../../utils/emailService");
 const { generateReceiptPDF, generateFeeSummaryPDF } = require("../../utils/pdfUtils");
 
 const razorpay = new Razorpay({
@@ -217,7 +217,7 @@ exports.verifyPayment = async (req, res) => {
         const savedFee = await newFee.save();
         console.log(`Fee record created for ${dueMonth} — payment ID: ${razorpay_payment_id}`);
         
-        if (student.email) {
+        if (student.email && Number(perMonthAmount) > 0) {
           sendFeeReceipt(student.email, student.studentName, dueMonth, feeYear, perMonthAmount, {
             fee: savedFee.toObject(),
             student: student,

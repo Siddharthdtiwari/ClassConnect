@@ -81,7 +81,7 @@
             </div>
 
           <form id="edit-profile-form" action="/teacher/edit_profile/<%= student._id %>?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data" class="space-y-6">
-<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+<input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
             
             <div class="photo-upload-area rounded-2xl p-6 text-center cursor-pointer relative group">
               <input type="file" id="profile-photo" name="profilePhoto" class="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-20" />
@@ -98,8 +98,11 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
               <div>
-                <label for="student-id" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Student ID</label>
-                <input type="text" id="student-id" value="<%= student.studentId %>" disabled class="w-full bg-theme-bgc text-theme-fdd border border-theme-b rounded-xl focus:outline-none py-3 px-4 font-semibold text-sm cursor-not-allowed opacity-70" />
+                <label for="student-id" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono flex justify-between items-center">
+                  <span>Student ID</span>
+                  <button type="button" onclick="document.getElementById('student-id').readOnly = false; document.getElementById('student-id').focus(); this.style.display='none';" class="text-theme-pt hover:underline">Edit</button>
+                </label>
+                <input type="text" id="student-id" name="studentId" value="<%= student.studentId %>" readonly class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm read-only:opacity-70 read-only:cursor-not-allowed" />
               </div>
 
               <div>

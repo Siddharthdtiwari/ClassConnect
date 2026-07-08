@@ -118,6 +118,13 @@
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Mobile No</span>
                     <span class="font-bold text-theme-fg font-mono"><%= student.mobileNo || '—' %></span>
                   </div>
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Account Status</span>
+                    <label class="relative inline-flex items-center cursor-pointer" title="Toggle active status (inactive students will not receive emails)">
+                      <input type="checkbox" id="activeToggle" class="sr-only peer" <%= student.isActive !== false ? 'checked' : '' %>>
+                      <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
+                    </label>
+                  </div>
                   <% if (student.email) { %>
                   <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Email</span>
@@ -311,6 +318,31 @@
               },
             },
           },
+        });
+      }
+
+      const activeToggle = document.getElementById('activeToggle');
+      if (activeToggle) {
+        activeToggle.addEventListener('change', async function() {
+          try {
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const response = await fetch(`/teacher/toggle_active/<%= student._id %>`, {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                'x-csrf-token': csrfToken
+              }
+            });
+            const data = await response.json();
+            if (!data.success) {
+              alert(data.message || 'Failed to toggle status');
+              this.checked = !this.checked;
+            }
+          } catch (err) {
+            console.error(err);
+            alert('Error toggling status');
+            this.checked = !this.checked;
+          }
         });
       }
     });

@@ -12,8 +12,27 @@ const transporter = nodemailer.createTransport({
   },
 });
 
+const User = require("../models/User");
+
 const sendEmail = async (to, subject, htmlContent, attachments = [], logOptions = {}) => {
   if (!to) return; // Skip if no email is provided
+  
+  try {
+    let student = null;
+    if (logOptions.studentRef) {
+      student = await User.findById(logOptions.studentRef).select("isActive").lean();
+    } else {
+      student = await User.findOne({ email: to }).select("isActive").lean();
+    }
+    
+    if (student && student.isActive === false) {
+      console.log(`Email skipped for ${to} because student is inactive.`);
+      return;
+    }
+  } catch (err) {
+    console.error("Error checking student active status before email:", err);
+  }
+
   let status = "Sent";
   let errorMessage = "";
   try {

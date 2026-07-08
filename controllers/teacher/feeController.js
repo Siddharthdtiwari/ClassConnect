@@ -341,7 +341,7 @@ exports.processAddFees = async (req, res) => {
     const savedFee = await fee.save();
 
     // Send email receipt
-    if (studentObj.email) {
+    if (studentObj.email && Number(amount) > 0) {
       const { sendFeeReceipt } = require("../../utils/emailService");
       sendFeeReceipt(studentObj.email, studentObj.studentName, month, year, amount, {
         fee: savedFee.toObject(),
@@ -460,7 +460,7 @@ exports.processBulkSave = async (req, res) => {
 
       const savedFee = await fee.save();
 
-      if (studentObj.email) {
+      if (studentObj.email && Number(amount) > 0) {
         sendFeeReceipt(studentObj.email, studentObj.studentName, month, year, amount, {
           fee: savedFee.toObject(),
           student: studentObj.toObject ? studentObj.toObject() : studentObj

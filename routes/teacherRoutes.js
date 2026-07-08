@@ -57,6 +57,7 @@ router.get("/teacher/edit_profile/:id", ensureDBConnection, requireTeacherLogin,
 router.post("/teacher/edit_profile/:id", ensureDBConnection, requireTeacherLogin, upload.single("profilePhoto"), catchAsync(studentController.processEditProfile));
 router.get("/teacher/view_profile/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderViewProfile));
 router.get("/teacher/bulk_add_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderBulkAddStudents));
+router.post("/teacher/toggle_active/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.toggleActiveStatus));
 router.post("/teacher/bulk_save_students", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(studentController.processBulkSaveStudents));
 router.get("/teacher/bulk_student_reports", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateBulkStudentReports));
 router.get("/teacher/student_report/:id", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.generateStudentReport));

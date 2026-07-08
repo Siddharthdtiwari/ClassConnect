@@ -93,8 +93,16 @@ exports.renderEditProfile = async (req, res) => {
 
 exports.processEditProfile = async (req, res) => {
   try {
-    const { studentName, batchId, mobileNo, monthlyFee, email } = req.body;
+    const { studentName, studentId, batchId, mobileNo, monthlyFee, email } = req.body;
     const updateData = { studentName, batch: batchId, mobileNo, monthlyFee, email };
+
+    if (studentId) {
+      const existingStudent = await User.findOne({ studentId, batch: batchId, _id: { $ne: req.params.id } });
+      if (existingStudent) {
+        return res.status(400).send("Student ID already exists in this batch.");
+      }
+      updateData.studentId = studentId;
+    }
 
     if (req.file) {
       const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
@@ -113,6 +121,29 @@ exports.processEditProfile = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).send("Error updating profile");
+  }
+};
+
+exports.toggleActiveStatus = async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student) return res.status(404).json({ success: false, message: "Student not found" });
+    
+    student.isActive = !student.isActive;
+    await student.save();
+    
+    await logAudit({
+      action: "UPDATE",
+      entityType: "User",
+      entityId: student._id,
+      details: `Toggled active status for ${student.studentName} to ${student.isActive ? 'Active' : 'Inactive'}`,
+      academicYear: req.viewingYear || "All"
+    });
+    
+    res.json({ success: true, isActive: student.isActive });
+  } catch (err) {
+    console.error("Error toggling status:", err);
+    res.status(500).json({ success: false, message: "Error toggling status" });
   }
 };
 

@@ -7,11 +7,13 @@ exports.renderLogin = (req, res) => res.render("student/login", { hideNavbar: tr
 exports.processLogin = async (req, res) => {
   try {
     const { studentId, password } = req.body;
-    let targetStudentId = studentId;
+    // Student IDs are stored uppercase — accept any casing at login.
+    const normalizedId = String(studentId || '').trim().toUpperCase();
+    let targetStudentId = normalizedId;
     let targetAcademicYear = req.currentAcademicYear;
 
     // Cheat code: THEC1012526 -> THEC101 and 2025-26
-    const cheatMatch = studentId.match(/^([a-zA-Z]+[0-9]+)([0-9]{4})$/);
+    const cheatMatch = normalizedId.match(/^([a-zA-Z]+[0-9]+)([0-9]{4})$/);
     if (cheatMatch) {
       targetStudentId = cheatMatch[1];
       const yearPart = cheatMatch[2];

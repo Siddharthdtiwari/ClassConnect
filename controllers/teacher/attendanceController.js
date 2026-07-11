@@ -15,7 +15,9 @@ exports.renderManageAttendance = async (req, res) => {
     const attendanceMap = {};
     attendanceRecords.forEach((record) => {
       const dateString = record.date.toISOString().split('T')[0];
-      attendanceMap[dateString] = {};
+      // Merge — a date has one document per batch, so resetting here would
+      // keep only whichever batch's document happened to come last.
+      if (!attendanceMap[dateString]) attendanceMap[dateString] = {};
       (record.records || []).forEach(
         (r) => (attendanceMap[dateString][r.studentId] = r.status)
       );
@@ -44,8 +46,12 @@ exports.processManageAttendance = async (req, res) => {
       await attendance.save();
     } else if (records && records.length > 0) {
       const studentIds = records.map(r => r.studentId);
-      const students = await User.find({ studentId: { $in: studentIds } }).select('studentId batch').lean();
-      
+      // Student IDs repeat across academic years (unique only per studentId+batch),
+      // so resolve them strictly within the current year's batches — otherwise
+      // records get filed under last year's batch and students can't see them.
+      const yearBatchIds = await Batch.find({ academicYear: req.currentAcademicYear }).distinct('_id');
+      const students = await User.find({ studentId: { $in: studentIds }, batch: { $in: yearBatchIds } }).select('studentId batch').lean();
+
       const batchGroups = {};
       records.forEach(record => {
         const student = students.find(s => s.studentId === record.studentId);

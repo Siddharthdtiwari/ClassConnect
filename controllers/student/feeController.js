@@ -133,7 +133,9 @@ exports.verifyPayment = async (req, res) => {
     console.log("Payment is legitimate and verified.");
 
     try {
-      const student = await User.findById(req.session.userId).populate('batch');
+      // Web portal sets req.session.userId; the JWT mobile API sets req.user (see routes/api/studentRoutes.js).
+      const payerId = req.session?.userId || (req.user && req.user._id);
+      const student = await User.findById(payerId).populate('batch');
       if (!student) {
         throw new Error("Student not found for session.");
       }

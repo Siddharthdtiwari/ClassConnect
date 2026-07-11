@@ -381,7 +381,8 @@ router.get('/attendance', async (req, res) => {
     const attendanceMap = {};
     attendanceRecords.forEach((record) => {
       const dateString = record.date.toISOString().split('T')[0];
-      attendanceMap[dateString] = {};
+      // Merge — one document per batch per date; resetting would drop other batches.
+      if (!attendanceMap[dateString]) attendanceMap[dateString] = {};
       (record.records || []).forEach((r) => (attendanceMap[dateString][r.studentId] = r.status));
     });
 
@@ -405,8 +406,10 @@ router.post('/attendance', async (req, res) => {
       await attendance.save();
     } else if (records && records.length > 0) {
       const studentIds = records.map(r => r.studentId);
-      const students = await User.find({ studentId: { $in: studentIds } }).select('studentId batch').lean();
-      
+      // Resolve IDs within this academic year's batches only — IDs repeat across years.
+      const yearBatchIds = await Batch.find({ academicYear }).distinct('_id');
+      const students = await User.find({ studentId: { $in: studentIds }, batch: { $in: yearBatchIds } }).select('studentId batch').lean();
+
       const batchGroups = {};
       records.forEach(record => {
         const student = students.find(s => s.studentId === record.studentId);

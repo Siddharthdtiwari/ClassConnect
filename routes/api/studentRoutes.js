@@ -47,9 +47,26 @@ router.get('/dashboard', async (req, res) => {
     const attendancePercentage =
       (presentDays + absentDays) > 0 ? ((presentDays / (presentDays + absentDays)) * 100).toFixed(1) : 0;
 
-    const allStudents = await User.find({ batch: student.batch._id }).sort({ points: -1 }).lean();
+    // Compute rank globally (all batches in the current academic year), matching the
+    // leaderboard screen — including the same fallback to the previous year when no
+    // current-year students have points yet.
+    const { calculateCurrentAcademicYear } = require('../../utils/academicYear');
+    const currentYear = calculateCurrentAcademicYear();
+    let yearBatches = await require('../../models/Batch').find({ academicYear: currentYear }).select('_id').lean();
+    let yearBatchIds = yearBatches.map(b => b._id);
+    let allYearStudents = await User.find({ batch: { $in: yearBatchIds } }).sort({ points: -1 }).lean();
+    // Mirror the leaderboard's fallback: if nobody in the current year has points yet,
+    // rank against the previous year's cohort (same as what the leaderboard displays).
+    const hasPoints = allYearStudents.some(s => s.points > 0);
+    if (!hasPoints) {
+      const startYear = parseInt(currentYear.split('-')[0]);
+      const fallbackYear = `${startYear - 1}-${String(startYear).slice(2)}`;
+      const prevBatches = await require('../../models/Batch').find({ academicYear: fallbackYear }).select('_id').lean();
+      const prevStudents = await User.find({ batch: { $in: prevBatches.map(b => b._id) } }).sort({ points: -1 }).lean();
+      if (prevStudents.length > 0) allYearStudents = prevStudents;
+    }
     let studentRank = '-';
-    const rankIndex = allStudents.findIndex(s => s._id.toString() === student._id.toString());
+    const rankIndex = allYearStudents.findIndex(s => s._id.toString() === student._id.toString());
     if (rankIndex !== -1) studentRank = rankIndex + 1;
 
     res.json({
@@ -228,8 +245,13 @@ router.get('/leaderboard', async (req, res) => {
     }));
 
     const globalLeaderboard = formatLeaderboard(allStudents);
-    const batchStudents = allStudents.filter(s => s.batch && s.batch.toString() === student.batch._id.toString());
-    const batchLeaderboard = formatLeaderboard(batchStudents);
+    // Preserve each student's GLOBAL rank in the batch view — previously the batch
+    // leaderboard re-ranked from #1, so a student at #3 globally looked like #1 in
+    // their batch. Now both views show the same rank number.
+    const batchLeaderboard = globalLeaderboard.filter(entry => {
+      const orig = allStudents.find(s => s.studentId === entry.studentId);
+      return orig && orig.batch && orig.batch.toString() === student.batch._id.toString();
+    });
 
     res.json({ globalLeaderboard, batchLeaderboard, viewingYear: targetYear });
   } catch (err) {

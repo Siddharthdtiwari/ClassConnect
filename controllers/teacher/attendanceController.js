@@ -34,27 +34,39 @@ exports.renderManageAttendance = async (req, res) => {
 exports.processManageAttendance = async (req, res) => {
   try {
     const { date, records, batchId } = req.body;
-    let batchValue = batchId;
+    if (batchId) {
+      let attendance = await Attendance.findOne({ date, batch: batchId });
+      if (attendance) {
+        attendance.records = records;
+      } else {
+        attendance = new Attendance({ batch: batchId, date: new Date(date), records });
+      }
+      await attendance.save();
+    } else if (records && records.length > 0) {
+      const studentIds = records.map(r => r.studentId);
+      const students = await User.find({ studentId: { $in: studentIds } }).select('studentId batch').lean();
+      
+      const batchGroups = {};
+      records.forEach(record => {
+        const student = students.find(s => s.studentId === record.studentId);
+        if (student && student.batch) {
+          const bId = student.batch.toString();
+          if (!batchGroups[bId]) batchGroups[bId] = [];
+          batchGroups[bId].push(record);
+        }
+      });
 
-    if (!batchValue && records && records.length > 0) {
-      const firstStudentId = records[0].studentId;
-      const student = await User.findOne({ studentId: firstStudentId, batch: { $in: req.viewingBatches } }).populate('batch').lean();
-      if (student) {
-        batchValue = (student.batch ? student.batch._id : null);
+      for (const [bId, batchRecords] of Object.entries(batchGroups)) {
+        let attendance = await Attendance.findOne({ date, batch: bId });
+        if (attendance) {
+          attendance.records = batchRecords;
+          await attendance.save();
+        } else {
+          attendance = new Attendance({ batch: bId, date: new Date(date), records: batchRecords });
+          await attendance.save();
+        }
       }
     }
-
-    let attendance = await Attendance.findOne({ date, batch: { $in: req.viewingBatches } });
-    if (attendance) {
-      attendance.records = records;
-    } else {
-      attendance = new Attendance({
-        batch: batchValue,
-        date: new Date(date),
-        records,
-      });
-    }
-    await attendance.save();
 
     await logAudit({
       action: "UPDATE",

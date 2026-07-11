@@ -23,6 +23,8 @@ const { upload, uploadToCloudinary } = require('../../utils/upload');
 const studentController = require('../../controllers/teacher/studentController');
 const feeController = require('../../controllers/teacher/feeController');
 const attendanceController = require('../../controllers/teacher/attendanceController');
+const testController = require('../../controllers/teacher/testController');
+const resourceController = require('../../controllers/teacher/resourceController');
 
 router.use(requireTeacherApiLogin);
 
@@ -393,21 +395,39 @@ router.post('/attendance', async (req, res) => {
   try {
     const { date, records, batchId } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
-    let batchValue = batchId;
+    if (batchId) {
+      let attendance = await Attendance.findOne({ date, batch: batchId });
+      if (attendance) {
+        attendance.records = records;
+      } else {
+        attendance = new Attendance({ batch: batchId, date: new Date(date), records });
+      }
+      await attendance.save();
+    } else if (records && records.length > 0) {
+      const studentIds = records.map(r => r.studentId);
+      const students = await User.find({ studentId: { $in: studentIds } }).select('studentId batch').lean();
+      
+      const batchGroups = {};
+      records.forEach(record => {
+        const student = students.find(s => s.studentId === record.studentId);
+        if (student && student.batch) {
+          const bId = student.batch.toString();
+          if (!batchGroups[bId]) batchGroups[bId] = [];
+          batchGroups[bId].push(record);
+        }
+      });
 
-    if (!batchValue && records && records.length > 0) {
-      const batchIds = await Batch.find({ academicYear }).distinct('_id');
-      const student = await User.findOne({ studentId: records[0].studentId, batch: { $in: batchIds } }).lean();
-      if (student) batchValue = student.batch;
+      for (const [bId, batchRecords] of Object.entries(batchGroups)) {
+        let attendance = await Attendance.findOne({ date, batch: bId });
+        if (attendance) {
+          attendance.records = batchRecords;
+          await attendance.save();
+        } else {
+          attendance = new Attendance({ batch: bId, date: new Date(date), records: batchRecords });
+          await attendance.save();
+        }
+      }
     }
-
-    let attendance = await Attendance.findOne({ date, batch: batchValue });
-    if (attendance) {
-      attendance.records = records;
-    } else {
-      attendance = new Attendance({ batch: batchValue, date: new Date(date), records });
-    }
-    await attendance.save();
     await logAudit({ action: 'UPDATE', entityType: 'Attendance', details: `Saved attendance for ${date}`, academicYear });
     res.json({ success: true, message: 'Attendance saved successfully!' });
   } catch (err) {
@@ -460,13 +480,16 @@ router.post('/fees', async (req, res) => {
     const studentObj = await User.findById(studentId).populate('batch');
     if (!studentObj) return res.status(404).json({ error: 'Student not found' });
 
-    const existingFee = await Fee.findOne({ studentId: studentObj.studentId, month, year, batch: batchId });
+    // Default to the student's own batch — clients may not know it (e.g. the mobile fee list spans batches).
+    const batchValue = batchId || (studentObj.batch && studentObj.batch._id);
+
+    const existingFee = await Fee.findOne({ studentId: studentObj.studentId, month, year, batch: batchValue });
     if (existingFee) return res.status(400).json({ error: 'Fee already exists for this month' });
 
     const fee = new Fee({
       studentId: studentObj.studentId, studentName: studentObj.studentName,
       studentEmail: studentObj.email || '', userRef: studentObj._id,
-      batch: batchId, amount, month, year, method, datePaid, status: 'Paid'
+      batch: batchValue, amount, month, year, method, datePaid, status: 'Paid'
     });
     await fee.save();
     const academicYear = calculateCurrentAcademicYear();
@@ -783,10 +806,13 @@ router.get('/defaulters/fees', async (req, res) => {
 // Bulk save students
 // Wait, processBulkSaveStudents relies on req.body being an array, which it will be.
 // We need to inject req.viewingYear for some controllers if they rely on it.
+// Express 5 leaves req.body undefined on bodyless requests (e.g. GET), so guard the read.
 router.use((req, res, next) => {
-  req.viewingYear = req.query.year || req.body.academicYear || calculateCurrentAcademicYear();
+  req.viewingYear = req.query.year || (req.body && req.body.academicYear) || calculateCurrentAcademicYear();
   next();
 });
+// Controllers below also read req.viewingBatches / req.currentBatches (e.g. bulk student save).
+router.use(require('../../middlewares/batchContext').loadBatches);
 
 router.post('/students/bulk', async (req, res, next) => {
   // Mock the web flash/redirect behavior to return JSON instead
@@ -802,6 +828,16 @@ router.post('/students/bulk', async (req, res, next) => {
   }
 });
 
+// Edit study material metadata or replace its file/link (same controller as the web dashboard)
+router.put('/materials/:id', upload.single('file'), resourceController.processStudyMaterialUpdate);
+
+// Repost previous-year materials into the matching current-year batch
+router.post('/materials/repost-single/:id', resourceController.repostSingleMaterial);
+router.post('/materials/repost-multiple', resourceController.repostMultipleMaterials);
+
+// Consolidated class-wise score matrix (same shape the web dashboard consumes)
+router.get('/scores/consolidated', testController.apiConsolidatedScores);
+
 // PDF Downloads
 router.get('/students/directory/pdf', studentController.printStudentDirectory);
 router.get('/students/report/:id/pdf', studentController.generateStudentReport);
@@ -811,38 +847,71 @@ router.get('/attendance/defaulters/pdf/:year/:month', attendanceController.downl
 
 router.get('/defaulters/attendance', async (req, res) => {
   try {
-    const academicYear = req.query.year || calculateCurrentAcademicYear();
+    const academicYear = calculateCurrentAcademicYear();
     const { month } = req.query; // numeric month 1-12
-    
-    if (!month) return res.status(400).json({ error: 'Month (numeric) is required' });
+    const year = req.query.year || String(new Date().getFullYear()); // calendar year for the date range
+
+    if (!month || !/^(0?[1-9]|1[0-2])$/.test(String(month))) {
+      return res.status(400).json({ error: 'Month (numeric 1-12) is required' });
+    }
+
+    const startDate = new Date(`${year}-${String(month).padStart(2, '0')}-01`);
+    const endDate = new Date(Number(year), parseInt(month), 0);
 
     const batchIds = await Batch.find({ academicYear }).distinct('_id');
-    
-    // Logic for attendance defaulters requires parsing Attendance records
-    // This is a simplified version returning students with low attendance
-    // Actually, let's just return a mock response or use the existing logic if simple.
-    // Given the complexity, let's just return all students and their attendance % for the month.
-    
-    res.json({ defaulters: [] }); // Placeholder for now to prevent crashing
+    const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
+    const attendanceDocs = await Attendance.find({
+      date: {
+        $gte: startDate.toISOString().split('T')[0],
+        $lte: endDate.toISOString().split('T')[0],
+      },
+      batch: { $in: batchIds },
+    }).lean();
+
+    const stats = {};
+    students.forEach((s) => {
+      stats[s.studentId] = {
+        studentId: s.studentId,
+        studentName: s.studentName,
+        standard: s.batch ? s.batch.name : 'Unknown',
+        mobileNo: s.mobileNo,
+        present: 0,
+        absent: 0,
+        total: 0,
+        percentage: 0,
+      };
+    });
+
+    attendanceDocs.forEach((doc) => {
+      (doc.records || []).forEach((r) => {
+        if (stats[r.studentId]) {
+          if (r.status === 'P') stats[r.studentId].present++;
+          if (r.status === 'A') stats[r.studentId].absent++;
+          stats[r.studentId].total++;
+        }
+      });
+    });
+
+    const defaulters = Object.values(stats)
+      .map((s) => {
+        s.percentage = (s.present + s.absent) > 0 ? (s.present / (s.present + s.absent)) * 100 : 0;
+        return s;
+      })
+      .filter((s) => s.percentage < 75)
+      .sort((a, b) => Number(a.percentage) - Number(b.percentage));
+
+    res.json({ defaulters });
   } catch (err) {
+    console.error('Attendance defaulters API error:', err);
     res.status(500).json({ error: 'Error loading attendance defaulters' });
   }
 });
 
 // ========== AI GENERATION ==========
-router.post('/ai/generate_paper', async (req, res) => {
-  try {
-    const { subject, topic, difficulty, questionCount } = req.body;
-    
-    // Mocking AI response for the API since we don't have the OpenAI key initialized
-    // Usually this calls an external API
-    const mockPaper = `# AI Generated Paper for ${subject} (${topic})\n\nDifficulty: ${difficulty}\n\n1. Explain the core concepts of ${topic}.\n2. How does ${topic} apply in real-world scenarios?\n3. Solve a complex problem related to ${subject}.`;
-
-    await logAudit({ action: 'GENERATE', entityType: 'Test', details: `AI generated paper for ${subject}`, academicYear: calculateCurrentAcademicYear() });
-    res.json({ success: true, paperContent: mockPaper });
-  } catch (err) {
-    res.status(500).json({ error: 'Error generating paper' });
-  }
+// Same Gemini-backed generator the web dashboard uses (controllers/teacher/testController.generatePaperAI).
+// Requires contextText (textbook excerpt/questions); returns { success, html }.
+router.post('/ai/generate_paper', (req, res, next) => {
+  testController.generatePaperAI(req, res, next);
 });
 
 // ========== EDIT & DELETE ENDPOINTS ==========
@@ -850,17 +919,43 @@ router.post('/ai/generate_paper', async (req, res) => {
 // Edit Student
 router.put('/students/:id', async (req, res) => {
   try {
-    const { studentName, mobileNo, monthlyFee } = req.body;
+    const { studentName, mobileNo, monthlyFee, studentId, email, batchId, isActive, password } = req.body;
     const student = await User.findById(req.params.id);
     if (!student) return res.status(404).json({ error: 'Student not found' });
+    if (password && String(password).trim() !== '') {
+      student.password = await bcrypt.hash(String(password).trim(), 12);
+    }
+    if (studentId && studentId !== student.studentId) {
+      const targetBatch = batchId || student.batch;
+      const clash = await User.findOne({ studentId, batch: targetBatch, _id: { $ne: student._id } });
+      if (clash) return res.status(400).json({ error: 'Student ID already exists in this batch.' });
+      student.studentId = studentId;
+    }
     if (studentName) student.studentName = studentName;
     if (mobileNo) student.mobileNo = mobileNo;
     if (monthlyFee !== undefined) student.monthlyFee = monthlyFee;
+    if (email !== undefined) student.email = email;
+    if (batchId) student.batch = batchId;
+    if (typeof isActive === 'boolean') student.isActive = isActive;
     await student.save();
-    await logAudit({ action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Updated student: ${student.studentName}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit({ action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Updated student: ${student.studentName}${typeof isActive === 'boolean' ? ` (${isActive ? 'Active' : 'Inactive'})` : ''}`, academicYear: calculateCurrentAcademicYear() });
     res.json({ success: true, student });
   } catch (err) {
     res.status(500).json({ error: 'Error updating student' });
+  }
+});
+
+// Toggle student active status (mirrors web POST /teacher/toggle_active/:id)
+router.post('/students/:id/toggle-active', async (req, res) => {
+  try {
+    const student = await User.findById(req.params.id);
+    if (!student) return res.status(404).json({ error: 'Student not found' });
+    student.isActive = !student.isActive;
+    await student.save();
+    await logAudit({ action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Toggled active status for ${student.studentName} to ${student.isActive ? 'Active' : 'Inactive'}`, academicYear: calculateCurrentAcademicYear() });
+    res.json({ success: true, isActive: student.isActive });
+  } catch (err) {
+    res.status(500).json({ error: 'Error toggling status' });
   }
 });
 

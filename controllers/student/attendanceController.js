@@ -23,10 +23,7 @@ exports.renderAttendance = async (req, res) => {
         else if (studentRecord.status === "H") status = "holiday";
 
         const dateObj = new Date(doc.date);
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, "0");
-        const day = String(dateObj.getDate()).padStart(2, "0");
-        const formatted = `${year}-${month}-${day}`;
+        const formatted = dateObj.toISOString().split('T')[0];
 
         attendanceData.overall[formatted] = status;
       }

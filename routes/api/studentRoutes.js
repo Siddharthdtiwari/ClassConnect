@@ -10,6 +10,7 @@ const Test = require('../../models/Test');
 const ExamTimetable = require('../../models/ExamTimetable');
 const StudyMaterial = require('../../models/StudyMaterial');
 const Batch = require('../../models/Batch');
+const Syllabus = require('../../models/Syllabus');
 
 router.use(requireStudentApiLogin);
 
@@ -87,7 +88,7 @@ router.get('/attendance', async (req, res) => {
         else if (studentRecord.status === 'A') status = 'absent';
         else if (studentRecord.status === 'H') status = 'holiday';
         const dateObj = new Date(doc.date);
-        const formatted = `${dateObj.getFullYear()}-${String(dateObj.getMonth() + 1).padStart(2, '0')}-${String(dateObj.getDate()).padStart(2, '0')}`;
+        const formatted = dateObj.toISOString().split('T')[0];
         attendanceData[formatted] = status;
       }
     });
@@ -251,6 +252,36 @@ router.get('/content', async (req, res) => {
   } catch (err) {
     console.error('Student API content error:', err);
     res.status(500).json({ error: 'Error loading content' });
+  }
+});
+
+// ========== ONLINE FEE PAYMENT (Razorpay) ==========
+// Reuses the web portal's controller: order creation + HMAC verification + fee recording + receipt email.
+const studentFeeController = require('../../controllers/student/feeController');
+
+router.post('/fees/create-order', async (req, res, next) => {
+  // Wrap to append the public key id, which the mobile checkout needs (web gets it via server render).
+  const originalJson = res.json.bind(res);
+  res.json = (body) => originalJson(
+    body && body.id ? { ...body, key_id: process.env.RAZORPAY_KEY_ID } : body
+  );
+  studentFeeController.createOrder(req, res, next);
+});
+
+router.post('/fees/verify-payment', studentFeeController.verifyPayment);
+
+// ========== SYLLABUS ==========
+router.get('/syllabus', async (req, res) => {
+  try {
+    const student = req.user;
+    const studentBatchId = student.batch ? student.batch._id : null;
+    if (!studentBatchId) return res.json({ records: [] });
+
+    const records = await Syllabus.find({ batch: studentBatchId }).populate('batch').lean();
+    res.json({ records });
+  } catch (err) {
+    console.error('Student API syllabus error:', err);
+    res.status(500).json({ error: 'Error loading syllabus' });
   }
 });
 

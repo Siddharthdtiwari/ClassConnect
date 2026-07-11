@@ -220,9 +220,11 @@ router.post('/students', async (req, res) => {
       return res.status(400).json({ error: 'Missing required fields (batch, ID, name, mobile, password)' });
     }
     
-    const existing = await User.findOne({ studentId });
+    // Scope to the target batch — studentId is only unique per (studentId, batch),
+    // and the same ID legitimately repeats across other batches/years.
+    const existing = await User.findOne({ studentId, batch: batchId });
     if (existing) {
-      return res.status(400).json({ error: 'Student ID already exists' });
+      return res.status(400).json({ error: 'Student ID already exists in this batch' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
@@ -584,9 +586,10 @@ router.post('/scores/:testId', async (req, res) => {
         scoreDoc.marksObtained = marksObtained;
         scoreDoc.percentage = ((marksObtained / test.totalMarks) * 100).toFixed(2);
       } else {
-        const student = await User.findOne({ studentId });
+        // Scope to the test's batch — studentId repeats across other batches/years.
+        const student = await User.findOne({ studentId, batch: test.batch });
         if (!student) continue;
-        
+
         scoreDoc = new Score({
           testId: test._id,
           batch: test.batch,

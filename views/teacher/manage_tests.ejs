@@ -250,7 +250,7 @@
                       <td>
                         <% if (test.testDate) { %>
                         <span class="inline-flex items-center gap-1 font-mono text-xs font-bold text-theme-pt">
-                          <%= new Date(test.testDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                          <%= formatDate(test.testDate, {day:'numeric', month:'short', year:'numeric'}) %>
                         </span>
                         <% } else { %>
                         <span class="text-theme-fdd italic text-xs">Not set</span>

@@ -154,7 +154,7 @@
         <% entries.forEach(entry => {
           const typeMap = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
           const badgeClass = typeMap[entry.examType] || 'badge-ct';
-          const formattedDate = new Date(entry.examDate).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}).toUpperCase();
+          const formattedDate = formatDate(entry.examDate, {day:'numeric',month:'short',year:'numeric'}).toUpperCase();
           const inputDate = new Date(entry.examDate).toISOString().split('T')[0];
           const isPast = new Date(entry.examDate) < new Date();
         %>

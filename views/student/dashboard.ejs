@@ -222,7 +222,7 @@
               <div class="flex flex-col flex-1 min-w-0">
                 <span class="text-base font-semibold text-theme-pt truncate"><%= score.testName %></span>
                 <span class="text-xs font-mono text-theme-fd truncate mt-1">
-                  DATE: <%= new Date(score.testId?.testDate || score.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                  DATE: <%= formatDate(score.testId?.testDate || score.createdAt, {day:'numeric', month:'short', year:'numeric'}) %>
                 </span>
               </div>
               <div class="flex flex-col items-end flex-shrink-0">
@@ -262,9 +262,9 @@
               <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><circle cx="12" cy="16" r="4"/><polyline points="12 14 12 16 14 16"/></svg></div>
               <span class="font-bold text-xs text-center uppercase tracking-wide">Timetable</span>
             </a>
-            <a href="/public/report/<%= student._id %>/<%= signId(student._id) %>?dl=1" target="_blank" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
-              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
-              <span class="font-bold text-xs text-center uppercase tracking-wide">Report</span>
+            <a href="/student/syllabus" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
+              <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><polyline points="9 11 11 13 15 9"/></svg></div>
+              <span class="font-bold text-xs text-center uppercase tracking-wide">Syllabus Tracker</span>
             </a>
             <a href="/student/solutions" class="action-card bg-theme-bgc border border-theme-b flex flex-col items-center p-4 rounded-xl text-theme-pt shadow-sm">
               <div class="text-2xl mb-2 drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><polyline points="9 15 11 17 15 13"></polyline></svg></div>

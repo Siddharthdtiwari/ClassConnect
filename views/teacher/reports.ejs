@@ -498,7 +498,7 @@
                     </div>
                     <div class="activity-meta">
                       <%= fee.batch ? fee.batch.name : '' %> · <%= fee.month %> · <%= fee.method || 'N/A' %>
-                      <% if (fee.datePaid) { %> · <%= new Date(fee.datePaid).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' }) %><% } %>
+                      <% if (fee.datePaid) { %> · <%= formatDate(fee.datePaid, { day: 'numeric', month: 'short' }) %><% } %>
                     </div>
                   </div>
                 </li>

@@ -121,8 +121,8 @@
                       <tr class="hover:bg-theme-bgch transition-colors group">
                         <td class="p-4">
                           <div class="flex flex-col">
-                            <span class="text-theme-fg"><%= new Date(log.createdAt).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %></span>
-                            <span class="text-xs text-theme-fdd font-mono"><%= new Date(log.createdAt).toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit'}) %></span>
+                            <span class="text-theme-fg"><%= formatDate(log.createdAt, {day:'numeric', month:'short', year:'numeric'}) %></span>
+                            <span class="text-xs text-theme-fdd font-mono"><%= formatTime(log.createdAt) %></span>
                           </div>
                         </td>
                         <td class="p-4">

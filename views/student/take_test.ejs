@@ -114,7 +114,7 @@
                   <span class="text-xs font-mono text-theme-fd uppercase tracking-wide">• <span class="font-bold text-theme-fg"><%= test.totalMarks %></span> MARKS</span>
                   <% if (test.testDate) { %>
                   <span class="text-[10px] font-mono font-bold px-3 py-1 rounded-full bg-blue-500/10 text-blue-500 border border-blue-500/30 uppercase tracking-widest">
-                    <%= new Date(test.testDate).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %>
+                    <%= formatDate(test.testDate, {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %>
                   </span>
                   <% } %>
                 </div>

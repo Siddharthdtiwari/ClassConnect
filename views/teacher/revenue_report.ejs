@@ -203,7 +203,7 @@
                      const transactionsToShow = recentPayments.slice(0, transactionLimit);
 
                      transactionsToShow.forEach(p => { 
-                       const dateString = p.datePaid.toLocaleDateString('en-IN', {day:'numeric',month:'short'}); 
+                       const dateString = formatDate(p.datePaid, {day:'numeric',month:'short'});
                        const amountString = '₹' + p.amount.toLocaleString();
                   %>
                   <div class="flex justify-between items-center py-3">

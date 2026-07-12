@@ -188,7 +188,7 @@
             if (materials && materials.length > 0) {
               const sortedByDate = [...materials].sort((a, b) => new Date(b.uploadDate) - new Date(a.uploadDate));
               if (sortedByDate[0].uploadDate) {
-                latestUploadDate = new Date(sortedByDate[0].uploadDate).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' });
+                latestUploadDate = formatDate(sortedByDate[0].uploadDate, { day: 'numeric', month: 'short' });
               }
             }
           %>
@@ -366,7 +366,7 @@
                         <%= mat.description || 'No description provided.' %>
                       </p>
                       <p class="text-[10px] text-theme-fdd/60 mt-3 font-semibold font-mono">
-                        <%= (mat.uploadDate || new Date()).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}) %>
+                        <%= formatDate(mat.uploadDate || new Date(), {day:'numeric', month:'short', year:'numeric'}) %>
                       </p>
                     </div>
                     

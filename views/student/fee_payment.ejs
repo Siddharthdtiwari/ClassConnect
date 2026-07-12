@@ -211,7 +211,7 @@
                 <div class="min-w-0">
                   <p class="font-unbounded font-bold text-theme-fg text-lg">Tuition Fee — <span class="text-theme-pt"><%= f.month %></span></p>
                   <% if (f.status === "Paid") { %>
-                  <p class="text-xs font-mono uppercase tracking-widest text-theme-fdd mt-2">Paid on: <span class="font-bold text-theme-fd"><%= new Date(f.datePaid).toLocaleDateString('en-IN', {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %></span></p>
+                  <p class="text-xs font-mono uppercase tracking-widest text-theme-fdd mt-2">Paid on: <span class="font-bold text-theme-fd"><%= formatDate(f.datePaid, {day:'numeric', month:'short', year:'numeric'}).toUpperCase() %></span></p>
                   <div class="flex flex-wrap gap-3 mt-4">
                     <a href="/public/fee/<%= f._id %>/<%= signId(f._id) %>" target="_blank" class="receipt-btn receipt-btn-outline">
                       <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">

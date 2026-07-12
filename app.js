@@ -138,6 +138,18 @@ app.locals.sanitizeHtml = require('sanitize-html');
 const { signId } = require('./utils/hashUtils');
 app.locals.signId = signId;
 
+// Views widely called `new Date(x).toLocaleDateString('en-IN', ...)` — the 'en-IN'
+// locale only controls number/AM-PM formatting, not the timezone. Node defaults to
+// the server's own system timezone (UTC on Vercel), so every one of those calls was
+// silently displaying UTC time dressed up in Indian formatting, off by 5.5 hours from
+// real IST. These wrap the same calls with timeZone explicitly pinned to India.
+app.locals.formatDate = (date, opts = {}) =>
+  date ? new Date(date).toLocaleDateString('en-IN', { timeZone: 'Asia/Kolkata', ...opts }) : '';
+app.locals.formatTime = (date, opts = {}) =>
+  date ? new Date(date).toLocaleTimeString('en-IN', { timeZone: 'Asia/Kolkata', hour: '2-digit', minute: '2-digit', ...opts }) : '';
+app.locals.formatDateTime = (date, opts = {}) =>
+  date ? new Date(date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', ...opts }) : '';
+
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "public")));

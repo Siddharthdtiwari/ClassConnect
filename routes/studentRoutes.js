@@ -15,6 +15,7 @@ const feeController = require("../controllers/student/feeController");
 const contentController = require("../controllers/student/contentController");
 const timetableController = require("../controllers/student/timetableController");
 const leaderboardController = require("../controllers/student/leaderboardController");
+const syllabusController = require("../controllers/student/syllabusController");
 const solutionController = require("../controllers/solutionController");
 
 const loginLimiter = rateLimit({
@@ -58,6 +59,9 @@ router.post("/student/timetable/delete/:id", ensureDBConnection, requireStudentL
 
 // Leaderboard
 router.get("/student/leader_board", ensureDBConnection, requireStudentLogin, catchAsync(leaderboardController.renderLeaderboard));
+
+// Syllabus Tracker (read-only)
+router.get("/student/syllabus", ensureDBConnection, requireStudentLogin, catchAsync(syllabusController.renderTracker));
 
 // Solutions
 router.get("/student/solutions", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderSolutions));

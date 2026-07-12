@@ -48,7 +48,10 @@ exports.renderDashboard = async (req, res) => {
     const scoreLabels = recentScores.map((score) => score.testName).reverse();
     const scoreData = recentScores.map((score) => score.percentage).reverse();
 
-    const allStudents = await User.find({ batch: student.batch._id })
+    // Rank globally across all batches of the viewing year, matching the
+    // leaderboard's default "Overall" tab — ranking only within the student's
+    // own batch made the dashboard say "#1" while the leaderboard said "#4".
+    const allStudents = await User.find({ batch: { $in: viewingBatches } })
       .sort({ points: -1 })
       .lean();
 

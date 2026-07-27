@@ -605,7 +605,7 @@
           try {
             const res = await fetch("/teacher/fee_month_na", {
               method: "POST",
-              headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF_TOKEN },
+              headers: { "Content-Type": "application/json"},
               body: JSON.stringify({
                 studentId: document.getElementById("student-id").value,
                 month: document.getElementById("month").value,
@@ -640,11 +640,8 @@
           const res = await fetch("/teacher/add_fees", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "X-CSRF-Token": CSRF_TOKEN
-            },
-            body: JSON.stringify(data),
-          });
+              "Content-Type": "application/json"},
+            body: JSON.stringify(data)});
 
           const result = await res.json();
 

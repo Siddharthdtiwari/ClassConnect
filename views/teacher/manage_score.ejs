@@ -298,8 +298,7 @@
           const val = parseFloat(row.querySelector("input").value);
           return {
             studentId: row.dataset.studentId,
-            score: isNaN(val) ? null : val,
-          };
+            score: isNaN(val) ? null : val};
         });
 
         try {
@@ -307,14 +306,11 @@
           const res = await fetch("/api/scores/save", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "x-csrf-token": csrfToken
-            },
+              "Content-Type": "application/json"},
             body: JSON.stringify({
               testId,
               scores
-            }),
-          });
+            })});
           const data = await res.json();
           if (data.success) {
             showFormMessage(data.message, "success");

@@ -282,17 +282,13 @@
               fill: true,
               pointBackgroundColor: primaryColor,
               pointRadius: 4,
-              pointHoverRadius: 6,
-            }],
-          },
+              pointHoverRadius: 6}]},
           options: {
             responsive: true,
             maintainAspectRatio: false,
             plugins: {
               legend: {
-                display: false,
-              },
-            },
+                display: false}},
             scales: {
               y: {
                 beginAtZero: true,
@@ -305,9 +301,7 @@
                   }
                 },
                 grid: {
-                  color: "rgba(0, 0, 0, 0.05)",
-                },
-              },
+                  color: "rgba(0, 0, 0, 0.05)"}},
               x: {
                 ticks: {
                   color: "#9ca3af",
@@ -318,12 +312,7 @@
                   display: scoreLabels.length > 1
                 },
                 grid: {
-                  display: false,
-                },
-              },
-            },
-          },
-        });
+                  display: false}}}}});
       }
 
       const activeToggle = document.getElementById('activeToggle');

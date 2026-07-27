@@ -1219,7 +1219,7 @@ footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transit
     e.preventDefault();btn.textContent='Sending…';btn.disabled=true;msg.className='cf-msg';msg.textContent='';
     try{
       const d=new FormData(cf);
-      const r=await fetch('/contact',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded','X-CSRF-Token':d.get('_csrf')},body:new URLSearchParams(d)});
+      const r=await fetch('/contact',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:new URLSearchParams(d)});
       const j=await r.json();
       if(j.ok){msg.className='cf-msg ok';msg.textContent="✓ Sent! We'll reply within 24 hours.";cf.reset()}
       else throw new Error(j.error||'Failed');

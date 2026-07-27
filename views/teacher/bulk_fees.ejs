@@ -579,7 +579,7 @@
       try {
         const res = await fetch('/teacher/fee_month_na', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             studentId: cell.dataset.userId,
             month: cell.dataset.month,
@@ -707,8 +707,7 @@
           const res = await fetch('/teacher/bulk_save', {
             method: 'POST',
             headers: {
-              'Content-Type': 'application/json',
-              'X-CSRF-Token': "<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>"
+              'Content-Type': 'application/json'
             },
             body: JSON.stringify({ updates })
           });

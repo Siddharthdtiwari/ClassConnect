@@ -654,9 +654,7 @@
           const res = await fetch("/api/ai/generate_paper", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "x-csrf-token": csrfToken
-            },
+              "Content-Type": "application/json"},
             body: JSON.stringify({
               contextText,
               batchName,
@@ -729,9 +727,7 @@
           const res = await fetch("/api/ai/generate_paper", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json",
-              "x-csrf-token": csrfToken
-            },
+              "Content-Type": "application/json"},
             body: JSON.stringify({
               currentHtml,
               refinePrompt,
@@ -837,8 +833,7 @@
 
           const res = await fetch(url, {
             method: "POST",
-            body: formData,
-          });
+            body: formData});
 
           const result = await res.json();
 

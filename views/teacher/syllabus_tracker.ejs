@@ -102,13 +102,23 @@
               <p class="dash-sub">Master Chapter Completion</p>
             </div>
             
-            <div class="flex items-center gap-4 bg-theme-bgc p-2 rounded-2xl border border-theme-bd shadow-sm">
-              <span class="text-xs font-mono font-bold uppercase text-theme-fdd px-2">Select Batch:</span>
-              <% batches.forEach(batch => { %>
-                <a href="?batchId=<%= batch._id %>" class="px-4 py-2 rounded-xl text-xs font-bold font-mono transition-all duration-300 <%= selectedBatchId === batch._id.toString() ? 'bg-theme-p text-white shadow-md' : 'text-theme-fdd hover:bg-theme-bg2' %>">
-                  <%= batch.name %>
-                </a>
-              <% }) %>
+            <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-4 bg-theme-bgc p-4 rounded-2xl border border-theme-bd shadow-sm flex-1">
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
+                <span class="text-xs font-mono font-bold uppercase text-theme-fdd px-2">Select Batch:</span>
+                <select class="px-4 py-3 rounded-xl text-sm font-bold font-mono bg-theme-bg2 text-theme-fg border border-theme-bd outline-none cursor-pointer w-full" onchange="window.location.href='?batchId=' + this.value">
+                  <option value="all" <%= selectedBatchId === 'all' ? 'selected' : '' %>>All Batches</option>
+                  <% batches.forEach(batch => { %>
+                    <option value="<%= batch._id %>" <%= selectedBatchId === batch._id.toString() ? 'selected' : '' %>><%= batch.name %></option>
+                  <% }) %>
+                </select>
+              </div>
+              
+              <div class="flex flex-col sm:flex-row sm:items-center gap-2 flex-1">
+                <span class="text-xs font-mono font-bold uppercase text-theme-fdd px-2">Select Subject:</span>
+                <select id="subjectFilter" class="px-4 py-3 rounded-xl text-sm font-bold font-mono bg-theme-bg2 text-theme-fg border border-theme-bd outline-none cursor-pointer w-full" onchange="filterSubjects(this.value)">
+                  <option value="all">All Subjects</option>
+                </select>
+              </div>
             </div>
           </header>
 
@@ -128,72 +138,118 @@
             </div>
 
             <!-- Subject Container: Will be populated by JS -->
-            <div id="subjects-container" class="space-y-6" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-batch-name="<%= selectedBatchName %>" data-batch-id="<%= selectedBatchId %>"></div>
+            <div id="subjects-container" class="space-y-10" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-batch-name="<%= selectedBatchName %>" data-batch-id="<%= selectedBatchId %>" data-batches="<%= JSON.stringify(batches.map(b => ({ id: b._id, name: b.name }))) %>"></div>
 
             <script>
               const container = document.getElementById('subjects-container');
               const selectedBatchName = container.dataset.batchName;
               const selectedBatchId = container.dataset.batchId;
+              const batchesList = JSON.parse(container.dataset.batches || "[]");
               
-              // Safely parse from the data attribute
               const syllabusMap = JSON.parse(container.dataset.syllabus || "{}");
               
-              // Determine which subjects to show
-              const subjects = getSubjectsForBatch(selectedBatchName);
-              
-              subjects.forEach(subject => {
-                const subjectData = syllabusMap[subject] || {};
-                const statuses = subjectData.chapterStatuses || {};
-                const totalChapters = subjectData.totalChapters || 10;
-                
-                let gridHtml = '';
-                for (let i = 1; i <= totalChapters; i++) {
-                  const status = statuses[i.toString()] || 'incomplete';
-                  
-                  let displayContent = i;
-                  if (status === 'completed') displayContent = `${i} ✓`;
-                  
-                  gridHtml += `
-                    <div 
-                      class="chapter-pill status-${status}" 
-                      data-subject="${subject}" 
-                      data-chapter="${i}" 
-                      data-status="${status}"
-                      ondblclick="toggleStatus(this)"
-                      title="Chapter ${i}"
-                    >
-                      ${displayContent}
-                    </div>
-                  `;
-                }
+              let batchesToRender = selectedBatchId === 'all' 
+                ? batchesList 
+                : [{ id: selectedBatchId, name: selectedBatchName }];
 
-                const subjectCard = `
-                  <div class="stat-card">
-                    <div class="flex justify-between items-center mb-6">
-                      <h2 class="text-xl font-bold font-mono tracking-tight" style="color: var(--fg);">${subject}</h2>
-                      <div class="flex items-center gap-2">
-                        <button onclick="updateChapterCount('${subject}', 'remove')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" ${totalChapters <= 1 ? 'disabled' : ''}>
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
-                        </button>
-                        <button onclick="updateChapterCount('${subject}', 'add')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-emerald-500 hover:text-white transition-colors">
-                          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
-                        </button>
+              let allSubjectsSet = new Set();
+              
+              function getBaseSubject(subject) {
+                if (subject.startsWith('Maths')) return 'Maths';
+                if (subject.startsWith('Science')) return 'Science';
+                if (subject.startsWith('Environmental Studies')) return 'Environmental Studies';
+                if (['History', 'Geography', 'Civics', 'Political Science', 'Social Science'].includes(subject)) return 'Social Science';
+                return subject;
+              }
+              
+              batchesToRender.forEach(batch => {
+                const subjects = getSubjectsForBatch(batch.name);
+                
+                let batchContainerHtml = `<div class="batch-section w-full" id="batch-section-${batch.id}">`;
+                batchContainerHtml += `<div class="grid grid-cols-1 gap-6" id="batch-subjects-${batch.id}">`;
+                
+                let subjectCardsHtml = '';
+                subjects.forEach(subject => {
+                  allSubjectsSet.add(getBaseSubject(subject));
+                  const batchSyllabus = syllabusMap[batch.id] || {};
+                  const subjectData = batchSyllabus[subject] || {};
+                  const statuses = subjectData.chapterStatuses || {};
+                  const totalChapters = subjectData.totalChapters || 10;
+                  
+                  let gridHtml = '';
+                  for (let i = 1; i <= totalChapters; i++) {
+                    const status = statuses[i.toString()] || 'incomplete';
+                    
+                    let displayContent = i;
+                    if (status === 'completed') displayContent = `${i} ✓`;
+                    
+                    gridHtml += `
+                      <div 
+                        class="chapter-pill status-${status}" 
+                        data-batch="${batch.id}"
+                        data-subject="${subject}" 
+                        data-chapter="${i}" 
+                        data-status="${status}"
+                        ondblclick="toggleStatus(this)"
+                        title="Chapter ${i}"
+                      >
+                        ${displayContent}
+                      </div>
+                    `;
+                  }
+
+                  subjectCardsHtml += `
+                    <div class="stat-card subject-card" data-subject="${subject}">
+                      <div class="flex justify-between items-center mb-6">
+                        <h2 class="text-xl font-bold font-mono tracking-tight" style="color: var(--fg);">${batch.name} - ${subject}</h2>
+                        <div class="flex items-center gap-2">
+                          <button onclick="updateChapterCount('${batch.id}', '${subject}', 'remove')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" ${totalChapters <= 1 ? 'disabled' : ''}>
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
+                          </button>
+                          <button onclick="updateChapterCount('${batch.id}', '${subject}', 'add')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-emerald-500 hover:text-white transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                          </button>
+                        </div>
+                      </div>
+                      <div class="flex flex-wrap gap-3">
+                        ${gridHtml}
                       </div>
                     </div>
-                    <div class="flex flex-wrap gap-3">
-                      ${gridHtml}
-                    </div>
-                  </div>
-                `;
+                  `;
+                });
                 
-                container.insertAdjacentHTML('beforeend', subjectCard);
+                batchContainerHtml += subjectCardsHtml + `</div></div>`;
+                container.insertAdjacentHTML('beforeend', batchContainerHtml);
               });
 
-              function updateChapterCount(subject, action) {
+              // Populate subject dropdown
+              const subjectFilter = document.getElementById('subjectFilter');
+              if (subjectFilter) {
+                Array.from(allSubjectsSet).sort().forEach(subj => {
+                  subjectFilter.insertAdjacentHTML('beforeend', `<option value="${subj}">${subj}</option>`);
+                });
+              }
+
+              function filterSubjects(baseSubject) {
+                document.querySelectorAll('.batch-section').forEach(batchSection => {
+                  let hasVisible = false;
+                  batchSection.querySelectorAll('.subject-card').forEach(card => {
+                    if (baseSubject === 'all' || getBaseSubject(card.dataset.subject) === baseSubject) {
+                      card.style.display = 'block';
+                      hasVisible = true;
+                    } else {
+                      card.style.display = 'none';
+                    }
+                  });
+                  batchSection.style.display = hasVisible ? 'block' : 'none';
+                });
+              }
+
+              function updateChapterCount(batchId, subject, action) {
                 fetch('/api/syllabus/update_count', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
-                  body: JSON.stringify({ batchId: selectedBatchId, subject: subject, action: action })
+                  body: JSON.stringify({ batchId: batchId, subject: subject, action: action })
                 })
                 .then(res => res.json())
                 .then(data => {
@@ -208,6 +264,7 @@
 
               // Status Toggle Logic
               function toggleStatus(element) {
+                const batchId = element.dataset.batch;
                 const subject = element.dataset.subject;
                 const chapterNo = element.dataset.chapter;
                 let currentStatus = element.dataset.status;
@@ -237,7 +294,7 @@
                     'Content-Type': 'application/json'
                   },
                   body: JSON.stringify({
-                    batchId: selectedBatchId,
+                    batchId: batchId,
                     subject: subject,
                     chapterNo: chapterNo,
                     status: newStatus
@@ -247,7 +304,6 @@
                 .then(data => {
                   if (!data.success) {
                     console.error('Failed to update status', data.message);
-                    // Revert UI if needed, but omitted for simplicity
                   }
                 })
                 .catch(err => console.error('Error saving status:', err));

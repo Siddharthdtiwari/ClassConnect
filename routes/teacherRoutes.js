@@ -75,6 +75,7 @@ router.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherL
 // Fee Management
 router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderManageFees));
 router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.processAddFees));
+router.post("/teacher/fee_month_na", ensureDBConnection, requireTeacherLogin, express.json(), catchAsync(feeController.setMonthApplicability));
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
 router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
 router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));

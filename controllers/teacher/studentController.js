@@ -159,9 +159,15 @@ exports.renderViewProfile = async (req, res) => {
       .sort({ datePaid: -1 })
       .lean();
 
-    const recentScores = await Score.find({ studentId: studentId, batch: { $in: req.viewingBatches } })
-      .sort({ createdAt: -1 })
+    let recentScores = await Score.find({ studentId: studentId, batch: { $in: req.viewingBatches } })
+      .populate('testId')
       .lean();
+
+    recentScores.sort((a, b) => {
+      const dateA = a.testId && a.testId.testDate ? new Date(a.testId.testDate) : new Date(a.createdAt);
+      const dateB = b.testId && b.testId.testDate ? new Date(b.testId.testDate) : new Date(b.createdAt);
+      return dateB - dateA;
+    });
 
     const allAttendanceRecords = await Attendance.find({
       "records.studentId": studentId,

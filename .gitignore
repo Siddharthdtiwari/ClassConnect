@@ -32,3 +32,6 @@ credentials.json
 
 # Local scratch artifacts
 scratch/
+
+# Migration backups (contain student fee records)
+scripts/backups/

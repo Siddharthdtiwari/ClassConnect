@@ -84,6 +84,35 @@
     .col-month { min-width: 110px; text-align: center; }
     .col-summary { min-width: 160px; }
 
+    /* Months that don't apply to a student (joined mid-year / on a break) */
+    .na-chip {
+      display: inline-block;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.55rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      line-height: 1;
+      padding: 5px 9px;
+      border-radius: 8px;
+      border: 1px solid var(--bd);
+      background: var(--bgch);
+      color: var(--fdd);
+      opacity: 0.6;
+    }
+    .na-reason {
+      display: block;
+      max-width: 100px;
+      margin-top: 4px;
+      font-family: 'Space Mono', monospace;
+      font-size: 8px;
+      line-height: 1.1;
+      color: var(--fdd);
+      opacity: 0.75;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
     /* Sticky Headers & Scroll wrapper */
     .grid-container {
       max-height: 550px;
@@ -246,7 +275,7 @@
                   </thead>
                   <tbody>
                     <% batchStudents.forEach(student => { %>
-                    <tr class="student-row hover:bg-theme-bgch/40 transition-all border-b border-theme-bd">
+                    <tr class="student-row hover:bg-theme-bgch/40 transition-all border-b border-theme-bd <%= student.isActive === false ? 'opacity-50 grayscale' : '' %>">
                       <td class="col-student">
                         <div class="flex items-center gap-3">
                           <img src="https://placehold.co/96x96/ffffff/5d3a9b?text=<%= encodeURIComponent(student.studentName.charAt(0)) %>" alt="Avatar" class="w-8 h-8 rounded-full border border-theme-bd object-cover flex-shrink-0" />
@@ -264,6 +293,13 @@
                         <div class="flex flex-col items-center justify-center leading-none">
                           <span class="paid" title="Paid ₹<%= record.amount.toLocaleString() %> via <%= record.method %>"><%= formatDate(record.datePaid, {day:'numeric',month:'short'}) %></span>
                           <span class="text-[8px] text-theme-fdd font-mono tracking-tighter mt-1 block">₹<%= record.amount.toLocaleString() %></span>
+                        </div>
+                        <% } else if (record.status === 'NA') { %>
+                        <div class="flex flex-col items-center justify-center leading-none">
+                          <span class="na-chip" title="<%= month %> not applicable for <%= student.studentName %><%= record.reason ? ' — ' + record.reason : '' %>">N/A</span>
+                          <% if (record.reason) { %>
+                          <span class="na-reason" title="<%= record.reason %>"><%= record.reason %></span>
+                          <% } %>
                         </div>
                         <% } else { %>
                         <span class="unpaid">-</span>
@@ -361,6 +397,28 @@
                   </div>
                 </div>
 
+                <label id="na-option" class="flex items-start gap-3 p-3 rounded-lg border border-theme-b bg-theme-bgc/50 cursor-pointer hover:border-theme-p transition-all">
+                  <input type="checkbox" id="mark-na" class="mt-0.5 w-4 h-4 accent-purple-700 flex-shrink-0" />
+                  <span class="leading-snug">
+                    <span class="block text-[0.62rem] font-bold text-theme-fg font-mono uppercase tracking-widest">Mark as N/A instead</span>
+                    <span class="block text-[10px] text-theme-fdd mt-1">Student wasn't enrolled this month — no fee is owed. Keeps it out of dues, defaulters and the fee sheet.</span>
+                  </span>
+                </label>
+
+                <div id="na-reason-field" class="hidden">
+                  <label for="na-reason-select" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Reason <span class="text-brand-red">*</span></label>
+                  <select id="na-reason-select" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm">
+                    <option value="" disabled selected>Select reason...</option>
+                    <% naReasons.forEach(r => { %>
+                    <option value="<%= r %>"><%= r %></option>
+                    <% }) %>
+                    <option value="__other">Other...</option>
+                  </select>
+                  <input type="text" id="na-reason-other" maxlength="120" placeholder="Type the reason" autocomplete="off"
+                    class="hidden w-full mt-2 px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" />
+                </div>
+
+                <div id="payment-fields" class="space-y-4">
                 <div class="grid grid-cols-2 gap-4">
                   <div>
                     <label for="amount" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Amount (₹)</label>
@@ -381,8 +439,9 @@
                   <label for="date-paid" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Date Paid</label>
                   <input type="date" id="date-paid" name="datePaid" class="w-full px-4 py-2 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
                 </div>
+                </div>
 
-                <button type="submit" class="w-full py-3.5 mt-5 btn-solid-purple flex items-center justify-center gap-2 shadow-lg">Submit Fee ✓</button>
+                <button type="submit" id="add-fee-submit" class="w-full py-3.5 mt-5 btn-solid-purple flex items-center justify-center gap-2 shadow-lg">Submit Fee ✓</button>
               </form>
             </div>
             
@@ -431,9 +490,12 @@
   </div>
 
   <script>
+    const CSRF_TOKEN = "<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>";
+
     document.addEventListener("DOMContentLoaded", () => {
       const searchInput = document.getElementById("student-search");
       const classSections = document.querySelectorAll(".class-section");
+
 
       // Set default datePaid to today
       const today = new Date().toISOString().split('T')[0];
@@ -492,9 +554,78 @@
         document.getElementById("student-standard").value = selectedOption.dataset.standardId || "";
       });
 
+      // "Mark as N/A" swaps the payment fields for a reason — nothing is collected.
+      const markNaBox = document.getElementById("mark-na");
+      const paymentFields = document.getElementById("payment-fields");
+      const naReasonField = document.getElementById("na-reason-field");
+      const naReasonSelect = document.getElementById("na-reason-select");
+      const naReasonOther = document.getElementById("na-reason-other");
+
+      markNaBox.addEventListener("change", () => {
+        const isNa = markNaBox.checked;
+        paymentFields.classList.toggle("hidden", isNa);
+        naReasonField.classList.toggle("hidden", !isNa);
+        // Drop HTML5 validation on hidden fields, or the form can never submit.
+        ["amount", "method", "date-paid"].forEach(id => {
+          document.getElementById(id).required = !isNa;
+        });
+        document.getElementById("add-fee-submit").textContent = isNa ? "Mark as N/A ✓" : "Submit Fee ✓";
+      });
+
+      naReasonSelect.addEventListener("change", () => {
+        const isOther = naReasonSelect.value === "__other";
+        naReasonOther.classList.toggle("hidden", !isOther);
+        if (isOther) naReasonOther.focus();
+      });
+
+      const selectedNaReason = () =>
+        naReasonSelect.value === "__other" ? naReasonOther.value.trim() : naReasonSelect.value;
+
       // Submit Form Interceptor
       document.getElementById("add-fee-form").addEventListener("submit", async function(e) {
         e.preventDefault();
+
+        const messageBox = document.getElementById("message-box");
+        messageBox.classList.add("hidden");
+
+        const showResult = (ok, text) => {
+          messageBox.textContent = text;
+          messageBox.className = ok
+            ? "mt-4 p-3 rounded-lg text-center bg-[var(--gg)] text-brand-green border border-[var(--gt)]/20 text-xs font-semibold"
+            : "mt-4 p-3 rounded-lg text-center bg-[var(--rg)] text-brand-red border border-[var(--rt)]/20 text-xs font-semibold";
+          messageBox.classList.remove("hidden");
+        };
+
+        if (markNaBox.checked) {
+          const reason = selectedNaReason();
+          if (!reason) {
+            showResult(false, "Please choose or type a reason.");
+            return;
+          }
+          try {
+            const res = await fetch("/teacher/fee_month_na", {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "X-CSRF-Token": CSRF_TOKEN },
+              body: JSON.stringify({
+                studentId: document.getElementById("student-id").value,
+                month: document.getElementById("month").value,
+                action: "mark",
+                reason: reason
+              })
+            });
+            const result = await res.json();
+            if (result.success) {
+              showResult(true, "Month marked as N/A.");
+              setTimeout(() => { window.location.reload(); }, 1200);
+            } else {
+              showResult(false, result.message || "Could not mark this month.");
+            }
+          } catch (err) {
+            showResult(false, "Network Error: Could not connect to server");
+          }
+          return;
+        }
+
         const data = {
           studentId: document.getElementById("student-id").value,
           standard: document.getElementById("student-standard").value,
@@ -505,14 +636,12 @@
           datePaid: document.getElementById("date-paid").value
         };
 
-        const messageBox = document.getElementById("message-box");
-        messageBox.classList.add("hidden");
-
         try {
           const res = await fetch("/teacher/add_fees", {
             method: "POST",
             headers: {
-              "Content-Type": "application/json"
+              "Content-Type": "application/json",
+              "X-CSRF-Token": CSRF_TOKEN
             },
             body: JSON.stringify(data),
           });

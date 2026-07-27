@@ -7,25 +7,33 @@ exports.renderTracker = async (req, res) => {
     const batches = await Batch.find({ academicYear: req.viewingYear, isActive: true }).lean();
     batches.sort(sortBatches);
 
-    // If a specific batch is requested, render it, else show the first one
-    let selectedBatchId = req.query.batchId || (batches.length > 0 ? batches[0]._id.toString() : null);
-    let selectedBatchName = "";
+    let selectedBatchId = req.query.batchId || "all";
+    let selectedBatchName = "All Batches";
     
-    if (selectedBatchId) {
+    if (selectedBatchId !== "all") {
       const match = batches.find(b => b._id.toString() === selectedBatchId);
-      if (match) selectedBatchName = match.name;
+      if (match) {
+        selectedBatchName = match.name;
+      } else {
+        selectedBatchId = "all";
+      }
     }
 
-    // Fetch all syllabus records for this batch
+    // Fetch all syllabus records for the selected batch(es)
     let syllabusRecords = [];
-    if (selectedBatchId) {
+    if (selectedBatchId === "all") {
+      const activeBatchIds = batches.map(b => b._id);
+      syllabusRecords = await Syllabus.find({ batch: { $in: activeBatchIds } }).lean();
+    } else {
       syllabusRecords = await Syllabus.find({ batch: selectedBatchId }).lean();
     }
 
-    // Convert into a map of Subject -> Data for easy rendering
+    // Convert into a nested map: batchId -> subject -> Data
     const syllabusMap = {};
     syllabusRecords.forEach(record => {
-      syllabusMap[record.subject] = {
+      const bId = record.batch.toString();
+      if (!syllabusMap[bId]) syllabusMap[bId] = {};
+      syllabusMap[bId][record.subject] = {
         chapterStatuses: record.chapterStatuses || {},
         totalChapters: record.totalChapters || 10
       };

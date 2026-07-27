@@ -17,6 +17,7 @@ const StudyMaterial = require('../../models/StudyMaterial');
 const Syllabus = require('../../models/Syllabus');
 const { calculateCurrentAcademicYear, getAvailableAcademicYears } = require('../../utils/academicYear');
 const { logAudit } = require('../../utils/auditService');
+const { NA_STATUS, naMonthSet, billableMonths } = require('../../utils/feeHelpers');
 const { upload, uploadToCloudinary } = require('../../utils/upload');
 
 // Controllers for PDF & Bulk
@@ -456,9 +457,12 @@ router.get('/fees', async (req, res) => {
       const studentFees = allFees.filter(f => f.studentId === student.studentId);
       let totalPaid = 0;
       const records = {};
+      const naMonths = naMonthSet(studentFees);
       months.forEach((month) => {
         const feeRecord = studentFees.find((f) => f.month === month);
-        if (feeRecord) {
+        if (feeRecord && feeRecord.status === NA_STATUS) {
+          records[month] = { status: 'NA', reason: feeRecord.naReason || '' };
+        } else if (feeRecord) {
           records[month] = { status: 'Paid', amount: feeRecord.amount, datePaid: feeRecord.datePaid, method: feeRecord.method };
           totalPaid += feeRecord.amount;
         } else {
@@ -466,7 +470,7 @@ router.get('/fees', async (req, res) => {
         }
       });
       const monthlyFee = student.monthlyFee || 0;
-      const totalDue = monthlyFee * months.length;
+      const totalDue = monthlyFee * billableMonths(months, naMonths).length;
       return {
         _id: student._id, studentName: student.studentName, studentId: student.studentId,
         standard: student.batch ? student.batch.name : 'Unknown', records, totalPaid, totalDue, balance: totalDue - totalPaid,
@@ -796,11 +800,11 @@ router.get('/defaulters/fees', async (req, res) => {
     const batchIds = await Batch.find({ academicYear }).distinct('_id');
     const allStudents = await User.find({ batch: { $in: batchIds }, role: 'student' }).populate('batch').lean();
     
-    // Find all paid fees for this month
-    const paidFees = await Fee.find({ month, status: 'Paid', batch: { $in: batchIds } }).lean();
-    const paidStudentIds = new Set(paidFees.map(f => f.studentId));
+    // Paid and N/A both settle a month — N/A means it was never owed.
+    const settledFees = await Fee.find({ month, status: { $in: ['Paid', NA_STATUS] }, batch: { $in: batchIds } }).lean();
+    const settledStudentIds = new Set(settledFees.map(f => f.studentId));
 
-    const defaulters = allStudents.filter(s => !paidStudentIds.has(s.studentId));
+    const defaulters = allStudents.filter(s => !settledStudentIds.has(s.studentId));
     res.json({ defaulters });
   } catch (err) {
     res.status(500).json({ error: 'Error loading fee defaulters' });
@@ -1134,15 +1138,16 @@ router.get('/bulk_fees', async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const students = await User.find({ batch: { $in: req.viewingBatches }, role: 'student' }).lean();
-    const fees = await Fee.find({ batch: { $in: req.viewingBatches }, status: 'Paid' }).lean();
+    const fees = await Fee.find({ batch: { $in: req.viewingBatches }, status: { $in: ['Paid', NA_STATUS] } }).lean();
 
     const months = ['May', 'June', 'July', 'August', 'September', 'October', 'November', 'December', 'January', 'February', 'March', 'April'];
     const feeMap = {};
-    
+
     students.forEach(s => { feeMap[s.studentId] = {}; });
     fees.forEach(f => {
       if (feeMap[f.studentId]) {
         feeMap[f.studentId][f.month] = {
+          status: f.status,
           amount: f.amount,
           method: f.method,
           datePaid: f.datePaid
@@ -1177,7 +1182,8 @@ router.post('/bulk_save', async (req, res) => {
         await Fee.findOneAndDelete({
           studentId: update.studentId,
           month: update.month,
-          year: update.year
+          year: update.year,
+          status: { $ne: NA_STATUS }
         });
       } else {
         let fee = await Fee.findOne({
@@ -1185,6 +1191,9 @@ router.post('/bulk_save', async (req, res) => {
           month: update.month,
           year: update.year
         });
+
+        // Month is marked not-applicable — un-mark it on Manage Fees before collecting.
+        if (fee && fee.status === NA_STATUS) continue;
 
         if (fee) {
           fee.amount = update.amount;

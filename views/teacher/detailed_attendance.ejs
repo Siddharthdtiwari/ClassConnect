@@ -252,7 +252,7 @@
                 <tbody>
                   <% if (report && report.length > 0) { %>
                   <% report.forEach(student => { %>
-                  <tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all">
+                  <tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all <%= student.isActive === false ? 'opacity-50 grayscale' : '' %>">
                     <td class="sticky-col-left font-bold text-theme-fg">
                       <div class="cell-content">
                         <div class="font-bold text-theme-fg text-sm"><%= student.studentName %></div>

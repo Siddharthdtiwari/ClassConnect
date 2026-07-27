@@ -232,7 +232,7 @@
                   </thead>
                   <tbody>
                     <% byBatch[cls].forEach(student => { %>
-                    <tr class="student-row hover:bg-theme-bgch/50 transition-all">
+                    <tr class="student-row hover:bg-theme-bgch/50 transition-all <%= student.isActive === false ? 'opacity-50 grayscale' : '' %>">
                       <td>
                         <div class="flex items-center gap-3.5">
                           <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile" class="w-10 h-10 rounded-full border border-theme-bd object-cover shadow-sm flex-shrink-0" />

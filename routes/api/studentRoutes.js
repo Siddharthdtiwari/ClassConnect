@@ -11,6 +11,7 @@ const ExamTimetable = require('../../models/ExamTimetable');
 const StudyMaterial = require('../../models/StudyMaterial');
 const Batch = require('../../models/Batch');
 const Syllabus = require('../../models/Syllabus');
+const { NA_STATUS } = require('../../utils/feeHelpers');
 
 router.use(requireStudentApiLogin);
 
@@ -145,7 +146,10 @@ router.get('/fees', async (req, res) => {
     const feesByMonth = months.map((month, idx) => {
       const feeYear = yearForMonthIndex(idx);
       const feeRecord = fees.find((f) => f.month === month && Number(f.year) === feeYear);
-      if (feeRecord) {
+      if (feeRecord && feeRecord.status === NA_STATUS) {
+        // Month does not apply to this student (joined mid-year / on a break).
+        return { month, amount: 0, status: 'N/A', reason: feeRecord.naReason || '', datePaid: null, year: feeYear };
+      } else if (feeRecord) {
         return { _id: feeRecord._id, month, amount: Number(feeRecord.amount || 0), status: feeRecord.status || 'Paid', datePaid: feeRecord.datePaid, year: feeYear, receiptNo: feeRecord.receiptNo };
       } else if (idx < monthsElapsed) {
         return { month, amount: Number(student.monthlyFee || 0), status: 'Due', datePaid: null, year: feeYear };

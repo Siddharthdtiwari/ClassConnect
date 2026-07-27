@@ -44,6 +44,7 @@ exports.renderLeaderboard = async (req, res) => {
         studentId: s.studentId,
         score: s.points,
         avatar: s.profilePhoto || s.studentName.split(" ").map((n) => n[0]).join("").toUpperCase(),
+        isActive: s.isActive !== false
       }));
     };
 

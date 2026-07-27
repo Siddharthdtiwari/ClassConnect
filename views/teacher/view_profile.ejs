@@ -68,14 +68,19 @@
             data: scoreData
         }) %>"></div>
 
-        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+        <div class="content-container container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen <%= student.isActive === false ? 'opacity-75 grayscale' : '' %>">
           <header class="mb-10 flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
             <div>
               <div class="flex items-center gap-3 mb-2">
                 <a href="/teacher/manage_students" class="text-theme-fdd hover:text-theme-pt transition-colors">
                   <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
                 </a>
-                <h1 class="dash-greeting m-0" style="margin-bottom: 0;"><span style="color: var(--pt);"><%= student.studentName %></span></h1>
+                <h1 class="dash-greeting m-0 flex items-center gap-3 flex-wrap" style="margin-bottom: 0;">
+                  <span style="color: var(--pt);"><%= student.studentName %></span>
+                  <% if (student.isActive === false) { %>
+                    <span class="text-xs font-mono font-bold bg-red-500/10 text-red-500 border border-red-500/20 px-2.5 py-1 rounded-md align-middle uppercase tracking-wider">Inactive</span>
+                  <% } %>
+                </h1>
               </div>
               <p class="dash-sub">
                 ID: <%= student.studentId %> &middot; Grade <%= student.batch ? student.batch.name : 'Unassigned' %>
@@ -230,7 +235,7 @@
                         <div class="flex flex-col">
                           <span class="text-xs font-bold text-theme-fg"><%= score.testName %></span>
                           <span class="text-[10px] text-theme-fdd font-mono mt-1">
-                            <%= score.subject %> &middot; <%= formatDate(score.createdAt) %>
+                            <%= score.subject %> &middot; <%= formatDate(score.testId && score.testId.testDate ? score.testId.testDate : score.createdAt) %>
                           </span>
                         </div>
                         <div class="flex flex-col items-end">

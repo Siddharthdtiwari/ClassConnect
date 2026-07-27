@@ -5,6 +5,7 @@ const { getAvailableAcademicYears, calculateCurrentAcademicYear } = require("../
 const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
 const { ACADEMIC_MONTHS } = require("../../utils/constants");
+const { NA_STATUS, NA_REASONS, feeYearForMonth, naMonthSet, billableMonths } = require("../../utils/feeHelpers");
 const { logAudit } = require("../../utils/auditService");
 exports.renderRevenueReport = async (req, res) => {
   try {
@@ -86,8 +87,10 @@ exports.renderManageFees = async (req, res) => {
 
     const students = await User.find(
       { batch: { $in: req.viewingBatches } },
-      "studentId studentName batch monthlyFee"
-    ).populate('batch').lean();
+      "studentId studentName batch monthlyFee isActive"
+    )
+      .populate("batch")
+      .lean();
     students.sort(sortStudentsByBatchAndId);
     
     const allFees = await Fee.find({ batch: { $in: req.viewingBatches } }).populate('batch').lean();
@@ -95,7 +98,10 @@ exports.renderManageFees = async (req, res) => {
     const months = ACADEMIC_MONTHS;
 
     const report = students.map((student) => {
-      const studentFees = allFees.filter(f => f.studentId === student.studentId);
+      const batchId = student.batch ? String(student.batch._id) : null;
+      const studentFees = allFees.filter(
+        (f) => f.studentId === student.studentId && String(f.batch && f.batch._id) === batchId
+      );
 
       let totalPaid = 0;
       const records = {};
@@ -103,7 +109,9 @@ exports.renderManageFees = async (req, res) => {
       months.forEach((month) => {
         const feeRecord = studentFees.find((f) => f.month === month);
 
-        if (feeRecord) {
+        if (feeRecord && feeRecord.status === NA_STATUS) {
+          records[month] = { status: "NA", reason: feeRecord.naReason || "" };
+        } else if (feeRecord) {
           records[month] = {
             status: "Paid",
             amount: feeRecord.amount,
@@ -116,14 +124,17 @@ exports.renderManageFees = async (req, res) => {
         }
       });
 
+      // Months marked N/A are not receivable, so they are left out of the total due.
+      const naMonths = naMonthSet(studentFees);
       const monthlyFee = student.monthlyFee || 0;
-      const totalDue = monthlyFee * months.length;
+      const totalDue = monthlyFee * billableMonths(months, naMonths).length;
       const balance = totalDue - totalPaid;
 
       return {
         _id: student._id,
         studentName: student.studentName,
         studentId: student.studentId,
+        isActive: student.isActive,
         standard: (student.batch ? student.batch.name : 'Unknown'),
         records: records,
         totalPaid: totalPaid,
@@ -132,7 +143,7 @@ exports.renderManageFees = async (req, res) => {
       };
     });
 
-    res.render("teacher/manage_fees", { report, months, students, batches });
+    res.render("teacher/manage_fees", { report, months, students, batches, naReasons: NA_REASONS });
   } catch (err) {
     console.error("Error loading fees manager:", err);
     res.status(500).send("Error loading fees manager");
@@ -150,7 +161,7 @@ exports.renderFeeDefaulters = async (req, res) => {
     
     const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
     students.sort(sortStudentsByBatchAndId);
-    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
+    const fees = await Fee.find({ batch: { $in: batchIds }, status: { $in: ['Paid', NA_STATUS] } }).lean();
 
     const allMonths = ACADEMIC_MONTHS;
     
@@ -170,9 +181,14 @@ exports.renderFeeDefaulters = async (req, res) => {
     allMonths.forEach(m => { monthData[m] = []; });
 
     students.forEach(student => {
-      const studentFees = fees.filter(f => f.studentId === student.studentId);
-      const paidMonths = studentFees.map(f => f.month);
-      const unpaidMonths = elapsedMonths.filter(m => !paidMonths.includes(m));
+      // Student IDs repeat across batches, so the batch has to match too.
+      const studentBatchId = student.batch ? String(student.batch._id) : null;
+      const studentFees = fees.filter(
+        f => f.studentId === student.studentId && String(f.batch) === studentBatchId
+      );
+      // Both "Paid" and "NA" months are settled — an N/A month was never owed.
+      const settledMonths = studentFees.map(f => f.month);
+      const unpaidMonths = elapsedMonths.filter(m => !settledMonths.includes(m));
 
       if (unpaidMonths.length > 0) {
         const monthlyFee = student.monthlyFee || 0;
@@ -227,7 +243,7 @@ exports.downloadFeeDefaulters = async (req, res) => {
     
     const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
     students.sort(sortStudentsByBatchAndId);
-    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
+    const fees = await Fee.find({ batch: { $in: batchIds }, status: { $in: ['Paid', NA_STATUS] } }).lean();
 
     const allMonths = ACADEMIC_MONTHS;
     
@@ -247,9 +263,14 @@ exports.downloadFeeDefaulters = async (req, res) => {
     allMonths.forEach(m => { monthData[m] = []; });
 
     students.forEach(student => {
-      const studentFees = fees.filter(f => f.studentId === student.studentId);
-      const paidMonths = studentFees.map(f => f.month);
-      const unpaidMonths = elapsedMonths.filter(m => !paidMonths.includes(m));
+      // Student IDs repeat across batches, so the batch has to match too.
+      const studentBatchId = student.batch ? String(student.batch._id) : null;
+      const studentFees = fees.filter(
+        f => f.studentId === student.studentId && String(f.batch) === studentBatchId
+      );
+      // Both "Paid" and "NA" months are settled — an N/A month was never owed.
+      const settledMonths = studentFees.map(f => f.month);
+      const unpaidMonths = elapsedMonths.filter(m => !settledMonths.includes(m));
 
       if (unpaidMonths.length > 0) {
         const monthlyFee = student.monthlyFee || 0;
@@ -364,6 +385,103 @@ exports.processAddFees = async (req, res) => {
   }
 };
 
+// Marks a single month "not applicable" for one student, or clears that mark.
+// Used for students who join mid-year, so their earlier months stop counting as
+// dues instead of being papered over with a ₹0 payment.
+// Body: { studentId (User _id), month, action: "mark" | "unmark", reason }
+exports.setMonthApplicability = async (req, res) => {
+  try {
+    const { studentId, month, action } = req.body;
+    const reason = String(req.body.reason || "").trim().slice(0, 120);
+
+    if (!ACADEMIC_MONTHS.includes(month)) {
+      return res.status(400).json({ success: false, message: "Invalid month." });
+    }
+    if (action !== "mark" && action !== "unmark") {
+      return res.status(400).json({ success: false, message: "Invalid action." });
+    }
+    if (action === "mark" && !reason) {
+      return res.status(400).json({ success: false, message: "A reason is required to mark a month N/A." });
+    }
+
+    const student = await User.findById(studentId).populate("batch");
+    if (!student) {
+      return res.status(404).json({ success: false, message: "Student not found." });
+    }
+    if (!student.batch) {
+      return res.status(400).json({ success: false, message: "Student has no batch assigned." });
+    }
+
+    const batchId = student.batch._id;
+    const existing = await Fee.findOne({ studentId: student.studentId, month, batch: batchId });
+
+    if (existing && existing.status !== NA_STATUS) {
+      return res.status(400).json({
+        success: false,
+        message: `${month} is already recorded as paid. Delete that payment before marking it N/A.`,
+      });
+    }
+
+    if (action === "unmark") {
+      if (!existing) {
+        return res.json({ success: true, status: "Unpaid" });
+      }
+      await Fee.deleteOne({ _id: existing._id });
+      await logAudit({
+        action: "DELETE",
+        entityType: "Fee",
+        entityId: existing._id,
+        details: `Marked ${month} as payable again for ${student.studentName} (${student.studentId})`,
+        academicYear: req.viewingYear,
+      });
+      return res.json({ success: true, status: "Unpaid" });
+    }
+
+    // Already N/A — just update the reason.
+    if (existing) {
+      if (existing.naReason !== reason) {
+        existing.naReason = reason;
+        await existing.save();
+        await logAudit({
+          action: "UPDATE",
+          entityType: "Fee",
+          entityId: existing._id,
+          details: `Updated N/A reason for ${student.studentName} (${student.studentId}) ${month}: ${reason}`,
+          academicYear: req.viewingYear,
+        });
+      }
+      return res.json({ success: true, status: NA_STATUS, reason });
+    }
+
+    const fee = new Fee({
+      studentId: student.studentId,
+      studentName: student.studentName,
+      studentEmail: student.email || "",
+      userRef: student._id,
+      batch: batchId,
+      month,
+      year: feeYearForMonth(month, student.batch.academicYear),
+      amount: 0,
+      status: NA_STATUS,
+      naReason: reason,
+    });
+    await fee.save();
+
+    await logAudit({
+      action: "CREATE",
+      entityType: "Fee",
+      entityId: fee._id,
+      details: `Marked ${month} as not applicable for ${student.studentName} (${student.studentId}): ${reason}`,
+      academicYear: req.viewingYear,
+    });
+
+    res.json({ success: true, status: NA_STATUS, reason });
+  } catch (err) {
+    console.error("Error updating month applicability:", err);
+    res.status(500).json({ success: false, message: "Error updating month." });
+  }
+};
+
 exports.renderBulkFees = async (req, res) => {
   try {
     const selectedYearStr = req.query.year || req.viewingYear;
@@ -375,18 +493,21 @@ exports.renderBulkFees = async (req, res) => {
     
     const students = await User.find({ batch: { $in: batchIds } }).populate('batch').lean();
     students.sort(sortStudentsByBatchAndId);
-    const fees = await Fee.find({ batch: { $in: batchIds }, status: 'Paid' }).lean();
+    const fees = await Fee.find({ batch: { $in: batchIds }, status: { $in: ['Paid', NA_STATUS] } }).lean();
 
     const months = ACADEMIC_MONTHS;
 
+    // Keyed by student + batch, because student IDs repeat across batches.
+    const feeKey = (studentId, batchId) => `${studentId}|${batchId}`;
     const feeMap = {};
     students.forEach(student => {
-      feeMap[student.studentId] = {};
+      feeMap[feeKey(student.studentId, student.batch ? student.batch._id : "")] = {};
     });
 
     fees.forEach(fee => {
-      if (feeMap[fee.studentId]) {
-        feeMap[fee.studentId][fee.month] = fee;
+      const key = feeKey(fee.studentId, fee.batch);
+      if (feeMap[key]) {
+        feeMap[key][fee.month] = fee;
       }
     });
 
@@ -403,7 +524,8 @@ exports.renderBulkFees = async (req, res) => {
       months,
       feeMap,
       years,
-      selectedYear
+      selectedYear,
+      naReasons: NA_REASONS
     });
   } catch (err) {
     console.error("Error rendering bulk fees:", err);
@@ -424,10 +546,10 @@ exports.processBulkSave = async (req, res) => {
       const { studentId, standard, amount, month, year, method, datePaid, deleteAction } = update;
       
       if (deleteAction) {
-        await Fee.findOneAndDelete({ studentId, month, year, batch: standard });
+        await Fee.findOneAndDelete({ studentId, month, year, batch: standard, status: { $ne: NA_STATUS } });
         continue;
       }
-      
+
       const studentObj = await User.findOne({ studentId, batch: standard }).populate('batch');
       if (!studentObj) {
         console.warn(`[Bulk Save] Student not found for studentId: ${studentId}`);
@@ -435,6 +557,11 @@ exports.processBulkSave = async (req, res) => {
       }
 
       let fee = await Fee.findOne({ studentId, month, year, batch: standard });
+      if (fee && fee.status === NA_STATUS) {
+        // Month is marked not-applicable — un-mark it on Manage Fees before collecting.
+        console.warn(`[Bulk Save] Skipped ${month} for ${studentId}: month is marked N/A.`);
+        continue;
+      }
       if (!fee) {
         fee = new Fee({
           studentId,
@@ -505,6 +632,8 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
     const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
     const { generateFeeCollectionSheetPDF } = require("../../utils/pdfUtils");
 
+    const Fee = require("../../models/Fee");
+
     const batches = await Batch.find({ academicYear: req.viewingYear });
     const batchIds = batches.map(b => b._id);
     
@@ -513,12 +642,21 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
 
     const teachers = await Teacher.find({ isActive: true }).lean();
 
+    const fees = await Fee.find({ month, year, status: { $in: ["Paid", NA_STATUS] }, batch: { $in: batchIds } }).lean();
+    const feeByStudent = {};
+    fees.forEach(f => {
+       feeByStudent[f.studentId] = f;
+    });
+
+    const sheetStudents = students;
+
     const data = {
       month,
       year,
       nextMonth,
-      students,
+      students: sheetStudents,
       teachers,
+      feeByStudent,
       selectedYearStr: req.viewingYear
     };
 
@@ -577,7 +715,17 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
         (f) => f.month === month && Number(f.year) === feeYear
       );
 
-      if (feeRecord) {
+      if (feeRecord && feeRecord.status === NA_STATUS) {
+        // Month does not apply to this student (joined mid-year / on a break).
+        return {
+          month,
+          amount: 0,
+          status: "N/A",
+          reason: feeRecord.naReason || "",
+          datePaid: null,
+          year: feeYear,
+        };
+      } else if (feeRecord) {
         return {
           _id: feeRecord._id,
           month,

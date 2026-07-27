@@ -23,11 +23,14 @@ const feeSchema = new mongoose.Schema(
     year: { type: Number, required: true },
     amount: { type: Number, required: true, min: 0 },
     method: { type: String, enum: ["Cash", "UPI", "Razorpay"] },
+    // "NA" = month does not apply to this student (joined mid-year / on a break).
     status: {
       type: String,
-      enum: ["Paid", "Failed", "Pending"],
+      enum: ["Paid", "Failed", "Pending", "NA"],
       default: "Pending",
     },
+    // Why this month doesn't apply — only set on "NA" rows.
+    naReason: { type: String, trim: true, maxlength: 120 },
     receiptNo: {
       type: String,
       unique: true,

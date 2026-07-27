@@ -1247,12 +1247,31 @@ async function generateStudentDirectoryPDF(students, selectedYearStr, res, dispo
 
 
 async function drawFeeCollectionSheet(doc, data) {
-  const { month, year, nextMonth, students } = data;
+  const { month, year, nextMonth, students, feeByStudent = {} } = data;
   const W = doc.page.width;
   const H = doc.page.height;
   const M = 40;
 
   const byBatch = {};
+  
+  function formatNameFit(name, maxWidth) {
+    if (!name) return "";
+    let upName = name.toUpperCase().trim();
+    if (doc.widthOfString(upName) <= maxWidth) return upName;
+    
+    const parts = upName.split(/\s+/);
+    if (parts.length > 2) {
+      const first = parts[0];
+      const last = parts[parts.length - 1];
+      let middle = "";
+      for (let i = 1; i < parts.length - 1; i++) {
+        middle += parts[i].charAt(0) + ". ";
+      }
+      upName = `${first} ${middle}${last}`;
+    }
+    return upName;
+  }
+  
   students.forEach(s => {
     const batchName = s.batch ? s.batch.name : 'Unassigned';
     if (!byBatch[batchName]) byBatch[batchName] = [];
@@ -1300,32 +1319,46 @@ async function drawFeeCollectionSheet(doc, data) {
     doc.restore();
   }
 
+  let isFirstPage = true;
   function drawPageHeader() {
     doc.rect(0, 0, W, H).fill("#fafafa");
     drawWatermark();
     
-    let headerHeight = 185;
-    const primaryGrad = doc.linearGradient(0, 0, W, headerHeight);
-    primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
+    let headerHeight;
+    if (isFirstPage) {
+      headerHeight = 185;
+      const primaryGrad = doc.linearGradient(0, 0, W, headerHeight);
+      primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
 
-    doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
+      doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
 
-    doc.save();
-    doc.fillOpacity(0.1);
-    doc.circle(W - 40, 40, 80).fill("white");
-    doc.circle(W - 80, 100, 50).fill("white");
-    doc.circle(40, 20, 60).fill("white");
-    doc.restore();
+      doc.save();
+      doc.fillOpacity(0.1);
+      doc.circle(W - 40, 40, 80).fill("white");
+      doc.circle(W - 80, 100, 50).fill("white");
+      doc.circle(40, 20, 60).fill("white");
+      doc.restore();
 
-    if (headerImageBuffer) {
-      doc.image(headerImageBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
+      if (headerImageBuffer) {
+        doc.image(headerImageBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
+      }
+
+      doc.fillColor("white").font("Times-Bold").fontSize(34)
+        .text(`${month.toUpperCase()} ${year}`, M, 105, { align: "center", width: W - 2 * M });
+
+      doc.fillColor("#e9d5ff").font("Times-Bold").fontSize(14)
+        .text(`TO BE PAID BETWEEN 1ST AND 10TH ${nextMonth.toUpperCase()}`, M, 150, { align: "center", width: W - 2 * M });
+      
+      isFirstPage = false;
+    } else {
+      headerHeight = 40;
+      const primaryGrad = doc.linearGradient(0, 0, W, headerHeight);
+      primaryGrad.stop(0, "#4b2d84").stop(1, "#6b46c1");
+      doc.rect(0, 0, W, headerHeight).fill(primaryGrad);
+      
+      doc.fillColor("white").font("Times-Bold").fontSize(10)
+        .text(`${month.toUpperCase()} ${year} - FEE COLLECTION SHEET (CONT.)`, M, 15, { align: "center", width: W - 2 * M });
     }
-
-    doc.fillColor("white").font("Times-Bold").fontSize(34)
-      .text(`${month.toUpperCase()} ${year}`, M, 105, { align: "center", width: W - 2 * M });
-
-    doc.fillColor("#e9d5ff").font("Times-Bold").fontSize(14)
-      .text(`TO BE PAID BETWEEN 1ST AND 10TH ${nextMonth.toUpperCase()}`, M, 150, { align: "center", width: W - 2 * M });
 
     cursorY = headerHeight + 20;
   }
@@ -1407,10 +1440,40 @@ async function drawFeeCollectionSheet(doc, data) {
         const textY = cursorY + 6;
         
         doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
-        doc.text(s.studentId, tableM + widths[0] + 5, textY, { width: widths[1] - 10 });
+        doc.text(s.studentId, tableM + widths[0] + 5, textY, { width: widths[1] - 10, lineBreak: false });
         
         doc.fillColor("#111827").font("Times-Bold");
-        doc.text(s.studentName.toUpperCase(), tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10 });
+        const formattedStudentName = formatNameFit(s.studentName, widths[2] - 10);
+        doc.text(formattedStudentName, tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10, height: 12, ellipsis: true });
+
+        const fee = feeByStudent[s.studentId];
+        if (fee) {
+          doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+          
+          let dateStr = "";
+          let amountStr = "";
+          let modeStr = "";
+          
+          if (fee.status === "NA") {
+            const mergedX = tableM + widths[0] + widths[1] + widths[2];
+            const mergedW = widths[3] + widths[4] + widths[5];
+            const reason = fee.naReason || "";
+            const naLabel = reason ? `N/A – ${reason}` : "N/A";
+            doc.fillColor("#9ca3af").font("Times-BoldItalic").fontSize(8);
+            doc.text(naLabel, mergedX + 5, textY + 1, { width: mergedW - 10, align: "center", height: 12, ellipsis: true });
+          } else {
+            if (fee.datePaid) {
+              const d = new Date(fee.datePaid);
+              dateStr = `${d.getDate().toString().padStart(2, '0')}/${(d.getMonth() + 1).toString().padStart(2, '0')}/${d.getFullYear()}`;
+            }
+            amountStr = fee.amount ? `${fee.amount}` : "";
+            modeStr = fee.method ? fee.method.toUpperCase() : "";
+          
+            doc.text(dateStr, tableM + widths[0] + widths[1] + widths[2], textY, { width: widths[3], align: "center", height: 12, ellipsis: true });
+            doc.text(amountStr, tableM + widths[0] + widths[1] + widths[2] + widths[3], textY, { width: widths[4], align: "center", height: 12, ellipsis: true });
+            doc.text(modeStr, tableM + widths[0] + widths[1] + widths[2] + widths[3] + widths[4], textY, { width: widths[5], align: "center", height: 12, ellipsis: true });
+          }
+        }
 
         cursorY += rowH;
         globalRowIndex++;
@@ -1429,6 +1492,12 @@ async function drawFeeCollectionSheet(doc, data) {
 
   async function renderTeachers(teachersList) {
     if (!teachersList || teachersList.length === 0) return;
+    
+    teachersList.sort((a, b) => {
+      const idA = (a.teacherId || "").toLowerCase();
+      const idB = (b.teacherId || "").toLowerCase();
+      return idA.localeCompare(idB);
+    });
     
     // Add a bit of space before the teacher section if there's room
     if (cursorY + rowH + 24 > H - 40) {
@@ -1485,10 +1554,11 @@ async function drawFeeCollectionSheet(doc, data) {
       const textY = cursorY + 6;
       
       doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
-      doc.text(t.teacherId || "TCH", tableM + widths[0] + 5, textY, { width: widths[1] - 10 });
+      doc.text(t.teacherId || "TCH", tableM + widths[0] + 5, textY, { width: widths[1] - 10, height: 12, ellipsis: true });
       
       doc.fillColor("#111827").font("Times-Bold");
-      doc.text((t.teacherName || t.name || "").toUpperCase(), tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10 });
+      const formattedTeacherName = formatNameFit((t.teacherName || t.name || ""), widths[2] - 10);
+      doc.text(formattedTeacherName, tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10, height: 12, ellipsis: true });
 
       cursorY += rowH;
     }
@@ -1657,6 +1727,9 @@ async function drawFeeSummaryReport(doc, student, feesByMonth, totalDue) {
     } else if (item.status === 'Due') {
       doc.roundedRect(curX, cursorY + 5, 40, 15, 6).fill('#fee2e2');
       doc.fillColor('#991b1b').fontSize(8).text('DUE', curX, cursorY + 9, { width: 40, align: 'center' });
+    } else if (item.status === 'N/A') {
+      doc.roundedRect(curX, cursorY + 5, 40, 15, 6).fill('#f3f4f6');
+      doc.fillColor('#9ca3af').fontSize(8).text('N/A', curX, cursorY + 9, { width: 40, align: 'center' });
     } else {
       doc.roundedRect(curX, cursorY + 5, 60, 15, 6).fill('#f3f4f6');
       doc.fillColor('#4b5563').fontSize(8).text('UPCOMING', curX, cursorY + 9, { width: 60, align: 'center' });
@@ -1664,11 +1737,15 @@ async function drawFeeSummaryReport(doc, student, feesByMonth, totalDue) {
     curX += feeWidths[1];
 
     doc.fillColor('#4b5563').font('Times-Roman').fontSize(9);
-    doc.text(item.datePaid ? new Date(item.datePaid).toLocaleDateString('en-IN') : '-', curX, cursorY + 8, { width: feeWidths[2] });
+    // The "Date Paid" column carries the N/A reason instead — there is no date to show.
+    const middleText = item.status === 'N/A'
+      ? (item.reason || '-')
+      : (item.datePaid ? new Date(item.datePaid).toLocaleDateString('en-IN') : '-');
+    doc.text(middleText, curX, cursorY + 8, { width: feeWidths[2], height: 12, ellipsis: true });
     curX += feeWidths[2];
 
     doc.fillColor('#4b2d84').font('Times-Bold');
-    doc.text(`Rs. ${Number(item.amount).toLocaleString('en-IN')}`, curX, cursorY + 8, { width: feeWidths[3] });
+    doc.text(item.status === 'N/A' ? '-' : `Rs. ${Number(item.amount).toLocaleString('en-IN')}`, curX, cursorY + 8, { width: feeWidths[3] });
 
     cursorY += 25;
   });

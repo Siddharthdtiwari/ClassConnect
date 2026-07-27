@@ -3,6 +3,7 @@ const crypto = require("crypto");
 const Razorpay = require("razorpay");
 const User = require("../../models/User");
 const Fee = require("../../models/Fee");
+const { NA_STATUS } = require("../../utils/feeHelpers");
 const { logAudit } = require("../../utils/auditService");
 const { sendFeeReceipt } = require("../../utils/emailService");
 const { generateReceiptPDF, generateFeeSummaryPDF } = require("../../utils/pdfUtils");
@@ -55,7 +56,17 @@ exports.renderFeePayment = async (req, res) => {
         (f) => f.month === month && Number(f.year) === feeYear
       );
 
-      if (feeRecord) {
+      if (feeRecord && feeRecord.status === NA_STATUS) {
+        // Month does not apply to this student (joined mid-year / on a break).
+        return {
+          month,
+          amount: 0,
+          status: "N/A",
+          reason: feeRecord.naReason || "",
+          datePaid: null,
+          year: feeYear,
+        };
+      } else if (feeRecord) {
         return {
           _id: feeRecord._id,
           month,
@@ -332,7 +343,17 @@ exports.downloadFeeSummary = async (req, res) => {
         (f) => f.month === month && Number(f.year) === feeYear
       );
 
-      if (feeRecord) {
+      if (feeRecord && feeRecord.status === NA_STATUS) {
+        // Month does not apply to this student (joined mid-year / on a break).
+        return {
+          month,
+          amount: 0,
+          status: "N/A",
+          reason: feeRecord.naReason || "",
+          datePaid: null,
+          year: feeYear,
+        };
+      } else if (feeRecord) {
         return {
           _id: feeRecord._id,
           month,

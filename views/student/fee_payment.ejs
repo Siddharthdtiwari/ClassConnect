@@ -233,6 +233,8 @@
                   </div>
                   <% } else if (f.status === "Due") { %>
                   <p class="text-xs font-mono uppercase tracking-widest text-red-500 font-bold mt-2">Payment pending</p>
+                  <% } else if (f.status === "N/A") { %>
+                  <p class="text-xs font-mono uppercase tracking-widest text-theme-fdd mt-2">Not applicable<%= f.reason ? " — " + f.reason : "" %></p>
                   <% } else { %>
                   <p class="text-xs font-mono uppercase tracking-widest text-theme-fdd mt-2">Not yet due</p>
                   <% } %>
@@ -241,8 +243,8 @@
 
               <!-- Right: Amount + Badge -->
               <div class="w-full sm:w-auto flex flex-row sm:flex-col items-center sm:items-end justify-between sm:justify-end gap-3 sm:gap-2 pt-4 sm:pt-0 border-t sm:border-t-0 border-theme-bd">
-                <p class="font-unbounded font-extrabold text-2xl text-theme-fg drop-shadow-sm">
-                  ₹<%= f.status === "Paid" ? f.amount.toLocaleString() : student.monthlyFee.toLocaleString() %>
+                <p class="font-unbounded font-extrabold text-2xl text-theme-fg drop-shadow-sm <%= f.status === 'N/A' ? 'opacity-40' : '' %>">
+                  <% if (f.status === "N/A") { %>—<% } else { %>₹<%= f.status === "Paid" ? f.amount.toLocaleString() : student.monthlyFee.toLocaleString() %><% } %>
                 </p>
                 <span class="px-3 py-1 text-[10px] font-mono uppercase tracking-widest font-bold rounded-full <%= f.status === 'Paid' ? 'status-paid' : f.status === 'Due' ? 'status-due' : 'status-upcoming' %>">
                   <%= f.status %>

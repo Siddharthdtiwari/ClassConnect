@@ -214,6 +214,70 @@
       color: var(--gt) !important;
     }
     
+    /* Not-applicable months — student joined mid-year or was on a break */
+    .na-cell-label {
+      display: none;
+      width: calc(100% - 12px);
+      margin: 6px;
+      padding: 14px 6px;
+      border-radius: 8px;
+      border: 1px dashed var(--bd);
+      background: var(--bgch);
+      color: var(--fdd);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 700;
+      letter-spacing: 0.1em;
+      text-align: center;
+      opacity: 0.55;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .na-cell-label:hover { opacity: 1; border-style: solid; border-color: var(--p); color: var(--pt); }
+    .na-reason-text {
+      display: block;
+      margin-top: 4px;
+      font-size: 0.5rem;
+      font-weight: 400;
+      letter-spacing: 0;
+      text-transform: none;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .na-reason-text:empty { display: none; }
+    .na-cell .na-cell-label { display: block; }
+    .na-cell .fee-cell-wrapper { display: none; }
+
+    /* Hover shortcut that marks an empty month N/A */
+    .fee-cell-wrapper { position: relative; }
+    .na-toggle {
+      position: absolute;
+      top: -5px;
+      right: -3px;
+      z-index: 5;
+      padding: 2px 5px;
+      border-radius: 5px;
+      border: 1px solid var(--bd);
+      background: var(--bgc);
+      color: var(--fdd);
+      font-family: 'Space Mono', monospace;
+      font-size: 0.5rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      opacity: 0;
+      pointer-events: none;
+      transition: all 0.15s ease;
+    }
+    .fee-cell-wrapper:hover .na-toggle, .fee-cell-wrapper:focus-within .na-toggle {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .na-toggle:hover { color: var(--pt); border-color: var(--p); }
+    /* A month with money recorded can't be N/A — clear the amount first */
+    .paid-existing .na-toggle { display: none; }
+    .cell-busy { opacity: 0.4; pointer-events: none; }
+
     /* Dirty Changes */
     .changed-cell .fee-cell-wrapper {
       border-color: #f59e0b;
@@ -356,6 +420,17 @@
                     <option value="Razorpay">Razorpay</option>
                   </select>
                 </div>
+
+                <div class="flex flex-col sm:flex-none">
+                  <label class="ctrl-label">N/A Reason</label>
+                  <select id="global-na-reason" class="ctrl-input">
+                    <% naReasons.forEach((r, i) => { %>
+                    <option value="<%= r %>" <%= i === 0 ? 'selected' : '' %>><%= r %></option>
+                    <% }) %>
+                    <option value="__other">Other...</option>
+                  </select>
+                  <input type="text" id="global-na-reason-other" maxlength="120" placeholder="Type the reason" autocomplete="off" class="ctrl-input hidden" style="margin-top: 6px;" />
+                </div>
               </div>
             </div>
           </header>
@@ -394,14 +469,21 @@
                       </div>
                     </td>
 
-                    <% months.forEach(month => { 
-                       const record = (feeMap[user.studentId] && feeMap[user.studentId][month]) ? feeMap[user.studentId][month] : null;
-                       const isPaid = !!record;
+                    <% months.forEach(month => {
+                       const studentFees = feeMap[user.studentId + '|' + user.standard] || {};
+                       const record = studentFees[month] || null;
+                       const isNa = !!record && record.status === 'NA';
+                       const isPaid = !!record && !isNa;
                        const isNextYear = ["January", "February", "March", "April"].includes(month);
                        const cellYear = isNextYear ? selectedYear + 1 : selectedYear;
                     %>
-                    <td id="cell-<%= user.studentId %>-<%= month %>" class="fee-cell <%= isPaid ? 'paid-existing' : '' %>">
+                    <td id="cell-<%= user.studentId %>-<%= month %>" class="fee-cell <%= isNa ? 'na-cell' : '' %> <%= isPaid ? 'paid-existing' : '' %>"
+                      data-user-id="<%= user._id %>" data-month="<%= month %>">
+                      <button type="button" class="na-cell-label" onclick="setMonthNa(this, false)"
+                        title="<%= month %> is not applicable<%= isNa && record.naReason ? ' — ' + record.naReason : '' %>. Click to make it payable again.">N/A<span class="na-reason-text"><%= isNa && record.naReason ? record.naReason : '' %></span></button>
                       <div class="fee-cell-wrapper">
+                        <button type="button" class="na-toggle" onclick="setMonthNa(this, true)"
+                          title="Not applicable — student wasn't enrolled in <%= month %>">N/A</button>
                         <input type="hidden" class="data-student-id" value="<%= user.studentId %>">
                         <input type="hidden" class="data-student-name" value="<%= user.studentName %>">
                         <input type="hidden" class="data-standard" value="<%= user.standard %>">
@@ -461,6 +543,81 @@
 
   <script>
     let unsavedCount = 0;
+    const CSRF_TOKEN = "<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>";
+
+    // Reason applied when marking cells N/A — picked once in the toolbar.
+    function currentNaReason() {
+      const sel = document.getElementById('global-na-reason');
+      if (sel.value === '__other') return document.getElementById('global-na-reason-other').value.trim();
+      return sel.value;
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      const sel = document.getElementById('global-na-reason');
+      const other = document.getElementById('global-na-reason-other');
+      sel.addEventListener('change', () => {
+        const isOther = sel.value === '__other';
+        other.classList.toggle('hidden', !isOther);
+        if (isOther) other.focus();
+      });
+    });
+
+    // Flip a month between payable and "not applicable" (student joined mid-year /
+    // was on a break). Saved immediately — it isn't part of the Commit batch.
+    async function setMonthNa(btn, makeNa) {
+      const cell = btn.closest('td');
+      const reason = currentNaReason();
+
+      if (makeNa && !reason) {
+        showToast('Pick an N/A reason in the toolbar first.', 'bg-[var(--rt)]');
+        document.getElementById('global-na-reason-other').focus();
+        return;
+      }
+
+      cell.classList.add('cell-busy');
+
+      try {
+        const res = await fetch('/teacher/fee_month_na', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': CSRF_TOKEN },
+          body: JSON.stringify({
+            studentId: cell.dataset.userId,
+            month: cell.dataset.month,
+            action: makeNa ? 'mark' : 'unmark',
+            reason: reason
+          })
+        });
+        const result = await res.json();
+
+        if (!result.success) {
+          showToast(result.message || 'Could not update month.', 'bg-[var(--rt)]');
+          return;
+        }
+
+        cell.classList.toggle('na-cell', makeNa);
+        const label = cell.querySelector('.na-cell-label');
+        cell.querySelector('.na-reason-text').textContent = makeNa ? reason : '';
+        label.title = makeNa
+          ? `${cell.dataset.month} is not applicable — ${reason}. Click to make it payable again.`
+          : `${cell.dataset.month} is not applicable. Click to make it payable again.`;
+
+        if (makeNa) {
+          // Drop any pending edit on this cell — it is no longer collectable.
+          if (cell.classList.contains('changed-cell')) {
+            cell.classList.remove('changed-cell');
+            unsavedCount = Math.max(0, unsavedCount - 1);
+            updateFloatingBar();
+          }
+          cell.querySelector('.data-amount').value = '';
+          cell.classList.remove('paid-existing');
+        }
+        showToast(makeNa ? `${cell.dataset.month} marked N/A` : `${cell.dataset.month} is payable again`, 'bg-[var(--gt)]');
+      } catch (e) {
+        showToast('Network error: could not update month.', 'bg-[var(--rt)]');
+      } finally {
+        cell.classList.remove('cell-busy');
+      }
+    }
 
     function markDirty(element) {
       const cell = element.closest('td');
@@ -510,7 +667,7 @@
     }
 
     async function saveAllChanges() {
-      const changedCells = document.querySelectorAll('.changed-cell');
+      const changedCells = document.querySelectorAll('.changed-cell:not(.na-cell)');
       if (changedCells.length === 0) return;
 
       const saveBtn = document.getElementById('save-btn');
@@ -549,7 +706,10 @@
         try {
           const res = await fetch('/teacher/bulk_save', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+              'Content-Type': 'application/json',
+              'X-CSRF-Token': "<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>"
+            },
             body: JSON.stringify({ updates })
           });
 

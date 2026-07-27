@@ -501,10 +501,16 @@
         studentAttendanceList.innerHTML = "";
 
         allStudents.forEach((student) => {
-          const status = attendanceForDate[student.studentId] || "P";
+          let status = attendanceForDate[student.studentId];
+          if (!status) {
+            status = student.isActive === false ? "A" : "P";
+          }
           const row = document.createElement("tr");
           row.dataset.studentId = student.studentId;
           row.className = "hover:bg-theme-bgch/40 border-b border-theme-bd transition-all";
+          if (student.isActive === false) {
+            row.style.display = 'none';
+          }
 
           row.innerHTML = `
                 <td class="px-4 py-3 font-bold text-theme-fg">${student.studentName}</td>

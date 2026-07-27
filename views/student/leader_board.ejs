@@ -119,60 +119,6 @@
             <p class="text-theme-fdd font-mono text-sm uppercase tracking-widest">No students found in this ranking.</p>
           </div>
         <% } else { %>
-          <!-- TOP 3 -->
-          <div class="mb-16">
-            <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-12 text-center flex items-center justify-center gap-3">
-              <span class="text-3xl drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg></span> Top Performers
-            </h2>
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-8 text-center mt-6">
-              <% topThree.forEach((student, index)=> { 
-                let rankClass = index === 0 ? 'rank-1' : index === 1 ? 'rank-2' : 'rank-3'; 
-                let sizeClass = index === 0 ? 'w-32 h-32' : 'w-24 h-24'; 
-                let borderColor = index === 0 ? 'border-amber-400' : index === 1 ? 'border-stone-400' : 'border-amber-700'; 
-                let textColor = index === 0 ? 'text-amber-500' : index === 1 ? 'text-stone-400' : 'text-amber-700';
-                let crownIcon = index === 0 ? '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline"><path d="M2 4l3 12h14l3-12-6 7-4-7-4 7-6-7zm3 16h14"/></svg>' : '';
-              %>
-              <div class="rank-card <%= rankClass %> rounded-2xl shadow-lg relative overflow-visible p-8 pt-12 flex flex-col items-center mt-4">
-                <div class="absolute -top-7 w-full flex justify-center">
-                  <div class="bg-theme-bgc rounded-full p-2.5 shadow-md border border-theme-b <%= textColor %>">
-                     <svg class="w-8 h-8" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2L9.18 8.5L2 9.27L7.5 14.14L5.82 21L12 17.27L18.18 21L16.5 14.14L22 9.27L14.82 8.5L12 2Z"></path>
-                     </svg>
-                  </div>
-                </div>
-                <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="<%= sizeClass %> rounded-full object-cover mb-5 border-4 <%= borderColor %> shadow-lg bg-theme-bg mt-2 z-10 relative" />
-                <h3 class="text-xl font-unbounded font-bold text-theme-fg mb-1 flex items-center gap-2 justify-center leading-tight">
-                  <%= student.name %> <span class="text-2xl drop-shadow-sm"><%- crownIcon %></span>
-                </h3>
-                <span class="text-[10px] font-mono font-bold bg-theme-bd text-theme-fd px-3 py-1 rounded-full mb-4 inline-block uppercase tracking-widest">ID: <%= student.studentId %></span>
-
-                <p class="text-theme-pt font-mono font-bold text-xs uppercase tracking-widest bg-theme-p/10 px-3 py-1 rounded border border-theme-p/20">
-                  Rank <%= student.rank %>
-                </p>
-                <p class="text-4xl font-unbounded font-extrabold text-theme-fg mt-4 drop-shadow-sm">
-                  <%= Math.trunc(student.score) %> <span class="text-sm font-mono font-semibold text-theme-fd uppercase tracking-widest">pts</span>
-                </p>
-              </div>
-              <% }) %>
-            </div>
-          </div>
-
-          <!-- ALL RANKINGS -->
-          <% if(rest.length > 0) { %>
-          <div>
-            <h2 class="text-2xl font-unbounded font-extrabold text-theme-pt mb-6 flex items-center gap-3 border-b border-theme-bd pb-4">
-              <span class="text-3xl drop-shadow-md"><svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></span> All Rankings
-            </h2>
-            <div class="bg-theme-bgc border border-theme-b shadow-sm rounded-2xl overflow-hidden">
-              <div class="flex flex-col">
-                <% rest.forEach(student=> { const isCurrentUser = student.name === currentUser; %>
-                <div class="student-row flex items-center gap-4 p-4 sm:p-5 <%= isCurrentUser ? 'highlight-user' : '' %>">
-                  <div class="flex-shrink-0 w-12 sm:w-16 text-center text-lg sm:text-xl font-unbounded font-extrabold <%= isCurrentUser ? 'text-white drop-shadow-md' : 'text-theme-fd' %>">
-                    #<%= student.rank %>
-                  </div>
-                  <img src="<%= student.avatar.includes('http') ? student.avatar : 'https://placehold.co/40x40/f3e8ff/5d3a9b?text=' + student.avatar %>" alt="<%= student.name %>" class="flex-shrink-0 w-12 h-12 sm:w-14 sm:h-14 rounded-full border-2 border-theme-bd object-cover shadow-sm" />
-                  <div class="flex-grow min-w-0">
-                    <p class="font-unbounded font-bold text-sm sm:text-base flex items-center gap-2 flex-wrap <%= isCurrentUser ? 'text-white' : 'text-theme-fg' %>">
                       <span class="truncate"><%= student.name %></span>
                       <%- isCurrentUser ? '<span class="bg-theme-lt text-theme-bgc text-[10px] font-mono px-2 py-0.5 rounded-full flex-shrink-0 uppercase tracking-widest font-bold">You</span>' : '' %>
                     </p>

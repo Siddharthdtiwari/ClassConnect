@@ -197,6 +197,7 @@ exports.renderFeeDefaulters = async (req, res) => {
         const defaulter = {
           studentId: student.studentId,
           studentName: student.studentName,
+          email: student.email,
           mobileNo: student.mobileNo,
           standard: student.batch ? student.batch.name : 'Unknown',
           profilePhoto: student.profilePhoto,
@@ -210,6 +211,7 @@ exports.renderFeeDefaulters = async (req, res) => {
             standard: student.batch ? student.batch.name : 'Unknown',
             studentId: student.studentId,
             studentName: student.studentName,
+            email: student.email,
             balance: monthlyFee
           });
         });

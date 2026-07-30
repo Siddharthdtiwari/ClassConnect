@@ -4,6 +4,8 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
+const validate = require('../../middleware/validate');
+const { loginSchema, studentLoginSchema } = require('../../validations/authSchema');
 
 const User = require('../../models/User');
 const Teacher = require('../../models/Teacher');
@@ -28,7 +30,7 @@ const generateToken = (user, role) => {
 };
 
 // Student Login API
-router.post('/student/login', loginLimiter, async (req, res) => {
+router.post('/student/login', loginLimiter, validate(studentLoginSchema), async (req, res) => {
   try {
     const { studentId, password } = req.body;
 
@@ -83,7 +85,7 @@ router.post('/student/login', loginLimiter, async (req, res) => {
 });
 
 // Teacher Login API
-router.post('/teacher/login', loginLimiter, async (req, res) => {
+router.post('/teacher/login', loginLimiter, validate(loginSchema), async (req, res) => {
   try {
     const { teacherId, password } = req.body;
 

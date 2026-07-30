@@ -19,6 +19,15 @@ const { calculateCurrentAcademicYear, getAvailableAcademicYears } = require('../
 const { logAudit } = require('../../utils/auditService');
 const { NA_STATUS, naMonthSet, billableMonths } = require('../../utils/feeHelpers');
 const { upload, uploadToCloudinary } = require('../../utils/upload');
+const validate = require('../../middleware/validate');
+const { 
+  createBatchSchema, 
+  createStudentSchema, 
+  createTeacherSchema, 
+  createFeeSchema, 
+  saveAttendanceSchema, 
+  createTestSchema 
+} = require('../../validations/teacherSchema');
 
 // Controllers for PDF & Bulk
 const studentController = require('../../controllers/teacher/studentController');
@@ -105,7 +114,8 @@ router.get('/batches', async (req, res) => {
   }
 });
 
-router.post('/batches', async (req, res) => {
+// Create New Batch
+router.post('/batches', validate(createBatchSchema), async (req, res) => {
   try {
     const { name, description } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
@@ -212,14 +222,10 @@ router.get('/students', async (req, res) => {
   }
 });
 
-router.post('/students', async (req, res) => {
+router.post('/students', validate(createStudentSchema), async (req, res) => {
   try {
     const { batchId, studentId, studentName, email, password, mobileNo, monthlyFee } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
-    
-    if (!batchId || !studentId || !studentName || !mobileNo || !password) {
-      return res.status(400).json({ error: 'Missing required fields (batch, ID, name, mobile, password)' });
-    }
     
     // Scope to the target batch — studentId is only unique per (studentId, batch),
     // and the same ID legitimately repeats across other batches/years.
@@ -250,14 +256,11 @@ router.post('/students', async (req, res) => {
   }
 });
 
-router.post('/teachers', async (req, res) => {
+// Create New Teacher
+router.post('/teachers', validate(createTeacherSchema), async (req, res) => {
   try {
     const { name, email, password } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
-    
-    if (!name || !email || !password) {
-      return res.status(400).json({ error: 'Missing required fields (name, email, password)' });
-    }
     
     const existing = await User.findOne({ email, role: 'teacher' });
     if (existing) {
@@ -395,7 +398,8 @@ router.get('/attendance', async (req, res) => {
   }
 });
 
-router.post('/attendance', async (req, res) => {
+// Save Attendance
+router.post('/attendance', validate(saveAttendanceSchema), async (req, res) => {
   try {
     const { date, records, batchId } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
@@ -483,7 +487,8 @@ router.get('/fees', async (req, res) => {
   }
 });
 
-router.post('/fees', async (req, res) => {
+// Collect Fee
+router.post('/fees', validate(createFeeSchema), async (req, res) => {
   try {
     const { studentId, batchId, amount, month, year, method, datePaid } = req.body;
     const studentObj = await User.findById(studentId).populate('batch');
@@ -521,15 +526,12 @@ router.get('/tests', async (req, res) => {
   }
 });
 
-router.post('/tests', upload.single('questionPaperFile'), async (req, res) => {
+// Create New Test
+router.post('/tests', upload.single('questionPaperFile'), validate(createTestSchema), async (req, res) => {
   try {
     const { batchId, subject, testDate, totalMarks, testType } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
     
-    if (!batchId || !subject || !testDate || !totalMarks) {
-      return res.status(400).json({ error: 'Missing required fields' });
-    }
-
     let fileUrl = null;
     if (req.file) {
       const uploadRes = await uploadToCloudinary(req.file.buffer, "test-papers");

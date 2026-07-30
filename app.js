@@ -13,7 +13,6 @@ require("winston-daily-rotate-file");
 const { csrfSync } = require("csrf-sync");
 require("dotenv").config();
 const cors = require("cors");
-const mongoSanitize = require("express-mongo-sanitize");
 
 // 1. Environment Variable Validation
 const requiredEnv = ["MONGODB_URI", "SESSION_SECRET"];
@@ -138,6 +137,7 @@ app.locals.safeJson = (obj) => JSON.stringify(obj).replace(/</g, '\\u003c');
 app.locals.sanitizeHtml = require('sanitize-html');
 const { signId } = require('./utils/hashUtils');
 app.locals.signId = signId;
+app.locals.baseUrl = process.env.BASE_URL || 'https://tuitionhub.vercel.app';
 
 // Views widely called `new Date(x).toLocaleDateString('en-IN', ...)` — the 'en-IN'
 // locale only controls number/AM-PM formatting, not the timezone. Node defaults to
@@ -153,7 +153,6 @@ app.locals.formatDateTime = (date, opts = {}) =>
 
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-app.use(mongoSanitize());
 app.use(express.static(path.join(__dirname, "public")));
 
 // HTTP Request Logging

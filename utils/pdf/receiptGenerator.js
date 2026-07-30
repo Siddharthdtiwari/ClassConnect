@@ -135,10 +135,11 @@ async function renderReceiptPDF(doc, fee, student) {
   const footerY = totalY + rowH + 18;
   doc.rect(0, footerY + 26, W, 2).fill("#e9d5ff");
   doc.fillColor("#9ca3af").font("Helvetica-Oblique").fontSize(9)
-    .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 34, { align: "center", width: W - M * 2, continued: true })
-    .fillColor("#7c3aed").text(" | Powered by ClassConnect", { link: "https://classconnects.vercel.app" });
+    .text("This is a computer-generated receipt and does not require a signature.", M, footerY + 34, { align: "center", width: W - M * 2 });
   doc.fillColor("#6b7280").font("Helvetica").fontSize(9)
-    .text("Tuition Hub Education Centre · Andheri (East), Mumbai 400059 · 9967466955", M, footerY + 50, { align: "center", width: W - M * 2 });
+    .text("Tuition Hub Education Centre · Andheri (East), Mumbai 400059 · 9967466955", M, footerY + 48, { align: "center", width: W - M * 2 });
+  doc.fillColor("#d8b4fe").font("Helvetica").fontSize(8)
+    .text("Powered by ClassConnect", M, footerY + 62, { align: "center", width: W - M * 2, link: "https://classconnects.vercel.app" });
 }
 
 async function generateReceiptPDF(fee, student, res, disposition) {

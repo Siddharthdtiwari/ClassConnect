@@ -21,7 +21,10 @@ router.get('/public/receipt/:feeId', async (req, res) => {
     if (!fee) return res.status(404).send('Receipt not found');
     if (fee.status !== 'Paid') return res.status(400).send('Receipt not available for unpaid fees');
 
-    const student = await User.findById(fee.student).populate('batch');
+    let student = await User.findOne({ studentId: fee.studentId, batch: fee.batch._id }).populate('batch');
+    if (!student) {
+      student = await User.findOne({ studentId: fee.studentId }).populate('batch');
+    }
     if (!student) return res.status(404).send('Student not found');
 
     // Generate inline PDF
@@ -46,20 +49,25 @@ router.get('/public/fee-summary/:studentId', async (req, res) => {
     const academicYear = student.batch ? student.batch.academicYear : '2025-26'; // Default fallback
     
     // Logic from feeController.js to compute feesByMonth and totalDue
-    const { NA_STATUS, billableMonths, naMonthSet } = require('../utils/feeHelpers');
-    const allFees = await Fee.find({ student: studentId }).lean();
+    const { NA_STATUS, naMonthSet } = require('../utils/feeHelpers');
+    const { ACADEMIC_MONTHS } = require('../utils/constants');
+    const allFees = await Fee.find({ studentId: student.studentId }).lean();
+    const naMonths = naMonthSet(allFees);
+    
+    const batchId = student.batch ? String(student.batch._id) : null;
+    const studentFees = allFees.filter(f => String(f.batch && f.batch._id || f.batch) === batchId);
     
     let totalDue = 0;
     const feesByMonth = [];
     const monthlyFee = Number(student.monthlyFee) || 0;
     
-    for (const month of billableMonths) {
-      if (naMonthSet.has(month)) {
+    for (const month of ACADEMIC_MONTHS) {
+      if (naMonths.has(month)) {
         feesByMonth.push({ month, amount: 0, status: 'N/A', reason: NA_STATUS });
         continue;
       }
       
-      const feeRecord = allFees.find(f => f.month === month && f.year === academicYear);
+      const feeRecord = studentFees.find(f => f.month === month);
       if (feeRecord) {
         if (feeRecord.status === 'Unpaid') {
           totalDue += Number(feeRecord.amount || monthlyFee);

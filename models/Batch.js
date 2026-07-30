@@ -20,6 +20,11 @@ const batchSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    whatsappLink: {
+      type: String,
+      trim: true,
+      default: ''
     }
   },
   { timestamps: true }

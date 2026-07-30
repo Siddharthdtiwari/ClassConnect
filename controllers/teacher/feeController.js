@@ -87,7 +87,7 @@ exports.renderManageFees = async (req, res) => {
 
     const students = await User.find(
       { batch: { $in: req.viewingBatches } },
-      "studentId studentName batch monthlyFee isActive"
+      "studentId studentName batch monthlyFee isActive mobileNo"
     )
       .populate("batch")
       .lean();
@@ -117,6 +117,7 @@ exports.renderManageFees = async (req, res) => {
             amount: feeRecord.amount,
             datePaid: new Date(feeRecord.datePaid),
             method: feeRecord.method,
+            feeId: feeRecord._id
           };
           totalPaid += feeRecord.amount;
         } else {
@@ -134,6 +135,7 @@ exports.renderManageFees = async (req, res) => {
         _id: student._id,
         studentName: student.studentName,
         studentId: student.studentId,
+        mobileNo: student.mobileNo,
         isActive: student.isActive,
         standard: (student.batch ? student.batch.name : 'Unknown'),
         records: records,
@@ -195,6 +197,7 @@ exports.renderFeeDefaulters = async (req, res) => {
         const balance = unpaidMonths.length * monthlyFee;
 
         const defaulter = {
+          id: student._id,
           studentId: student.studentId,
           studentName: student.studentName,
           email: student.email,
@@ -208,11 +211,14 @@ exports.renderFeeDefaulters = async (req, res) => {
 
         unpaidMonths.forEach(m => {
           monthData[m].push({
+            id: student._id,
             standard: student.batch ? student.batch.name : 'Unknown',
             studentId: student.studentId,
             studentName: student.studentName,
             email: student.email,
-            balance: monthlyFee
+            mobileNo: student.mobileNo,
+            balance: monthlyFee,
+            profilePhoto: student.profilePhoto
           });
         });
       }

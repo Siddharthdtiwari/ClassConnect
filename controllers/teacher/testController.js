@@ -149,6 +149,9 @@ exports.apiGetTests = async (req, res) => {
 exports.apiGetScores = async (req, res) => {
   try {
     const { batchId, testId } = req.params;
+    const test = await Test.findById(testId).lean();
+    if (!test) return res.status(404).json({ error: "Test not found" });
+
     const students = await User.find({ batch: batchId }).populate('batch').lean();
     students.sort(sortStudentsByBatchAndId);
     const existingScores = await Score.find({ testId, batch: batchId });
@@ -161,7 +164,10 @@ exports.apiGetScores = async (req, res) => {
     const responseData = students.map(student => ({
       studentId: student.studentId,
       studentName: student.studentName,
-      score: scoreMap[student.studentId] !== undefined ? scoreMap[student.studentId] : null
+      mobileNo: student.mobileNo,
+      score: scoreMap[student.studentId] !== undefined ? scoreMap[student.studentId] : null,
+      testName: test.testName,
+      totalMarks: test.totalMarks
     }));
 
     res.json(responseData);

@@ -435,6 +435,7 @@
                   data-description="<%= batch.description || '' %>"
                   data-active="<%= batch.isActive %>"
                   data-year="<%= batch.academicYear %>"
+                  data-whatsapp="<%= batch.whatsappLink || '' %>"
                   onclick="openEditModal(this)">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
                   Edit Details
@@ -489,6 +490,11 @@
           <div class="mb-5">
             <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Batch Name <span style="color: var(--rt);">*</span></label>
             <input type="text" name="name" placeholder="e.g. 9th Grade Science, Math Advanced" required class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs" />
+          </div>
+
+          <div class="mb-5">
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">WhatsApp Group Link</label>
+            <input type="url" name="whatsappLink" placeholder="https://chat.whatsapp.com/..." class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs" />
           </div>
 
           <div class="mb-5">
@@ -551,6 +557,11 @@
           </div>
 
           <div class="mb-5">
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">WhatsApp Group Link</label>
+            <input type="url" name="whatsappLink" id="edit-whatsappLink" placeholder="https://chat.whatsapp.com/..." class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs" />
+          </div>
+
+          <div class="mb-5">
             <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Description</label>
             <textarea name="description" id="edit-description" rows="3" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs resize-vertical"></textarea>
           </div>
@@ -586,10 +597,12 @@
       const description = btn.dataset.description;
       const isActive    = btn.dataset.active === 'true';
       const year        = btn.dataset.year;
+      const whatsapp    = btn.dataset.whatsapp;
       const form = document.getElementById('edit-batch-form');
       form.action = '/teacher/edit_batch/' + id;
       document.getElementById('edit-name').value = name;
       document.getElementById('edit-description').value = description;
+      document.getElementById('edit-whatsappLink').value = whatsapp || '';
       document.getElementById('edit-year-display').textContent = year;
       setEditStatus(isActive);
       document.getElementById('edit-modal').classList.add('open');

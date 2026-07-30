@@ -2,6 +2,7 @@ const { z } = require('zod');
 
 const createBatchSchema = z.object({
   name: z.string().min(1, "Batch name is required"),
+  whatsappLink: z.string().url("Must be a valid URL").optional().or(z.literal('')),
 }).passthrough();
 
 const createStudentSchema = z.object({

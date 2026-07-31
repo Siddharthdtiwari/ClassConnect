@@ -66,8 +66,8 @@
       <div class="absolute bottom-0 right-32 -mb-20 w-48 h-48 rounded-full bg-white opacity-5"></div>
 
       <div class="relative z-10">
-        <h1 class="text-3xl md:text-4xl font-unbounded font-extrabold text-white leading-tight">
-          Welcome Back,
+        <h1 class="text-2xl sm:text-3xl md:text-4xl font-unbounded font-extrabold text-white leading-tight break-words">
+          Welcome Back,<br class="sm:hidden">
           <span class="text-theme-lt"> <%= student.studentName %>! </span>
         </h1>
         <p class="text-sm font-mono tracking-widest mt-3 text-white/80 uppercase">
@@ -97,7 +97,7 @@
           <div class="absolute top-0 left-0 w-full h-24 premium-banner opacity-90"></div>
           <div class="relative flex flex-col items-center text-center mt-6">
             <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-28 h-28 rounded-full border-4 border-theme-bg object-cover mb-4 shadow-xl bg-theme-bg" />
-            <p class="text-2xl font-unbounded font-extrabold text-theme-fg">
+            <p class="text-xl sm:text-2xl font-unbounded font-extrabold text-theme-fg break-words w-full px-2">
               <%= student.studentName %>
             </p>
             <span class="mt-2 inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-theme-bgch text-theme-pt border border-theme-p/20">

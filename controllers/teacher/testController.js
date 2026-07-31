@@ -319,6 +319,65 @@ exports.apiConsolidatedScores = async (req, res) => {
   }
 };
 
+exports.printConsolidatedScores = async (req, res) => {
+  try {
+    const batches = await Batch.find({ academicYear: req.viewingYear });
+    batches.sort(sortBatches);
+    const responseData = {};
+
+    const batchIds = batches.map(b => b._id);
+    const [allTests, allStudents, allScores] = await Promise.all([
+      Test.find({ batch: { $in: batchIds } }).sort({ testDate: 1 }).lean(),
+      User.find({ batch: { $in: batchIds } }).populate('batch').lean(),
+      Score.find({ batch: { $in: batchIds } }).lean()
+    ]);
+
+    for (const batch of batches) {
+      const tests = allTests.filter(t => String(t.batch) === String(batch._id));
+      const students = allStudents.filter(s => s.batch && String(s.batch._id) === String(batch._id));
+      students.sort(sortStudentsByBatchAndId);
+
+      if (tests.length === 0 || students.length === 0) continue;
+
+      const studentScoresData = [];
+      const testIds = tests.map(t => String(t._id));
+      const scores = allScores.filter(s => String(s.batch) === String(batch._id) && testIds.includes(String(s.testId)));
+
+      const scoreMap = {};
+      scores.forEach(s => {
+        if (!scoreMap[s.studentId]) scoreMap[s.studentId] = {};
+        scoreMap[s.studentId][s.testId.toString()] = s.percentage;
+      });
+
+      students.forEach(student => {
+        const sScores = {};
+        tests.forEach(t => {
+          const key = t._id.toString();
+          if (scoreMap[student.studentId] && scoreMap[student.studentId][key] !== undefined) {
+            sScores[key] = scoreMap[student.studentId][key];
+          }
+        });
+
+        studentScoresData.push({
+          studentId: student.studentId,
+          studentName: student.studentName,
+          scores: sScores
+        });
+      });
+
+      responseData[batch.name] = {
+        tests: tests.map(t => ({ _id: t._id, testName: t.testName, subject: t.subject, topic: t.topic })),
+        students: studentScoresData
+      };
+    }
+
+    res.render("teacher/print_all_scores", { data: responseData, viewingYear: req.viewingYear });
+  } catch (err) {
+    console.error("Print consolidated error:", err);
+    res.status(500).send("Failed to fetch consolidated scores for printing");
+  }
+};
+
 exports.renderTimetable = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear });

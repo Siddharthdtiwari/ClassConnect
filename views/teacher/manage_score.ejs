@@ -196,7 +196,13 @@
 
           <!-- Consolidated Performance Ledger -->
           <div id="all-scores-container" class="stat-card p-6 sm:p-8">
-            <h2 class="text-lg font-bold uppercase tracking-tight mb-2 font-unbounded text-theme-pt">Consolidated Performance Ledger</h2>
+            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-2 gap-4">
+              <h2 class="text-lg font-bold uppercase tracking-tight font-unbounded text-theme-pt">Consolidated Performance Ledger</h2>
+              <button onclick="window.open('/teacher/scores/print', '_blank')" class="btn-solid-purple flex items-center gap-2 text-xs py-2 px-4 whitespace-nowrap">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                Print Report
+              </button>
+            </div>
             <p class="text-xs text-theme-fdd mb-8">Consolidated matrix of all tests and student percentages for this academic session.</p>
             <div id="classwise-tables" class="space-y-12"></div>
           </div>

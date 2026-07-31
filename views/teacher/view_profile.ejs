@@ -120,7 +120,7 @@
               <div class="stat-card border-t-4 border-[var(--p)]">
                 <div class="flex flex-col items-center text-center pb-4 border-b border-theme-bd">
                   <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile Picture" class="w-24 h-24 rounded-full border-4 border-theme-pt object-cover mb-3 shadow-md" />
-                  <p class="text-xl font-bold text-theme-fg font-sans"><%= student.studentName %></p>
+                  <p class="text-xl font-bold text-theme-fg font-sans break-words w-full px-2"><%= student.studentName %></p>
                   <p class="text-xs text-theme-fdd mt-1 font-mono uppercase tracking-wider font-bold">Student Account</p>
                 </div>
 

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Consolidated Scores Ledger | Tuition Hub</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Inter:wght@400;600;800&display=swap');
+    body {
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 20px;
+      color: #111827;
+      background: white;
+    }
+    .header {
+      text-align: center;
+      margin-bottom: 30px;
+      border-bottom: 2px solid #e5e7eb;
+      padding-bottom: 20px;
+    }
+    .header h1 {
+      font-size: 24px;
+      margin: 0 0 10px 0;
+      font-weight: 800;
+      color: #4b2d84;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    .header p {
+      font-size: 14px;
+      margin: 0;
+      color: #6b7280;
+      font-family: 'Space Mono', monospace;
+    }
+    .batch-section {
+      margin-bottom: 40px;
+      page-break-inside: avoid;
+    }
+    .batch-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 15px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #d1d5db;
+      color: #374151;
+      display: flex;
+      justify-content: space-between;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+      margin-bottom: 10px;
+    }
+    th, td {
+      border: 1px solid #e5e7eb;
+      padding: 8px 12px;
+      text-align: center;
+    }
+    th {
+      background-color: #f9fafb;
+      font-weight: 600;
+      color: #374151;
+      font-family: 'Space Mono', monospace;
+      font-size: 10px;
+      text-transform: uppercase;
+    }
+    td.student-name {
+      text-align: left;
+      font-weight: 600;
+      color: #111827;
+    }
+    td.student-id {
+      text-align: left;
+      font-family: 'Space Mono', monospace;
+      color: #6b7280;
+      font-size: 10px;
+    }
+    .score-cell {
+      font-weight: 600;
+    }
+    .empty-state {
+      text-align: center;
+      padding: 30px;
+      color: #9ca3af;
+      font-style: italic;
+    }
+    @media print {
+      body { padding: 0; }
+      @page { margin: 1cm; }
+      button { display: none !important; }
+    }
+    .print-btn {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #7c3aed;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 999px;
+      font-family: 'Space Mono', monospace;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.3);
+      transition: all 0.2s;
+      z-index: 1000;
+    }
+    .print-btn:hover {
+      background: #6d28d9;
+      transform: translateY(-2px);
+    }
+  </style>
+</head>
+<body onload="window.print()">
+
+  <button class="print-btn" onclick="window.print()">Print Document</button>
+
+  <div class="header">
+    <h1>Consolidated Performance Ledger</h1>
+    <p>Academic Year: <%= viewingYear %> | Generated on: <%= new Date().toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' }) %></p>
+  </div>
+
+  <% 
+    const batches = Object.keys(data);
+    if (batches.length === 0) {
+  %>
+    <div class="empty-state">No score data available for this academic year.</div>
+  <% } else { %>
+    <% batches.forEach(batchName => { 
+        const { tests, students } = data[batchName];
+        if (tests.length === 0 || students.length === 0) return;
+    %>
+      <div class="batch-section">
+        <div class="batch-title">
+          <span>Batch: <%= batchName %></span>
+          <span style="font-size: 12px; font-weight: normal; color: #6b7280;">Total Students: <%= students.length %> | Total Tests: <%= tests.length %></span>
+        </div>
+        <table>
+          <thead>
+            <tr>
+              <th style="width: 80px; text-align: left;">ID</th>
+              <th style="text-align: left;">Student Name</th>
+              <% tests.forEach(t => { %>
+                <th title="<%= t.subject %> - <%= t.topic %>">
+                  <div style="max-width: 100px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin: 0 auto;">
+                    <%= t.testName %>
+                  </div>
+                  <div style="font-size: 8px; color: #9ca3af; margin-top: 2px;"><%= t.subject %></div>
+                </th>
+              <% }) %>
+              <th>Average</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% students.forEach(student => { 
+                let stTotal = 0;
+                let stCount = 0;
+            %>
+              <tr>
+                <td class="student-id"><%= student.studentId %></td>
+                <td class="student-name"><%= student.studentName %></td>
+                <% tests.forEach(t => { 
+                    const score = student.scores[t._id];
+                    if (score !== undefined) {
+                      stTotal += parseFloat(score);
+                      stCount++;
+                    }
+                %>
+                  <td class="score-cell" style="color: <%= score !== undefined ? (score < 40 ? '#ef4444' : '#10b981') : '#d1d5db' %>;">
+                    <%= score !== undefined ? `${score}%` : '-' %>
+                  </td>
+                <% }) %>
+                <% const avg = stCount > 0 ? (stTotal / stCount).toFixed(1) : 0; %>
+                <td class="score-cell" style="background: #f3f4f6; color: <%= avg < 40 ? '#ef4444' : '#10b981' %>;">
+                  <%= stCount > 0 ? `${avg}%` : '-' %>
+                </td>
+              </tr>
+            <% }) %>
+          </tbody>
+        </table>
+      </div>
+    <% }) %>
+  <% } %>
+
+</body>
+</html>

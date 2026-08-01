@@ -245,10 +245,12 @@
                           </span>
                         </div>
                         <div class="flex flex-col items-end">
-                          <span class="text-xs font-black font-mono <%= score.percentage > 70 ? 'text-brand-green' : 'text-brand-purple' %>">
-                            <%= score.percentage %>%
+                          <span class="text-xs font-black font-mono <%= score.score === null ? 'text-red-500' : (score.percentage > 70 ? 'text-brand-green' : 'text-brand-purple') %>">
+                            <%- score.score === null ? 'Absent' : score.percentage + '%' %>
                           </span>
-                          <span class="text-[10px] text-theme-fdd font-mono mt-1">Score: <%= score.score %>/<%= score.testId?.totalMarks || '?' %></span>
+                          <span class="text-[10px] text-theme-fdd font-mono mt-1">
+                            <%- score.score === null ? '&mdash;' : `Score: ${score.score}/${score.testId?.totalMarks || '?'}` %>
+                          </span>
                         </div>
                       </div>
                     <% }) %> 

@@ -232,7 +232,7 @@ const sendTestMarks = async (studentEmail, studentName, testName, subjectName, s
           </tr>
           <tr style="background-color: #f3e8ff;">
             <td style="padding: 10px; border: 1px solid #e0e0e0; font-weight: bold;">Score</td>
-            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>${score} / ${maxMarks}</strong> (${percentage}%)</td>
+            <td style="padding: 10px; border: 1px solid #e0e0e0;"><strong>${score === null ? 'Absent' : `${score} / ${maxMarks}`}</strong>${score === null ? '' : ` (${percentage}%)`}</td>
           </tr>
         </table>
         

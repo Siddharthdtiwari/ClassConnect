@@ -370,9 +370,13 @@
               tests.forEach(t => {
                 const raw = st.scores[t._id];
                 if (raw !== undefined) {
-                  const pct = typeof raw === 'object' ? raw.percentage : raw;
-                  stTotal += parseFloat(pct);
-                  stCount++;
+                  if (typeof raw === 'object' && raw.score === null) {
+                    // Do not include absent scores in total sum average computation
+                  } else {
+                    const pct = typeof raw === 'object' ? raw.percentage : raw;
+                    stTotal += parseFloat(pct);
+                    stCount++;
+                  }
                 }
               });
               if (stCount > 0) {
@@ -459,19 +463,25 @@
                 if (raw !== undefined) {
                   const pct = parseFloat(typeof raw === 'object' ? raw.percentage : raw);
                   const marksObtained = typeof raw === 'object' ? raw.score : '?';
-                  totalPct += pct;
-                  scoredCount++;
                   
-                  let colorStyles = "";
-                  if (pct >= 75) {
-                    colorStyles = "background: rgba(52,211,153,0.08); color: var(--gt); border: 1px solid rgba(52,211,153,0.15);";
-                  } else if (pct >= 50) {
-                    colorStyles = "background: rgba(189,224,69,0.08); color: var(--lt); border: 1px solid rgba(189,224,69,0.15);";
+                  if (marksObtained === null) {
+                    const colorStyles = "background: rgba(248,113,113,0.08); color: var(--rt); border: 1px solid rgba(248,113,113,0.15);";
+                    body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-[10px] font-extrabold flex flex-col items-center gap-0.5 uppercase tracking-wider" style="${colorStyles}"><span>Absent</span></span></td>`;
                   } else {
-                    colorStyles = "background: rgba(248,113,113,0.08); color: var(--rt); border: 1px solid rgba(248,113,113,0.15);";
+                    totalPct += pct;
+                    scoredCount++;
+                    
+                    let colorStyles = "";
+                    if (pct >= 75) {
+                      colorStyles = "background: rgba(52,211,153,0.08); color: var(--gt); border: 1px solid rgba(52,211,153,0.15);";
+                    } else if (pct >= 50) {
+                      colorStyles = "background: rgba(189,224,69,0.08); color: var(--lt); border: 1px solid rgba(189,224,69,0.15);";
+                    } else {
+                      colorStyles = "background: rgba(248,113,113,0.08); color: var(--rt); border: 1px solid rgba(248,113,113,0.15);";
+                    }
+                    
+                    body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-xs font-extrabold flex flex-col items-center gap-0.5" style="${colorStyles}"><span>${marksObtained}/${t.totalMarks || '?'}</span><span class="opacity-75 text-[10px]">${pct.toFixed(1)}%</span></span></td>`;
                   }
-                  
-                  body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-xs font-extrabold flex flex-col items-center gap-0.5" style="${colorStyles}"><span>${marksObtained}/${t.totalMarks || '?'}</span><span class="opacity-75 text-[10px]">${pct.toFixed(1)}%</span></span></td>`;
                 } else {
                   body += `<td class="px-4 py-3 text-center text-theme-fdd border-r border-theme-bd font-mono italic" style="padding: 10px 4px;">&mdash;</td>`;
                 }

@@ -204,11 +204,14 @@
 
         // ── Summary Stats ──
         const totalTests = tests.length;
+        let validTestsCount = 0;
         const avgPercent = tests.reduce((sum, t) => {
+          if (t.score === null) return sum;
+          validTestsCount++;
           return sum + ((Number(t.score) / (Number(t.total) || 100)) * 100);
-        }, 0) / totalTests;
+        }, 0) / (validTestsCount || 1);
         const subjectsAttempted = new Set(tests.map(t => t.subject)).size;
-        const avgColor = avgPercent >= 80 ? "#10b981" : avgPercent >= 50 ? "#f59e0b" : "#ef4444";
+        const avgColor = validTestsCount === 0 ? "#9ca3af" : (avgPercent >= 80 ? "#10b981" : avgPercent >= 50 ? "#f59e0b" : "#ef4444");
 
         const summaryHTML = `
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-10">
@@ -233,11 +236,12 @@
           </h3>
           <div class="space-y-5">
             ${tests.map(test => {
+              const isAbsent = test.score === null;
               const total   = Number(test.total) || 100;
-              const score   = Number(test.score) || 0;
-              const percent = ((score / total) * 100);
-              const colorClass = getColor(percent);
-              const grade = getGrade(percent);
+              const score   = isAbsent ? 'Absent' : (Number(test.score) || 0);
+              const percent = isAbsent ? 0 : ((Number(test.score) / total) * 100);
+              const colorClass = isAbsent ? 'bg-red-200' : getColor(percent);
+              const grade = isAbsent ? { label: "AB", bg: "bg-red-500/10 border border-red-500/30", text: "text-red-500" } : getGrade(percent);
               return `
                 <div class="score-card p-5 sm:p-6 shadow-sm">
                   <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-5">
@@ -259,15 +263,15 @@
                       <div class="flex items-center gap-4 w-full sm:w-auto justify-between sm:justify-end">
                         ${test.questionPaper ? `<a href="/public/test/${test.testId}/${test.signature}" target="_blank" class="qp-btn"><svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>Q. Paper</a>` : ""}
                         <div class="text-right">
-                           <p class="text-3xl font-unbounded font-extrabold text-theme-fg leading-none drop-shadow-sm">${score}<span class="text-sm font-mono font-bold text-theme-fd uppercase tracking-widest ml-1">/ ${total}</span></p>
-                           <p class="text-xs font-mono font-bold uppercase tracking-widest mt-1" style="color: ${percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444'}">${percent.toFixed(1)}% SCORE</p>
+                           <p class="text-3xl font-unbounded font-extrabold ${isAbsent ? 'text-red-500' : 'text-theme-fg'} leading-none drop-shadow-sm">${score}${isAbsent ? '' : `<span class="text-sm font-mono font-bold text-theme-fd uppercase tracking-widest ml-1">/ ${total}</span>`}</p>
+                           <p class="text-xs font-mono font-bold uppercase tracking-widest mt-1" style="color: ${isAbsent ? '#ef4444' : (percent >= 80 ? '#10b981' : percent >= 50 ? '#f59e0b' : '#ef4444')}">${isAbsent ? 'ABSENT' : `${percent.toFixed(1)}% SCORE`}</p>
                         </div>
                       </div>
                     </div>
                   </div>
                   <!-- Progress bar -->
                   <div class="progress-track mt-6">
-                    <div class="${colorClass} progress-bar" data-width="${percent.toFixed(2)}"></div>
+                    <div class="${colorClass} progress-bar" data-width="${isAbsent ? 0 : percent.toFixed(2)}"></div>
                   </div>
                 </div>`;
             }).join("")}

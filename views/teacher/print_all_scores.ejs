@@ -162,14 +162,14 @@
                 <td class="student-id"><%= student.studentId %></td>
                 <td class="student-name"><%= student.studentName %></td>
                 <% tests.forEach(t => { 
-                    const score = student.scores[t._id];
-                    if (score !== undefined) {
-                      stTotal += parseFloat(score);
+                    const dataObj = student.scores[t._id];
+                    if (dataObj !== undefined) {
+                      stTotal += parseFloat(dataObj.percentage);
                       stCount++;
                     }
                 %>
-                  <td class="score-cell" style="color: <%= score !== undefined ? (score < 40 ? '#ef4444' : '#10b981') : '#d1d5db' %>;">
-                    <%= score !== undefined ? `${score}%` : '-' %>
+                  <td class="score-cell" style="color: <%= dataObj !== undefined ? (dataObj.percentage < 40 ? '#ef4444' : '#10b981') : '#d1d5db' %>;">
+                    <%= dataObj !== undefined ? `${dataObj.score}/${t.totalMarks || '?'} (${dataObj.percentage}%)` : '-' %>
                   </td>
                 <% }) %>
                 <% const avg = stCount > 0 ? (stTotal / stCount).toFixed(1) : 0; %>

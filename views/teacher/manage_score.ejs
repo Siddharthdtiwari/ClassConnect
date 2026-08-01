@@ -364,7 +364,8 @@
               tests.forEach(t => {
                 const raw = st.scores[t._id];
                 if (raw !== undefined) {
-                  stTotal += parseFloat(raw);
+                  const pct = typeof raw === 'object' ? raw.percentage : raw;
+                  stTotal += parseFloat(pct);
                   stCount++;
                 }
               });
@@ -450,7 +451,8 @@
               tests.forEach(t => {
                 const raw = st.scores[t._id];
                 if (raw !== undefined) {
-                  const pct = parseFloat(raw);
+                  const pct = parseFloat(typeof raw === 'object' ? raw.percentage : raw);
+                  const marksObtained = typeof raw === 'object' ? raw.score : '?';
                   totalPct += pct;
                   scoredCount++;
                   
@@ -463,7 +465,7 @@
                     colorStyles = "background: rgba(248,113,113,0.08); color: var(--rt); border: 1px solid rgba(248,113,113,0.15);";
                   }
                   
-                  body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-xs font-extrabold" style="${colorStyles}">${pct.toFixed(1)}%</span></td>`;
+                  body += `<td class="px-4 py-3 text-center border-r border-theme-bd font-mono" style="padding: 10px 4px;"><span class="inline-block px-2 py-0.5 rounded-md text-xs font-extrabold flex flex-col items-center gap-0.5" style="${colorStyles}"><span>${marksObtained}/${t.totalMarks || '?'}</span><span class="opacity-75 text-[10px]">${pct.toFixed(1)}%</span></span></td>`;
                 } else {
                   body += `<td class="px-4 py-3 text-center text-theme-fdd border-r border-theme-bd font-mono italic" style="padding: 10px 4px;">&mdash;</td>`;
                 }

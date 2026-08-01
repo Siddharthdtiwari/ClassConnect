@@ -248,7 +248,7 @@
                           <span class="text-xs font-black font-mono <%= score.percentage > 70 ? 'text-brand-green' : 'text-brand-purple' %>">
                             <%= score.percentage %>%
                           </span>
-                          <span class="text-[10px] text-theme-fdd font-mono mt-1">Score: <%= score.score %></span>
+                          <span class="text-[10px] text-theme-fdd font-mono mt-1">Score: <%= score.score %>/<%= score.testId?.totalMarks || '?' %></span>
                         </div>
                       </div>
                     <% }) %> 

@@ -287,7 +287,10 @@ exports.apiConsolidatedScores = async (req, res) => {
       const scoreMap = {};
       scores.forEach(s => {
         if (!scoreMap[s.studentId]) scoreMap[s.studentId] = {};
-        scoreMap[s.studentId][s.testId.toString()] = s.percentage;
+        scoreMap[s.studentId][s.testId.toString()] = {
+          percentage: s.percentage,
+          score: s.score
+        };
       });
 
       students.forEach(student => {
@@ -307,7 +310,7 @@ exports.apiConsolidatedScores = async (req, res) => {
       });
 
       responseData[batch.name] = {
-        tests: tests.map(t => ({ _id: t._id, testName: t.testName, subject: t.subject, topic: t.topic })),
+        tests: tests.map(t => ({ _id: t._id, testName: t.testName, subject: t.subject, topic: t.topic, totalMarks: t.totalMarks })),
         students: studentScoresData
       };
     }
@@ -346,7 +349,10 @@ exports.printConsolidatedScores = async (req, res) => {
       const scoreMap = {};
       scores.forEach(s => {
         if (!scoreMap[s.studentId]) scoreMap[s.studentId] = {};
-        scoreMap[s.studentId][s.testId.toString()] = s.percentage;
+        scoreMap[s.studentId][s.testId.toString()] = {
+          percentage: s.percentage,
+          score: s.score
+        };
       });
 
       students.forEach(student => {
@@ -366,7 +372,7 @@ exports.printConsolidatedScores = async (req, res) => {
       });
 
       responseData[batch.name] = {
-        tests: tests.map(t => ({ _id: t._id, testName: t.testName, subject: t.subject, topic: t.topic })),
+        tests: tests.map(t => ({ _id: t._id, testName: t.testName, subject: t.subject, topic: t.topic, totalMarks: t.totalMarks })),
         students: studentScoresData
       };
     }

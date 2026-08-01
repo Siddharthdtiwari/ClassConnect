@@ -300,7 +300,8 @@ async function drawStudentReport(doc, student, stats) {
       const topicName = (score.testId && score.testId.topic) ? score.testId.topic : '-';
       doc.text(topicName, curX, cursorY + 8, { width: academicWidths[3] });
       curX += academicWidths[3];
-      doc.text(score.score != null ? score.score.toString() : '-', curX, cursorY + 8, { width: academicWidths[4] });
+      const scoreStr = score.score != null ? score.score.toString() + '/' + (score.testId && score.testId.totalMarks ? score.testId.totalMarks : '?') : '-';
+      doc.text(scoreStr, curX, cursorY + 8, { width: academicWidths[4] });
       curX += academicWidths[4];
       doc.fillColor(score.percentage >= 80 ? '#059669' : score.percentage >= 50 ? '#d97706' : '#dc2626').font('Times-Bold').text(score.percentage != null ? score.percentage + '%' : '-', curX, cursorY + 8, { width: academicWidths[5] });
       cursorY += 25;

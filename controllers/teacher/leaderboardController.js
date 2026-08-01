@@ -3,15 +3,8 @@ const User = require("../../models/User");
 
 exports.renderLeaderboard = async (req, res) => {
   try {
-    const currentStudent = await User.findById(req.session.userId).lean();
-    if (!currentStudent) return res.redirect('/student/login');
-
-    const currentUser = currentStudent.studentName;
-    const studentBatchId = currentStudent.batch;
-
-    // Optimize: fetch viewing batches
     let targetYear = req.viewingYear;
-    let batches = await mongoose.model('Batch').find({ academicYear: targetYear }).select('_id').lean();
+    let batches = await mongoose.model('Batch').find({ academicYear: targetYear }).select('_id name').lean();
     let viewingBatches = batches.map(b => b._id);
     let allStudents = await User.find({ batch: { $in: viewingBatches } }).lean();
 
@@ -20,12 +13,14 @@ exports.renderLeaderboard = async (req, res) => {
     if (!hasPoints) {
       const startYear = parseInt(targetYear.split('-')[0]);
       const fallbackYear = `${startYear - 1}-${String(startYear).slice(2)}`;
-      const prevBatches = await mongoose.model('Batch').find({ academicYear: fallbackYear }).select('_id').lean();
+      const prevBatches = await mongoose.model('Batch').find({ academicYear: fallbackYear }).select('_id name').lean();
       const prevBatchesIds = prevBatches.map(b => b._id);
       const prevStudents = await User.find({ batch: { $in: prevBatchesIds } }).lean();
       
       if (prevStudents.length > 0) {
           allStudents = prevStudents;
+          batches = prevBatches;
+          viewingBatches = prevBatchesIds;
           targetYear = fallbackYear;
       }
     }
@@ -34,7 +29,7 @@ exports.renderLeaderboard = async (req, res) => {
     allStudents.forEach((s) => {
       if (typeof s.points !== "number") s.points = 0;
     });
-    allStudents.sort((a, b) => b.points - a.points);
+    const sortedAllStudents = [...allStudents].sort((a, b) => b.points - a.points);
 
     // Helper to format leaderboard array
     const formatLeaderboard = (studentsList) => {
@@ -51,23 +46,26 @@ exports.renderLeaderboard = async (req, res) => {
       }));
     };
 
-    const globalLeaderboard = formatLeaderboard(allStudents);
-    const batchStudents = studentBatchId ? allStudents.filter(s => s.batch && s.batch.toString() === studentBatchId.toString()) : [];
-    const batchLeaderboard = formatLeaderboard(batchStudents);
+    const globalLeaderboard = formatLeaderboard(sortedAllStudents);
     
-    // FETCH TEST LEADERBOARDS (ONLY FOR THIS STUDENT'S BATCH)
+    // FETCH TEST LEADERBOARDS
     const Score = mongoose.model('Score');
     const Test = mongoose.model('Test');
-    const tests = await Test.find({ batch: studentBatchId }).select('_id testName totalMarks batch').lean();
+    
+    // Fetch all tests for the viewing batches
+    const tests = await Test.find({ batch: { $in: viewingBatches } }).select('_id testName totalMarks batch').lean();
     const testLeaderboardsRaw = {};
     
+    // Initialize test leaderboards with all students from the test's batch (defaulting to 0)
     tests.forEach(test => {
       if (!testLeaderboardsRaw[test.testName]) {
         testLeaderboardsRaw[test.testName] = [];
       }
+      
+      const batchStudents = allStudents.filter(s => s.batch && s.batch.toString() === test.batch.toString() && s.isActive !== false);
       batchStudents.forEach(studentDoc => {
         const exists = testLeaderboardsRaw[test.testName].find(s => s.studentId === studentDoc.studentId);
-        if (!exists && studentDoc.isActive !== false) {
+        if (!exists) {
           testLeaderboardsRaw[test.testName].push({
             name: studentDoc.studentName,
             studentId: studentDoc.studentId,
@@ -82,7 +80,8 @@ exports.renderLeaderboard = async (req, res) => {
       });
     });
 
-    const allScores = await Score.find({ batch: studentBatchId, score: { $ne: null } }).lean();
+    // Overlay actual scores
+    const allScores = await Score.find({ batch: { $in: viewingBatches }, score: { $ne: null } }).lean();
     allScores.forEach(score => {
       if (testLeaderboardsRaw[score.testName]) {
         const studentEntry = testLeaderboardsRaw[score.testName].find(s => s.studentId === score.studentId);
@@ -100,13 +99,12 @@ exports.renderLeaderboard = async (req, res) => {
       students.sort((a, b) => b.score - a.score);
       testLeaderboards[testName] = formatLeaderboard(students);
     }
-
-    res.render("student/leader_board", { 
+    
+    res.render("teacher/leader_board", { 
       globalLeaderboard,
-      batchLeaderboard,
       testLeaderboards,
-      currentUser,
-      currentUserObj: currentStudent,
+      batches,
+      currentUser: req.user,
       viewingYear: targetYear
     });
   } catch (err) {

@@ -163,7 +163,7 @@ h1, h2, h3, h4 {
   overflow: hidden !important;
   border: none !important;
 }
-.data-table thead tr {
+.data-table thead tr:not(.grid-header-main):not(.grid-header-sub) {
   background: linear-gradient(135deg, rgba(124,58,237,0.9) 0%, rgba(93,58,155,0.95) 100%) !important;
   color: white !important;
   border: none !important;

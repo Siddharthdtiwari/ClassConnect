@@ -290,10 +290,13 @@
             row.innerHTML = `
               <td class="font-mono text-xs text-theme-pt font-bold">${s.studentId}</td>
               <td class="font-bold text-theme-fg"><div class="flex items-center">${s.studentName}${waBtn}</div></td>
-              <td class="text-center">
-                <input type="number" value="${s.score !== null ? s.score : ""}" 
-                  placeholder="Enter marks" min="0" step="any"
-                  class="score-input px-4 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p font-mono text-sm w-36 font-extrabold text-center transition-all focus:ring-2 focus:ring-theme-pm/20">
+              <td class="text-center relative">
+                <div class="flex items-center justify-center gap-2">
+                  <input type="number" value="${s.score !== null ? s.score : ""}" 
+                    placeholder="Marks (blank=AB)" min="0" step="any"
+                    class="score-input px-4 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:outline-none focus:border-theme-p font-mono text-sm w-36 font-extrabold text-center transition-all focus:ring-2 focus:ring-theme-pm/20">
+                  <button type="button" onclick="this.previousElementSibling.value=''; this.previousElementSibling.focus();" class="px-2 py-1 text-[10px] font-bold rounded bg-red-100 text-red-600 border border-red-200 hover:bg-red-200 uppercase tracking-widest whitespace-nowrap transition-colors" title="Mark Absent">AB</button>
+                </div>
               </td>
             `;
             studentScoreList.appendChild(row);

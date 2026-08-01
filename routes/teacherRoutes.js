@@ -99,6 +99,7 @@ router.post("/api/ai/generate_paper", ensureDBConnection, requireTeacherLogin, c
 // API & Print routes for Consolidated Scores
 router.get("/api/scores/consolidated_classwise", ensureDBConnection, requireTeacherLogin, catchAsync(testController.apiConsolidatedScores));
 router.get("/teacher/scores/print", ensureDBConnection, requireTeacherLogin, catchAsync(testController.printConsolidatedScores));
+router.get("/teacher/leaderboard", ensureDBConnection, requireTeacherLogin, catchAsync(require("../controllers/teacher/leaderboardController").renderLeaderboard));
 router.get("/teacher/timetable", ensureDBConnection, requireTeacherLogin, catchAsync(testController.renderTimetable));
 router.post("/teacher/timetable/bulk", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableBulk));
 router.post("/teacher/timetable/edit/:id", ensureDBConnection, requireTeacherLogin, catchAsync(testController.processTimetableEdit));

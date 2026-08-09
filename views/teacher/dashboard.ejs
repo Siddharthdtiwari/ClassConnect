@@ -104,7 +104,7 @@
         </header>
 
         <!-- Stats Overview Grid -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+        <section class="grid grid-cols-1 sm:grid-cols-2 <%= ['admin', 'owner'].includes(userRole) ? 'lg:grid-cols-3' : 'lg:grid-cols-2' %> gap-6 mb-8">
           
           <!-- Card 1: Active Students -->
           <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
@@ -121,6 +121,7 @@
             </div>
           </div>
 
+          <% if (['admin', 'owner'].includes(userRole)) { %>
           <!-- Card 2: Total Revenue -->
           <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
             <div class="absolute right-4 top-4 opacity-10 text-theme-lt">
@@ -135,6 +136,7 @@
               <span>secured this year</span>
             </div>
           </div>
+          <% } %>
 
           <!-- Card 3: Upcoming Tests -->
           <div class="stat-card p-6 rounded-2xl relative overflow-hidden flex flex-col justify-between min-h-[140px]">
@@ -156,8 +158,8 @@
         <!-- Two-Column Dynamic Work Hub -->
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-8">
           
-          <!-- LEFT COLUMN: Assessments & Student Distribution (7 Cols) -->
-          <div class="lg:col-span-7 flex flex-col gap-8">
+          <!-- LEFT COLUMN: Assessments & Student Distribution -->
+          <div class="lg:col-span-<%= ['admin', 'owner'].includes(userRole) ? '7' : '12' %> flex flex-col gap-8">
             
             <!-- Section: Upcoming Tests -->
             <div class="stat-card p-6 rounded-2xl">
@@ -235,9 +237,11 @@
 
           </div>
 
-          <!-- RIGHT COLUMN: Audits & Payments (5 Cols) -->
+          <!-- RIGHT COLUMN: Audits & Payments -->
+          <% if (['admin', 'owner'].includes(userRole)) { %>
           <div class="lg:col-span-5 flex flex-col gap-8">
             
+            <% if (userRole === 'admin') { %>
             <!-- Section: System Audit Trail -->
             <div class="stat-card p-6 rounded-2xl flex-1 flex flex-col justify-between">
               <div>
@@ -278,6 +282,7 @@
                 <% } %>
               </div>
             </div>
+            <% } %>
 
             <!-- Section: Recent Fee Payments -->
             <div class="stat-card p-6 rounded-2xl">
@@ -310,6 +315,7 @@
             </div>
 
           </div>
+          <% } %>
 
         </div>
 
@@ -322,6 +328,7 @@
           
           <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
             
+            <% if (['admin', 'owner'].includes(userRole)) { %>
             <a href="/teacher/manage_students" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
@@ -331,6 +338,7 @@
                 <div class="text-xs font-semibold text-theme-fg mt-0.5">Directory</div>
               </div>
             </a>
+            <% } %>
 
             <a href="/teacher/manage_attendance" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
@@ -362,6 +370,7 @@
               </div>
             </a>
 
+            <% if (['admin', 'owner'].includes(userRole)) { %>
             <a href="/teacher/manage_fees" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2" ry="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
@@ -371,6 +380,7 @@
                 <div class="text-xs font-semibold text-theme-fg mt-0.5">Fees Hub</div>
               </div>
             </a>
+            <% } %>
 
             <a href="/teacher/study_material" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
@@ -382,6 +392,7 @@
               </div>
             </a>
 
+            <% if (['admin', 'owner'].includes(userRole)) { %>
             <a href="/teacher/manage_batches" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
@@ -391,6 +402,7 @@
                 <div class="text-xs font-semibold text-theme-fg mt-0.5">Batches</div>
               </div>
             </a>
+            <% } %>
 
             <a href="/teacher/timetable" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
@@ -402,6 +414,7 @@
               </div>
             </a>
 
+            <% if (['admin', 'owner'].includes(userRole)) { %>
             <a href="/teacher/reports" class="action-btn p-3 rounded-xl flex items-center gap-2.5 text-left">
               <span class="text-theme-pt text-sm">
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="M18 17V9"/><path d="M13 17V5"/><path d="M8 17v-3"/></svg>
@@ -421,6 +434,7 @@
                 <div class="text-xs font-semibold text-brand-green mt-0.5">Add Student</div>
               </div>
             </a>
+            <% } %>
 
           </div>
         </section>

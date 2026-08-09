@@ -29,6 +29,11 @@ const teacherSchema = new mongoose.Schema(
       select: false,
     },
     isActive: { type: Boolean, default: true },
+    role: {
+      type: String,
+      enum: ["teacher", "owner", "admin"],
+      default: "teacher",
+    },
   },
   { timestamps: true }
 );

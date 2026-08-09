@@ -101,10 +101,12 @@
                 <svg class="w-3.5 h-3.5 text-theme-pt" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                 Fee Summary
               </a>
+              <% if (['admin', 'owner'].includes(userRole)) { %>
               <a href="/teacher/edit_profile/<%= student._id %>" class="btn-solid-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono py-2 px-4 rounded-xl shadow-sm">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
                 Edit Profile
               </a>
+              <% } %>
               <% if (student.mobileNo) { %>
                 <a target="_blank" href="https://wa.me/91<%= student.mobileNo %>" class="bg-[#25D366] text-white hover:bg-[#128C7E] flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono py-2 px-4 rounded-xl shadow-sm transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
@@ -131,10 +133,14 @@
                   </div>
                   <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Account Status</span>
+                    <% if (['admin', 'owner'].includes(userRole)) { %>
                     <label class="relative inline-flex items-center cursor-pointer" title="Toggle active status (inactive students will not receive emails)">
                       <input type="checkbox" id="activeToggle" class="sr-only peer" <%= student.isActive !== false ? 'checked' : '' %>>
                       <div class="w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-green-500"></div>
                     </label>
+                    <% } else { %>
+                    <span class="font-bold text-theme-fg font-mono uppercase text-[10px]"><%= student.isActive !== false ? 'Active' : 'Inactive' %></span>
+                    <% } %>
                   </div>
                   <% if (student.email) { %>
                   <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
@@ -151,10 +157,15 @@
                     <span class="font-black text-brand-green font-mono text-sm">
                       <%= Math.trunc(student.points || 0) %> </span>
                   </div>
-                  <div class="flex justify-between items-center">
+                  <div class="flex justify-between items-center pb-2 border-b border-dashed border-theme-bd">
                     <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Leaderboard Rank</span>
                     <span class="font-black text-brand-purple font-mono text-sm">
                       #<%= studentRank %> </span>
+                  </div>
+                  <div class="flex justify-between items-center">
+                    <span class="text-theme-fdd font-medium font-mono uppercase tracking-wider">Admission Date</span>
+                    <span class="font-bold text-theme-fg font-mono text-xs">
+                      <%= student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set' %> </span>
                   </div>
                 </div>
               </div>

@@ -95,6 +95,7 @@
               <p class="dash-sub">Faculty Command Center · Academic Student Enrollments</p>
             </div>
             <div class="flex gap-3 flex-wrap items-center">
+              <% if (['admin', 'owner'].includes(userRole)) { %>
               <% const bulkReportUrl = '/teacher/bulk_student_reports' + (typeof viewingYear !== 'undefined' ? '?year=' + viewingYear : ''); %>
               <button onclick="window.open('/teacher/print_student_directory', '_blank')" class="btn-outline-purple flex items-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 text-theme-pt" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
@@ -114,6 +115,7 @@
                 <svg class="w-3.5 h-3.5 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
                 Add Student
               </button>
+              <% } %>
             </div>
           </header>
 
@@ -298,7 +300,7 @@
 
         <!-- =================== ADD STUDENT MODAL =================== -->
         <div class="modal-overlay" id="add-student-modal">
-          <div class="modal-box max-w-md" style="background: var(--bgc); border: 1px solid var(--bd); border-radius: 18px; padding: 24px;">
+          <div class="modal-box max-w-md w-full" style="background: var(--bgc); border: 1px solid var(--bd); border-radius: 18px; padding: 24px; max-height: 90vh; overflow-y: auto;">
             <!-- Header (Dashboard Match) -->
             <div class="flex justify-between items-start mb-6 border-b border-theme-bd pb-4">
               <div>
@@ -352,7 +354,7 @@
                 </div>
 
                 <div>
-                  <label for="email" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Email Address (Optional)</label>
+                  <label for="email" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Email Address</label>
                   <input type="email" id="email" name="email" placeholder="e.g., student@example.com" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" />
                 </div>
 
@@ -370,6 +372,11 @@
                     <label for="mobileNo" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Mobile No</label>
                     <input type="tel" id="mobileNo" name="mobileNo" placeholder="e.g., 9967..." class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
                   </div>
+                </div>
+
+                <div>
+                  <label for="admissionDate" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Admission Date</label>
+                  <input type="date" id="admissionDate" name="admissionDate" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" />
                 </div>
 
                 <button type="submit" class="w-full py-3.5 mt-5 btn-solid-purple flex items-center justify-center gap-2 shadow-lg">Add Student ✓</button>

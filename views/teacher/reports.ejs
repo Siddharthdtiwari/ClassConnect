@@ -553,7 +553,8 @@
               </a>
             </div>
 
-            <!-- Data Management -->
+            <!-- Data Management (Admin Only) -->
+            <% if (userRole === 'admin') { %>
             <div class="report-section">
               <div class="report-section-header">
                 <div class="report-section-icon" style="background: var(--rg);">
@@ -585,6 +586,7 @@
                 </div>
               </a>
             </div>
+            <% } %>
 
           </div><!-- /report-grid -->
 

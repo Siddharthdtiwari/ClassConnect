@@ -133,6 +133,11 @@
                 <label for="monthlyFee" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Monthly Fee (₹)</label>
                 <input type="number" id="monthlyFee" name="monthlyFee" value="<%= student.monthlyFee || 0 %>" min="0" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" required />
               </div>
+              
+              <div>
+                <label for="admissionDate" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Admission Date</label>
+                <input type="date" id="admissionDate" name="admissionDate" value="<%= student.admissionDate ? new Date(student.admissionDate).toISOString().split('T')[0] : '' %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
+              </div>
             </div>
 
             <div class="pt-8 border-t border-theme-bd flex gap-4 mt-8">

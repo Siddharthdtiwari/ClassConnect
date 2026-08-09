@@ -26,7 +26,7 @@ const ensureDBConnection = async (req, res, next) => {
 };
 
 const requireTeacherLogin = async (req, res, next) => {
-  if (!req.session.userId || req.session.role !== "teacher")
+  if (!req.session.userId || !['teacher', 'admin', 'owner'].includes(req.session.role))
     return res.redirect("/teacher/login");
 
   try {
@@ -35,11 +35,26 @@ const requireTeacherLogin = async (req, res, next) => {
 
     req.teacher = teacher;
     res.locals.teacher = teacher;
+    res.locals.userRole = req.session.role;
     next();
   } catch (err) {
     console.error("Middleware error:", err);
     res.redirect("/teacher/login");
   }
+};
+
+const requireAdminOrOwner = (req, res, next) => {
+  if (['admin', 'owner'].includes(req.session.role)) {
+    return next();
+  }
+  res.status(403).send("Access Denied: You do not have permission to view this page.");
+};
+
+const requireAdminOnly = (req, res, next) => {
+  if (req.session.role === 'admin') {
+    return next();
+  }
+  res.status(403).send("Access Denied: This feature is restricted to Administrators only.");
 };
 
 const requireStudentLogin = async (req, res, next) => {
@@ -62,5 +77,7 @@ module.exports = {
   connectDB,
   ensureDBConnection,
   requireTeacherLogin,
+  requireAdminOrOwner,
+  requireAdminOnly,
   requireStudentLogin
 };

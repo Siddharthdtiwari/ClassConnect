@@ -48,10 +48,20 @@
             class="bg-theme-bgc border border-theme-b rounded-lg px-4 py-3 text-sm text-theme-fg outline-none transition-colors focus:border-theme-p focus:bg-theme-bgch placeholder-theme-fdd" />
         </div>
         
-        <div class="flex flex-col gap-1 text-left mb-4">
+        <div class="flex flex-col gap-1 text-left mb-2">
           <label class="font-mono text-xs text-theme-fdd uppercase tracking-widest">Password</label>
-          <input type="password" id="password" name="password" placeholder="••••••••" required 
-            class="bg-theme-bgc border border-theme-b rounded-lg px-4 py-3 text-sm text-theme-fg outline-none transition-colors focus:border-theme-p focus:bg-theme-bgch placeholder-theme-fdd" />
+          <div class="relative w-full">
+            <input type="password" id="student-password" name="password" placeholder="••••••••" required 
+              class="w-full bg-theme-bgc border border-theme-b rounded-lg px-4 py-3 text-sm text-theme-fg outline-none transition-colors focus:border-theme-p focus:bg-theme-bgch placeholder-theme-fdd pr-12" />
+            <button type="button" onclick="const p = document.getElementById('student-password'); p.type = p.type === 'password' ? 'text' : 'password';" class="absolute right-3 top-1/2 -translate-y-1/2 text-theme-fdd hover:text-theme-pt transition-colors focus:outline-none">
+              <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path></svg>
+            </button>
+          </div>
+        </div>
+        
+        <div class="flex items-center gap-2 mb-2 text-left">
+          <input type="checkbox" id="rememberMe" name="rememberMe" class="w-4 h-4 text-theme-p bg-theme-bgc border-theme-b rounded focus:ring-theme-p focus:ring-2 cursor-pointer">
+          <label for="rememberMe" class="font-mono text-xs text-theme-fdd tracking-wide cursor-pointer">Stay logged in</label>
         </div>
         
         <button class="btn-primary w-full py-4 text-sm mt-2" type="submit">Access Dashboard</button>

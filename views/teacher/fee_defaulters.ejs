@@ -162,9 +162,9 @@
                           </a>
                         <% } %>
                         <% if (d.email) { %>
-                          <a href="mailto:<%= d.email %>?subject=Fee Reminder - Tuition Hub&body=<%= encodeURIComponent(`Hi ${d.studentName},\n\nThis is a gentle reminder that your fees for ${d.unpaidMonths.join(', ')} are currently pending.\n\nTotal Due: ₹${d.balance}\n\nView fee summary:\n${baseUrl}/public/fee-summary/${d.id}\n\nPlease arrange for payment.\n\nThanks!`) %>" class="bg-[#4b2d84] text-white hover:bg-purple-800 text-[10px] px-3 py-1.5 rounded uppercase font-bold inline-flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Email
-                          </a>
+                          <button type="button" onclick="sendFeeReminder(this, '<%= d.id %>', '<%= d.studentName.replace(/'/g, "\\'") %>', '<%= d.email %>', '<%= d.unpaidMonths.join(', ') %>', <%= d.balance %>)" class="bg-[#4b2d84] text-white hover:bg-purple-800 text-[10px] px-3 py-1.5 rounded uppercase font-bold inline-flex items-center gap-1 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> <span>Email</span>
+                          </button>
                         <% } else { %>
                           <span class="text-[10px] text-theme-fdd font-mono">No Email</span>
                         <% } %>
@@ -239,9 +239,9 @@
                           </a>
                         <% } %>
                         <% if (r.email) { %>
-                          <a href="mailto:<%= r.email %>?subject=Fee Reminder - Tuition Hub&body=<%= encodeURIComponent(`Hi ${r.studentName},\n\nThis is a gentle reminder that your fees for ${month} are currently pending.\n\nTotal Due: ₹${r.balance}\n\nView fee summary:\n${baseUrl}/public/fee-summary/${r.id}\n\nPlease arrange for payment.\n\nThanks!`) %>" class="bg-[#4b2d84] text-white hover:bg-purple-800 text-[10px] px-3 py-1.5 rounded uppercase font-bold inline-flex items-center gap-1 transition-colors">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> Email
-                          </a>
+                          <button type="button" onclick="sendFeeReminder(this, '<%= r.id %>', '<%= r.studentName.replace(/'/g, "\\'") %>', '<%= r.email %>', '<%= month %>', <%= r.balance %>)" class="bg-[#4b2d84] text-white hover:bg-purple-800 text-[10px] px-3 py-1.5 rounded uppercase font-bold inline-flex items-center gap-1 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" /></svg> <span>Email</span>
+                          </button>
                         <% } else { %>
                           <span class="text-[10px] text-theme-fdd font-mono">No Email</span>
                         <% } %>
@@ -285,6 +285,52 @@
             });
           });
 
+
+      // Fee Reminder Email API Call
+      window.sendFeeReminder = async function(btn, studentId, studentName, email, month, balance) {
+        const originalText = btn.querySelector('span').innerText;
+        btn.querySelector('span').innerText = 'Sending...';
+        btn.disabled = true;
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
+
+        try {
+          const response = await fetch('/teacher/fee_defaulters/remind', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ studentId, studentName, email, month, balance })
+          });
+
+          const result = await response.json();
+          if (result.success) {
+            btn.querySelector('span').innerText = 'Sent!';
+            btn.classList.remove('bg-[#4b2d84]', 'hover:bg-purple-800');
+            btn.classList.add('bg-green-600', 'hover:bg-green-700');
+            setTimeout(() => {
+              btn.querySelector('span').innerText = originalText;
+              btn.classList.add('bg-[#4b2d84]', 'hover:bg-purple-800');
+              btn.classList.remove('bg-green-600', 'hover:bg-green-700', 'opacity-50', 'cursor-not-allowed');
+              btn.disabled = false;
+            }, 3000);
+          } else {
+            alert('Failed to send email: ' + (result.message || 'Unknown error'));
+            throw new Error('Failed');
+          }
+        } catch (error) {
+          console.error(error);
+          btn.querySelector('span').innerText = 'Failed';
+          btn.classList.remove('bg-[#4b2d84]', 'hover:bg-purple-800');
+          btn.classList.add('bg-red-600', 'hover:bg-red-700');
+          setTimeout(() => {
+            btn.querySelector('span').innerText = originalText;
+            btn.classList.add('bg-[#4b2d84]', 'hover:bg-purple-800');
+            btn.classList.remove('bg-red-600', 'hover:bg-red-700', 'opacity-50', 'cursor-not-allowed');
+            btn.disabled = false;
+          }, 3000);
+        }
+      };
+    
           // Entire Section Print Button
           document.querySelectorAll('.print-section-btn').forEach(btn => {
             btn.addEventListener('click', function() {

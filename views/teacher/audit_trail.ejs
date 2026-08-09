@@ -93,6 +93,17 @@
             </form>
           </header>
 
+          <!-- Tabs -->
+          <div class="flex gap-4 mb-4">
+            <button onclick="switchTab('Teacher')" id="tab-Teacher" class="px-6 py-2 rounded-xl font-bold font-mono text-sm uppercase tracking-widest bg-theme-p text-white shadow-md transition-all">Teacher Actions</button>
+            <button onclick="switchTab('Student')" id="tab-Student" class="px-6 py-2 rounded-xl font-bold font-mono text-sm uppercase tracking-widest bg-theme-bgc text-theme-fg border border-theme-b hover:border-theme-p transition-all">Student Actions</button>
+          </div>
+
+          <% 
+            const teacherLogs = logs.filter(l => l.userRole === 'Teacher' || l.userRole === 'System' || !l.userRole);
+            const studentLogs = logs.filter(l => l.userRole === 'Student');
+          %>
+
           <div class="stat-card p-0 overflow-hidden border border-theme-bd">
             <div class="overflow-x-auto">
               <table class="w-full text-left border-collapse">
@@ -105,13 +116,14 @@
                     <th class="p-4 font-bold text-right">Performed By</th>
                   </tr>
                 </thead>
-                <tbody class="text-sm font-semibold divide-y divide-theme-bd">
-                  <% if (logs.length === 0) { %>
+                <!-- TEACHER LOGS -->
+                <tbody id="tbody-Teacher" class="text-sm font-semibold divide-y divide-theme-bd">
+                  <% if (teacherLogs.length === 0) { %>
                     <tr>
-                      <td colspan="5" class="p-8 text-center text-theme-fdd">No audit logs found for this period.</td>
+                      <td colspan="5" class="p-8 text-center text-theme-fdd">No teacher actions found for this period.</td>
                     </tr>
                   <% } else { %>
-                    <% logs.forEach(log => { 
+                    <% teacherLogs.forEach(log => { 
                       let actionClass = 'action-update';
                       if (log.action === 'CREATE') actionClass = 'action-create';
                       if (log.action === 'DELETE') actionClass = 'action-delete';
@@ -143,7 +155,63 @@
                           <% } %>
                         </td>
                         <td class="p-4 text-right">
-                          <span class="text-xs text-theme-fdd bg-theme-bg2 border border-theme-bd px-2 py-1 rounded-full"><%= log.performedBy %></span>
+                          <div class="flex flex-col items-end">
+                            <span class="text-xs text-theme-fdd bg-theme-bg2 border border-theme-bd px-2 py-1 rounded-full"><%= log.performedBy %></span>
+                            <% if (log.performedById && log.performedById !== 'Unknown') { %>
+                              <span class="text-[10px] text-theme-fd font-mono mt-1"><%= log.performedById %></span>
+                            <% } %>
+                          </div>
+                        </td>
+                      </tr>
+                    <% }) %>
+                  <% } %>
+                </tbody>
+                
+                <!-- STUDENT LOGS -->
+                <tbody id="tbody-Student" class="text-sm font-semibold divide-y divide-theme-bd" style="display: none;">
+                  <% if (studentLogs.length === 0) { %>
+                    <tr>
+                      <td colspan="5" class="p-8 text-center text-theme-fdd">No student actions found for this period.</td>
+                    </tr>
+                  <% } else { %>
+                    <% studentLogs.forEach(log => { 
+                      let actionClass = 'action-update';
+                      if (log.action === 'CREATE') actionClass = 'action-create';
+                      if (log.action === 'DELETE') actionClass = 'action-delete';
+                      if (log.action === 'REPOST') actionClass = 'action-repost';
+                      if (log.action === 'BULK_UPDATE') actionClass = 'action-bulk';
+                    %>
+                      <tr class="hover:bg-theme-bgch transition-colors group">
+                        <td class="p-4">
+                          <div class="flex flex-col">
+                            <span class="text-theme-fg"><%= formatDate(log.createdAt, {day:'numeric', month:'short', year:'numeric'}) %></span>
+                            <span class="text-xs text-theme-fdd font-mono"><%= formatTime(log.createdAt) %></span>
+                          </div>
+                        </td>
+                        <td class="p-4">
+                          <span class="action-badge <%= actionClass %>"><%= log.action %></span>
+                        </td>
+                        <td class="p-4 text-theme-fg">
+                          <div class="flex items-center gap-2">
+                            <svg class="w-4 h-4 text-theme-fdd" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                            </svg>
+                            <%= log.entityType %>
+                          </div>
+                        </td>
+                        <td class="p-4 text-theme-fg max-w-md">
+                          <%= log.details %>
+                          <% if (log.entityId) { %>
+                            <div class="text-[10px] text-theme-fdd font-mono mt-1">ID: <%= log.entityId %></div>
+                          <% } %>
+                        </td>
+                        <td class="p-4 text-right">
+                          <div class="flex flex-col items-end">
+                            <span class="text-xs text-theme-fdd bg-theme-bg2 border border-theme-bd px-2 py-1 rounded-full"><%= log.performedBy %></span>
+                            <% if (log.performedById && log.performedById !== 'Unknown') { %>
+                              <span class="text-[10px] text-theme-fd font-mono mt-1"><%= log.performedById %></span>
+                            <% } %>
+                          </div>
                         </td>
                       </tr>
                     <% }) %>
@@ -156,5 +224,31 @@
       </main>
     </div>
   </div>
+  
+  <script>
+    function switchTab(tab) {
+      document.getElementById('tbody-Teacher').style.display = 'none';
+      document.getElementById('tbody-Student').style.display = 'none';
+      document.getElementById('tbody-' + tab).style.display = '';
+
+      const activeClasses = ['bg-theme-p', 'text-white', 'shadow-md'];
+      const inactiveClasses = ['bg-theme-bgc', 'text-theme-fg', 'border', 'border-theme-b', 'hover:border-theme-p'];
+
+      const teacherBtn = document.getElementById('tab-Teacher');
+      const studentBtn = document.getElementById('tab-Student');
+
+      if (tab === 'Teacher') {
+        teacherBtn.classList.add(...activeClasses);
+        teacherBtn.classList.remove(...inactiveClasses);
+        studentBtn.classList.remove(...activeClasses);
+        studentBtn.classList.add(...inactiveClasses);
+      } else {
+        studentBtn.classList.add(...activeClasses);
+        studentBtn.classList.remove(...inactiveClasses);
+        teacherBtn.classList.remove(...activeClasses);
+        teacherBtn.classList.add(...inactiveClasses);
+      }
+    }
+  </script>
 </body>
 </html>

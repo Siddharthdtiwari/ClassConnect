@@ -4,6 +4,7 @@ const User = require("../../models/User");
 const Test = require("../../models/Test");
 const Fee = require("../../models/Fee");
 const AuditLog = require("../../models/AuditLog");
+const { logAudit } = require("../../utils/auditService");
 const bcrypt = require("bcrypt");
 
 exports.renderLogin = (req, res) => {
@@ -22,7 +23,22 @@ exports.processLogin = async (req, res) => {
     const validPassword = await bcrypt.compare(password, teacher.password);
     if (validPassword) {
       req.session.userId = teacher._id;
-      req.session.role = "teacher";
+      req.session.userName = teacher.teacherName;
+      req.session.userIdString = teacher.teacherId;
+      req.session.role = teacher.role || "teacher";
+
+      if (!req.body.rememberMe) {
+        req.session.cookie.expires = false; // Becomes a session cookie
+      }
+      
+      await logAudit(req, {
+        action: "LOGIN",
+        entityType: "Teacher",
+        entityId: teacher._id,
+        details: "Teacher logged in successfully",
+        academicYear: req.currentAcademicYear || "N/A"
+      });
+      
       return res.redirect("/teacher/dashboard");
     } else {
       return res.render("teacher/login", { error: "Invalid ID or password", hideNavbar: true });
@@ -103,7 +119,16 @@ exports.renderDashboard = async (req, res) => {
   }
 };
 
-exports.processLogout = (req, res) => {
+exports.processLogout = async (req, res) => {
+  if (req.session.userId) {
+    await logAudit(req, {
+      action: "LOGOUT",
+      entityType: "Teacher",
+      details: "Teacher logged out",
+      academicYear: req.currentAcademicYear || "N/A"
+    });
+  }
+  
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout error:", err);
@@ -130,6 +155,15 @@ exports.processAddTeacher = async (req, res) => {
       password: hashedPassword,
     });
     await newTeacher.save();
+    
+    await logAudit(req, {
+      action: "CREATE",
+      entityType: "Teacher",
+      entityId: newTeacher._id,
+      details: `Added new teacher: ${teacherName}`,
+      academicYear: req.currentAcademicYear || "N/A"
+    });
+    
     res.redirect("/teacher/dashboard");
   } catch (err) {
     console.error(err);
@@ -153,10 +187,33 @@ exports.processEditTeacher = async (req, res) => {
   try {
     const { teacherName, email, subjects, password } = req.body;
     const updateData = { teacherName, email, subjects };
+    let pwdChanged = false;
+    
     if (password && password.trim() !== "") {
       updateData.password = await bcrypt.hash(password, 12);
+      pwdChanged = true;
     }
+    
     await Teacher.findByIdAndUpdate(req.params.id, updateData);
+    
+    await logAudit(req, {
+      action: "UPDATE",
+      entityType: "Teacher",
+      entityId: req.params.id,
+      details: `Updated teacher profile for ${teacherName}`,
+      academicYear: req.currentAcademicYear || "N/A"
+    });
+    
+    if (pwdChanged) {
+      await logAudit(req, {
+        action: "PASSWORD_CHANGE",
+        entityType: "Teacher",
+        entityId: req.params.id,
+        details: `Password changed for teacher ${teacherName}`,
+        academicYear: req.currentAcademicYear || "N/A"
+      });
+    }
+    
     res.redirect(`/teacher/edit_teacher/${req.params.id}`);
   } catch (err) {
     console.error(err);

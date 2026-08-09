@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <link rel="apple-touch-icon" href="/images/logo.png">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Finance & Salaries | Tuition Hub</title>
+  <%- include('../partials/background') %>
+  <style>
+    .finance-header {
+      background: linear-gradient(135deg, var(--bgch), var(--bg2));
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      padding: 30px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .finance-header::after {
+      content: '';
+      position: absolute;
+      top: -50px;
+      right: -50px;
+      width: 200px;
+      height: 200px;
+      background: radial-gradient(circle, var(--pt) 0%, transparent 70%);
+      opacity: 0.1;
+      border-radius: 50%;
+    }
+
+    .stat-card {
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 12px;
+      padding: 24px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    
+    .stat-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0,0,0,0.05);
+    }
+
+    .stat-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-val {
+      font-family: 'Unbounded', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--fg);
+    }
+
+    .stat-label {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      color: var(--fdd);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+    }
+
+    .table-container {
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-top: 24px;
+    }
+
+    .transaction-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .transaction-table th {
+      background: var(--bgch);
+      padding: 16px 24px;
+      text-align: left;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.65rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--fdd);
+      border-bottom: 1px solid var(--bd);
+    }
+
+    .transaction-table td {
+      padding: 16px 24px;
+      border-bottom: 1px solid var(--bd);
+      font-family: 'Inter', sans-serif;
+      font-size: 0.85rem;
+      color: var(--fg);
+    }
+
+    .transaction-table tr:last-child td { border-bottom: none; }
+
+    .badge {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-family: 'Space Mono', monospace;
+      font-size: 0.6rem;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    .badge-income { background: var(--gg); color: var(--gt); }
+    .badge-expense { background: var(--rg); color: var(--rt); }
+
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.4);
+      backdrop-filter: blur(4px);
+      z-index: 999;
+      display: none;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal-overlay.active { display: flex; }
+
+    .modal-content {
+      background: var(--bgc);
+      border: 1px solid var(--bd);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      padding: 32px;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.1);
+      transform: translateY(20px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .modal-overlay.active .modal-content {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  </style>
+</head>
+<body class="flex bg-theme-bg2 min-h-screen">
+  
+  <%- include('../partials/teacher_sidebar') %>
+
+  <div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- Mobile Topbar -->
+    <div class="lg:hidden bg-theme-bgc border-b border-theme-b px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <button onclick="document.querySelector('.sb').classList.toggle('open')" class="text-theme-pt">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+        <div class="font-unbounded font-bold text-lg text-theme-fg">Finance</div>
+      </div>
+    </div>
+    <main class="flex-1 overflow-y-auto p-6 lg:p-10 hide-scrollbar relative">
+      <div class="max-w-6xl mx-auto">
+
+        <!-- Header -->
+        <div class="finance-header">
+          <div>
+            <h2 class="text-2xl font-unbounded font-bold text-theme-fg mb-1">Financial Overview</h2>
+            <p class="font-mono text-xs text-theme-fdd uppercase tracking-wide">Academic Year <%= currentAcademicYear %></p>
+          </div>
+          <button onclick="document.getElementById('addTransactionModal').classList.add('active')" class="btn-primary flex items-center gap-2">
+            <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            Add Transaction
+          </button>
+        </div>
+
+        <!-- Metrics Grid -->
+        <div class="flex flex-col md:flex-row gap-6 mb-8">
+          <div class="stat-card">
+            <div class="flex justify-between items-start">
+              <div class="stat-icon" style="background: var(--gg); color: var(--gt);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="stat-val">₹<%= totalIncome.toLocaleString('en-IN') %></div>
+              <div class="stat-label">Total Revenue (Fees + Manual)</div>
+            </div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="flex justify-between items-start">
+              <div class="stat-icon" style="background: var(--rg); color: var(--rt);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="stat-val">₹<%= totalExpense.toLocaleString('en-IN') %></div>
+              <div class="stat-label">Total Expenses (Salaries, etc)</div>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="flex justify-between items-start">
+              <div class="stat-icon" style="background: rgba(124,58,237,0.1); color: var(--pt);">
+                <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M21 12V7H5a2 2 0 0 1 0-4h14v4"/><path d="M3 5v14a2 2 0 0 0 2 2h16v-5"/><path d="M18 12a2 2 0 0 0 0 4h4v-4Z"/></svg>
+              </div>
+            </div>
+            <div>
+              <div class="stat-val">₹<%= grossProfit.toLocaleString('en-IN') %></div>
+              <div class="stat-label">Gross Profit (Net)</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ledger Table -->
+        <h3 class="text-sm font-mono text-theme-fg uppercase tracking-widest font-bold mb-4">Transaction Ledger</h3>
+        <div class="table-container">
+          <table class="transaction-table w-full">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Type</th>
+                <th>Category</th>
+                <th>Description</th>
+                <th class="text-right">Amount</th>
+                <th class="text-center">Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <% if (transactions && transactions.length > 0) { %>
+                <% transactions.forEach(t => { %>
+                  <tr>
+                    <td>
+                      <div class="font-mono text-xs"><%= new Date(t.date).toLocaleDateString('en-GB') %></div>
+                    </td>
+                    <td>
+                      <% if (t.type === 'INCOME') { %>
+                        <span class="badge badge-income">Income</span>
+                      <% } else { %>
+                        <span class="badge badge-expense">Expense</span>
+                      <% } %>
+                    </td>
+                    <td class="font-medium"><%= t.category %></td>
+                    <td class="text-theme-fdd text-xs max-w-xs truncate"><%= t.description || '--' %></td>
+                    <td class="text-right font-unbounded font-semibold <% if (t.type==='INCOME') { %>text-theme-gt<% } else { %>text-theme-rt<% } %>">
+                      <% if(t.type==='INCOME'){ %>+<%}else{%>-<%}%>₹<%= t.amount.toLocaleString('en-IN') %>
+                    </td>
+                    <td class="text-center">
+                      <form action="/teacher/finance/delete/<%= t._id %>" method="POST" onsubmit="return confirm('Are you sure you want to delete this transaction?');">
+                        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+                        <button type="submit" class="text-theme-fdd hover:text-theme-rt transition-colors">
+                          <svg class="w-4 h-4 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        </button>
+                      </form>
+                    </td>
+                  </tr>
+                <% }) %>
+              <% } else { %>
+                <tr>
+                  <td colspan="6" class="text-center py-12 text-theme-fdd font-mono text-xs uppercase tracking-wider">No manual transactions found</td>
+                </tr>
+              <% } %>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+    </main>
+  </div>
+
+  <!-- Add Transaction Modal -->
+  <div id="addTransactionModal" class="modal-overlay">
+    <div class="modal-content">
+      <div class="flex justify-between items-center mb-6">
+        <h3 class="font-unbounded font-bold text-lg text-theme-fg">Add Transaction</h3>
+        <button onclick="document.getElementById('addTransactionModal').classList.remove('active')" class="text-theme-fdd hover:text-theme-rt transition-colors">
+          <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+
+      <form action="/teacher/finance/add" method="POST" class="flex flex-col gap-5">
+        <input type="hidden" name="_csrf" value="<%= csrfToken %>">
+        
+        <div class="grid grid-cols-2 gap-4">
+          <div class="flex flex-col gap-2">
+            <label class="font-mono text-[0.65rem] uppercase tracking-widest text-theme-fdd">Type</label>
+            <select name="type" required class="bg-theme-bgch border border-theme-b rounded-lg px-3 py-2.5 text-sm text-theme-fg outline-none focus:border-theme-p">
+              <option value="EXPENSE">Expense</option>
+              <option value="INCOME">Income (Manual)</option>
+            </select>
+          </div>
+          <div class="flex flex-col gap-2">
+            <label class="font-mono text-[0.65rem] uppercase tracking-widest text-theme-fdd">Amount (₹)</label>
+            <input type="number" name="amount" min="1" required placeholder="0" class="bg-theme-bgch border border-theme-b rounded-lg px-3 py-2.5 text-sm text-theme-fg outline-none focus:border-theme-p">
+          </div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="font-mono text-[0.65rem] uppercase tracking-widest text-theme-fdd">Category</label>
+          <select name="category" required class="bg-theme-bgch border border-theme-b rounded-lg px-3 py-2.5 text-sm text-theme-fg outline-none focus:border-theme-p">
+            <option value="Salary">Salary</option>
+            <option value="Rent">Rent</option>
+            <option value="Utilities">Utilities</option>
+            <option value="Marketing">Marketing</option>
+            <option value="Software/IT">Software / IT</option>
+            <option value="Supplies">Supplies / Stationery</option>
+            <option value="Other">Other</option>
+          </select>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="font-mono text-[0.65rem] uppercase tracking-widest text-theme-fdd">Date</label>
+          <input type="date" name="date" required value="<%= new Date().toISOString().split('T')[0] %>" class="bg-theme-bgch border border-theme-b rounded-lg px-3 py-2.5 text-sm text-theme-fg outline-none focus:border-theme-p font-mono">
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <label class="font-mono text-[0.65rem] uppercase tracking-widest text-theme-fdd">Description (Optional)</label>
+          <input type="text" name="description" placeholder="e.g., Salary for June 2026" class="bg-theme-bgch border border-theme-b rounded-lg px-3 py-2.5 text-sm text-theme-fg outline-none focus:border-theme-p">
+        </div>
+
+        <button type="submit" class="btn-primary w-full mt-2 py-3">Save Transaction</button>
+      </form>
+    </div>
+  </div>
+
+  <%- include('../partials/toast') %>
+</body>
+</html>

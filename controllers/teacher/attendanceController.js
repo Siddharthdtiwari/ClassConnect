@@ -74,7 +74,7 @@ exports.processManageAttendance = async (req, res) => {
       }
     }
 
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "Attendance",
       details: `Saved attendance for ${date}`,
@@ -372,7 +372,7 @@ exports.processBulkSaveAttendance = async (req, res) => {
       }
     }
 
-    await logAudit({
+    await logAudit(req, {
       action: "BULK_UPDATE",
       entityType: "Attendance",
       details: `Bulk saved attendance records`,

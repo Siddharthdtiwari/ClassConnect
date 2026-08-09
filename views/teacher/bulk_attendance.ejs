@@ -238,7 +238,7 @@
                        if(status === 'A') statusClass = 'status-A';
                        if(status === 'H') statusClass = 'status-H';
                     %>
-                    <td class="status-cell <%= statusClass %> border-r border-theme-bd" data-date="<%= date %>" data-student="<%= student.studentId %>" data-batch="<%= student.batch %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
+                    <td class="status-cell <%= statusClass %> border-r border-theme-bd" data-date="<%= date %>" data-student="<%= student.studentId %>" data-batch="<%= student.batch._id || student.batch %>" data-status="<%= status %>" ondblclick="cycleStatus(this)">
                       <%= status || '-' %>
                     </td>
                     <% }) %>
@@ -296,10 +296,10 @@
       saveBtn.innerHTML = `<span>Saving...</span>`;
       saveBtn.disabled = true;
 
-      const allCells = document.querySelectorAll('.status-cell');
+      const modifiedCells = document.querySelectorAll('.status-cell.is-modified');
       const attendanceData = {};
 
-      allCells.forEach(cell => {
+      modifiedCells.forEach(cell => {
         const date = cell.dataset.date;
         const studentId = cell.dataset.student;
         const status = cell.getAttribute('data-status');

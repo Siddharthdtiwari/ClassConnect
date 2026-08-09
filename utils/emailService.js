@@ -329,9 +329,44 @@ const sendContactConfirmation = async (toEmail, toName, message) => {
   await sendEmail(toEmail, subject, htmlContent, attachments, logOptions);
 };
 
+const sendFeeReminder = async (studentEmail, studentName, month, balance, id, baseUrl, logMeta = {}) => {
+  const subject = `Fee Reminder - Tuition Hub`;
+  const htmlContent = `
+    <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto; border: 1px solid #e0e0e0; border-radius: 8px; overflow: hidden;">
+      <div style="background-color: #5d3a9b; padding: 20px; text-align: center;">
+        <h1 style="color: #ffffff; margin: 0;">Tuition Hub Education Centre</h1>
+      </div>
+      <div style="padding: 30px;">
+        <h2 style="color: #5d3a9b; margin-top: 0;">Fee Reminder</h2>
+        <p style="font-size: 16px;">Hello <strong>${studentName}</strong>,</p>
+        <p style="font-size: 16px; line-height: 1.5;">This is a gentle reminder that your fees for <strong>${month}</strong> are currently pending.</p>
+        
+        <div style="background-color: #f3e8ff; border-left: 4px solid #5d3a9b; padding: 15px; margin: 20px 0;">
+          <p style="margin: 0; font-size: 18px;">Total Due: <strong>₹${balance}</strong></p>
+        </div>
+        
+        <p style="font-size: 16px;">You can view your detailed fee summary by clicking the link below:</p>
+        <div style="margin: 25px 0;">
+          <a href="${baseUrl}/public/fee-summary/${id}" style="background-color: #5d3a9b; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">View Fee Summary</a>
+        </div>
+        
+        <p style="font-size: 16px;">Please arrange for payment at your earliest convenience.</p>
+        <p style="font-size: 16px; color: #666; margin-bottom: 0;">Best regards,<br>Tuition Hub Education Centre Administration</p>
+      </div>
+    </div>
+  `;
+  const logOptions = {
+    emailType: "Fee Reminder",
+    studentRef: logMeta.studentRef,
+    academicYear: logMeta.academicYear
+  };
+  await sendEmail(studentEmail, subject, htmlContent, [], logOptions);
+};
+
 module.exports = {
   sendFeeReceipt,
   sendTestMarks,
   sendMonthEndAttendance,
-  sendContactConfirmation
+  sendContactConfirmation,
+  sendFeeReminder
 };

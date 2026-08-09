@@ -80,8 +80,8 @@
 
     <!-- Form Card -->
     <div class="max-w-2xl mx-auto glass-card p-6 sm:p-12">
-      <form id="edit-profile-form" action="/student/edit_profile?_csrf=<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>" method="POST" enctype="multipart/form-data">
-        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== "undefined" ? csrfToken : "" %>">
+      <form id="edit-profile-form" action="/student/edit_profile?_csrf=<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>" method="POST" enctype="multipart/form-data">
+        <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
         
         <div class="space-y-8">
           <!-- Profile Picture Upload -->
@@ -151,6 +151,20 @@
               <input type="text" id="student-id" class="form-input pl-12 font-mono" value="<%= student.studentId %>" readonly />
             </div>
           </div>
+
+          <!-- Admission Date (read-only) -->
+          <div>
+            <label for="admission-date" class="flex items-center gap-3 block text-xs font-mono font-bold text-theme-fdd mb-3 uppercase tracking-widest">
+              Admission Date
+              <span class="text-[10px] font-bold bg-theme-bd text-theme-fd px-2 py-0.5 rounded uppercase tracking-widest border border-theme-b">Read-only</span>
+            </label>
+            <div class="relative opacity-75">
+              <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                <svg class="w-5 h-5 text-theme-fdd" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+              </div>
+              <input type="text" id="admission-date" class="form-input pl-12 font-mono" value="<%= student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set' %>" readonly />
+            </div>
+          </div>
         </div>
 
         <!-- Action Buttons -->
@@ -186,5 +200,4 @@
     });
   </script>
 </body>
-
 </html>

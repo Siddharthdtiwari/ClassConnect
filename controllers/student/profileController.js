@@ -1,5 +1,6 @@
 const User = require("../../models/User");
 const { uploadToCloudinary } = require("../../utils/upload");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderEditProfile = async (req, res) => {
   try {
@@ -30,6 +31,15 @@ exports.processEditProfile = async (req, res) => {
     }
 
     await User.findByIdAndUpdate(req.session.userId, updates, { new: true });
+    
+    await logAudit(req, {
+      action: "UPDATE",
+      entityType: "User",
+      entityId: req.session.userId,
+      details: "Student updated their profile",
+      academicYear: req.currentAcademicYear || "N/A"
+    });
+    
     res.redirect("/student/dashboard");
   } catch (err) {
     console.error(err);

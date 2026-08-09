@@ -7,6 +7,7 @@ const { generateFeeDefaultersPDF } = require("../../utils/pdfUtils");
 const { ACADEMIC_MONTHS } = require("../../utils/constants");
 const { NA_STATUS, NA_REASONS, feeYearForMonth, naMonthSet, billableMonths } = require("../../utils/feeHelpers");
 const { logAudit } = require("../../utils/auditService");
+const { sendFeeReminder } = require("../../utils/emailService");
 exports.renderRevenueReport = async (req, res) => {
   try {
     const months = ACADEMIC_MONTHS;
@@ -378,7 +379,7 @@ exports.processAddFees = async (req, res) => {
       }).catch(err => console.error("Error sending fee receipt email:", err));
     }
 
-    await logAudit({
+    await logAudit(req, {
       action: "CREATE",
       entityType: "Fee",
       entityId: savedFee._id,
@@ -435,7 +436,7 @@ exports.setMonthApplicability = async (req, res) => {
         return res.json({ success: true, status: "Unpaid" });
       }
       await Fee.deleteOne({ _id: existing._id });
-      await logAudit({
+      await logAudit(req, {
         action: "DELETE",
         entityType: "Fee",
         entityId: existing._id,
@@ -450,7 +451,7 @@ exports.setMonthApplicability = async (req, res) => {
       if (existing.naReason !== reason) {
         existing.naReason = reason;
         await existing.save();
-        await logAudit({
+        await logAudit(req, {
           action: "UPDATE",
           entityType: "Fee",
           entityId: existing._id,
@@ -475,7 +476,7 @@ exports.setMonthApplicability = async (req, res) => {
     });
     await fee.save();
 
-    await logAudit({
+    await logAudit(req, {
       action: "CREATE",
       entityType: "Fee",
       entityId: fee._id,
@@ -603,7 +604,7 @@ exports.processBulkSave = async (req, res) => {
       }
     }
 
-    await logAudit({
+    await logAudit(req, {
       action: "BULK_UPDATE",
       entityType: "Fee",
       details: `Bulk saved fee records (${updates.length} updates).`,
@@ -770,5 +771,22 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.send("Error generating fee summary");
+  }
+};
+
+exports.sendFeeReminderEmail = async (req, res) => {
+  try {
+    const { studentId, studentName, email, month, balance } = req.body;
+    if (!email) {
+      return res.status(400).json({ success: false, message: "Student has no email address" });
+    }
+    
+    const baseUrl = `${req.protocol}://${req.get('host')}`;
+    await sendFeeReminder(email, studentName, month, balance, studentId, baseUrl, { academicYear: req.viewingYear, studentRef: studentId });
+    
+    res.json({ success: true });
+  } catch (err) {
+    console.error("Error sending fee reminder:", err);
+    res.status(500).json({ success: false, message: "Failed to send email" });
   }
 };

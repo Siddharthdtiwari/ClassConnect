@@ -44,6 +44,7 @@ exports.processAddStudent = async (req, res) => {
       password,
       mobileNo,
       monthlyFee,
+      admissionDate,
     } = req.body;
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -52,6 +53,8 @@ exports.processAddStudent = async (req, res) => {
       const result = await uploadToCloudinary(req.file.buffer, "student-profiles");
       profilePhotoUrl = result.secure_url;
     }
+
+    const parsedAdmissionDate = admissionDate ? new Date(admissionDate) : new Date();
 
     const newStudent = new User({
       batch: batchId,
@@ -62,13 +65,67 @@ exports.processAddStudent = async (req, res) => {
       mobileNo,
       monthlyFee,
       profilePhoto: profilePhotoUrl,
+      admissionDate: parsedAdmissionDate,
     });
     await newStudent.save();
-    await logAudit({
+
+    // Automation Logic
+    const batch = await Batch.findById(batchId);
+    if (batch) {
+      // 1. Backfill Tests
+      const Test = require("../../models/Test");
+      const pastTests = await Test.find({ batch: batch._id, testDate: { $lt: parsedAdmissionDate } });
+      if (pastTests.length > 0) {
+        const scoreOps = pastTests.map(test => ({
+          insertOne: {
+            document: {
+              studentId,
+              studentName,
+              userRef: newStudent._id,
+              batch: batch._id,
+              testId: test._id,
+              testName: test.testName,
+              score: null, // Platform marks absent as null
+              percentage: 0
+            }
+          }
+        }));
+        await Score.bulkWrite(scoreOps);
+      }
+
+      // 2. Backfill Fees
+      const { ACADEMIC_MONTHS } = require("../../utils/constants");
+      const { feeYearForMonth } = require("../../utils/feeHelpers");
+      
+      const admissionMonthName = parsedAdmissionDate.toLocaleString('default', { month: 'long' });
+      const admissionMonthIndex = ACADEMIC_MONTHS.indexOf(admissionMonthName);
+      
+      if (admissionMonthIndex > 0) { 
+        const pastMonths = ACADEMIC_MONTHS.slice(0, admissionMonthIndex);
+        const feeOps = pastMonths.map(month => ({
+          insertOne: {
+            document: {
+              studentId,
+              studentName,
+              userRef: newStudent._id,
+              batch: batch._id,
+              month,
+              year: feeYearForMonth(month, batch.academicYear),
+              amount: 0,
+              status: "NA",
+              naReason: "Joined mid-year"
+            }
+          }
+        }));
+        await Fee.bulkWrite(feeOps);
+      }
+    }
+
+    await logAudit(req, {
       action: "CREATE",
       entityType: "User",
       entityId: newStudent._id,
-      details: `Added new student: ${studentName} (${studentId})`,
+      details: `Added new student: ${studentName} (${studentId}) with automated backfill`,
       academicYear: req.viewingYear
     });
     res.redirect("/teacher/manage_students");
@@ -93,8 +150,12 @@ exports.renderEditProfile = async (req, res) => {
 
 exports.processEditProfile = async (req, res) => {
   try {
-    const { studentName, studentId, batchId, mobileNo, monthlyFee, email } = req.body;
+    const { studentName, studentId, batchId, mobileNo, monthlyFee, email, admissionDate } = req.body;
     const updateData = { studentName, batch: batchId, mobileNo, monthlyFee, email };
+    
+    if (admissionDate) {
+      updateData.admissionDate = new Date(admissionDate);
+    }
 
     if (studentId) {
       const existingStudent = await User.findOne({ studentId, batch: batchId, _id: { $ne: req.params.id } });
@@ -110,7 +171,7 @@ exports.processEditProfile = async (req, res) => {
     }
 
     await User.findByIdAndUpdate(req.params.id, updateData);
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "User",
       entityId: req.params.id,
@@ -132,7 +193,7 @@ exports.toggleActiveStatus = async (req, res) => {
     student.isActive = !student.isActive;
     await student.save();
     
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "User",
       entityId: student._id,
@@ -286,7 +347,7 @@ exports.processBulkSaveStudents = async (req, res) => {
 
     if (bulkOps.length > 0) {
       await User.bulkWrite(bulkOps);
-      await logAudit({
+      await logAudit(req, {
         action: "BULK_UPDATE",
         entityType: "User",
         details: `Bulk saved ${processed} student records.`,

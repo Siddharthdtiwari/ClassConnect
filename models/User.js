@@ -21,6 +21,7 @@ const userSchema = new mongoose.Schema(
     points: { type: Number, default: 0, min: 0 },
     monthlyFee: { type: Number, default: 0, min: 0 },
     isActive: { type: Boolean, default: true },
+    admissionDate: { type: Date, default: Date.now },
   },
   { timestamps: true }
 );

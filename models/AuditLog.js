@@ -4,12 +4,12 @@ const auditLogSchema = new mongoose.Schema(
   {
     action: {
       type: String,
-      enum: ["CREATE", "UPDATE", "DELETE", "REPOST", "BULK_UPDATE"],
+      enum: ["CREATE", "UPDATE", "DELETE", "REPOST", "BULK_UPDATE", "LOGIN", "LOGOUT", "PASSWORD_CHANGE", "DOWNLOAD", "EXPORT", "SYSTEM_ACTION"],
       required: true,
     },
     entityType: {
       type: String,
-      enum: ["User", "Fee", "Batch", "Test", "Attendance", "StudyMaterial", "Score"],
+      enum: ["User", "Teacher", "Fee", "Batch", "Test", "Attendance", "StudyMaterial", "Score"],
       required: true,
     },
     entityId: {
@@ -26,6 +26,15 @@ const auditLogSchema = new mongoose.Schema(
     performedBy: {
       type: String,
       default: "Teacher/Admin",
+    },
+    performedById: {
+      type: String,
+      default: "Unknown",
+    },
+    userRole: {
+      type: String,
+      enum: ["Teacher", "Student", "System"],
+      default: "System",
     }
   },
   { timestamps: true }

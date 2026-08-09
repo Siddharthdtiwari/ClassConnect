@@ -45,7 +45,7 @@ exports.processAddBatch = async (req, res) => {
     });
 
     await newBatch.save();
-    await logAudit({
+    await logAudit(req, {
       action: "CREATE",
       entityType: "Batch",
       entityId: newBatch._id,
@@ -84,7 +84,7 @@ exports.processEditBatch = async (req, res) => {
     batch.isActive = isActive === "true" || isActive === true;
 
     await batch.save();
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "Batch",
       entityId: batch._id,

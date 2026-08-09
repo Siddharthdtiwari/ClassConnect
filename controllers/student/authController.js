@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderLogin = (req, res) => res.render("student/login", { hideNavbar: true });
 
@@ -36,7 +37,22 @@ exports.processLogin = async (req, res) => {
     const validPassword = await bcrypt.compare(password, student.password);
     if (validPassword) {
       req.session.userId = student._id;
+      req.session.userName = student.studentName;
+      req.session.userIdString = student.studentId;
       req.session.role = "student";
+      
+      if (!req.body.rememberMe) {
+        req.session.cookie.expires = false; // Becomes a session cookie
+      }
+
+      await logAudit(req, {
+        action: "LOGIN",
+        entityType: "User",
+        entityId: student._id,
+        details: "Student logged in successfully",
+        academicYear: req.currentAcademicYear || "N/A"
+      });
+      
       res.redirect("/student/dashboard");
     } else {
       res.render("student/login", { error: "Invalid ID or password", hideNavbar: true });
@@ -47,7 +63,16 @@ exports.processLogin = async (req, res) => {
   }
 };
 
-exports.processLogout = (req, res) => {
+exports.processLogout = async (req, res) => {
+  if (req.session.userId) {
+    await logAudit(req, {
+      action: "LOGOUT",
+      entityType: "User",
+      details: "Student logged out",
+      academicYear: req.currentAcademicYear || "N/A"
+    });
+  }
+  
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout error:", err);

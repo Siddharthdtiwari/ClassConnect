@@ -56,6 +56,7 @@ router.get("/student/timetable", ensureDBConnection, requireStudentLogin, catchA
 router.post("/student/timetable/bulk", ensureDBConnection, requireStudentLogin, catchAsync(timetableController.processTimetableBulk));
 router.post("/student/timetable/edit/:id", ensureDBConnection, requireStudentLogin, catchAsync(timetableController.processTimetableEdit));
 router.post("/student/timetable/delete/:id", ensureDBConnection, requireStudentLogin, catchAsync(timetableController.processTimetableDelete));
+router.post("/api/student/timetable/ocr", ensureDBConnection, requireStudentLogin, upload.single("timetableImage"), catchAsync(timetableController.processTimetableOCR));
 
 // Leaderboard
 router.get("/student/leader_board", ensureDBConnection, requireStudentLogin, catchAsync(leaderboardController.renderLeaderboard));

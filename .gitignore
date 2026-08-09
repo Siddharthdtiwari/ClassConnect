@@ -1,4 +1,4 @@
-﻿# Dependencies
+# Dependencies
 node_modules/
 
 # Environment variables
@@ -35,3 +35,6 @@ scratch/
 
 # Migration backups (contain student fee records)
 scripts/backups/
+
+# Project documentation
+docs/

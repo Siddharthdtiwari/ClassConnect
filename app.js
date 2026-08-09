@@ -13,7 +13,7 @@ require("winston-daily-rotate-file");
 const { csrfSync } = require("csrf-sync");
 require("dotenv").config();
 const cors = require("cors");
-
+const { z } = require("zod");
 // 1. Environment Variable Validation
 const requiredEnv = ["MONGODB_URI", "SESSION_SECRET"];
 const missingEnv = requiredEnv.filter(env => !process.env[env]);
@@ -151,8 +151,8 @@ app.locals.formatTime = (date, opts = {}) =>
 app.locals.formatDateTime = (date, opts = {}) =>
   date ? new Date(date).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', ...opts }) : '';
 
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
+app.use(express.urlencoded({ limit: '10mb', extended: true }));
+app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, "public")));
 
 // HTTP Request Logging
@@ -165,7 +165,7 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({ mongoUrl: process.env.MONGODB_URI }),
     cookie: { 
-      maxAge: 1000 * 60 * 60, 
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
       httpOnly: true, 
       sameSite: "strict",
       secure: process.env.NODE_ENV === "production"
@@ -207,7 +207,7 @@ app.use((req, res, next) => {
   // Teachers can view different years via query param (?year=2023-2024)
   // Students ALWAYS see only the current year
   if (req.isTeacher) {
-    if (req.query.year && req.query.year !== req.session.academicYear) {
+    if (req.query.year && z.string().regex(/^\d{4}-\d{2}$/).safeParse(req.query.year).success && req.query.year !== req.session.academicYear) {
       req.session.academicYear = req.query.year;
       return req.session.save((err) => {
         if (err) console.error("Error saving session:", err);
@@ -246,6 +246,28 @@ const contactLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 5,
   message: "Too many contact requests from this IP, please try again after an hour"
+});
+
+const reportIssueLimiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 1,
+  message: "You can only report an issue once every 15 minutes."
+});
+
+app.post('/api/report-issue', reportIssueLimiter, async (req, res) => {
+  try {
+    const { url, time } = req.body;
+    await contactTransport.sendMail({
+      from: process.env.CONTACT_EMAIL_USER,
+      to: process.env.CONTACT_EMAIL_TO,
+      subject: "🚨 Server Issue Reported",
+      text: `An issue was reported by a user.\n\nURL: ${url}\nTime: ${time}`
+    });
+    res.json({ success: true, message: "Issue reported successfully." });
+  } catch (error) {
+    console.error("Failed to send issue report:", error);
+    res.status(500).json({ success: false, message: "Failed to send report." });
+  }
 });
 
 // 4. Health Check Endpoint
@@ -438,6 +460,13 @@ app.use((err, req, res, next) => {
   console.error('❌ Server Error:', err);
   const isDev = process.env.NODE_ENV !== 'production';
 
+  if (err.name === 'CastError' || err.name === 'ValidationError') {
+    return res.status(400).render('error/500', {
+      error: isDev ? err : {},
+      message: "Database Error: Invalid data format or missing required fields."
+    });
+  }
+
   res.status(err.status || 500).render('error/500', {
     error: isDev ? err : {},
     message: err.message || 'Internal Server Error'
@@ -446,12 +475,15 @@ app.use((err, req, res, next) => {
 
 // 5. Graceful Shutdown
 let server;
+const { initCronJobs } = require('./services/cronService');
+
 if (process.env.NODE_ENV !== "production") {
   const PORT = process.env.PORT || 3000;
   server = app.listen(PORT, () => {
     console.log(`✅ Server listening on http://localhost:${PORT}`);
     // Connect to Database immediately on startup
     connectDB().catch(err => console.error("Database connection failed on startup:", err));
+    initCronJobs();
   });
 } else {
   const PORT = process.env.PORT || 80;
@@ -459,6 +491,7 @@ if (process.env.NODE_ENV !== "production") {
     console.log(`✅ Production server listening on port ${PORT}`);
     // Connect to Database immediately on startup
     connectDB().catch(err => console.error("Database connection failed on startup:", err));
+    initCronJobs();
   });
 }
 

@@ -47,7 +47,7 @@ exports.processStudyMaterialUpload = async (req, res) => {
     });
 
     await material.save();
-    await logAudit({
+    await logAudit(req, {
       action: "CREATE",
       entityType: "StudyMaterial",
       entityId: material._id,
@@ -82,7 +82,7 @@ exports.processStudyMaterialUpdate = async (req, res) => {
     }
 
     await material.save();
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "StudyMaterial",
       entityId: material._id,
@@ -99,7 +99,7 @@ exports.processStudyMaterialUpdate = async (req, res) => {
 exports.processStudyMaterialDelete = async (req, res) => {
   try {
     await StudyMaterial.findByIdAndDelete(req.params.id);
-    await logAudit({
+    await logAudit(req, {
       action: "DELETE",
       entityType: "StudyMaterial",
       details: `Deleted study material`,
@@ -161,7 +161,7 @@ exports.repostSingleMaterial = async (req, res) => {
       filePath: sourceMaterial.filePath
     });
 
-    await logAudit({
+    await logAudit(req, {
       action: "REPOST",
       entityType: "StudyMaterial",
       details: `Reposted "${sourceMaterial.subject}" from previous year to ${currentYear} (${batchName})`,
@@ -225,7 +225,7 @@ exports.repostMultipleMaterials = async (req, res) => {
       clonedCount++;
     }
 
-    await logAudit({
+    await logAudit(req, {
       action: "REPOST",
       entityType: "StudyMaterial",
       details: `Bulk reposted ${clonedCount} material(s) to ${currentYear}`,

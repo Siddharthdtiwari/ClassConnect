@@ -130,6 +130,12 @@
               <span class="font-unbounded font-extrabold text-theme-pt flex items-center gap-1">
                 <span class="text-sm text-theme-fdd font-normal">#</span><%= studentRank %> <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" stroke="none" class="text-theme-lt"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" fill="currentColor"/></svg></span>
             </div>
+            <div class="flex justify-between items-center stat-box p-3 rounded-lg">
+              <span class="text-theme-fd font-mono text-xs uppercase tracking-widest">Admission</span>
+              <span class="font-bold text-theme-fg font-mono text-xs">
+                <%= student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not set' %>
+              </span>
+            </div>
             </div>
             <% if (student.batch && student.batch.whatsappLink) { %>
             <div class="mt-4">

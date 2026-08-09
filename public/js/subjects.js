@@ -1,8 +1,8 @@
 const SubjectConfig = {
-  default: ['English', 'Maths', 'Science', 'Social Science', 'Hindi', 'Marathi'],
-  '5th': ['English', 'Maths', 'Environmental Studies 1', 'Environmental Studies 2', 'Hindi', 'Marathi'],
-  '6th-8th': ['English', 'Maths', 'Science', 'History', 'Geography', 'Civics', 'Hindi', 'Marathi'],
-  '9th-10th': ['English', 'Maths I', 'Maths II', 'Science I', 'Science II', 'History', 'Political Science', 'Geography', 'Hindi', 'Marathi']
+  default: ['English', 'Maths', 'Science', 'Social Science', 'Hindi', 'Marathi', 'Other'],
+  '5th': ['English', 'Maths', 'Environmental Studies 1', 'Environmental Studies 2', 'Hindi', 'Marathi', 'Other'],
+  '6th-8th': ['English', 'Maths', 'Science', 'History', 'Geography', 'Civics', 'Hindi', 'Marathi', 'Other'],
+  '9th-10th': ['English', 'Maths I', 'Maths II', 'Science I', 'Science II', 'History', 'Political Science', 'Geography', 'Hindi', 'Marathi', 'Other']
 };
 
 function getSubjectsForBatch(batchName) {

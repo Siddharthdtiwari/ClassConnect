@@ -111,7 +111,7 @@ exports.processDeleteTest = async (req, res) => {
     if (batchId) {
       await User.recalculatePoints(batchId);
     }
-    await logAudit({
+    await logAudit(req, {
       action: "DELETE",
       entityType: "Test",
       entityId: req.params.id,
@@ -228,7 +228,7 @@ exports.apiSaveScores = async (req, res) => {
 
     if (operations.length > 0) {
       await Score.bulkWrite(operations);
-      await logAudit({
+      await logAudit(req, {
         action: "BULK_UPDATE",
         entityType: "Score",
         details: `Saved scores for test: ${test.testName}`,
@@ -390,16 +390,13 @@ exports.renderTimetable = async (req, res) => {
     batches.sort(sortBatches);
     const batchIds = batches.map(b => b._id);
     
-    let filterBatchIds = batchIds;
     const selectedBatch = req.query.batchId || "";
-    if (selectedBatch) {
-      filterBatchIds = [selectedBatch];
-    }
 
     const exams = await ExamTimetable.find({ batch: { $in: batchIds } })
       .populate('batch')
       .sort({ examDate: 1 });
 
+    // Build grouped-by-batch view (existing)
     const groupedEntriesByStandard = {};
     exams.forEach(entry => {
       const bName = entry.batch ? entry.batch.name : 'Unknown';
@@ -433,10 +430,28 @@ exports.renderTimetable = async (req, res) => {
       }
     });
 
+    // Build per-batch → per-student grouped view (new tab)
+    // Structure: { batchName: { studentName: [ { subject, examType, examDate, chapters } ] } }
+    const groupedByStudent = {};
+    exams.forEach(entry => {
+      if (entry.addedBy !== 'student') return; // only student-added entries
+      const bName = entry.batch ? entry.batch.name : 'Unknown';
+      const sName = entry.addedByName || 'Unknown Student';
+      if (!groupedByStudent[bName]) groupedByStudent[bName] = {};
+      if (!groupedByStudent[bName][sName]) groupedByStudent[bName][sName] = [];
+      groupedByStudent[bName][sName].push({
+        subject: entry.subject,
+        examType: entry.examType,
+        examDate: entry.examDate,
+        chapters: entry.chapters
+      });
+    });
+
     res.render("teacher/timetable", {
       batches,
       selectedBatch,
       groupedEntriesByStandard,
+      groupedByStudent,
       success: req.session.success || null,
       error: req.session.error || null
     });
@@ -447,6 +462,7 @@ exports.renderTimetable = async (req, res) => {
     res.status(500).send("Error loading timetable");
   }
 };
+
 
 exports.processTimetableBulk = async (req, res) => {
   try {
@@ -481,7 +497,7 @@ exports.processTimetableBulk = async (req, res) => {
 
     if (operations.length > 0) {
       await ExamTimetable.insertMany(operations);
-      await logAudit({
+      await logAudit(req, {
         action: "CREATE",
         entityType: "Test",
         details: `Scheduled ${operations.length} exams for ${batch.name}`,
@@ -530,7 +546,7 @@ exports.processTimetableEdit = async (req, res) => {
       }
     );
 
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "Test",
       details: `Updated exam timetable entry for ${subject}`,
@@ -550,7 +566,7 @@ exports.processTimetableDelete = async (req, res) => {
   try {
     const examIds = req.params.id.split(",");
     await ExamTimetable.deleteMany({ _id: { $in: examIds } });
-    await logAudit({
+    await logAudit(req, {
       action: "DELETE",
       entityType: "Test",
       details: `Deleted ${examIds.length} exam timetable entries`,
@@ -595,7 +611,7 @@ exports.processAddTest = async (req, res) => {
     });
 
     await newTest.save();
-    await logAudit({
+    await logAudit(req, {
       action: "CREATE",
       entityType: "Test",
       entityId: newTest._id,
@@ -802,7 +818,7 @@ exports.processEditTest = async (req, res) => {
 
     await test.save(); // Triggers save hooks for score percentage recalculation
 
-    await logAudit({
+    await logAudit(req, {
       action: "UPDATE",
       entityType: "Test",
       entityId: test._id,

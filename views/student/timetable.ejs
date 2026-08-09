@@ -250,7 +250,16 @@
 
           <!-- Step 2: Subjects -->
           <div>
-            <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd mb-4 border-b border-theme-bd pb-2">② Add Subjects &amp; Dates</p>
+            <div class="flex justify-between items-end mb-4 border-b border-theme-bd pb-2">
+              <p class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd m-0">② Add Subjects &amp; Dates</p>
+              <div>
+                <input type="file" id="ocr-image" accept="image/*" class="hidden" onchange="processOCR(this)" />
+                <button type="button" id="ocr-btn" onclick="document.getElementById('ocr-image').click()" class="text-[10px] font-mono font-bold uppercase tracking-widest bg-[var(--p)] text-white px-3 py-1.5 rounded flex items-center gap-1 hover:bg-[var(--pm)] transition-all">
+                  <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                  <span id="ocr-btn-text">Extract via AI</span>
+                </button>
+              </div>
+            </div>
             <div id="subject-rows"></div>
             <div class="add-row-btn" onclick="addSubjectRow()">
               ＋ Add another subject
@@ -284,9 +293,10 @@
            </div>
            <div>
              <label for="edit-subject">Subject</label>
-             <select id="edit-subject" name="subject" class="w-full" required>
+             <select id="edit-subject" name="subject" class="w-full" onchange="handleEditSubjectChange(this)" required>
                <option value="" disabled selected>Select Subject...</option>
              </select>
+             <input type="text" id="edit-otherSubject" name="otherSubject" placeholder="Type subject name..." class="w-full hidden mt-2" />
            </div>
            <div>
              <label for="edit-examDate">Exam Date</label>
@@ -318,6 +328,17 @@
       pill.classList.add('selected');
       document.getElementById('hidden-examType').value = pill.dataset.val;
     }
+    function handleSubjectChange(sel) {
+      const input = sel.nextElementSibling;
+      if (sel.value === 'Other') {
+        input.classList.remove('hidden');
+        input.required = true;
+      } else {
+        input.classList.add('hidden');
+        input.required = false;
+        input.value = '';
+      }
+    }
     function addSubjectRow() {
       const rows = document.getElementById('subject-rows');
       const num = rows.children.length + 1;
@@ -328,14 +349,80 @@
 
       div.innerHTML = `
         <span class="row-num">${num}</span>
-        <select name="subjects[]" required class="srow-input cursor-pointer">
-          ${subjectOptions}
-        </select>
+        <div class="flex flex-col w-full">
+          <select name="subjects[]" required class="srow-input cursor-pointer w-full" onchange="handleSubjectChange(this)">
+            ${subjectOptions}
+          </select>
+          <input type="text" name="otherSubjects[]" placeholder="Type subject name..." class="srow-input w-full hidden mt-2" />
+        </div>
         <input name="dates[]" type="date" required class="srow-input" />
         <input name="chapters[]" type="text" placeholder="Ch. 1, 2…" class="srow-input" />
         <button type="button" onclick="removeRow(this)" class="text-red-400 hover:text-red-600 hover:bg-red-500/10 p-2 rounded-full text-xl font-bold leading-none flex-shrink-0 transition-colors">&times;</button>`;
       rows.appendChild(div);
       renumberRows();
+    }
+    async function processOCR(input) {
+      if (!input.files || !input.files[0]) return;
+      const file = input.files[0];
+      const btnText = document.getElementById('ocr-btn-text');
+      const originalText = btnText.innerText;
+      try {
+        btnText.innerText = "Processing...";
+        document.getElementById('ocr-btn').disabled = true;
+        const formData = new FormData();
+        formData.append('timetableImage', file);
+        // Send available subjects so AI can match properly
+        const subjectsList = typeof getSubjectsForBatch !== 'undefined' 
+          ? getSubjectsForBatch(studentBatchName).filter(s => s !== 'Other')
+          : [];
+        formData.append('availableSubjects', JSON.stringify(subjectsList));
+        const response = await fetch('/api/student/timetable/ocr', { method: 'POST', body: formData });
+        const result = await response.json();
+        if (result.success && result.data && Array.isArray(result.data)) {
+          document.getElementById('subject-rows').innerHTML = '';
+          result.data.forEach(item => addSubjectRow());
+          const rows = document.querySelectorAll('.subject-row-premium');
+          rows.forEach((row, i) => {
+             const data = result.data[i];
+             if(!data) return;
+             const selects = row.querySelectorAll('select');
+             const inputs = row.querySelectorAll('input');
+             if(selects[0]) {
+                 let val = data.subject || '';
+                 if (val) {
+                     selects[0].value = val;
+                     if (!selects[0].value) {
+                         const options = Array.from(selects[0].options);
+                         const match = options.find(opt => opt.value.toLowerCase().includes(val.toLowerCase()) || val.toLowerCase().includes(opt.value.toLowerCase()));
+                         if (match) {
+                             selects[0].value = match.value;
+                         } else {
+                             selects[0].value = 'Other';
+                             const otherInput = selects[0].nextElementSibling;
+                             if (otherInput) {
+                                 otherInput.classList.remove('hidden');
+                                 otherInput.required = true;
+                                 otherInput.value = val;
+                             }
+                         }
+                     }
+                 }
+             }
+             const regularInputs = row.querySelectorAll('input:not(.other-subject-input):not([name="otherSubjects[]"])');
+             if(regularInputs[0]) regularInputs[0].value = data.date || '';
+             if(regularInputs[1]) regularInputs[1].value = data.chapters || '';
+          });
+        } else {
+          alert("Failed to parse image.");
+        }
+      } catch (err) {
+        console.error(err);
+        alert("An error occurred during AI processing.");
+      } finally {
+        btnText.innerText = originalText;
+        document.getElementById('ocr-btn').disabled = false;
+        input.value = '';
+      }
     }
     function removeRow(btn) {
       btn.closest('.subject-row-premium').remove();
@@ -351,6 +438,17 @@
       }
       return true;
     }
+    function handleEditSubjectChange(sel) {
+      const input = document.getElementById('edit-otherSubject');
+      if (sel.value === 'Other') {
+        input.classList.remove('hidden');
+        input.required = true;
+      } else {
+        input.classList.add('hidden');
+        input.required = false;
+        input.value = '';
+      }
+    }
     function closeModal(id) { document.getElementById(id).classList.remove('open'); }
     function openEditModal(btn) {
       const form = document.getElementById('edit-form');
@@ -362,6 +460,18 @@
         updateSubjectDropdowns([subjectDropdown], studentBatchName);
       }
       subjectDropdown.value = btn.dataset.subject;
+      
+      const otherInput = document.getElementById('edit-otherSubject');
+      if (!subjectDropdown.value) {
+        subjectDropdown.value = 'Other';
+        otherInput.value = btn.dataset.subject;
+        otherInput.classList.remove('hidden');
+        otherInput.required = true;
+      } else {
+        otherInput.value = '';
+        otherInput.classList.add('hidden');
+        otherInput.required = false;
+      }
       
       document.getElementById('edit-examDate').value = btn.dataset.date;
       document.getElementById('edit-chapters').value = btn.dataset.chapters;

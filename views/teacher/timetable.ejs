@@ -99,6 +99,23 @@
     .badge-sem1 { background: rgba(52, 211, 153, 0.08) !important; color: var(--gt) !important; border: 1px solid rgba(52, 211, 153, 0.15); }
     .badge-sem2 { background: rgba(189, 224, 69, 0.08) !important; color: var(--lt) !important; border: 1px solid rgba(189, 224, 69, 0.15); }
     .badge-ct { background: rgba(248, 113, 113, 0.08) !important; color: var(--rt) !important; border: 1px solid rgba(248, 113, 113, 0.15); }
+
+    /* Main View Tabs */
+    .main-tab-btn {
+      color: var(--fdd);
+      background: transparent;
+      border: none;
+      cursor: pointer;
+    }
+    .main-tab-btn:hover {
+      color: var(--pt);
+      background: var(--bgch);
+    }
+    .main-tab-btn.active {
+      background: var(--p);
+      color: white;
+      box-shadow: 0 4px 15px var(--pg);
+    }
   </style>
 </head>
 
@@ -202,6 +219,23 @@
             </div>
           </div>
 
+          <!-- ======= MAIN VIEW TABS ======= -->
+          <div class="stat-card p-1.5 mb-8 flex gap-2 items-center w-fit">
+            <button id="tab-schedule-btn" onclick="switchMainTab('schedule')"
+              class="main-tab-btn active px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider font-mono flex items-center gap-2 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+              Schedule View
+            </button>
+            <button id="tab-student-btn" onclick="switchMainTab('student')"
+              class="main-tab-btn px-6 py-2.5 rounded-lg text-xs font-bold uppercase tracking-wider font-mono flex items-center gap-2 transition-all">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+              By Student
+            </button>
+          </div>
+
+          <!-- ======= TAB: SCHEDULE VIEW ======= -->
+          <div id="tab-schedule">
+
           <!-- Exam Type Tabs Filter -->
           <div class="stat-card p-4 mb-8 flex flex-wrap gap-2 items-center">
             <% ['All','Unit Test 1','Unit Test 2','Semester 1','Semester 2','Class Test'].forEach((t, i) => { %>
@@ -304,10 +338,91 @@
             <% } %>
           </div>
 
+          </div><!-- end #tab-schedule -->
+
+          <!-- ======= TAB: BY STUDENT ======= -->
+          <div id="tab-student" class="hidden">
+            <%
+              const studentBatches = Object.keys(groupedByStudent);
+            %>
+            <% if (studentBatches.length === 0) { %>
+            <div class="stat-card p-12 text-center text-theme-fdd">
+              <svg class="w-12 h-12 mx-auto mb-4 opacity-30" fill="none" stroke="currentColor" stroke-width="1.2" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+              <p class="font-semibold text-sm">No Student-Added Exams Yet</p>
+              <p class="text-xs mt-1 opacity-70">Once students add exams, they will appear here grouped by batch and student.</p>
+            </div>
+            <% } else { %>
+            <% studentBatches.forEach(bName => { %>
+              <div class="stat-card p-6 mb-6">
+                <!-- Batch Header -->
+                <div class="flex items-center gap-3 mb-6">
+                  <div class="w-2.5 h-7 bg-[var(--p)] rounded-full shadow-sm"></div>
+                  <h3 class="text-base font-extrabold" style="font-family:'Unbounded',sans-serif; color:var(--pt)">
+                    <%= bName %>
+                  </h3>
+                  <div class="flex-grow h-px bg-theme-bd ml-1"></div>
+                  <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd bg-theme-bgc border border-theme-b px-3 py-1 rounded-full">
+                    <%= Object.keys(groupedByStudent[bName]).length %> student<%= Object.keys(groupedByStudent[bName]).length !== 1 ? 's' : '' %>
+                  </span>
+                </div>
+
+                <!-- Student FAQ Accordion Cards -->
+                <div class="space-y-3">
+                <% Object.keys(groupedByStudent[bName]).forEach((sName, sIdx) => {
+                  const sExams = groupedByStudent[bName][sName];
+                  const cardId = 'student-card-' + bName.replace(/\s+/g,'-') + '-' + sIdx;
+                %>
+                  <div class="border border-theme-b rounded-xl overflow-hidden bg-theme-bg hover:border-[var(--p)]/40 transition-all">
+                    <!-- Accordion Trigger -->
+                    <button type="button" onclick="toggleStudentCard('<%= cardId %>')"
+                      class="w-full flex items-center justify-between px-5 py-4 text-left gap-4 transition-all hover:bg-theme-bgch/50">
+                      <div class="flex items-center gap-3">
+                        <div class="w-8 h-8 rounded-full bg-[var(--p)]/10 border border-[var(--p)]/20 flex items-center justify-center flex-shrink-0">
+                          <svg class="w-4 h-4" style="color:var(--pt)" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        </div>
+                        <div>
+                          <p class="font-bold text-sm text-theme-fg"><%= sName %></p>
+                          <p class="text-[10px] font-mono text-theme-fdd uppercase tracking-wider"><%= sExams.length %> exam<%= sExams.length !== 1 ? 's' : '' %> scheduled</p>
+                        </div>
+                      </div>
+                      <svg id="<%= cardId %>-icon" class="w-4 h-4 text-theme-fdd transition-transform duration-200 flex-shrink-0" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+                    </button>
+
+                    <!-- Accordion Body -->
+                    <div id="<%= cardId %>" class="hidden border-t border-theme-b">
+                      <div class="p-4 space-y-2">
+                        <% sExams.forEach(exam => {
+                          const typeMap2 = { 'Unit Test 1':'badge-ut1','Unit Test 2':'badge-ut2','Semester 1':'badge-sem1','Semester 2':'badge-sem2','Class Test':'badge-ct' };
+                          const bClass = typeMap2[exam.examType] || 'badge-ct';
+                          const fDate = formatDate(exam.examDate, {day:'numeric',month:'short',year:'numeric'});
+                          const isPast2 = new Date(exam.examDate) < new Date();
+                        %>
+                        <div class="flex flex-wrap items-center gap-3 px-4 py-3 rounded-xl bg-theme-bgc border border-theme-bd <%= isPast2 ? 'opacity-50' : '' %> hover:border-[var(--p)]/30 transition-all">
+                          <span class="inline-block px-2 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider <%= bClass %>"><%= exam.examType %></span>
+                          <span class="font-black text-sm text-theme-fg flex-1"><%= exam.subject %></span>
+                          <span class="text-xs font-semibold <%= isPast2 ? 'text-theme-fdd' : 'text-theme-pt' %>">
+                            📅 <%= fDate %><%= isPast2 ? ' (Past)' : '' %>
+                          </span>
+                          <% if (exam.chapters && exam.chapters !== 'All') { %>
+                          <span class="text-[10px] text-theme-fdd font-mono w-full mt-1 pl-1">📖 <%= exam.chapters %></span>
+                          <% } %>
+                        </div>
+                        <% }) %>
+                      </div>
+                    </div>
+                  </div>
+                <% }) %>
+                </div>
+              </div>
+            <% }) %>
+            <% } %>
+          </div><!-- end #tab-student -->
+
         </div>
       </main>
     </div>
   </div>
+
 
   <!-- =================== ADD EXAMS MODAL =================== -->
   <div class="modal-overlay" id="add-modal">
@@ -546,6 +661,36 @@
     setTimeout(() => {
       ['toast-success','toast-error'].forEach(id => { const el=document.getElementById(id); if(el) el.style.display='none'; });
     }, 4000);
+
+    function switchMainTab(tab) {
+      const scheduleEl = document.getElementById('tab-schedule');
+      const studentEl = document.getElementById('tab-student');
+      const scheduleBtn = document.getElementById('tab-schedule-btn');
+      const studentBtn = document.getElementById('tab-student-btn');
+      if (tab === 'schedule') {
+        scheduleEl.classList.remove('hidden');
+        studentEl.classList.add('hidden');
+        scheduleBtn.classList.add('active');
+        studentBtn.classList.remove('active');
+      } else {
+        scheduleEl.classList.add('hidden');
+        studentEl.classList.remove('hidden');
+        studentBtn.classList.add('active');
+        scheduleBtn.classList.remove('active');
+      }
+    }
+
+    function toggleStudentCard(id) {
+      const body = document.getElementById(id);
+      const icon = document.getElementById(id + '-icon');
+      if (body.classList.contains('hidden')) {
+        body.classList.remove('hidden');
+        icon.style.transform = 'rotate(180deg)';
+      } else {
+        body.classList.add('hidden');
+        icon.style.transform = 'rotate(0deg)';
+      }
+    }
   </script>
 </body>
 

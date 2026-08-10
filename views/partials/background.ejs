@@ -65,11 +65,36 @@
       return originalFetch(resource, config);
     };
 
-    // Global copy to clipboard function
-    function copyToClipboard(text) {
+    // Global copy to clipboard function with toast feedback
+    function showCopyToast(msg, isError = false) {
+      let toast = document.getElementById('global-copy-toast');
+      if (!toast) {
+        toast = document.createElement('div');
+        toast.id = 'global-copy-toast';
+        toast.style.cssText = 'position:fixed;bottom:24px;right:24px;z-index:99999;padding:12px 20px;border-radius:12px;font-family:sans-serif;font-size:13px;font-weight:700;box-shadow:0 10px 25px rgba(0,0,0,0.15);transition:all 0.3s ease;transform:translateY(100px);opacity:0;display:flex;align-items:center;gap:8px;';
+        document.body.appendChild(toast);
+      }
+      toast.style.background = isError ? 'rgba(239, 68, 68, 0.95)' : 'rgba(16, 185, 129, 0.95)';
+      toast.style.color = '#ffffff';
+      toast.innerHTML = (isError ? '✗ ' : '✓ ') + msg;
+      toast.style.transform = 'translateY(0)';
+      toast.style.opacity = '1';
+      setTimeout(() => {
+        toast.style.transform = 'translateY(100px)';
+        toast.style.opacity = '0';
+      }, 3000);
+    }
+
+    function copyToClipboard(text, btnElement) {
+      if (btnElement && btnElement.innerText) {
+        const originalText = btnElement.innerText;
+        btnElement.innerText = "✓ Copied!";
+        setTimeout(() => { btnElement.innerText = originalText; }, 2000);
+      }
+
       if (navigator.clipboard && window.isSecureContext) {
         navigator.clipboard.writeText(text).then(() => {
-          alert('Link copied to clipboard!');
+          showCopyToast('Link copied to clipboard!');
         }).catch(err => {
           console.error('Failed to copy: ', err);
           fallbackCopyTextToClipboard(text);
@@ -82,7 +107,6 @@
     function fallbackCopyTextToClipboard(text) {
       var textArea = document.createElement("textarea");
       textArea.value = text;
-      // Avoid scrolling to bottom
       textArea.style.top = "0";
       textArea.style.left = "0";
       textArea.style.position = "fixed";
@@ -92,13 +116,13 @@
       try {
         var successful = document.execCommand('copy');
         if (successful) {
-          alert('Link copied to clipboard!');
+          showCopyToast('Link copied to clipboard!');
         } else {
-          alert('Failed to copy link.');
+          showCopyToast('Failed to copy link', true);
         }
       } catch (err) {
-        console.error('Fallback: Oops, unable to copy', err);
-        alert('Failed to copy link.');
+        console.error('Fallback copy error', err);
+        showCopyToast('Failed to copy link', true);
       }
       document.body.removeChild(textArea);
     }

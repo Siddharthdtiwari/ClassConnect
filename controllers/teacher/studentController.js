@@ -210,17 +210,24 @@ exports.toggleActiveStatus = async (req, res) => {
 
 exports.renderViewProfile = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
+      return res.status(404).send("Student not found");
+    }
+
     const student = await User.findById(req.params.id).populate('batch').lean();
     if (!student) return res.status(404).send("Student not found");
 
     const studentId = student.studentId;
+    const batchFilter = (req.viewingBatches && req.viewingBatches.length > 0) 
+      ? { $in: req.viewingBatches } 
+      : (student.batch ? student.batch._id : { $exists: true });
 
-    const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: { $in: req.viewingBatches } })
+    const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: batchFilter })
       .populate('batch')
       .sort({ datePaid: -1 })
       .lean();
 
-    let recentScores = await Score.find({ studentId: studentId, batch: { $in: req.viewingBatches } })
+    let recentScores = await Score.find({ studentId: studentId, batch: batchFilter })
       .populate('testId')
       .lean();
 
@@ -232,7 +239,7 @@ exports.renderViewProfile = async (req, res) => {
 
     const allAttendanceRecords = await Attendance.find({
       "records.studentId": studentId,
-      batch: { $in: req.viewingBatches },
+      batch: batchFilter,
     }).lean();
 
     let presentDays = 0;

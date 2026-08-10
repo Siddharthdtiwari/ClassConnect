@@ -34,6 +34,8 @@ router.get("/student/dashboard", ensureDBConnection, requireStudentLogin, catchA
 router.get("/student/report", ensureDBConnection, requireStudentLogin, catchAsync(dashboardController.generateReport));
 
 // Profile
+router.get("/student/profile", ensureDBConnection, requireStudentLogin, catchAsync(dashboardController.renderDashboard));
+router.get("/student/view_profile", ensureDBConnection, requireStudentLogin, catchAsync(dashboardController.renderDashboard));
 router.get("/student/edit_profile", ensureDBConnection, requireStudentLogin, catchAsync(profileController.renderEditProfile));
 router.post("/student/edit_profile", ensureDBConnection, requireStudentLogin, upload.single("profilePhoto"), catchAsync(profileController.processEditProfile));
 

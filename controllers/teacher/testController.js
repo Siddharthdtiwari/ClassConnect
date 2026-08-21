@@ -11,6 +11,7 @@ const { logAudit } = require("../../utils/auditService");
 const crypto = require("crypto");
 const { sendTestMarks } = require("../../utils/emailService");
 const sanitizeHtml = require("sanitize-html");
+const { renderError } = require("../../utils/renderError");
 
 // Broader than the ClassConnect solution sanitizer since the AI test-paper prompt
 // template instructs Gemini to emit a branding <img> plus inline layout styles.
@@ -46,7 +47,7 @@ exports.renderManageTests = async (req, res) => {
     res.render("teacher/manage_tests", { tests, byClass, batches });
   } catch (err) {
     console.error("Manage tests error:", err);
-    res.status(500).send("Error");
+    renderError(req, res, 500, "Error");
   }
 };
 exports.renderGeneratePaper = async (req, res) => {
@@ -61,7 +62,7 @@ exports.renderGeneratePaper = async (req, res) => {
     res.render("teacher/generate_paper", { batches, editTest });
   } catch (err) {
     console.error("Render generate paper page error:", err);
-    res.status(500).send("Error");
+    renderError(req, res, 500, "Error");
   }
 };
 
@@ -132,7 +133,7 @@ exports.renderManageScore = async (req, res) => {
     res.render("teacher/manage_score", { batches });
   } catch (err) {
     console.error("Manage score error:", err);
-    res.status(500).send("Error");
+    renderError(req, res, 500, "Error");
   }
 };
 
@@ -380,7 +381,7 @@ exports.printConsolidatedScores = async (req, res) => {
     res.render("teacher/print_all_scores", { data: responseData, viewingYear: req.viewingYear });
   } catch (err) {
     console.error("Print consolidated error:", err);
-    res.status(500).send("Failed to fetch consolidated scores for printing");
+    renderError(req, res, 500, "Failed to fetch consolidated scores for printing");
   }
 };
 
@@ -459,7 +460,7 @@ exports.renderTimetable = async (req, res) => {
     req.session.error = null;
   } catch (err) {
     console.error("Timetable GET error:", err);
-    res.status(500).send("Error loading timetable");
+    renderError(req, res, 500, "Error loading timetable");
   }
 };
 

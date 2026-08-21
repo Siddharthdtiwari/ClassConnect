@@ -1,11 +1,12 @@
 const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Attendance = require("../../models/Attendance");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderAttendance = async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).populate('batch').lean();
-    if (!student) return res.status(404).send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
 
     const studentId = student.studentId;
 
@@ -31,6 +32,6 @@ exports.renderAttendance = async (req, res) => {
     res.render("student/attendance", { student, attendanceData });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching attendance");
+    renderError(req, res, 500, "Error fetching attendance");
   }
 };

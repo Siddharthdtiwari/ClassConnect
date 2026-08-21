@@ -6,6 +6,7 @@ const Fee = require("../../models/Fee");
 const AuditLog = require("../../models/AuditLog");
 const { logAudit } = require("../../utils/auditService");
 const bcrypt = require("bcrypt");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderLogin = (req, res) => {
   res.render("teacher/login", { hideNavbar: true });
@@ -115,7 +116,7 @@ exports.renderDashboard = async (req, res) => {
     });
   } catch (err) {
     console.error("Teacher dashboard error:", err);
-    res.status(500).send("Error loading dashboard");
+    renderError(req, res, 500, "Error loading dashboard");
   }
 };
 
@@ -132,7 +133,7 @@ exports.processLogout = async (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout error:", err);
-      return res.status(500).send("Logout failed");
+      return renderError(req, res, 500, "Logout failed");
     }
     res.redirect("/");
   });
@@ -175,11 +176,11 @@ exports.processAddTeacher = async (req, res) => {
 exports.renderEditTeacher = async (req, res) => {
   try {
     const teacher = await Teacher.findById(req.params.id).lean();
-    if (!teacher) return res.status(404).send("Teacher not found");
+    if (!teacher) return renderError(req, res, 404, "Teacher not found");
     res.render("teacher/edit_teacher", { teacher });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading teacher");
+    renderError(req, res, 500, "Error loading teacher");
   }
 };
 

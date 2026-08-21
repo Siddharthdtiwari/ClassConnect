@@ -8,6 +8,7 @@ const { ACADEMIC_MONTHS } = require("../../utils/constants");
 const { NA_STATUS, NA_REASONS, feeYearForMonth, naMonthSet, billableMonths } = require("../../utils/feeHelpers");
 const { logAudit } = require("../../utils/auditService");
 const { sendFeeReminder } = require("../../utils/emailService");
+const { renderError } = require("../../utils/renderError");
 exports.renderRevenueReport = async (req, res) => {
   try {
     const months = ACADEMIC_MONTHS;
@@ -69,7 +70,7 @@ exports.renderRevenueReport = async (req, res) => {
     });
   } catch (err) {
     console.error("Error generating revenue report:", err);
-    res.status(500).send("Error generating revenue report");
+    renderError(req, res, 500, "Error generating revenue report");
   }
 };
 
@@ -149,7 +150,7 @@ exports.renderManageFees = async (req, res) => {
     res.render("teacher/manage_fees", { report, months, students, batches, naReasons: NA_REASONS });
   } catch (err) {
     console.error("Error loading fees manager:", err);
-    res.status(500).send("Error loading fees manager");
+    renderError(req, res, 500, "Error loading fees manager");
   }
 };
 
@@ -236,7 +237,7 @@ exports.renderFeeDefaulters = async (req, res) => {
     });
   } catch (err) {
     console.error("Fee defaulters error:", err);
-    res.status(500).send("Server Error");
+    renderError(req, res, 500, "Server Error");
   }
 };
 
@@ -337,7 +338,7 @@ exports.downloadFeeDefaulters = async (req, res) => {
 
   } catch (err) {
     console.error("Fee defaulters download error:", err);
-    res.status(500).send("Error generating PDF");
+    renderError(req, res, 500, "Error generating PDF");
   }
 };
 exports.processAddFees = async (req, res) => {
@@ -538,7 +539,7 @@ exports.renderBulkFees = async (req, res) => {
     });
   } catch (err) {
     console.error("Error rendering bulk fees:", err);
-    res.status(500).send("Server Error");
+    renderError(req, res, 500, "Server Error");
   }
 };
 
@@ -623,7 +624,7 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
     const month = req.query.month;
     const year = req.query.calendarYear || req.query.year;
     if (!month || !year) {
-      return res.status(400).send("Month and Year are required.");
+      return renderError(req, res, 400, "Month and Year are required.");
     }
 
     const { ACADEMIC_MONTHS } = require("../../utils/constants");
@@ -673,7 +674,7 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
 
   } catch (err) {
     console.error("Error generating fee collection sheet:", err);
-    res.status(500).send("Error generating PDF");
+    renderError(req, res, 500, "Error generating PDF");
   }
 };
 

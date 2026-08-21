@@ -1,5 +1,6 @@
 const User = require("../../models/User");
 const Syllabus = require("../../models/Syllabus");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderTracker = async (req, res) => {
   try {
@@ -24,6 +25,6 @@ exports.renderTracker = async (req, res) => {
     });
   } catch (err) {
     console.error("Error rendering student syllabus tracker:", err);
-    res.status(500).send("Error loading syllabus tracker.");
+    renderError(req, res, 500, "Error loading syllabus tracker.");
   }
 };

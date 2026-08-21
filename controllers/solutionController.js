@@ -1,4 +1,5 @@
 const sanitizeHtml = require('sanitize-html');
+const { renderError } = require("../utils/renderError");
 
 const CLASSCONNECT_API = process.env.CLASSCONNECT_API_URL || 'http://localhost:3000/api';
 const API_TIMEOUT_MS = 15000;
@@ -54,7 +55,7 @@ exports.renderSolutions = async (req, res) => {
     });
   } catch (err) {
     console.error(`renderSolutions API fetch error (${CLASSCONNECT_API}/solutions):`, err);
-    res.status(500).send(`Error loading solutions from ClassConnect API.<br><br><small><strong>Debug Info:</strong> Attempted to fetch from ${CLASSCONNECT_API}.<br><strong>Error:</strong> ${err.message}</small>`);
+    renderError(req, res, 500, "Could not reach the solutions service. Please try again in a moment.");
   }
 };
 
@@ -66,7 +67,7 @@ exports.renderViewSolution = async (req, res) => {
     const solution = data.success ? data.data : null;
 
     if (!solution) {
-      return res.status(404).send("Solution not found on ClassConnect servers.");
+      return renderError(req, res, 404, "Solution not found on ClassConnect servers.");
     }
 
     // Defense-in-depth: sanitize even though the source API also sanitizes on save,

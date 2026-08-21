@@ -4,6 +4,7 @@ const Batch = require("../../models/Batch");
 const Teacher = require("../../models/Teacher");
 const { ACADEMIC_MONTHS } = require("../../utils/constants");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
 
 const MONTH_NAME_MAP = {
   0: "January",
@@ -113,7 +114,7 @@ exports.renderFinance = async (req, res) => {
     });
   } catch (err) {
     console.error("Finance render error:", err);
-    res.status(500).send("Server Error");
+    renderError(req, res, 500, "Server Error");
   }
 };
 

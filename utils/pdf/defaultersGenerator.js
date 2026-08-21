@@ -317,12 +317,20 @@ async function drawFeeDefaultersReport(doc, data) {
 
   // Footer
   function writeFooter() {
+    // pdfkit doesn't compute align:'center' correctly across a continued (multi-color)
+    // line — it centers the first chunk alone, so the second chunk lands on top of it.
+    // Centering by hand (measuring both chunks first, then picking a fixed x) avoids that.
+    const footerPart1 = 'This is a computer-generated report and does not require a signature.';
+    const footerPart2 = ' | Powered by ClassConnect';
     for (let p = 0; p < doc.bufferedPageRange().count; p++) {
       doc.switchToPage(p);
       doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
-      doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
-    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
+      doc.font('Times-Italic').fontSize(9);
+      const footerWidth = doc.widthOfString(footerPart1) + doc.widthOfString(footerPart2);
+      const footerX = M + (W - M * 2 - footerWidth) / 2;
+      doc.fillColor('#9ca3af')
+        .text(footerPart1, footerX, doc.page.height - 40, { continued: true, lineBreak: false })
+        .fillColor('#4b2d84').text(footerPart2, { link: 'https://classconnects.vercel.app' });
     }
   }
 
@@ -486,12 +494,20 @@ async function drawAttendanceDefaultersReport(doc, data) {
   });
 
   function writeFooter() {
+    // pdfkit doesn't compute align:'center' correctly across a continued (multi-color)
+    // line — it centers the first chunk alone, so the second chunk lands on top of it.
+    // Centering by hand (measuring both chunks first, then picking a fixed x) avoids that.
+    const footerPart1 = 'This is a computer-generated report and does not require a signature.';
+    const footerPart2 = ' | Powered by ClassConnect';
     for (let p = 0; p < doc.bufferedPageRange().count; p++) {
       doc.switchToPage(p);
       doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
-      doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
-    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
+      doc.font('Times-Italic').fontSize(9);
+      const footerWidth = doc.widthOfString(footerPart1) + doc.widthOfString(footerPart2);
+      const footerX = M + (W - M * 2 - footerWidth) / 2;
+      doc.fillColor('#9ca3af')
+        .text(footerPart1, footerX, doc.page.height - 40, { continued: true, lineBreak: false })
+        .fillColor('#4b2d84').text(footerPart2, { link: 'https://classconnects.vercel.app' });
     }
   }
 

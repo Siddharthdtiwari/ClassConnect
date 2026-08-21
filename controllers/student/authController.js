@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const bcrypt = require("bcrypt");
 const User = require("../../models/User");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderLogin = (req, res) => res.render("student/login", { hideNavbar: true });
 
@@ -76,7 +77,7 @@ exports.processLogout = async (req, res) => {
   req.session.destroy((err) => {
     if (err) {
       console.error("Logout error:", err);
-      return res.status(500).send("Logout failed");
+      return renderError(req, res, 500, "Logout failed");
     }
     res.redirect("/");
   });

@@ -1,6 +1,7 @@
 const Batch = require("../../models/Batch");
 const Syllabus = require("../../models/Syllabus");
 const { sortBatches } = require("../../utils/sortHelpers");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderTracker = async (req, res) => {
   try {
@@ -47,7 +48,7 @@ exports.renderTracker = async (req, res) => {
     });
   } catch (err) {
     console.error("Error rendering syllabus tracker:", err);
-    res.status(500).send("Error loading syllabus tracker.");
+    renderError(req, res, 500, "Error loading syllabus tracker.");
   }
 };
 

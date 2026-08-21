@@ -1,4 +1,5 @@
 const AuditLog = require("../../models/AuditLog");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderAuditTrail = async (req, res) => {
   try {
@@ -26,6 +27,6 @@ exports.renderAuditTrail = async (req, res) => {
     });
   } catch (error) {
     console.error("Error fetching audit logs:", error);
-    res.status(500).send("Server Error");
+    renderError(req, res, 500, "Server Error");
   }
 };

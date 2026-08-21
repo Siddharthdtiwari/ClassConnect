@@ -2,6 +2,7 @@ const Batch = require("../../models/Batch");
 const User = require("../../models/User");
 const { sortBatches } = require("../../utils/sortHelpers");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderManageBatches = async (req, res) => {
   try {
@@ -19,7 +20,7 @@ exports.renderManageBatches = async (req, res) => {
     res.render("teacher/manage_batches", { batches: batchesWithCounts });
   } catch (err) {
     console.error("Manage batches error:", err);
-    res.status(500).send("Error loading batches");
+    renderError(req, res, 500, "Error loading batches");
   }
 };
 

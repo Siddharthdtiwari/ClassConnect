@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const ExamTimetable = require("../../models/ExamTimetable");
 const axios = require("axios");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderTimetable = async (req, res) => {
   try {
@@ -32,7 +33,7 @@ exports.renderTimetable = async (req, res) => {
     req.session.error = null;
   } catch (err) {
     console.error("Error fetching student timetable:", err);
-    res.status(500).send("Server Error");
+    renderError(req, res, 500, "Server Error");
   }
 };
 

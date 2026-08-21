@@ -13,6 +13,7 @@ const transporter = nodemailer.createTransport({
 });
 
 const User = require("../models/User");
+const { NA_STATUS } = require("./feeHelpers");
 
 const sendEmail = async (to, subject, htmlContent, attachments = [], logOptions = {}) => {
   if (!to) return; // Skip if no email is provided
@@ -80,48 +81,60 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, re
 
       const months = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
       const calendarToAcademic = { 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11 };
-      
+
       const now = new Date();
       const currentMonthIndex = now.getMonth();
       const currentAcademicIndex = calendarToAcademic[currentMonthIndex];
       const FEE_DUE_DAY = 10;
       const monthsElapsed = now.getDate() >= FEE_DUE_DAY ? currentAcademicIndex + 1 : currentAcademicIndex;
-      
+
       let academicStartYear;
       if (student.batch && student.batch.academicYear) {
         academicStartYear = parseInt(student.batch.academicYear.split("-")[0]);
       } else {
         academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
       }
-      
+
       const yearForMonthIndex = (idx) => idx < 8 ? academicStartYear : academicStartYear + 1;
-      
-      let dueMonths = [];
-      for (let idx = 0; idx < monthsElapsed; idx++) {
+
+      // Same per-month status logic as the student fee dashboard (controllers/student/feeController.js)
+      // so the email agrees with what the student sees when they log in — N/A months excluded,
+      // elapsed-and-unpaid months are "Pending", future months are "Not Yet Due".
+      const monthlyFee = Number(student.monthlyFee || 0);
+      let totalDue = 0;
+      const rows = [];
+
+      for (let idx = 0; idx < months.length; idx++) {
         const m = months[idx];
         const feeYear = yearForMonthIndex(idx);
-        const feeRecord = fees.find((f) => f.month === m && Number(f.year) === feeYear && f.status === "Paid");
-        if (!feeRecord) {
-          dueMonths.push(m);
+        const feeRecord = fees.find((f) => f.month === m && Number(f.year) === feeYear);
+
+        if (feeRecord && feeRecord.status === NA_STATUS) {
+          continue; // Not applicable to this student — leave out of the summary entirely.
+        } else if (feeRecord && feeRecord.status === "Paid") {
+          rows.push({ month: m, label: `Paid${feeRecord.datePaid ? ` on ${new Date(feeRecord.datePaid).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" })}` : ""}`, color: "#16a34a", bg: "#f0fdf4" });
+        } else if (idx < monthsElapsed) {
+          rows.push({ month: m, label: "Pending", color: "#e11d48", bg: "#fff1f2" });
+          totalDue += Number((feeRecord && feeRecord.amount) || monthlyFee);
+        } else {
+          rows.push({ month: m, label: "Not Yet Due", color: "#6b7280", bg: "#f9fafb" });
         }
       }
-      
-      const monthlyFee = Number(student.monthlyFee || 0);
-      const totalDue = monthlyFee * dueMonths.length;
-      
-      if (dueMonths.length > 0) {
-        feeSummaryHtml = `
-        <div style="background: #fff1f2; border: 1px solid #fecdd3; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
-          <h3 style="margin-top: 0; color: #e11d48; font-size: 16px; margin-bottom: 10px;">Fee Summary</h3>
-          <p style="margin: 0; color: #881337; font-size: 15px;">You have outstanding dues of <strong>₹${totalDue.toLocaleString()}</strong> for the following months: <strong>${dueMonths.join(", ")}</strong>.</p>
+
+      const rowsHtml = rows.map((r) => `
+          <tr>
+            <td style="padding: 8px 0; color: #334155; font-size: 14px;">${r.month}</td>
+            <td style="padding: 8px 0; text-align: right;"><span style="background: ${r.bg}; color: ${r.color}; font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;">${r.label}</span></td>
+          </tr>`).join("");
+
+      feeSummaryHtml = `
+        <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
+          <h3 style="margin-top: 0; color: #4b2d84; font-size: 16px; margin-bottom: 4px;">Fee Summary</h3>
+          ${totalDue > 0
+            ? `<p style="margin: 0 0 10px; color: #881337; font-size: 14px;">Total pending: <strong>₹${totalDue.toLocaleString("en-IN")}</strong></p>`
+            : `<p style="margin: 0 0 10px; color: #166534; font-size: 14px;">All fees are cleared!</p>`}
+          <table style="width: 100%; border-collapse: collapse;">${rowsHtml}</table>
         </div>`;
-      } else {
-        feeSummaryHtml = `
-        <div style="background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 14px; padding: 18px 20px; margin: 24px 0;">
-          <h3 style="margin-top: 0; color: #16a34a; font-size: 16px; margin-bottom: 10px;">Fee Summary</h3>
-          <p style="margin: 0; color: #166534; font-size: 15px;">You have <strong>no outstanding dues</strong> at the moment. All fees are cleared!</p>
-        </div>`;
-      }
     } catch (e) {
       console.error("Error generating fee summary for email:", e);
     }

@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const StudyMaterial = require("../../models/StudyMaterial");
 const Test = require("../../models/Test");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderContent = async (req, res) => {
   try {
@@ -18,6 +19,6 @@ exports.renderContent = async (req, res) => {
     res.render("student/content", { student, materials, tests });
   } catch (err) {
     console.error("Error loading student content:", err);
-    res.status(500).send("Error loading study materials");
+    renderError(req, res, 500, "Error loading study materials");
   }
 };

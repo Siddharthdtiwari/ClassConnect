@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 const rateLimit = require("express-rate-limit");
-const { ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, requireAdminOnly } = require("../middlewares/auth");
+const { ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, requireAdminOnly, redirectIfLoggedIn } = require("../middlewares/auth");
 const { loadBatches } = require("../middlewares/batchContext");
 const { upload } = require("../utils/upload");
 
@@ -31,7 +31,7 @@ const loginLimiter = rateLimit({
 router.use(loadBatches);
 
 // Auth & Dashboard
-router.get("/teacher/login", catchAsync(authController.renderLogin));
+router.get("/teacher/login", ensureDBConnection, catchAsync(redirectIfLoggedIn("teacher")), catchAsync(authController.renderLogin));
 router.post("/teacher/login", loginLimiter, ensureDBConnection, catchAsync(authController.processLogin));
 router.get("/teacher/dashboard", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderDashboard));
 router.get("/teacher/logout", catchAsync(authController.processLogout));
@@ -66,6 +66,7 @@ router.get("/teacher/student_report/:id", ensureDBConnection, requireTeacherLogi
 // Attendance Management
 router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderManageAttendance));
 router.post("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.processManageAttendance));
+router.post("/teacher/send_attendance_emails", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.sendMonthlyAttendanceEmails));
 router.get("/teacher/detailed_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDetailedAttendance));
 router.get("/teacher/defaulters/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDefaulters));
 router.get("/teacher/defaulters/download/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.downloadDefaulters));
@@ -80,6 +81,7 @@ router.post("/teacher/fee_month_na", ensureDBConnection, requireTeacherLogin, ex
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
 router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
 router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));
+router.post("/teacher/fee_defaulters/remind", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.sendFeeReminderEmail));
 router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderBulkFees));
 router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, express.json({ limit: '10mb' }), catchAsync(feeController.processBulkSave));
 router.get("/teacher/print_fee_sheet", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeCollectionSheet));

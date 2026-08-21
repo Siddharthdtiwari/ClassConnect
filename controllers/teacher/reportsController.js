@@ -7,6 +7,7 @@ const StudyMaterial = require("../../models/StudyMaterial");
 const ExamTimetable = require("../../models/ExamTimetable");
 const EmailLog = require("../../models/EmailLog");
 const AuditLog = require("../../models/AuditLog");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderReports = async (req, res) => {
   try {
@@ -132,6 +133,6 @@ exports.renderReports = async (req, res) => {
     });
   } catch (err) {
     console.error("Reports hub error:", err);
-    res.status(500).send("Error loading reports");
+    renderError(req, res, 500, "Error loading reports");
   }
 };

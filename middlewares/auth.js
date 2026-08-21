@@ -43,6 +43,33 @@ const requireTeacherLogin = async (req, res, next) => {
   }
 };
 
+// A visitor who already has a live session has no reason to see a login form again.
+// Scoped to one portal so a logged-in student hitting /teacher/login still gets the
+// form (they may be switching accounts). The existence check keeps a stale session
+// pointing at a deleted account from bouncing between here and requireXLogin.
+const redirectIfLoggedIn = (portal) => async (req, res, next) => {
+  const role = req.session?.role;
+  if (!req.session?.userId || !role) return next();
+
+  const isTeacherPortal = portal === "teacher";
+  const matchesPortal = isTeacherPortal
+    ? ['teacher', 'admin', 'owner'].includes(role)
+    : role === "student";
+  if (!matchesPortal) return next();
+
+  try {
+    const model = isTeacherPortal ? Teacher : User;
+    const exists = await model.exists({ _id: req.session.userId });
+    if (exists) return res.redirect(`/${portal}/dashboard`);
+  } catch (err) {
+    console.error("redirectIfLoggedIn error:", err);
+    return next();
+  }
+
+  // Session references an account that no longer exists — drop it and show the form.
+  return req.session.destroy(() => next());
+};
+
 const requireAdminOrOwner = (req, res, next) => {
   if (['admin', 'owner'].includes(req.session.role)) {
     return next();
@@ -77,6 +104,7 @@ module.exports = {
   connectDB,
   ensureDBConnection,
   requireTeacherLogin,
+  redirectIfLoggedIn,
   requireAdminOrOwner,
   requireAdminOnly,
   requireStudentLogin

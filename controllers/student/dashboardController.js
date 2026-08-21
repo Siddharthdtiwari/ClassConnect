@@ -4,6 +4,7 @@ const Score = require("../../models/Score");
 const Fee = require("../../models/Fee");
 const Attendance = require("../../models/Attendance");
 const { generateStudentReportPDF } = require("../../utils/pdfUtils");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderDashboard = async (req, res) => {
   try {
@@ -75,7 +76,7 @@ exports.renderDashboard = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading dashboard");
+    renderError(req, res, 500, "Error loading dashboard");
   }
 };
 
@@ -141,7 +142,7 @@ exports.generateReport = async (req, res) => {
   } catch (err) {
     console.error("Error generating student report:", err);
     if (!res.headersSent) {
-      res.status(500).send("Server Error");
+      renderError(req, res, 500, "Server Error");
     }
   }
 };

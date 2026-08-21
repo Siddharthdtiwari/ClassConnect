@@ -1,6 +1,7 @@
 const User = require("../../models/User");
 const { uploadToCloudinary } = require("../../utils/upload");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderEditProfile = async (req, res) => {
   try {
@@ -10,7 +11,7 @@ exports.renderEditProfile = async (req, res) => {
     res.render("student/edit_profile", { student });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading edit profile page");
+    renderError(req, res, 500, "Error loading edit profile page");
   }
 };
 

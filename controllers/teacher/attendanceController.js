@@ -3,6 +3,12 @@ const Batch = require("../../models/Batch");
 const Attendance = require("../../models/Attendance");
 const { sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
+
+const MONTH_NAME_TO_NUMBER = {
+  January: 1, February: 2, March: 3, April: 4, May: 5, June: 6,
+  July: 7, August: 8, September: 9, October: 10, November: 11, December: 12,
+};
 
 exports.renderManageAttendance = async (req, res) => {
   try {
@@ -29,7 +35,7 @@ exports.renderManageAttendance = async (req, res) => {
     });
   } catch (err) {
     console.error("Manage attendance GET error:", err);
-    res.status(500).send("Error loading attendance");
+    renderError(req, res, 500, "Error loading attendance");
   }
 };
 
@@ -135,7 +141,7 @@ exports.renderDetailedAttendance = async (req, res) => {
     });
   } catch (err) {
     console.error("Error generating detailed attendance report:", err);
-    res.status(500).send("Failed to generate detailed attendance report.");
+    renderError(req, res, 500, "Failed to generate detailed attendance report.");
   }
 };
 
@@ -144,7 +150,7 @@ exports.renderDefaulters = async (req, res) => {
     const { year, month } = req.params;
 
     if (!/^\d{4}$/.test(year) || !/^(0?[1-9]|1[0-2])$/.test(month)) {
-      return res.status(400).send("Invalid year or month format");
+      return renderError(req, res, 400, "Invalid year or month format");
     }
 
     const startDate = new Date(`${year}-${month}-01`);
@@ -197,7 +203,7 @@ exports.renderDefaulters = async (req, res) => {
     res.render("teacher/defaulters", { year, month, defaulters, headerUrl });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error generating defaulter list");
+    renderError(req, res, 500, "Error generating defaulter list");
   }
 };
 
@@ -206,7 +212,7 @@ exports.downloadDefaulters = async (req, res) => {
     const { year, month } = req.params;
 
     if (!/^\d{4}$/.test(year) || !/^(0?[1-9]|1[0-2])$/.test(month)) {
-      return res.status(400).send("Invalid year or month format");
+      return renderError(req, res, 400, "Invalid year or month format");
     }
 
     const startDate = new Date(`${year}-${month}-01`);
@@ -258,7 +264,7 @@ exports.downloadDefaulters = async (req, res) => {
     await generateAttendanceDefaultersPDF({ defaulters, month, year }, res, "inline");
   } catch (err) {
     console.error("Attendance defaulters download error:", err);
-    res.status(500).send("Error generating PDF");
+    renderError(req, res, 500, "Error generating PDF");
   }
 };
 
@@ -317,7 +323,7 @@ exports.renderBulkAttendance = async (req, res) => {
     });
   } catch (err) {
     console.error("Error rendering bulk attendance:", err);
-    res.status(500).send("Error rendering bulk attendance");
+    renderError(req, res, 500, "Error rendering bulk attendance");
   }
 };
 
@@ -383,5 +389,72 @@ exports.processBulkSaveAttendance = async (req, res) => {
   } catch (err) {
     console.error("Error saving bulk attendance:", err);
     res.status(500).json({ success: false, message: "Failed to save attendance" });
+  }
+};
+
+// Body: { month: "August" (full month name, from the <select>'s option text), year: "2026" }
+exports.sendMonthlyAttendanceEmails = async (req, res) => {
+  try {
+    const { month, year } = req.body;
+    const monthNum = MONTH_NAME_TO_NUMBER[month];
+    if (!monthNum || !/^\d{4}$/.test(String(year))) {
+      return res.status(400).json({ success: false, message: "Invalid month or year." });
+    }
+
+    const startDate = new Date(`${year}-${String(monthNum).padStart(2, "0")}-01`);
+    const endDate = new Date(year, monthNum, 0);
+
+    const students = await User.find({ batch: { $in: req.viewingBatches } }).lean();
+
+    const attendanceDocs = await Attendance.find({
+      date: {
+        $gte: startDate.toISOString().split("T")[0],
+        $lte: endDate.toISOString().split("T")[0],
+      },
+      batch: { $in: req.viewingBatches },
+    }).lean();
+
+    const stats = {};
+    students.forEach((s) => {
+      stats[s.studentId] = { present: 0, absent: 0, total: 0 };
+    });
+
+    attendanceDocs.forEach((doc) => {
+      doc.records.forEach((r) => {
+        if (stats[r.studentId]) {
+          if (r.status === "P") stats[r.studentId].present++;
+          if (r.status === "A") stats[r.studentId].absent++;
+          stats[r.studentId].total++;
+        }
+      });
+    });
+
+    const { sendMonthEndAttendance } = require("../../utils/emailService");
+
+    let sentCount = 0;
+    for (const student of students) {
+      const s = stats[student.studentId];
+      // Skip students with no attendance marked this month — nothing meaningful to report.
+      if (!s || s.total === 0 || !student.email) continue;
+
+      const percentage = ((s.present / (s.present + s.absent)) * 100).toFixed(1);
+      sendMonthEndAttendance(student.email, student.studentName, month, year, s.present, s.absent, percentage, {
+        studentRef: student._id,
+        academicYear: req.viewingYear,
+      }).catch((err) => console.error(`Error emailing attendance report to ${student.email}:`, err));
+      sentCount++;
+    }
+
+    await logAudit(req, {
+      action: "BULK_UPDATE",
+      entityType: "User",
+      details: `Emailed ${month} ${year} attendance report to ${sentCount} student(s)`,
+      academicYear: req.viewingYear,
+    });
+
+    res.json({ success: true, message: `Attendance report queued for ${sentCount} student(s).` });
+  } catch (err) {
+    console.error("Error sending monthly attendance emails:", err);
+    res.status(500).json({ success: false, message: "Failed to send attendance emails." });
   }
 };

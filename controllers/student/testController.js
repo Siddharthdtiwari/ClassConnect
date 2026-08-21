@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const Test = require("../../models/Test");
 const Score = require("../../models/Score");
 const crypto = require("crypto");
+const { renderError } = require("../../utils/renderError");
 exports.renderTestScore = async (req, res) => {
   try {
     const studentId = req.user.studentId;
@@ -30,7 +31,7 @@ exports.renderTestScore = async (req, res) => {
     res.render("student/test_score", { scoresBySubject, studentBatchName });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching scores");
+    renderError(req, res, 500, "Error fetching scores");
   }
 };
 
@@ -48,7 +49,7 @@ exports.renderTakeTest = async (req, res) => {
     res.render("student/take_test", { tests, studentStandard: studentBatchName, subject });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading tests");
+    renderError(req, res, 500, "Error loading tests");
   }
 };
 

@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const catchAsync = require('../utils/catchAsync');
 
-const { ensureDBConnection, requireStudentLogin } = require("../middlewares/auth");
+const { ensureDBConnection, requireStudentLogin, redirectIfLoggedIn } = require("../middlewares/auth");
 const { upload } = require("../utils/upload");
 const rateLimit = require("express-rate-limit");
 
@@ -25,7 +25,7 @@ const loginLimiter = rateLimit({
 });
 
 // Authentication
-router.get("/student/login", catchAsync(authController.renderLogin));
+router.get("/student/login", ensureDBConnection, catchAsync(redirectIfLoggedIn("student")), catchAsync(authController.renderLogin));
 router.post("/student/login", loginLimiter, ensureDBConnection, catchAsync(authController.processLogin));
 router.get("/student/logout", catchAsync(authController.processLogout));
 

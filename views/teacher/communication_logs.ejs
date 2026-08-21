@@ -74,14 +74,23 @@
               <p class="dash-sub">Tracking Outbound Communications & Notifications</p>
             </div>
             
-            <form action="/teacher/reports/communications" method="GET" class="flex gap-3">
+            <form action="/teacher/reports/communications" method="GET" class="flex flex-wrap gap-3">
+              <input type="text" name="q" value="<%= queryQ %>" placeholder="Search recipient or student..." class="bg-theme-bgc text-theme-fg border border-theme-b rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-theme-p w-56">
               <select name="type" class="bg-theme-bgc text-theme-fg border border-theme-b rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-theme-p">
                 <option value="">All Types</option>
                 <option value="Fee Receipt" <%= queryType === 'Fee Receipt' ? 'selected' : '' %>>Fee Receipt</option>
                 <option value="Test Score" <%= queryType === 'Test Score' ? 'selected' : '' %>>Test Score</option>
                 <option value="Attendance Report" <%= queryType === 'Attendance Report' ? 'selected' : '' %>>Attendance Report</option>
               </select>
+              <select name="status" class="bg-theme-bgc text-theme-fg border border-theme-b rounded-xl px-4 py-2 text-sm font-semibold focus:outline-none focus:border-theme-p">
+                <option value="">All Statuses</option>
+                <option value="Sent" <%= queryStatus === 'Sent' ? 'selected' : '' %>>Sent</option>
+                <option value="Failed" <%= queryStatus === 'Failed' ? 'selected' : '' %>>Failed</option>
+              </select>
               <button type="submit" class="btn-solid-purple px-4 py-2">Filter</button>
+              <% if (queryQ || queryType || queryStatus) { %>
+                <a href="/teacher/reports/communications" class="px-4 py-2 text-sm font-semibold text-theme-fdd hover:text-theme-fg transition-colors">Clear</a>
+              <% } %>
             </form>
           </header>
 
@@ -98,12 +107,12 @@
                   </tr>
                 </thead>
                 <tbody class="text-sm font-semibold divide-y divide-theme-bd">
-                  <% if (logs.length === 0) { %>
+                  <% if (logsWithDupFlag.length === 0) { %>
                     <tr>
                       <td colspan="5" class="p-8 text-center text-theme-fdd">No emails found for this period.</td>
                     </tr>
                   <% } else { %>
-                    <% logs.forEach(log => { %>
+                    <% logsWithDupFlag.forEach(({ log, isDuplicate }) => { %>
                       <tr class="hover:bg-theme-bgch transition-colors group">
                         <td class="p-4">
                           <div class="flex flex-col">
@@ -126,6 +135,9 @@
                         </td>
                         <td class="p-4 text-theme-fg truncate max-w-[250px]" title="<%= log.subject %>">
                           <%= log.subject %>
+                          <% if (isDuplicate) { %>
+                            <span class="text-xs px-2 py-0.5 ml-1 bg-theme-bg2 border border-amber-500/30 rounded text-amber-500 font-bold uppercase tracking-wider font-mono" title="Same recipient and subject sent more than once">Duplicate</span>
+                          <% } %>
                         </td>
                         <td class="p-4 text-center">
                           <span class="status-badge <%= log.status === 'Sent' ? 'status-sent' : 'status-failed' %>" title="<%= log.errorMessage || 'Sent successfully' %>">

@@ -224,11 +224,24 @@ async function drawStudentReport(doc, student, stats) {
 
   const monthsList = ["May", "June", "July", "August", "September", "October", "November", "December", "January", "February", "March", "April"];
 
-  // Extract viewing year range from the context if possible, or use stats
+  // Same elapsed-month logic as the student fee dashboard (controllers/student/feeController.js):
+  // a month only counts as overdue ("PENDING") once its due date has passed. Anything after
+  // that is "NOT YET DUE", and a month explicitly marked N/A (joined mid-year, on a break)
+  // was never owed at all.
+  const calendarToAcademic = { 4: 0, 5: 1, 6: 2, 7: 3, 8: 4, 9: 5, 10: 6, 11: 7, 0: 8, 1: 9, 2: 10, 3: 11 };
+  const now = new Date();
+  const FEE_DUE_DAY = 10;
+  const currentAcademicIndex = calendarToAcademic[now.getMonth()];
+  const monthsElapsed = now.getDate() >= FEE_DUE_DAY ? currentAcademicIndex + 1 : currentAcademicIndex;
+
   const academicFees = monthsList.map((m, idx) => {
-    // In SaaS, we just look for records matching the viewingYear
     const record = stats.recentFees.find(f => f.month === m);
-    return { month: m, record };
+    let status;
+    if (record && record.status === "NA") status = "NA";
+    else if (record) status = "PAID";
+    else if (idx < monthsElapsed) status = "PENDING";
+    else status = "NOT YET DUE";
+    return { month: m, record, status };
   });
 
   academicFees.forEach((item, i) => {
@@ -241,7 +254,7 @@ async function drawStudentReport(doc, student, stats) {
     doc.fillColor("#111827").font("Times-Bold").fontSize(8).text(`${item.month}`, curX, cursorY + 6, { width: feeWidths[0] });
     curX += feeWidths[0];
 
-    if (item.record) {
+    if (item.status === "PAID") {
       doc.fillColor("#4b5563").font("Times-Roman").fontSize(8);
       doc.text(new Date(item.record.datePaid).toLocaleDateString("en-IN"), curX, cursorY + 6, { width: feeWidths[1] });
       curX += feeWidths[1];
@@ -253,14 +266,23 @@ async function drawStudentReport(doc, student, stats) {
       doc.fillColor("#065f46").fontSize(7).text("PAID", curX, cursorY + 7, { width: 40, align: "center" });
     } else {
       doc.fillColor("#9ca3af").font("Times-Italic").fontSize(8);
-      doc.text("-", curX, cursorY + 6, { width: feeWidths[1] });
+      doc.text(item.status === "NA" ? (item.record.naReason || "-") : "-", curX, cursorY + 6, { width: feeWidths[1] });
       curX += feeWidths[1];
       doc.text("-", curX, cursorY + 6, { width: feeWidths[2] });
       curX += feeWidths[2];
       doc.text("-", curX, cursorY + 6, { width: feeWidths[3] });
       curX += feeWidths[3];
-      doc.roundedRect(curX, cursorY + 4, 50, 12, 6).fill("#fee2e2");
-      doc.fillColor("#991b1b").fontSize(6.5).text("PENDING", curX, cursorY + 7, { width: 50, align: "center" });
+
+      if (item.status === "NA") {
+        doc.roundedRect(curX, cursorY + 4, 35, 12, 6).fill("#f3f4f6");
+        doc.fillColor("#6b7280").fontSize(7).text("N/A", curX, cursorY + 7, { width: 35, align: "center" });
+      } else if (item.status === "PENDING") {
+        doc.roundedRect(curX, cursorY + 4, 50, 12, 6).fill("#fee2e2");
+        doc.fillColor("#991b1b").fontSize(6.5).text("PENDING", curX, cursorY + 7, { width: 50, align: "center" });
+      } else {
+        doc.roundedRect(curX, cursorY + 4, 65, 12, 6).fill("#f3f4f6");
+        doc.fillColor("#6b7280").fontSize(6.5).text("NOT YET DUE", curX, cursorY + 7, { width: 65, align: "center" });
+      }
     }
     cursorY += 21;
   });
@@ -311,10 +333,18 @@ async function drawStudentReport(doc, student, stats) {
   }
 
   // Footer
+  // pdfkit doesn't compute align:'center' correctly across a continued (multi-color)
+  // line — it centers the first chunk alone, so the second chunk lands on top of it.
+  // Centering by hand (measuring both chunks first, then picking a fixed x) avoids that.
   doc.rect(0, doc.page.height - 50, W, 2).fill('#e9d5ff');
-  doc.fillColor('#9ca3af').font('Times-Italic').fontSize(9)
-    .text('This is a computer-generated report and does not require a signature.', M, doc.page.height - 40, { align: 'center', width: W - M * 2, continued: true })
-    .fillColor('#4b2d84').text(' | Powered by ClassConnect', { link: 'https://classconnects.vercel.app' });
+  const footerPart1 = 'This is a computer-generated report and does not require a signature.';
+  const footerPart2 = ' | Powered by ClassConnect';
+  doc.font('Times-Italic').fontSize(9);
+  const footerWidth = doc.widthOfString(footerPart1) + doc.widthOfString(footerPart2);
+  const footerX = M + (W - M * 2 - footerWidth) / 2;
+  doc.fillColor('#9ca3af')
+    .text(footerPart1, footerX, doc.page.height - 40, { continued: true, lineBreak: false })
+    .fillColor('#4b2d84').text(footerPart2, { link: 'https://classconnects.vercel.app' });
 }
 
 async function generateStudentReportPDF(student, stats, res, disposition) {

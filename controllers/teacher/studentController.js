@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Fee = require("../../models/Fee");
@@ -11,6 +12,8 @@ const { generateStudentReportPDF, drawStudentReport, generateStudentDirectoryPDF
 const { sortStudentsByBatchAndId, sortBatches } = require("../../utils/sortHelpers");
 const { logAudit } = require("../../utils/auditService");
 const crypto = require("crypto");
+const { renderError } = require("../../utils/renderError");
+const { NA_STATUS } = require("../../utils/feeHelpers");
 
 exports.renderManageStudents = async (req, res) => {
   try {
@@ -26,7 +29,7 @@ exports.renderManageStudents = async (req, res) => {
     res.render("teacher/manage_students", { students, batches });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading students");
+    renderError(req, res, 500, "Error loading students");
   }
 };
 
@@ -138,13 +141,13 @@ exports.processAddStudent = async (req, res) => {
 exports.renderEditProfile = async (req, res) => {
   try {
     const student = await User.findById(req.params.id).lean();
-    if (!student) return res.status(404).send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
     const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
     batches.sort(sortBatches);
     res.render("teacher/edit_profile", { student, batches });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error loading student");
+    renderError(req, res, 500, "Error loading student");
   }
 };
 
@@ -211,11 +214,11 @@ exports.toggleActiveStatus = async (req, res) => {
 exports.renderViewProfile = async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) {
-      return res.status(404).send("Student not found");
+      return renderError(req, res, 404, "Student not found");
     }
 
     const student = await User.findById(req.params.id).populate('batch').lean();
-    if (!student) return res.status(404).send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
 
     const studentId = student.studentId;
     const batchFilter = (req.viewingBatches && req.viewingBatches.length > 0) 
@@ -283,7 +286,7 @@ exports.renderViewProfile = async (req, res) => {
     });
   } catch (err) {
     console.error("Error loading student profile:", err);
-    res.status(500).send("Error loading student profile");
+    renderError(req, res, 500, "Error loading student profile");
   }
 };
 
@@ -298,7 +301,7 @@ exports.renderBulkAddStudents = async (req, res) => {
     res.render("teacher/bulk_add_students", { students: studentsRaw, batches: activeBatches });
   } catch (err) {
     console.error("Bulk add students GET error:", err);
-    res.status(500).send("Error loading bulk add page");
+    renderError(req, res, 500, "Error loading bulk add page");
   }
 };
 
@@ -381,7 +384,7 @@ exports.generateBulkStudentReports = async (req, res) => {
       .lean();
 
     if (allStudentsData.length === 0) {
-      return res.status(404).send("No students found in the selected batches.");
+      return renderError(req, res, 404, "No students found in the selected batches.");
     }
 
     res.setHeader("Content-Type", "application/zip");
@@ -393,7 +396,7 @@ exports.generateBulkStudentReports = async (req, res) => {
     const studentIds = allStudentsData.map(s => s.studentId);
 
     // Fetch all related data upfront to avoid N+1 queries
-    const allFees = await Fee.find({ studentId: { $in: studentIds }, status: "Paid", batch: { $in: req.viewingBatches } })
+    const allFees = await Fee.find({ studentId: { $in: studentIds }, status: { $in: ["Paid", NA_STATUS] }, batch: { $in: req.viewingBatches } })
       .populate('batch')
       .sort({ datePaid: 1 })
       .lean();
@@ -470,7 +473,7 @@ exports.generateBulkStudentReports = async (req, res) => {
   } catch (err) {
     console.error("Error generating bulk student reports:", err);
     if (!res.headersSent) {
-      res.status(500).send("Error generating bulk report");
+      renderError(req, res, 500, "Error generating bulk report");
     }
   }
 };
@@ -482,15 +485,15 @@ exports.generateBulkStudentReports = async (req, res) => {
       // Verify signature
       const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
       if (signature !== expectedSignature) {
-        return res.status(403).send("Invalid or expired report link");
+        return renderError(req, res, 403, "Invalid or expired report link");
       }
 
       const student = await User.findById(id).populate('batch').lean();
-      if (!student) return res.status(404).send("Student not found");
+      if (!student) return renderError(req, res, 404, "Student not found");
 
       const studentId = student.studentId;
 
-      const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: student.batch._id })
+      const recentFees = await Fee.find({ studentId: studentId, status: { $in: ["Paid", NA_STATUS] }, batch: student.batch._id })
         .populate('batch')
         .sort({ datePaid: 1 })
         .lean();
@@ -546,18 +549,18 @@ exports.generateBulkStudentReports = async (req, res) => {
       );
     } catch (err) {
       console.error("Error generating public student report:", err);
-      res.status(500).send("Error generating public student report");
+      renderError(req, res, 500, "Error generating public student report");
     }
   };
 
   exports.generateStudentReport = async (req, res) => {
     try {
       const student = await User.findById(req.params.id).populate('batch').lean();
-      if (!student) return res.status(404).send("Student not found");
+      if (!student) return renderError(req, res, 404, "Student not found");
 
       const studentId = student.studentId;
 
-      const recentFees = await Fee.find({ studentId: studentId, status: "Paid", batch: student.batch._id })
+      const recentFees = await Fee.find({ studentId: studentId, status: { $in: ["Paid", NA_STATUS] }, batch: student.batch._id })
         .populate('batch')
         .sort({ datePaid: 1 })
         .lean();
@@ -614,7 +617,7 @@ exports.generateBulkStudentReports = async (req, res) => {
     } catch (err) {
       console.error("Error generating student report:", err);
       if (!res.headersSent) {
-        res.status(500).send("Error generating student report");
+        renderError(req, res, 500, "Error generating student report");
       }
     }
   };
@@ -632,7 +635,7 @@ exports.generateBulkStudentReports = async (req, res) => {
     } catch (err) {
       console.error("Error printing student directory:", err);
       if (!res.headersSent) {
-        res.status(500).send("Error printing directory");
+        renderError(req, res, 500, "Error printing directory");
       }
     }
   };

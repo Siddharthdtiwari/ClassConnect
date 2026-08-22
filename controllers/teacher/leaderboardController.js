@@ -1,5 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../../models/User");
+const Test = require("../../models/Test");
+const Score = require("../../models/Score");
 
 exports.renderLeaderboard = async (req, res) => {
   try {

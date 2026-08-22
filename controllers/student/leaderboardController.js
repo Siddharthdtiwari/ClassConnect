@@ -1,5 +1,8 @@
 const mongoose = require("mongoose");
 const User = require("../../models/User");
+const Test = require("../../models/Test");
+const Score = require("../../models/Score");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderLeaderboard = async (req, res) => {
   try {
@@ -111,6 +114,6 @@ exports.renderLeaderboard = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error fetching leaderboard");
+    renderError(req, res, 500, "Error fetching leaderboard");
   }
 };

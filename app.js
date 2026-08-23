@@ -122,6 +122,7 @@ app.use(
           "https://checkout.razorpay.com",
           "https://drive.google.com",
           "https://docs.google.com",
+          "https://www.google.com",
         ],
       },
     },

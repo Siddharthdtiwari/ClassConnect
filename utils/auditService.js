@@ -9,8 +9,15 @@ const AuditLog = require("../models/AuditLog");
  * @param {String|mongoose.Types.ObjectId} [options.entityId] Optional entity ID
  * @param {String} options.details Description of the action
  * @param {String} options.academicYear The active academic year
+ * @param {String} [options.performedBy] Explicit override — for JWT-authenticated
+ *   API routes, which have no req.session to read the actor from
+ * @param {String} [options.performedById] Explicit override, paired with performedBy
+ * @param {String} [options.userRole] Explicit override, paired with performedBy
  */
-const logAudit = async (req, { action, entityType, entityId, details, academicYear }) => {
+const logAudit = async (req, {
+  action, entityType, entityId, details, academicYear,
+  performedBy: performedByOverride, performedById: performedByIdOverride, userRole: userRoleOverride
+}) => {
   try {
     if (!academicYear) {
       console.warn("Audit Log missing academicYear. Skipping.");
@@ -32,7 +39,11 @@ const logAudit = async (req, { action, entityType, entityId, details, academicYe
         performedById = req.session.userIdString || "Unknown";
       }
     }
-    
+
+    if (performedByOverride) performedBy = performedByOverride;
+    if (performedByIdOverride) performedById = performedByIdOverride;
+    if (userRoleOverride) userRole = userRoleOverride;
+
     await AuditLog.create({
       action,
       entityType,

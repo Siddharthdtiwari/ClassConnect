@@ -419,8 +419,10 @@ textarea.fi{resize:vertical;min-height:130px}
 footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transition:var(--trans)}
 .footer-inner{max-width:1320px;margin:0 auto}
 .footer-top{display:grid;grid-template-columns:1.5fr 1fr 1fr 1fr;gap:40px;padding-bottom:48px;border-bottom:1px solid var(--bd)}
-.ft-brand .brand-name{font-family:'Unbounded',sans-serif;font-size:.88rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--pt);margin-bottom:6px;transition:color .4s}
-.ft-brand .brand-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.14em;color:var(--fdd);text-transform:uppercase;margin-bottom:16px;transition:color .4s}
+.ft-brand-header{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.ft-logo{height:36px;width:auto;object-fit:contain;flex-shrink:0}
+.ft-brand .brand-name{font-family:'Unbounded',sans-serif;font-size:.88rem;font-weight:900;letter-spacing:.06em;text-transform:uppercase;color:var(--pt);margin-bottom:4px;transition:color .4s}
+.ft-brand .brand-sub{font-family:'Space Mono',monospace;font-size:.5rem;letter-spacing:.14em;color:var(--fdd);text-transform:uppercase;transition:color .4s}
 .ft-brand p{font-size:.8rem;color:var(--fd);line-height:1.75;max-width:220px;transition:color .4s}
 .ft-col-title{font-family:'Space Mono',monospace;font-size:.52rem;letter-spacing:.18em;text-transform:uppercase;color:var(--fdd);margin-bottom:20px;transition:color .4s}
 .ft-links{display:flex;flex-direction:column;gap:10px}
@@ -1061,6 +1063,9 @@ footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transit
               <div class="ci-val">Navpada, Airport Road, Marol Naka<br>Near The Lalit Hotel, Andheri (E), Mumbai 400059</div>
             </div>
           </div>
+          <div style="border-radius:14px;overflow:hidden;border:1px solid var(--b);margin-bottom:28px;">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d27828.94004611425!2d72.8629972515879!3d19.11752194315279!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x3be7c96f0e1dacd1%3A0x964a754ab91a1578!2sTuition%20Hub%20Education%20Center!5e0!3m2!1sen!2sin!4v1787487469163!5m2!1sen!2sin" width="100%" height="200" style="border:0;display:block;" allowfullscreen="" loading="lazy" referrerpolicy="strict-origin-when-cross-origin" title="Tuition Hub Education Centre location"></iframe>
+          </div>
           <div class="ci-row" style="border:none;padding:0;margin-bottom:28px;background:none;">
             <div class="ci-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l1.4-1.4a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></div>
             <div>
@@ -1127,8 +1132,13 @@ footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transit
     <div class="footer-inner">
       <div class="footer-top">
         <div class="ft-brand">
-          <div class="brand-name">Tuition Hub</div>
-          <div class="brand-sub">Education Centre · Est. Mumbai</div>
+          <div class="ft-brand-header">
+            <img src="/images/logo.png" alt="Tuition Hub" class="ft-logo">
+            <div>
+              <div class="brand-name">Tuition Hub</div>
+              <div class="brand-sub">Education Centre · Est. Mumbai</div>
+            </div>
+          </div>
           <p>Expert tuition for Nursery to Class X. Small batches, dedicated teachers, and a smart digital platform for the modern student.</p>
         </div>
         <div>
@@ -1154,7 +1164,7 @@ footer{background:var(--bg2);border-top:1px solid var(--bd);padding:48px;transit
           <div class="ft-col-title">Contact</div>
           <div class="ft-contact-item">
             <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--fdd)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg></span>
-            <span class="text">Navpada, Airport Road, Marol Naka, Near The Lalit Hotel, Andheri (E), Mumbai 400059</span>
+            <span class="text"><a href="https://share.google/tvqTQ1t4vIkY5AIOP" target="_blank" rel="noopener noreferrer" style="color:inherit;text-decoration:none;border-bottom:1px dashed var(--fdd);">Navpada, Airport Road, Marol Naka, Near The Lalit Hotel, Andheri (E), Mumbai 400059</a></span>
           </div>
           <div class="ft-contact-item">
             <span class="icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--fdd)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 12 19.79 19.79 0 0 1 1.61 3.18 2 2 0 0 1 3.58 1h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L7.91 8.56a16 16 0 0 0 6.29 6.29l1.4-1.4a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>

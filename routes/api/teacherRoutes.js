@@ -124,7 +124,7 @@ router.post('/batches', validate(createBatchSchema), async (req, res) => {
     if (existing) return res.status(400).json({ error: 'Batch already exists' });
     const newBatch = new Batch({ name: name.trim(), academicYear, description: description?.trim() || '', isActive: true });
     await newBatch.save();
-    await logAudit({ action: 'CREATE', entityType: 'Batch', entityId: newBatch._id, details: `Created batch: ${newBatch.name}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'Batch', entityId: newBatch._id, details: `Created batch: ${newBatch.name}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, batch: newBatch });
   } catch (err) {
     res.status(500).json({ error: 'Error creating batch' });
@@ -140,7 +140,7 @@ router.put('/batches/:id', async (req, res) => {
     if (description !== undefined) batch.description = description.trim();
     if (isActive !== undefined) batch.isActive = isActive;
     await batch.save();
-    await logAudit({ action: 'UPDATE', entityType: 'Batch', entityId: batch._id, details: `Updated batch: ${batch.name}`, academicYear: batch.academicYear });
+    await logAudit(req, { action: 'UPDATE', entityType: 'Batch', entityId: batch._id, details: `Updated batch: ${batch.name}`, academicYear: batch.academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, batch });
   } catch (err) {
     res.status(500).json({ error: 'Error updating batch' });
@@ -249,7 +249,7 @@ router.post('/students', validate(createStudentSchema), async (req, res) => {
     
     await newStudent.save();
     
-    await logAudit({ action: 'CREATE', entityType: 'User', entityId: newStudent._id, details: `Added new student: ${studentName}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'User', entityId: newStudent._id, details: `Added new student: ${studentName}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, student: newStudent });
   } catch (err) {
     res.status(500).json({ error: 'Error adding student' });
@@ -278,7 +278,7 @@ router.post('/teachers', validate(createTeacherSchema), async (req, res) => {
     
     await newTeacher.save();
     
-    await logAudit({ action: 'CREATE', entityType: 'User', entityId: newTeacher._id, details: `Added new teacher: ${name}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'User', entityId: newTeacher._id, details: `Added new teacher: ${name}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, teacher: newTeacher });
   } catch (err) {
     res.status(500).json({ error: 'Error adding teacher' });
@@ -310,7 +310,7 @@ router.put('/teachers/:id', async (req, res) => {
     if (password) teacher.password = await bcrypt.hash(password, 12);
     
     await teacher.save();
-    await logAudit({ action: 'UPDATE', entityType: 'User', details: `Updated teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'UPDATE', entityType: 'User', details: `Updated teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, teacher });
   } catch (err) {
     res.status(500).json({ error: 'Error updating teacher' });
@@ -330,7 +330,7 @@ router.delete('/teachers/:id', async (req, res) => {
     }
 
     await User.findByIdAndDelete(req.params.id);
-    await logAudit({ action: 'DELETE', entityType: 'User', details: `Deleted teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'DELETE', entityType: 'User', details: `Deleted teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting teacher' });
@@ -369,7 +369,7 @@ router.delete('/students/:id', async (req, res) => {
       return res.status(404).json({ error: 'Student not found' });
     }
     await User.findByIdAndDelete(req.params.id);
-    await logAudit({ action: 'DELETE', entityType: 'User', details: `Deleted student: ${student.studentName}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'DELETE', entityType: 'User', details: `Deleted student: ${student.studentName}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting student' });
@@ -438,7 +438,7 @@ router.post('/attendance', validate(saveAttendanceSchema), async (req, res) => {
         }
       }
     }
-    await logAudit({ action: 'UPDATE', entityType: 'Attendance', details: `Saved attendance for ${date}`, academicYear });
+    await logAudit(req, { action: 'UPDATE', entityType: 'Attendance', details: `Saved attendance for ${date}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, message: 'Attendance saved successfully!' });
   } catch (err) {
     console.error('Error saving attendance:', err);
@@ -507,7 +507,7 @@ router.post('/fees', validate(createFeeSchema), async (req, res) => {
     });
     await fee.save();
     const academicYear = calculateCurrentAcademicYear();
-    await logAudit({ action: 'CREATE', entityType: 'Fee', entityId: fee._id, details: `Fee collected for ${studentObj.studentName} (${month} ${year}): ₹${amount}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'Fee', entityId: fee._id, details: `Fee collected for ${studentObj.studentName} (${month} ${year}): ₹${amount}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, fee });
   } catch (err) {
     res.status(500).json({ error: 'Error adding fee' });
@@ -548,7 +548,7 @@ router.post('/tests', upload.single('questionPaperFile'), validate(createTestSch
     });
     await test.save();
     
-    await logAudit({ action: 'CREATE', entityType: 'Test', entityId: test._id, details: `Created test for ${subject}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'Test', entityId: test._id, details: `Created test for ${subject}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, test });
   } catch (err) {
     console.error('Error creating test:', err);
@@ -609,7 +609,7 @@ router.post('/scores/:testId', async (req, res) => {
       await scoreDoc.save();
     }
     
-    await logAudit({ action: 'UPDATE', entityType: 'Score', details: `Updated scores for test ${test.subject}`, academicYear });
+    await logAudit(req, { action: 'UPDATE', entityType: 'Score', details: `Updated scores for test ${test.subject}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, message: 'Scores saved successfully' });
   } catch (err) {
     console.error('Save scores error:', err);
@@ -647,7 +647,7 @@ router.post('/timetable', async (req, res) => {
     });
     await entry.save();
     
-    await logAudit({ action: 'CREATE', entityType: 'ExamTimetable', entityId: entry._id, details: `Added exam timetable for ${subject}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'ExamTimetable', entityId: entry._id, details: `Added exam timetable for ${subject}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, entry });
   } catch (err) {
     res.status(500).json({ error: 'Error adding timetable entry' });
@@ -739,7 +739,7 @@ router.post('/materials', upload.single('file'), async (req, res) => {
 
     await material.save();
     
-    await logAudit({ action: 'CREATE', entityType: 'StudyMaterial', entityId: material._id, details: `Added study material for ${subject}`, academicYear });
+    await logAudit(req, { action: 'CREATE', entityType: 'StudyMaterial', entityId: material._id, details: `Added study material for ${subject}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, material });
   } catch (err) {
     console.error('Error adding study material:', err);
@@ -950,7 +950,7 @@ router.put('/students/:id', async (req, res) => {
     if (batchId) student.batch = batchId;
     if (typeof isActive === 'boolean') student.isActive = isActive;
     await student.save();
-    await logAudit({ action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Updated student: ${student.studentName}${typeof isActive === 'boolean' ? ` (${isActive ? 'Active' : 'Inactive'})` : ''}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Updated student: ${student.studentName}${typeof isActive === 'boolean' ? ` (${isActive ? 'Active' : 'Inactive'})` : ''}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, student });
   } catch (err) {
     res.status(500).json({ error: 'Error updating student' });
@@ -964,7 +964,7 @@ router.post('/students/:id/toggle-active', async (req, res) => {
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.isActive = !student.isActive;
     await student.save();
-    await logAudit({ action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Toggled active status for ${student.studentName} to ${student.isActive ? 'Active' : 'Inactive'}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'UPDATE', entityType: 'User', entityId: student._id, details: `Toggled active status for ${student.studentName} to ${student.isActive ? 'Active' : 'Inactive'}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, isActive: student.isActive });
   } catch (err) {
     res.status(500).json({ error: 'Error toggling status' });
@@ -981,7 +981,7 @@ router.put('/tests/:id', async (req, res) => {
     if (testDate) test.testDate = new Date(testDate);
     if (totalMarks) test.totalMarks = totalMarks;
     await test.save();
-    await logAudit({ action: 'UPDATE', entityType: 'Test', entityId: test._id, details: `Updated test: ${test.subject}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'UPDATE', entityType: 'Test', entityId: test._id, details: `Updated test: ${test.subject}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, test });
   } catch (err) {
     res.status(500).json({ error: 'Error updating test' });
@@ -994,7 +994,7 @@ router.delete('/tests/:id', async (req, res) => {
     if (!test) return res.status(404).json({ error: 'Test not found' });
     await Score.deleteMany({ test: test._id });
     await Test.findByIdAndDelete(req.params.id);
-    await logAudit({ action: 'DELETE', entityType: 'Test', details: `Deleted test: ${test.subject}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'DELETE', entityType: 'Test', details: `Deleted test: ${test.subject}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting test' });
@@ -1012,7 +1012,7 @@ router.put('/timetable/:id', async (req, res) => {
     if (examType) entry.examType = examType;
     if (chapters) entry.chapters = chapters;
     await entry.save();
-    await logAudit({ action: 'UPDATE', entityType: 'ExamTimetable', entityId: entry._id, details: `Updated timetable: ${entry.subject}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'UPDATE', entityType: 'ExamTimetable', entityId: entry._id, details: `Updated timetable: ${entry.subject}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true, entry });
   } catch (err) {
     res.status(500).json({ error: 'Error updating timetable' });
@@ -1024,7 +1024,7 @@ router.delete('/timetable/:id', async (req, res) => {
     const entry = await ExamTimetable.findById(req.params.id);
     if (!entry) return res.status(404).json({ error: 'Timetable entry not found' });
     await ExamTimetable.findByIdAndDelete(req.params.id);
-    await logAudit({ action: 'DELETE', entityType: 'ExamTimetable', details: `Deleted timetable: ${entry.subject}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'DELETE', entityType: 'ExamTimetable', details: `Deleted timetable: ${entry.subject}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting timetable' });
@@ -1037,7 +1037,7 @@ router.delete('/materials/:id', async (req, res) => {
     const material = await StudyMaterial.findById(req.params.id);
     if (!material) return res.status(404).json({ error: 'Material not found' });
     await StudyMaterial.findByIdAndDelete(req.params.id);
-    await logAudit({ action: 'DELETE', entityType: 'StudyMaterial', details: `Deleted material: ${material.subject}`, academicYear: calculateCurrentAcademicYear() });
+    await logAudit(req, { action: 'DELETE', entityType: 'StudyMaterial', details: `Deleted material: ${material.subject}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting material' });
@@ -1180,18 +1180,24 @@ router.post('/bulk_save', async (req, res) => {
     if (!updates || !Array.isArray(updates)) return res.status(400).json({ error: 'Missing updates array' });
 
     for (const update of updates) {
+      // studentId is only unique per (studentId, batch) — scoping every query by
+      // update.standard (the batch id, same field name the web bulk-save uses)
+      // instead of guessing req.viewingBatches[0] keeps this from touching a
+      // different student who happens to share the same studentId in another batch.
       if (update.deleteAction) {
         await Fee.findOneAndDelete({
           studentId: update.studentId,
           month: update.month,
           year: update.year,
+          batch: update.standard,
           status: { $ne: NA_STATUS }
         });
       } else {
         let fee = await Fee.findOne({
           studentId: update.studentId,
           month: update.month,
-          year: update.year
+          year: update.year,
+          batch: update.standard
         });
 
         // Month is marked not-applicable — un-mark it on Manage Fees before collecting.
@@ -1212,7 +1218,7 @@ router.post('/bulk_save', async (req, res) => {
             method: update.method,
             datePaid: new Date(update.datePaid),
             status: 'Paid',
-            batch: req.viewingBatches[0] // approximation, should ideally pass batch
+            batch: update.standard
           });
         }
         await fee.save();

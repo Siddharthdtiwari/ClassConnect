@@ -10,6 +10,7 @@ const { loginSchema, studentLoginSchema } = require('../../validations/authSchem
 const User = require('../../models/User');
 const Teacher = require('../../models/Teacher');
 const Batch = require('../../models/Batch');
+const { logAudit } = require('../../utils/auditService');
 
 // app.js hard-fails at boot if SESSION_SECRET is unset, so no fallback is needed here.
 const JWT_SECRET = process.env.SESSION_SECRET;
@@ -67,6 +68,17 @@ router.post('/student/login', loginLimiter, validate(studentLoginSchema), async 
 
     const token = generateToken(student, 'student');
 
+    await logAudit(req, {
+      action: 'LOGIN',
+      entityType: 'User',
+      entityId: student._id,
+      details: 'Student logged in successfully (mobile app)',
+      academicYear: req.currentAcademicYear || 'N/A',
+      performedBy: student.studentName,
+      performedById: student.studentId,
+      userRole: 'Student'
+    });
+
     res.json({
       token,
       user: {
@@ -100,6 +112,17 @@ router.post('/teacher/login', loginLimiter, validate(loginSchema), async (req, r
     }
 
     const token = generateToken(teacher, 'teacher');
+
+    await logAudit(req, {
+      action: 'LOGIN',
+      entityType: 'Teacher',
+      entityId: teacher._id,
+      details: 'Teacher logged in successfully (mobile app)',
+      academicYear: req.currentAcademicYear || 'N/A',
+      performedBy: teacher.teacherName,
+      performedById: teacher.teacherId,
+      userRole: teacher.role ? (teacher.role.charAt(0).toUpperCase() + teacher.role.slice(1)) : 'Teacher'
+    });
 
     res.json({
       token,

@@ -4,6 +4,7 @@ const { uploadToCloudinary } = require("../../utils/upload");
 const { sortBatches } = require("../../utils/sortHelpers");
 const mongoose = require("mongoose");
 const { logAudit } = require("../../utils/auditService");
+const { renderError } = require("../../utils/renderError");
 
 exports.renderStudyMaterial = async (req, res) => {
   try {
@@ -19,7 +20,7 @@ exports.renderStudyMaterial = async (req, res) => {
     res.render("teacher/study_material", { batches, materials });
   } catch (err) {
     console.error("Study material GET error:", err);
-    res.status(500).send("Error loading study materials");
+    renderError(req, res, 500, "Error loading study materials");
   }
 };
 
@@ -127,10 +128,13 @@ exports.repostSingleMaterial = async (req, res) => {
     }
 
     const batchName = sourceMaterial.batch.name;
+    // Escape regex metacharacters — a batch name like "Std. 10" or "A+B" would
+    // otherwise be interpreted as a pattern instead of matched literally.
+    const escapedBatchName = batchName.trim().replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 
     // Find the corresponding batch in the current active academic year
     const targetBatch = await Batch.findOne({
-      name: { $regex: new RegExp(`^${batchName.trim()}$`, "i") },
+      name: { $regex: new RegExp(`^${escapedBatchName}$`, "i") },
       academicYear: currentYear
     });
 

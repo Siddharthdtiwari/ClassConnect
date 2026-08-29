@@ -222,31 +222,16 @@ const handlePublicTest = async (req, res) => {
       return renderError(req, res, 404, 'Invalid Test ID');
     }
 
-    const test = await Test.findById(testId).populate('batch').lean();
-    if (!test) return renderError(req, res, 404, 'Test not found');
-
-    if (test.questionPaper) {
-      // If it's a URL or file path, redirect/serve
-      return res.redirect(test.questionPaper);
-    } else if (test.htmlContent) {
-      return res.send(`
-        <!DOCTYPE html>
-        <html>
-        <head>
-          <title>${test.testName} - Question Paper</title>
-          <style>body { font-family: sans-serif; padding: 40px; max-width: 800px; margin: auto; line-height: 1.6; }</style>
-        </head>
-        <body>
-          <h2>${test.testName} (${test.subject})</h2>
-          <p><strong>Total Marks:</strong> ${test.totalMarks}</p>
-          <hr/>
-          <div>${test.htmlContent}</div>
-        </body>
-        </html>
-      `);
-    } else {
-      return renderError(req, res, 404, 'Question paper not uploaded for this test.');
+    if (signature && !verifySignature(testId, signature)) {
+      console.warn(`Invalid signature for test paper ${testId}`);
     }
+
+    const test = await Test.findById(testId).populate('batch').lean();
+    if (!test || (!test.htmlContent && !test.questionPaper)) {
+      return renderError(req, res, 404, 'Question paper not found for this test.');
+    }
+
+    return res.render('teacher/view_paper', { test });
   } catch (err) {
     console.error('Error serving public test:', err);
     renderError(req, res, 500, 'Error loading test paper');

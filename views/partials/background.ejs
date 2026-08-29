@@ -65,6 +65,36 @@
       return originalFetch(resource, config);
     };
 
+    // Global double-submit guard: the instant any form is submitted, its submit
+    // button(s) are disabled immediately — before the form's own JS handler even
+    // runs — so a slow network response can't be mistaken for "nothing happened"
+    // and clicked repeatedly, which used to be able to create duplicate records.
+    // Capture phase so this runs before a form's own listener calls preventDefault().
+    document.addEventListener('submit', function(e) {
+      const form = e.target;
+      if (!(form instanceof HTMLFormElement)) return;
+      const buttons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+      buttons.forEach(function(btn) {
+        if (btn.disabled) return; // already mid-submit; nothing new to do
+        btn.dataset.dsgOriginal = btn.tagName === 'INPUT' ? btn.value : btn.innerHTML;
+        btn.disabled = true;
+        btn.style.opacity = '0.6';
+        btn.style.cursor = 'not-allowed';
+        // Safety net only — if the page navigates away or the form's own code
+        // already re-enables/replaces the button, this just never fires on it.
+        setTimeout(function() {
+          if (!btn.isConnected || !btn.disabled) return;
+          btn.disabled = false;
+          btn.style.opacity = '';
+          btn.style.cursor = '';
+          if (btn.dataset.dsgOriginal !== undefined) {
+            if (btn.tagName === 'INPUT') btn.value = btn.dataset.dsgOriginal;
+            else btn.innerHTML = btn.dataset.dsgOriginal;
+          }
+        }, 15000);
+      });
+    }, true);
+
     // Global copy to clipboard function with toast feedback
     function showCopyToast(msg, isError = false) {
       let toast = document.getElementById('global-copy-toast');

@@ -80,21 +80,47 @@ router.get('/dashboard', async (req, res) => {
 router.put('/profile', async (req, res) => {
   try {
     const { name, email, mobileNo, password } = req.body;
-    const teacher = await User.findById(req.teacher._id);
-    
-    if (name) {
-      teacher.studentName = name; // Schema uses studentName for all names
-      teacher.name = name;
-    }
+    // req.teacher._id is a Teacher document's id — this must look it up in the
+    // Teacher collection, not User (the student collection), or the lookup always
+    // returns null and every field assignment below throws.
+    const teacher = await Teacher.findById(req.teacher._id);
+    if (!teacher) return res.status(404).json({ error: 'Teacher not found' });
+
+    let pwdChanged = false;
+    if (name) teacher.teacherName = name;
     if (email) teacher.email = email;
-    if (mobileNo) teacher.mobileNo = mobileNo;
+    if (mobileNo) teacher.phone = mobileNo;
     if (password) {
       teacher.password = await bcrypt.hash(password, 12);
+      pwdChanged = true;
     }
-    
+
     await teacher.save();
+
+    await logAudit(req, {
+      action: 'UPDATE',
+      entityType: 'Teacher',
+      entityId: teacher._id,
+      details: `Updated profile for ${teacher.teacherName} (mobile app)`,
+      academicYear: calculateCurrentAcademicYear(),
+      performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId,
+      userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'
+    });
+    if (pwdChanged) {
+      await logAudit(req, {
+        action: 'PASSWORD_CHANGE',
+        entityType: 'Teacher',
+        entityId: teacher._id,
+        details: `Password changed for ${teacher.teacherName} (mobile app)`,
+        academicYear: calculateCurrentAcademicYear(),
+        performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId,
+        userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'
+      });
+    }
+
     res.json({ success: true, teacher });
   } catch (err) {
+    console.error('Teacher API profile update error:', err);
     res.status(500).json({ error: 'Error updating profile' });
   }
 });
@@ -689,8 +715,19 @@ router.post('/syllabus/update', async (req, res) => {
     }
     
     record.chapterStatuses.set(chapterNo.toString(), status);
-    
+
     await record.save();
+
+    await logAudit(req, {
+      action: 'UPDATE',
+      entityType: 'Syllabus',
+      entityId: record._id,
+      details: `Marked ${subject} chapter ${chapterNo} as ${status} (mobile app)`,
+      academicYear: calculateCurrentAcademicYear(),
+      performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId,
+      userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'
+    });
+
     res.json({ success: true, message: "Status updated." });
   } catch (err) {
     console.error("Error updating chapter status:", err);
@@ -1128,6 +1165,16 @@ router.post('/bulk_save_attendance', async (req, res) => {
         await attendance.save();
       }
     }
+
+    await logAudit(req, {
+      action: 'BULK_UPDATE',
+      entityType: 'Attendance',
+      details: 'Bulk saved attendance records (mobile app)',
+      academicYear: calculateCurrentAcademicYear(),
+      performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId,
+      userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'
+    });
+
     res.json({ success: true });
   } catch (err) {
     console.error('Bulk save attendance error:', err);
@@ -1224,6 +1271,16 @@ router.post('/bulk_save', async (req, res) => {
         await fee.save();
       }
     }
+
+    await logAudit(req, {
+      action: 'BULK_UPDATE',
+      entityType: 'Fee',
+      details: `Bulk saved fee records (${updates.length} updates, mobile app)`,
+      academicYear: calculateCurrentAcademicYear(),
+      performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId,
+      userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'
+    });
+
     res.json({ success: true });
   } catch (err) {
     console.error('Bulk save fees error:', err);

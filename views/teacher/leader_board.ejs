@@ -133,10 +133,31 @@
       const batchValue = document.getElementById('batchSelect').value;
       const testValue = document.getElementById('testSelect').value;
       const tabName = batchValue + '-' + testValue;
-      
+
       document.querySelectorAll('.leaderboard-content').forEach(el => el.classList.add('hidden'));
       const target = document.getElementById('content-' + tabName);
       if(target) target.classList.remove('hidden');
+    }
+
+    // Narrows the Test dropdown to only tests conducted on the chosen day.
+    // "Overall Points" isn't tied to any single test date, so it always stays visible.
+    function filterTestsByDate() {
+      const dateSelect = document.getElementById('dateSelect');
+      const testSelect = document.getElementById('testSelect');
+      const selectedDate = dateSelect.value;
+      let activeOptionHidden = false;
+
+      Array.from(testSelect.options).forEach(opt => {
+        if (opt.value === 'overall') return;
+        const matches = !selectedDate || opt.dataset.date === selectedDate;
+        opt.hidden = !matches;
+        if (opt.selected && !matches) activeOptionHidden = true;
+      });
+
+      if (activeOptionHidden) {
+        testSelect.value = 'overall';
+      }
+      switchLeaderboardTab();
     }
   </script>
 </head>
@@ -156,11 +177,26 @@
               <p class="dash-sub">Overall Academy Ranking (<%= viewingYear %>)</p>
             </div>
             <div class="flex items-center gap-3">
-              <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono">Test:</label>
+              <%
+                const monthLabels = { '01':'Jan','02':'Feb','03':'Mar','04':'Apr','05':'May','06':'Jun','07':'Jul','08':'Aug','09':'Sep','10':'Oct','11':'Nov','12':'Dec' };
+                const distinctDates = [...new Set(Object.values(testDates))].sort().reverse();
+              %>
+              <% if (distinctDates.length > 0) { %>
+              <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono">Date:</label>
+              <select id="dateSelect" onchange="filterTestsByDate()" class="bg-theme-bgc border border-theme-bd text-theme-fg text-sm rounded-lg focus:ring-theme-p focus:border-theme-p block p-2.5 font-unbounded font-semibold">
+                <option value="">All Dates</option>
+                <% distinctDates.forEach(ymd => {
+                  const [y, m, day] = ymd.split('-');
+                %>
+                  <option value="<%= ymd %>"><%= parseInt(day) %> <%= monthLabels[m] %> <%= y %></option>
+                <% }) %>
+              </select>
+              <% } %>
+              <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono ml-2">Test:</label>
               <select id="testSelect" onchange="switchLeaderboardTab()" class="bg-theme-bgc border border-theme-bd text-theme-fg text-sm rounded-lg focus:ring-theme-p focus:border-theme-p block p-2.5 font-unbounded font-semibold">
                 <option value="overall">Overall Points</option>
                 <% Object.keys(testLeaderboards).forEach(testName => { %>
-                  <option value="<%= testName.replace(/\s+/g, '_') %>"><%= testName %> (Percentage)</option>
+                  <option value="<%= testName.replace(/\s+/g, '_') %>" data-date="<%= testDates[testName] || '' %>"><%= testName %> (Percentage)</option>
                 <% }) %>
               </select>
               <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono ml-2">Batch:</label>

@@ -65,6 +65,7 @@ router.get("/student/leader_board", ensureDBConnection, requireStudentLogin, cat
 
 // Syllabus Tracker (read-only)
 router.get("/student/syllabus", ensureDBConnection, requireStudentLogin, catchAsync(syllabusController.renderTracker));
+router.post("/api/student-syllabus/update", ensureDBConnection, requireStudentLogin, express.json({ limit: '10mb' }), catchAsync(syllabusController.updateChapterStatus));
 
 // Solutions
 router.get("/student/solutions", ensureDBConnection, requireStudentLogin, catchAsync(solutionController.renderSolutions));

@@ -200,6 +200,32 @@
                 </div>
               </div>
 
+              <!-- Syllabus Progress -->
+              <div class="stat-card border-t-4 border-[var(--gt)]">
+                <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider">
+                  Syllabus Progress
+                </h3>
+                <div class="space-y-3">
+                  <% if (syllabusProgress && syllabusProgress.length > 0) { %>
+                    <% syllabusProgress.forEach(sp => {
+                      const pct = sp.total > 0 ? Math.round((sp.completed / sp.total) * 100) : 0;
+                    %>
+                      <div>
+                        <div class="flex justify-between items-baseline mb-1">
+                          <span class="text-xs font-bold text-theme-fg font-sans"><%= sp.subject %></span>
+                          <span class="text-[10px] font-mono font-bold text-theme-fdd"><%= sp.completed %>/<%= sp.total %> (<%= pct %>%)</span>
+                        </div>
+                        <div style="height:8px;border-radius:4px;background:var(--bg2);overflow:hidden;">
+                          <div style="height:100%;border-radius:4px;background:#10B981;width:<%= pct %>%;"></div>
+                        </div>
+                      </div>
+                    <% }) %>
+                  <% } else { %>
+                    <p class="py-4 text-theme-fdd text-center text-xs font-mono">No syllabus tracked for this batch yet.</p>
+                  <% } %>
+                </div>
+              </div>
+
               <!-- Fee Payments Log -->
               <div class="stat-card border-t-4 border-[var(--gt)]">
                 <h3 class="text-xs font-bold mb-4 border-b border-theme-bd pb-2 text-theme-fg font-mono uppercase tracking-wider">

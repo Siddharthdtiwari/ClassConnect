@@ -14,6 +14,8 @@ const { logAudit } = require("../../utils/auditService");
 const crypto = require("crypto");
 const { renderError } = require("../../utils/renderError");
 const { NA_STATUS } = require("../../utils/feeHelpers");
+const Syllabus = require("../../models/Syllabus");
+const StudentSyllabusProgress = require("../../models/StudentSyllabusProgress");
 
 exports.renderManageStudents = async (req, res) => {
   try {
@@ -272,6 +274,29 @@ exports.renderViewProfile = async (req, res) => {
       studentRank = rankIndex + 1;
     }
 
+    // Syllabus progress: chapter count comes from the teacher's own tracker for this
+    // student's batch; completion status is this specific student's own revision record.
+    let syllabusProgress = [];
+    if (student.batch) {
+      const [syllabusRecords, progressRecords] = await Promise.all([
+        Syllabus.find({ batch: student.batch._id }).lean(),
+        StudentSyllabusProgress.find({ userRef: student._id, batch: student.batch._id }).lean(),
+      ]);
+      const progressBySubject = {};
+      progressRecords.forEach(p => { progressBySubject[p.subject] = p.chapterStatuses || {}; });
+
+      syllabusProgress = syllabusRecords.map(record => {
+        const totalChapters = record.totalChapters || 10;
+        const statuses = progressBySubject[record.subject] || {};
+        let completed = 0;
+        for (let i = 1; i <= totalChapters; i++) {
+          if (statuses[i.toString()] === "completed") completed++;
+        }
+        return { subject: record.subject, completed, total: totalChapters };
+      });
+      syllabusProgress.sort((a, b) => a.subject.localeCompare(b.subject));
+    }
+
     res.render("teacher/view_profile", {
       student,
       recentFees,
@@ -283,6 +308,7 @@ exports.renderViewProfile = async (req, res) => {
       scoreLabels,
       scoreData,
       studentRank,
+      syllabusProgress,
     });
   } catch (err) {
     console.error("Error loading student profile:", err);

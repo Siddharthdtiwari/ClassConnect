@@ -13,6 +13,16 @@ const razorpay = new Razorpay({
   key_secret: process.env.RAZORPAY_KEY_SECRET,
 });
 
+// logAudit reads the actor from req.session on the web portal — that's already
+// populated at login. The JWT mobile API has no session at all, so calls from
+// there need an explicit override built from req.user instead.
+function studentAttribution(req, student) {
+  if (req.session?.userId) return {};
+  const s = student || req.user;
+  if (!s) return {};
+  return { performedBy: s.studentName, performedById: s.studentId, userRole: "Student" };
+}
+
 exports.renderFeePayment = async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).populate('batch').lean();
@@ -125,6 +135,18 @@ exports.createOrder = async (req, res) => {
     if (!order) {
       return res.status(500).send("Error creating order");
     }
+
+    // Web sets req.session.userId; the JWT mobile API sets req.user.
+    const payerId = req.session?.userId || (req.user && req.user._id);
+    const student = payerId ? await User.findById(payerId).populate('batch').lean() : null;
+    await logAudit(req, {
+      action: "SYSTEM_ACTION",
+      entityType: "Fee",
+      details: `Payment order created for ₹${amount}${student ? ` (${student.studentName})` : ""} — order ${order.id}`,
+      academicYear: (student && student.batch && student.batch.academicYear) || "N/A",
+      ...studentAttribution(req, student),
+    });
+
     res.json(order);
   } catch (error) {
     console.error("Error in /create-order:", error);
@@ -143,10 +165,15 @@ exports.verifyPayment = async (req, res) => {
   if (digest === razorpay_signature) {
     console.log("Payment is legitimate and verified.");
 
+    // Declared here (not with const/let inside the try below) so it's still
+    // reachable from the catch block if something fails partway through —
+    // the failure log needs to know who was paying even when the payment
+    // itself couldn't be recorded.
+    let student;
     try {
       // Web portal sets req.session.userId; the JWT mobile API sets req.user (see routes/api/studentRoutes.js).
       const payerId = req.session?.userId || (req.user && req.user._id);
-      const student = await User.findById(payerId).populate('batch');
+      student = await User.findById(payerId).populate('batch');
       if (!student) {
         throw new Error("Student not found for session.");
       }
@@ -238,8 +265,26 @@ exports.verifyPayment = async (req, res) => {
             .catch(err => console.error("Fee receipt email failed:", err));
         }
       }
+
+      await logAudit(req, {
+        action: "CREATE",
+        entityType: "Fee",
+        details: `Online payment of ₹${amountPaid} verified for ${student.studentName} — ${dueMonths.join(", ")} (Razorpay ${razorpay_payment_id})`,
+        academicYear: (student.batch && student.batch.academicYear) || "N/A",
+        ...studentAttribution(req, student),
+      });
     } catch (dbError) {
       console.error("Error saving fee to DB after payment verification:", dbError);
+      // Razorpay confirmed this payment as legitimate — a failure here means money has
+      // moved but our ledger may not reflect it, which is exactly the kind of gap this
+      // log exists to surface for manual reconciliation.
+      await logAudit(req, {
+        action: "SYSTEM_ACTION",
+        entityType: "Fee",
+        details: `Payment verified (order ${razorpay_order_id}, payment ${razorpay_payment_id}) but recording the fee failed: ${dbError.message}`,
+        academicYear: (student && student.batch && student.batch.academicYear) || "N/A",
+        ...studentAttribution(req, student),
+      });
     }
 
     res.json({
@@ -248,6 +293,16 @@ exports.verifyPayment = async (req, res) => {
       paymentId: razorpay_payment_id,
     });
   } else {
+    console.warn(`Payment signature mismatch for order ${razorpay_order_id}, payment ${razorpay_payment_id}.`);
+    const payerId = req.session?.userId || (req.user && req.user._id);
+    const student = payerId ? await User.findById(payerId).populate('batch').lean() : null;
+    await logAudit(req, {
+      action: "SYSTEM_ACTION",
+      entityType: "Fee",
+      details: `Payment verification FAILED — invalid signature (order ${razorpay_order_id}, payment ${razorpay_payment_id}, ₹${amount})`,
+      academicYear: (student && student.batch && student.batch.academicYear) || "N/A",
+      ...studentAttribution(req, student),
+    });
     res.status(400).json({ status: "failure", message: "Invalid signature." });
   }
 };

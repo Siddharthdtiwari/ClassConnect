@@ -55,8 +55,17 @@ exports.renderLeaderboard = async (req, res) => {
     const Test = mongoose.model('Test');
     
     // Fetch all tests for the viewing batches
-    const tests = await Test.find({ batch: { $in: viewingBatches } }).select('_id testName totalMarks batch').lean();
+    const tests = await Test.find({ batch: { $in: viewingBatches } }).select('_id testName totalMarks batch testDate').lean();
     const testLeaderboardsRaw = {};
+
+    // For the date filter on the Test dropdown — the exact day each test was conducted on.
+    const testDates = {};
+    tests.forEach(test => {
+      if (test.testDate) {
+        const d = new Date(test.testDate);
+        testDates[test.testName] = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      }
+    });
     
     // Initialize test leaderboards with all students from the test's batch (defaulting to 0)
     tests.forEach(test => {
@@ -102,9 +111,10 @@ exports.renderLeaderboard = async (req, res) => {
       testLeaderboards[testName] = formatLeaderboard(students);
     }
     
-    res.render("teacher/leader_board", { 
+    res.render("teacher/leader_board", {
       globalLeaderboard,
       testLeaderboards,
+      testDates,
       batches,
       currentUser: req.user,
       viewingYear: targetYear

@@ -9,7 +9,7 @@ const auditLogSchema = new mongoose.Schema(
     },
     entityType: {
       type: String,
-      enum: ["User", "Teacher", "Fee", "Batch", "Test", "Attendance", "StudyMaterial", "Score"],
+      enum: ["User", "Teacher", "Fee", "Batch", "Test", "Attendance", "StudyMaterial", "Score", "Syllabus"],
       required: true,
     },
     entityId: {
@@ -33,7 +33,7 @@ const auditLogSchema = new mongoose.Schema(
     },
     userRole: {
       type: String,
-      enum: ["Teacher", "Student", "System"],
+      enum: ["Teacher", "Admin", "Owner", "Student", "System"],
       default: "System",
     }
   },

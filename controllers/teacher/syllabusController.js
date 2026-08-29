@@ -1,7 +1,10 @@
 const Batch = require("../../models/Batch");
 const Syllabus = require("../../models/Syllabus");
-const { sortBatches } = require("../../utils/sortHelpers");
+const User = require("../../models/User");
+const StudentSyllabusProgress = require("../../models/StudentSyllabusProgress");
+const { sortBatches, sortStudentsByBatchAndId } = require("../../utils/sortHelpers");
 const { renderError } = require("../../utils/renderError");
+const { logAudit } = require("../../utils/auditService");
 
 exports.renderTracker = async (req, res) => {
   try {
@@ -40,11 +43,55 @@ exports.renderTracker = async (req, res) => {
       };
     });
 
+    // Per-student breakdown: who's actually revised what, not just what the
+    // teacher has taught. Scoped to the same batch(es) already selected above.
+    const relevantBatchIds = selectedBatchId === "all" ? batches.map(b => b._id) : [selectedBatchId];
+    const [students, progressRecords] = await Promise.all([
+      User.find({ batch: { $in: relevantBatchIds } }).select("studentId studentName batch").lean(),
+      StudentSyllabusProgress.find({ batch: { $in: relevantBatchIds } }).lean(),
+    ]);
+    students.sort(sortStudentsByBatchAndId);
+
+    // progressByBatchStudentSubject[batchId][studentId][subject] = chapterStatuses
+    const progressLookup = {};
+    progressRecords.forEach(p => {
+      const bId = p.batch.toString();
+      if (!progressLookup[bId]) progressLookup[bId] = {};
+      if (!progressLookup[bId][p.studentId]) progressLookup[bId][p.studentId] = {};
+      progressLookup[bId][p.studentId][p.subject] = p.chapterStatuses || {};
+    });
+
+    // studentProgressMap[batchId][subject] = [{ studentId, studentName, completed, total }]
+    const studentProgressMap = {};
+    students.forEach(student => {
+      const bId = student.batch.toString();
+      const subjectsForBatch = syllabusMap[bId] || {};
+      Object.keys(subjectsForBatch).forEach(subject => {
+        const totalChapters = subjectsForBatch[subject].totalChapters;
+        const statuses = (progressLookup[bId] && progressLookup[bId][student.studentId] && progressLookup[bId][student.studentId][subject]) || {};
+        let completed = 0;
+        for (let i = 1; i <= totalChapters; i++) {
+          if (statuses[i.toString()] === "completed") completed++;
+        }
+
+        if (!studentProgressMap[bId]) studentProgressMap[bId] = {};
+        if (!studentProgressMap[bId][subject]) studentProgressMap[bId][subject] = [];
+        studentProgressMap[bId][subject].push({
+          studentId: student.studentId,
+          studentName: student.studentName,
+          completed,
+          total: totalChapters,
+          chapterStatuses: statuses,
+        });
+      });
+    });
+
     res.render("teacher/syllabus_tracker", {
       batches,
       selectedBatchId,
       selectedBatchName,
       syllabusMap,
+      studentProgressMap,
     });
   } catch (err) {
     console.error("Error rendering syllabus tracker:", err);
@@ -81,6 +128,15 @@ exports.updateChapterCount = async (req, res) => {
     }
 
     await record.save();
+
+    await logAudit(req, {
+      action: "UPDATE",
+      entityType: "Syllabus",
+      entityId: record._id,
+      details: `${action === 'add' ? 'Added' : 'Removed'} a chapter for ${subject} (now ${record.totalChapters})`,
+      academicYear: req.viewingYear || "N/A"
+    });
+
     res.json({ success: true, totalChapters: record.totalChapters });
   } catch (err) {
     console.error("Error updating chapter count:", err);
@@ -113,8 +169,16 @@ exports.updateChapterStatus = async (req, res) => {
     }
     
     record.chapterStatuses.set(chapterNo.toString(), status);
-    
+
     await record.save();
+
+    await logAudit(req, {
+      action: "UPDATE",
+      entityType: "Syllabus",
+      entityId: record._id,
+      details: `Marked ${subject} chapter ${chapterNo} as ${status}`,
+      academicYear: req.viewingYear || "N/A"
+    });
 
     res.json({ success: true, message: "Status updated." });
   } catch (err) {

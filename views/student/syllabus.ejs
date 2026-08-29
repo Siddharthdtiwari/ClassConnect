@@ -83,9 +83,10 @@
       </div>
     <% } else { %>
 
-      <div class="mb-6 flex gap-4 text-xs font-mono font-bold text-theme-fdd uppercase">
-        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-theme-bg2 border border-theme-bd"></div> Not Started</div>
-        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-emerald-500"></div> Completed</div>
+      <div class="mb-6 flex flex-wrap gap-4 text-xs font-mono font-bold text-theme-fdd uppercase">
+        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-theme-bg2 border border-theme-bd"></div> Not Yet</div>
+        <div class="flex items-center gap-2"><div class="w-3 h-3 rounded bg-emerald-500"></div> Taught / Completed</div>
+        <div class="flex items-center gap-2 normal-case tracking-normal font-sans text-theme-fdd">— double-click a chapter under "Your Progress" to mark it revised</div>
       </div>
 
       <div id="subjects-container" class="space-y-6" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-batch-name="<%= batchName %>"></div>
@@ -100,32 +101,85 @@
           container.innerHTML = '<div class="stat-card text-center py-12 text-theme-fdd font-mono text-sm uppercase tracking-widest">No subjects configured for this batch yet.</div>';
         }
 
-        subjects.forEach(subject => {
-          const subjectData = syllabusMap[subject] || {};
-          const statuses = subjectData.chapterStatuses || {};
-          const totalChapters = subjectData.totalChapters || 10;
-
-          let completed = 0;
-          let gridHtml = '';
+        function renderRow(subject, totalChapters, statuses, interactive) {
+          let html = '';
           for (let i = 1; i <= totalChapters; i++) {
             const status = statuses[i.toString()] || 'incomplete';
-            if (status === 'completed') completed++;
             const displayContent = status === 'completed' ? `${i} ✓` : i;
-            gridHtml += `<div class="chapter-pill status-${status}" title="Chapter ${i}">${displayContent}</div>`;
+            const attrs = interactive
+              ? `data-subject="${subject}" data-chapter="${i}" data-status="${status}" ondblclick="toggleMyProgress(this)" style="cursor:pointer"`
+              : '';
+            html += `<div class="chapter-pill status-${status}" title="Chapter ${i}" ${attrs}>${displayContent}</div>`;
           }
-          const pct = totalChapters > 0 ? Math.round((completed / totalChapters) * 100) : 0;
+          return html;
+        }
+
+        subjects.forEach(subject => {
+          const subjectData = syllabusMap[subject] || {};
+          const totalChapters = subjectData.totalChapters || 10;
+          const teacherStatuses = subjectData.teacherStatuses || {};
+          const studentStatuses = subjectData.studentStatuses || {};
+
+          let myCompleted = 0;
+          for (let i = 1; i <= totalChapters; i++) {
+            if ((studentStatuses[i.toString()] || 'incomplete') === 'completed') myCompleted++;
+          }
+          const pct = totalChapters > 0 ? Math.round((myCompleted / totalChapters) * 100) : 0;
 
           const subjectCard = `
             <div class="stat-card">
-              <div class="flex justify-between items-center mb-6">
+              <div class="flex justify-between items-center mb-5">
                 <h2 class="text-xl font-bold font-mono tracking-tight" style="color: var(--fg);">${subject}</h2>
-                <span class="text-xs font-mono font-bold text-theme-pt">${completed}/${totalChapters} • ${pct}%</span>
+                <span class="text-xs font-mono font-bold text-theme-pt">Your progress: ${myCompleted}/${totalChapters} • ${pct}%</span>
               </div>
-              <div class="flex flex-wrap gap-3">${gridHtml}</div>
+              <div class="mb-4">
+                <div class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd mb-2">Taught in Class</div>
+                <div class="flex flex-wrap gap-3">${renderRow(subject, totalChapters, teacherStatuses, false)}</div>
+              </div>
+              <div>
+                <div class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd mb-2">Your Progress</div>
+                <div class="flex flex-wrap gap-3">${renderRow(subject, totalChapters, studentStatuses, true)}</div>
+              </div>
             </div>
           `;
           container.insertAdjacentHTML('beforeend', subjectCard);
         });
+
+        function toggleMyProgress(element) {
+          const subject = element.dataset.subject;
+          const chapterNo = element.dataset.chapter;
+          const currentStatus = element.dataset.status;
+
+          const newStatus = currentStatus === 'incomplete' ? 'completed' : 'incomplete';
+          const displayContent = newStatus === 'completed' ? `${chapterNo} ✓` : chapterNo;
+
+          // Optimistic UI update
+          element.className = `chapter-pill status-${newStatus}`;
+          element.dataset.status = newStatus;
+          element.innerHTML = displayContent;
+          element.style.transform = 'scale(1.15)';
+          setTimeout(() => { element.style.transform = ''; }, 150);
+
+          fetch('/api/student-syllabus/update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ subject, chapterNo, status: newStatus })
+          })
+            .then(res => res.json())
+            .then(data => {
+              if (!data.success) {
+                // Revert on failure
+                element.className = `chapter-pill status-${currentStatus}`;
+                element.dataset.status = currentStatus;
+                element.innerHTML = currentStatus === 'completed' ? `${chapterNo} ✓` : chapterNo;
+              }
+            })
+            .catch(() => {
+              element.className = `chapter-pill status-${currentStatus}`;
+              element.dataset.status = currentStatus;
+              element.innerHTML = currentStatus === 'completed' ? `${chapterNo} ✓` : chapterNo;
+            });
+        }
       </script>
     <% } %>
   </div>

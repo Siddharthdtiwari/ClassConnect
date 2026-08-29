@@ -85,6 +85,79 @@
     .chapter-pill:active {
       transform: scale(0.95);
     }
+
+    .chapter-pill-sm {
+      width: 32px;
+      height: 32px;
+      font-size: 11px;
+      cursor: default;
+    }
+    .chapter-pill-sm:hover { transform: none; }
+
+    .student-progress-toggle {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-top: 1px solid var(--bd);
+      background: none;
+      border-left: none;
+      border-right: none;
+      border-bottom: none;
+      cursor: pointer;
+    }
+    .student-progress-list {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      padding-top: 10px;
+    }
+    .student-progress-row {
+      border-bottom: 1px solid var(--bd);
+      padding-bottom: 8px;
+    }
+    .student-progress-summary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      cursor: pointer;
+      padding: 4px 0;
+    }
+    .student-progress-name {
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--fg);
+      width: 160px;
+      flex-shrink: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .student-progress-bar-track {
+      flex: 1;
+      height: 8px;
+      border-radius: 4px;
+      background: var(--bg2);
+      overflow: hidden;
+      display: block;
+    }
+    .student-progress-bar-fill {
+      display: block;
+      height: 100%;
+      background: #10B981;
+      border-radius: 4px;
+      transition: width 0.3s ease;
+    }
+    .student-progress-pct {
+      font-family: 'Space Mono', monospace;
+      font-size: 0.7rem;
+      font-weight: 700;
+      color: var(--fdd);
+      width: 90px;
+      text-align: right;
+      flex-shrink: 0;
+    }
   </style>
 </head>
 
@@ -138,15 +211,16 @@
             </div>
 
             <!-- Subject Container: Will be populated by JS -->
-            <div id="subjects-container" class="space-y-10" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-batch-name="<%= selectedBatchName %>" data-batch-id="<%= selectedBatchId %>" data-batches="<%= JSON.stringify(batches.map(b => ({ id: b._id, name: b.name }))) %>"></div>
+            <div id="subjects-container" class="space-y-10" data-syllabus="<%= JSON.stringify(syllabusMap) %>" data-student-progress="<%= JSON.stringify(studentProgressMap) %>" data-batch-name="<%= selectedBatchName %>" data-batch-id="<%= selectedBatchId %>" data-batches="<%= JSON.stringify(batches.map(b => ({ id: b._id, name: b.name }))) %>"></div>
 
             <script>
               const container = document.getElementById('subjects-container');
               const selectedBatchName = container.dataset.batchName;
               const selectedBatchId = container.dataset.batchId;
               const batchesList = JSON.parse(container.dataset.batches || "[]");
-              
+
               const syllabusMap = JSON.parse(container.dataset.syllabus || "{}");
+              const studentProgressMap = JSON.parse(container.dataset.studentProgress || "{}");
               
               let batchesToRender = selectedBatchId === 'all' 
                 ? batchesList 
@@ -198,21 +272,58 @@
                     `;
                   }
 
+                  // Per-student breakdown: who's actually revised what, not just what's been taught.
+                  const studentRows = (studentProgressMap[batch.id] && studentProgressMap[batch.id][subject]) || [];
+                  const cardId = `progress-${batch.id}-${subject.replace(/\s+/g, '_')}`;
+
+                  let studentRowsHtml = '';
+                  studentRows.forEach(s => {
+                    const pct = s.total > 0 ? Math.round((s.completed / s.total) * 100) : 0;
+                    const rowId = `${cardId}-${s.studentId}`;
+                    let chapterGridHtml = '';
+                    for (let i = 1; i <= totalChapters; i++) {
+                      const st = (s.chapterStatuses && s.chapterStatuses[i.toString()]) || 'incomplete';
+                      chapterGridHtml += `<div class="chapter-pill chapter-pill-sm status-${st}" title="Chapter ${i}">${st === 'completed' ? i + ' ✓' : i}</div>`;
+                    }
+                    studentRowsHtml += `
+                      <div class="student-progress-row">
+                        <div class="student-progress-summary" onclick="toggleStudentChapters('${rowId}')">
+                          <span class="student-progress-name">${s.studentName}</span>
+                          <span class="student-progress-bar-track">
+                            <span class="student-progress-bar-fill" style="width:${pct}%"></span>
+                          </span>
+                          <span class="student-progress-pct">${s.completed}/${s.total} (${pct}%)</span>
+                        </div>
+                        <div class="student-progress-chapters hidden" id="${rowId}">
+                          <div class="flex flex-wrap gap-2 mt-2">${chapterGridHtml}</div>
+                        </div>
+                      </div>
+                    `;
+                  });
+
                   subjectCardsHtml += `
                     <div class="stat-card subject-card" data-subject="${subject}">
                       <div class="flex justify-between items-center mb-6">
                         <h2 class="text-xl font-bold font-mono tracking-tight" style="color: var(--fg);">${batch.name} - ${subject}</h2>
                         <div class="flex items-center gap-2">
-                          <button onclick="updateChapterCount('${batch.id}', '${subject}', 'remove')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" ${totalChapters <= 1 ? 'disabled' : ''}>
+                          <button onclick="updateChapterCount(this, '${batch.id}', '${subject}', 'remove')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-red-500 hover:text-white transition-colors disabled:opacity-50" ${totalChapters <= 1 ? 'disabled' : ''}>
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 12H4"></path></svg>
                           </button>
-                          <button onclick="updateChapterCount('${batch.id}', '${subject}', 'add')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-emerald-500 hover:text-white transition-colors">
+                          <button onclick="updateChapterCount(this, '${batch.id}', '${subject}', 'add')" class="w-8 h-8 rounded-full bg-theme-bg2 border border-theme-bd flex items-center justify-center text-theme-fg hover:bg-emerald-500 hover:text-white transition-colors">
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
                           </button>
                         </div>
                       </div>
-                      <div class="flex flex-wrap gap-3">
+                      <div class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd mb-2">Taught in Class</div>
+                      <div class="flex flex-wrap gap-3 mb-6">
                         ${gridHtml}
+                      </div>
+                      <button class="student-progress-toggle" onclick="toggleStudentProgress('${cardId}')">
+                        <span class="text-[10px] font-mono font-bold uppercase tracking-widest text-theme-fdd">Student Progress (${studentRows.length})</span>
+                        <svg class="w-4 h-4 text-theme-fdd" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                      </button>
+                      <div class="student-progress-list hidden" id="${cardId}">
+                        ${studentRowsHtml || '<div class="text-xs text-theme-fdd py-2">No students found for this batch.</div>'}
                       </div>
                     </div>
                   `;
@@ -245,7 +356,10 @@
                 });
               }
 
-              function updateChapterCount(batchId, subject, action) {
+              function updateChapterCount(btn, batchId, subject, action) {
+                if (btn.disabled) return;
+                btn.disabled = true;
+                btn.style.opacity = '0.5';
                 fetch('/api/syllabus/update_count', {
                   method: 'POST',
                   headers: { 'Content-Type': 'application/json' },
@@ -257,9 +371,23 @@
                     window.location.reload();
                   } else {
                     alert('Error updating chapters.');
+                    btn.disabled = false;
+                    btn.style.opacity = '';
                   }
                 })
-                .catch(err => console.error('Error updating count:', err));
+                .catch(err => {
+                  console.error('Error updating count:', err);
+                  btn.disabled = false;
+                  btn.style.opacity = '';
+                });
+              }
+
+              function toggleStudentProgress(cardId) {
+                document.getElementById(cardId).classList.toggle('hidden');
+              }
+
+              function toggleStudentChapters(rowId) {
+                document.getElementById(rowId).classList.toggle('hidden');
               }
 
               // Status Toggle Logic

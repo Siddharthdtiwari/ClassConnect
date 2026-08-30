@@ -357,7 +357,7 @@ async function drawFeeCollectionSheet(doc, data) {
   const widths = [40, 65, 175, 75, 75, 85];
   const tableWidth = widths.reduce((a, b) => a + b, 0);
   const tableM = (W - tableWidth) / 2;
-  const rowH = 20;
+  const rowH = 18;
 
   function checkPageAdd(heightNeeded) {
     if (cursorY + heightNeeded > H - 40) {
@@ -427,7 +427,7 @@ async function drawFeeCollectionSheet(doc, data) {
         }
         doc.lineWidth(1).moveTo(tableM + tableWidth, cursorY).lineTo(tableM + tableWidth, cursorY + rowH).stroke("#d1d5db"); // right border
 
-        const textY = cursorY + 6;
+        const textY = cursorY + 5;
         
         doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
         doc.text(s.studentId, tableM + widths[0] + 5, textY, { width: widths[1] - 10, lineBreak: false });

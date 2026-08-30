@@ -26,7 +26,7 @@ function studentAttribution(req, student) {
 exports.renderFeePayment = async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).populate('batch').lean();
-    if (!student) return res.send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
 
     const months = [
       "May", "June", "July", "August", "September", "October",
@@ -116,7 +116,7 @@ exports.renderFeePayment = async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.send("Error loading fee payment");
+    renderError(req, res, 500, "Error loading fee payment");
   }
 };
 
@@ -133,7 +133,7 @@ exports.createOrder = async (req, res) => {
     };
     const order = await razorpay.orders.create(options);
     if (!order) {
-      return res.status(500).send("Error creating order");
+      return res.status(500).json({ status: "failure", message: "Error creating order" });
     }
 
     // Web sets req.session.userId; the JWT mobile API sets req.user.
@@ -150,7 +150,7 @@ exports.createOrder = async (req, res) => {
     res.json(order);
   } catch (error) {
     console.error("Error in /create-order:", error);
-    res.status(500).send("Server Error");
+    res.status(500).json({ status: "failure", message: "Server Error" });
   }
 };
 
@@ -309,29 +309,31 @@ exports.verifyPayment = async (req, res) => {
 
 exports.downloadReceipt = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.feeId)) return renderError(req, res, 400, "Invalid Receipt ID");
     const fee = await Fee.findById(req.params.feeId).lean();
-    if (!fee) return res.send("Receipt not found");
+    if (!fee) return renderError(req, res, 404, "Receipt not found");
     const student = fee.userRef
       ? await User.findById(fee.userRef).populate('batch').lean()
       : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
     await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error(err);
-    res.send("Error generating receipt");
+    renderError(req, res, 500, "Error generating receipt");
   }
 };
 
 exports.viewReceipt = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.feeId)) return renderError(req, res, 400, "Invalid Receipt ID");
     const fee = await Fee.findById(req.params.feeId).lean();
-    if (!fee) return res.send("Receipt not found");
+    if (!fee) return renderError(req, res, 404, "Receipt not found");
     const student = fee.userRef
       ? await User.findById(fee.userRef).populate('batch').lean()
       : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
     await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error(err);
-    res.send("Error generating receipt");
+    renderError(req, res, 500, "Error generating receipt");
   }
 };
 
@@ -341,25 +343,25 @@ exports.viewPublicReceipt = async (req, res) => {
     
     const expectedSignature = crypto.createHmac('sha256', process.env.SESSION_SECRET).update(id).digest('hex');
     if (signature !== expectedSignature) {
-      return res.status(403).send("Invalid or expired receipt link");
+      return renderError(req, res, 403, "Invalid or expired receipt link");
     }
 
     const fee = await Fee.findById(id).lean();
-    if (!fee) return res.send("Receipt not found");
+    if (!fee) return renderError(req, res, 404, "Receipt not found");
     const student = fee.userRef
       ? await User.findById(fee.userRef).populate('batch').lean()
       : await User.findOne({ studentId: fee.studentId, batch: fee.batch }).populate('batch').lean();
     await generateReceiptPDF(fee, student, res, "inline");
   } catch (err) {
     console.error("View public receipt error:", err);
-    res.send("Error generating receipt");
+    renderError(req, res, 500, "Error generating receipt");
   }
 };
 
 exports.downloadFeeSummary = async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).populate('batch').lean();
-    if (!student) return res.send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
 
     const months = [
       "May", "June", "July", "August", "September", "October",
@@ -444,6 +446,6 @@ exports.downloadFeeSummary = async (req, res) => {
     await generateFeeSummaryPDF(student, feesByMonth, totalDue, res, disposition);
   } catch (err) {
     console.error(err);
-    res.send("Error generating fee summary");
+    renderError(req, res, 500, "Error generating fee summary");
   }
 };

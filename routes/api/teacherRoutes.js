@@ -160,6 +160,7 @@ router.post('/batches', validate(createBatchSchema), async (req, res) => {
 router.put('/batches/:id', async (req, res) => {
   try {
     const { name, description, isActive } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Batch not found' });
     const batch = await Batch.findById(req.params.id);
     if (!batch) return res.status(404).json({ error: 'Batch not found' });
     if (name) batch.name = name.trim();
@@ -176,6 +177,7 @@ router.put('/batches/:id', async (req, res) => {
 // ========== STUDENT MANAGEMENT ==========
 router.get('/student_profile/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id).populate('batch').lean();
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
@@ -323,6 +325,7 @@ router.get('/teachers', async (req, res) => {
 router.put('/teachers/:id', async (req, res) => {
   try {
     const { name, email, password } = req.body;
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
     const teacher = await User.findById(req.params.id);
     if (!teacher || teacher.role !== 'teacher') {
       return res.status(404).json({ error: 'Teacher not found' });
@@ -345,6 +348,7 @@ router.put('/teachers/:id', async (req, res) => {
 
 router.delete('/teachers/:id', async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
     const teacher = await User.findById(req.params.id);
     if (!teacher || teacher.role !== 'teacher') {
       return res.status(404).json({ error: 'Teacher not found' });
@@ -355,6 +359,7 @@ router.delete('/teachers/:id', async (req, res) => {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
     await User.findByIdAndDelete(req.params.id);
     await logAudit(req, { action: 'DELETE', entityType: 'User', details: `Deleted teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
@@ -365,6 +370,7 @@ router.delete('/teachers/:id', async (req, res) => {
 
 router.get('/students/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id).populate('batch').lean();
     if (!student) return res.status(404).json({ error: 'Student not found' });
 
@@ -390,6 +396,7 @@ router.get('/students/:id', async (req, res) => {
 
 router.delete('/students/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id);
     if (!student || student.role !== 'student') {
       return res.status(404).json({ error: 'Student not found' });
@@ -593,6 +600,7 @@ router.get('/tests/:batchId', async (req, res) => {
 
 router.get('/scores/:batchId/:testId', async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.batchId)) return res.status(404).json({ error: "Invalid batch ID" });
     const students = await User.find({ batch: req.params.batchId }).lean();
     const scores = await Score.find({ batch: req.params.batchId, testId: req.params.testId }).lean();
     const test = await Test.findById(req.params.testId).lean();
@@ -606,6 +614,7 @@ router.post('/scores/:testId', async (req, res) => {
   try {
     const { scores } = req.body; // Array of { studentId, marksObtained }
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.testId)) return res.status(404).json({ error: "Test not found" });
     const test = await Test.findById(req.params.testId);
     
     if (!test) return res.status(404).json({ error: 'Test not found' });
@@ -969,6 +978,7 @@ router.post('/ai/generate_paper', (req, res, next) => {
 router.put('/students/:id', async (req, res) => {
   try {
     const { studentName, mobileNo, monthlyFee, studentId, email, batchId, isActive, password } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id);
     if (!student) return res.status(404).json({ error: 'Student not found' });
     if (password && String(password).trim() !== '') {
@@ -997,6 +1007,7 @@ router.put('/students/:id', async (req, res) => {
 // Toggle student active status (mirrors web POST /teacher/toggle_active/:id)
 router.post('/students/:id/toggle-active', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id);
     if (!student) return res.status(404).json({ error: 'Student not found' });
     student.isActive = !student.isActive;
@@ -1012,6 +1023,7 @@ router.post('/students/:id/toggle-active', async (req, res) => {
 router.put('/tests/:id', async (req, res) => {
   try {
     const { subject, testDate, totalMarks } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Test not found' });
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ error: 'Test not found' });
     if (subject) test.subject = subject;
@@ -1027,6 +1039,7 @@ router.put('/tests/:id', async (req, res) => {
 
 router.delete('/tests/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Test not found' });
     const test = await Test.findById(req.params.id);
     if (!test) return res.status(404).json({ error: 'Test not found' });
     await Score.deleteMany({ test: test._id });
@@ -1042,6 +1055,7 @@ router.delete('/tests/:id', async (req, res) => {
 router.put('/timetable/:id', async (req, res) => {
   try {
     const { subject, examDate, examType, chapters } = req.body;
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Timetable entry not found' });
     const entry = await ExamTimetable.findById(req.params.id);
     if (!entry) return res.status(404).json({ error: 'Timetable entry not found' });
     if (subject) entry.subject = subject;
@@ -1058,6 +1072,7 @@ router.put('/timetable/:id', async (req, res) => {
 
 router.delete('/timetable/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Timetable entry not found' });
     const entry = await ExamTimetable.findById(req.params.id);
     if (!entry) return res.status(404).json({ error: 'Timetable entry not found' });
     await ExamTimetable.findByIdAndDelete(req.params.id);
@@ -1071,6 +1086,7 @@ router.delete('/timetable/:id', async (req, res) => {
 // Delete Material
 router.delete('/materials/:id', async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Material not found' });
     const material = await StudyMaterial.findById(req.params.id);
     if (!material) return res.status(404).json({ error: 'Material not found' });
     await StudyMaterial.findByIdAndDelete(req.params.id);

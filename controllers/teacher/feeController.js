@@ -686,7 +686,7 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
     const { generateFeeSummaryPDF } = require("../../utils/pdfUtils");
 
     const student = await User.findById(studentId).populate('batch').lean();
-    if (!student) return res.send("Student not found");
+    if (!student) return renderError(req, res, 404, "Student not found");
 
     const months = [
       "May", "June", "July", "August", "September", "October",
@@ -771,7 +771,7 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
     await generateFeeSummaryPDF(student, feesByMonth, totalDue, res, disposition);
   } catch (err) {
     console.error(err);
-    res.send("Error generating fee summary");
+    renderError(req, res, 500, "Error generating fee summary");
   }
 };
 

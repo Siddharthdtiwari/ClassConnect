@@ -136,12 +136,13 @@ exports.processAddStudent = async (req, res) => {
     res.redirect("/teacher/manage_students");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Failed to add student");
+    renderError(req, res, 500, "Failed to add student");
   }
 };
 
 exports.renderEditProfile = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Student not found");
     const student = await User.findById(req.params.id).lean();
     if (!student) return renderError(req, res, 404, "Student not found");
     const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
@@ -165,7 +166,7 @@ exports.processEditProfile = async (req, res) => {
     if (studentId) {
       const existingStudent = await User.findOne({ studentId, batch: batchId, _id: { $ne: req.params.id } });
       if (existingStudent) {
-        return res.status(400).send("Student ID already exists in this batch.");
+        return renderError(req, res, 400, "Student ID already exists in this batch");
       }
       updateData.studentId = studentId;
     }
@@ -175,6 +176,7 @@ exports.processEditProfile = async (req, res) => {
       updateData.profilePhoto = result.secure_url;
     }
 
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 400, "Invalid Student ID");
     await User.findByIdAndUpdate(req.params.id, updateData);
     await logAudit(req, {
       action: "UPDATE",
@@ -186,12 +188,13 @@ exports.processEditProfile = async (req, res) => {
     res.redirect(`/teacher/view_profile/${req.params.id}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error updating profile");
+    renderError(req, res, 500, "Error updating profile");
   }
 };
 
 exports.toggleActiveStatus = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Student not found");
     const student = await User.findById(req.params.id);
     if (!student) return res.status(404).json({ success: false, message: "Student not found" });
     
@@ -581,6 +584,7 @@ exports.generateBulkStudentReports = async (req, res) => {
 
   exports.generateStudentReport = async (req, res) => {
     try {
+      if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Student not found");
       const student = await User.findById(req.params.id).populate('batch').lean();
       if (!student) return renderError(req, res, 404, "Student not found");
 

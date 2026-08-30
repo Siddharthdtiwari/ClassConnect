@@ -95,6 +95,7 @@ exports.processTimetableEdit = async (req, res) => {
     const student = await User.findById(req.session.userId);
     if (!student) return res.redirect("/student/login");
 
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.redirect("/student/timetable");
     const entry = await ExamTimetable.findById(req.params.id);
     if (!entry) {
       req.session.error = "Exam entry not found.";
@@ -127,6 +128,7 @@ exports.processTimetableDelete = async (req, res) => {
     const student = await User.findById(req.session.userId);
     if (!student) return res.redirect("/student/login");
 
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.redirect("/student/timetable");
     const entry = await ExamTimetable.findById(req.params.id);
     if (!entry) {
       req.session.error = "Exam entry not found.";

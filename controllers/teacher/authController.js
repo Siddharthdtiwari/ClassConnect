@@ -168,13 +168,14 @@ exports.processAddTeacher = async (req, res) => {
     res.redirect("/teacher/dashboard");
   } catch (err) {
     console.error(err);
-    if (err.code === 11000) res.status(400).send("Teacher ID already exists");
-    else res.status(500).send("Failed to add teacher");
+    if (err.code === 11000) renderError(req, res, 400, "Teacher ID already exists");
+    else renderError(req, res, 500, "Failed to add teacher");
   }
 };
 
 exports.renderEditTeacher = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Teacher not found");
     const teacher = await Teacher.findById(req.params.id).lean();
     if (!teacher) return renderError(req, res, 404, "Teacher not found");
     res.render("teacher/edit_teacher", { teacher });
@@ -195,6 +196,7 @@ exports.processEditTeacher = async (req, res) => {
       pwdChanged = true;
     }
     
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Teacher not found");
     await Teacher.findByIdAndUpdate(req.params.id, updateData);
     
     await logAudit(req, {
@@ -218,6 +220,6 @@ exports.processEditTeacher = async (req, res) => {
     res.redirect(`/teacher/edit_teacher/${req.params.id}`);
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error updating teacher");
+    renderError(req, res, 500, "Error updating teacher");
   }
 };

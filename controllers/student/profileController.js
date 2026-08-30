@@ -44,6 +44,6 @@ exports.processEditProfile = async (req, res) => {
     res.redirect("/student/dashboard");
   } catch (err) {
     console.error(err);
-    res.status(500).send("Error updating profile");
+    renderError(req, res, 500, "Error updating profile");
   }
 };

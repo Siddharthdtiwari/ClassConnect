@@ -157,6 +157,7 @@ exports.addTransaction = async (req, res) => {
 
 exports.deleteTransaction = async (req, res) => {
   try {
+    if (!mongoose.Types.ObjectId.isValid(req.params.id)) { req.session.error = 'Transaction not found.'; return res.redirect('/teacher/finance'); }
     const transaction = await Transaction.findById(req.params.id);
     if (!transaction) {
       req.session.error = "Transaction not found.";

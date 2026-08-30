@@ -68,14 +68,15 @@ exports.renderGeneratePaper = async (req, res) => {
 
 exports.renderViewPaper = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Paper not found");
     const test = await Test.findById(req.params.id);
     if (!test || (!test.htmlContent && !test.questionPaper)) {
-      return res.status(404).send("Paper not found.");
+      return renderError(req, res, 404, "Paper not found");
     }
     res.render("teacher/view_paper", { test });
   } catch (err) {
     console.error("View paper error:", err);
-    res.status(500).send("Error rendering paper");
+    renderError(req, res, 500, "Error rendering paper");
   }
 };
 
@@ -86,18 +87,18 @@ exports.viewPublicPaper = async (req, res) => {
     const secret = process.env.SESSION_SECRET || 'secret';
     const expectedSignature = crypto.createHmac('sha256', secret).update(id).digest('hex');
     if (signature !== expectedSignature) {
-      return res.status(403).send("Invalid or expired test paper link");
+      return renderError(req, res, 403, "Invalid or expired test paper link");
     }
 
     const test = await Test.findById(id);
     if (!test || (!test.htmlContent && !test.questionPaper)) {
-      return res.status(404).send("Paper not found.");
+      return renderError(req, res, 404, "Paper not found");
     }
     // Render using the existing teacher view since it doesn't actually display sensitive teacher data
     res.render("teacher/view_paper", { test });
   } catch (err) {
     console.error("View public paper error:", err);
-    res.status(500).send("Error rendering paper");
+    renderError(req, res, 500, "Error rendering paper");
   }
 };
 
@@ -105,6 +106,7 @@ exports.viewPublicPaper = async (req, res) => {
 
 exports.processDeleteTest = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Paper not found");
     const test = await Test.findById(req.params.id);
     const batchId = test ? test.batch : null;
     await Test.findByIdAndDelete(req.params.id);
@@ -122,7 +124,7 @@ exports.processDeleteTest = async (req, res) => {
     res.redirect("/teacher/manage_tests");
   } catch (err) {
     console.error("Delete test error:", err);
-    res.status(500).send("Error");
+    renderError(req, res, 500, "An error occurred while deleting the test");
   }
 };
 

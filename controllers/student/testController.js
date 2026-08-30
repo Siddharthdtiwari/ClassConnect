@@ -55,14 +55,15 @@ exports.renderTakeTest = async (req, res) => {
 
 exports.renderViewPaper = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Paper not found");
     const test = await Test.findById(req.params.id);
     if (!test || (!test.htmlContent && !test.questionPaper)) {
-      return res.status(404).send("Paper not found.");
+      return renderError(req, res, 404, "Paper not found");
     }
     // Reuse teacher's view_paper since it has no teacher-specific layout
     res.render("teacher/view_paper", { test });
   } catch (err) {
     console.error("View paper error:", err);
-    res.status(500).send("Error rendering paper");
+    renderError(req, res, 500, "Error rendering paper");
   }
 };

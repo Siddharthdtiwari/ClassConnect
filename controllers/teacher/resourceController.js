@@ -65,6 +65,7 @@ exports.processStudyMaterialUpload = async (req, res) => {
 exports.processStudyMaterialUpdate = async (req, res) => {
   try {
     const { batchId, subject, materialType, description, link } = req.body;
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, message: "Resource not found." });
     const material = await StudyMaterial.findById(req.params.id);
     if (!material) {
       return res.status(404).json({ success: false, message: "Resource not found." });
@@ -99,6 +100,7 @@ exports.processStudyMaterialUpdate = async (req, res) => {
 
 exports.processStudyMaterialDelete = async (req, res) => {
   try {
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ success: false, message: "Resource not found." });
     await StudyMaterial.findByIdAndDelete(req.params.id);
     await logAudit(req, {
       action: "DELETE",

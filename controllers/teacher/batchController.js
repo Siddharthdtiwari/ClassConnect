@@ -63,6 +63,7 @@ exports.processAddBatch = async (req, res) => {
 exports.processEditBatch = async (req, res) => {
   try {
     const { name, description, isActive } = req.body;
+    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.redirect("/teacher/manage_batches");
     const batch = await Batch.findById(req.params.id);
     if (!batch) {
       return res.redirect("/teacher/manage_batches");

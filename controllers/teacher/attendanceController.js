@@ -438,10 +438,11 @@ exports.sendMonthlyAttendanceEmails = async (req, res) => {
       if (!s || s.total === 0 || !student.email) continue;
 
       const percentage = ((s.present / (s.present + s.absent)) * 100).toFixed(1);
-      sendMonthEndAttendance(student.email, student.studentName, month, year, s.present, s.absent, percentage, {
+      await sendMonthEndAttendance(student.email, student.studentName, month, year, s.present, s.absent, percentage, {
         studentRef: student._id,
         academicYear: req.viewingYear,
-      }).catch((err) => console.error(`Error emailing attendance report to ${student.email}:`, err));
+      });
+      await new Promise(r => setTimeout(r, 500));
       sentCount++;
     }
 

@@ -1,15 +1,7 @@
 const cron = require('node-cron');
-const nodemailer = require('nodemailer');
+const { getTransporter, getFromAddress } = require('../utils/emailService');
 const ExamTimetable = require('../models/ExamTimetable');
 const Teacher = require('../models/Teacher');
-
-const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: process.env.CONTACT_EMAIL_USER,
-    pass: process.env.CONTACT_EMAIL_PASS,
-  },
-});
 
 function initCronJobs() {
   // Run daily at 12:00 AM
@@ -61,10 +53,11 @@ function initCronJobs() {
         return;
       }
 
+      const transporter = getTransporter();
       await transporter.sendMail({
-        from: process.env.CONTACT_EMAIL_USER,
+        from: getFromAddress(),
         to: teacherEmails.join(','),
-        subject: "📅 Upcoming Exams for Next Week",
+        subject: "Upcoming Exams for Next Week",
         text: emailText
       });
 

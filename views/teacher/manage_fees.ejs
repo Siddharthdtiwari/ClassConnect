@@ -456,7 +456,7 @@
 
         <!-- Generate Fee Sheet Modal -->
         <div class="modal-overlay" id="generate-sheet-modal">
-          <div class="modal-box w-full max-w-md">
+          <div class="modal-box w-full max-w-md pb-6">
             <div class="flex justify-between items-center mb-6">
               <h2 class="text-xl font-bold font-mono tracking-wider text-theme-fg uppercase">Print Fee Sheet</h2>
               <button type="button" onclick="closeModal('generate-sheet-modal')" class="text-theme-fdd hover:text-theme-pt transition-colors p-1 bg-theme-bg rounded-lg">
@@ -466,6 +466,15 @@
             
             <form action="/teacher/print_fee_sheet" method="GET" target="_blank" class="space-y-6">
               <div class="grid grid-cols-2 gap-4">
+                <div class="col-span-2">
+                  <label for="sheet-max-pages" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Max Pages</label>
+                  <select id="sheet-max-pages" name="maxPages" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm">
+                    <option value="2">2 Pages (Default)</option>
+                    <option value="3">3 Pages</option>
+                    <option value="4">4 Pages</option>
+                    <option value="0">Auto (Don't Shrink)</option>
+                  </select>
+                </div>
                 <div>
                   <label for="sheet-month" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Month</label>
                   <select id="sheet-month" name="month" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm" required>

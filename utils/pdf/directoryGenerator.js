@@ -4,6 +4,8 @@ const axios = require('axios');
 async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
   const W = doc.page.width;
   const H = doc.page.height;
+
+
   const M = 40;
 
   function drawWatermark() {
@@ -103,6 +105,9 @@ async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
 
   // Group students by batch name
   const byBatch = {};
+
+
+
   students.forEach(s => {
     const batchName = s.batch ? s.batch.name : 'Unassigned';
     if (!byBatch[batchName]) byBatch[batchName] = [];
@@ -243,6 +248,16 @@ async function drawFeeCollectionSheet(doc, data) {
   const M = 40;
 
   const byBatch = {};
+
+  const totalStudents = students.length;
+  const totalTeachers = (data.teachers && data.teachers.length > 0) ? data.teachers.length : 0;
+  
+  let rowH = 18;
+  let textFontSize = 9;
+  let textYOffset = 4;
+
+
+
   
   function formatNameFit(name, maxWidth) {
     if (!name) return "";
@@ -278,8 +293,63 @@ async function drawFeeCollectionSheet(doc, data) {
   };
   const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
 
-  const group1 = sortedBatches.filter(b => getBatchOrderValue(b) <= 4);
-  const group2 = sortedBatches.filter(b => getBatchOrderValue(b) > 4);
+
+  if (data.maxPages > 0) {
+    // Simulate exact rendering to find the largest rowH that fits within maxPages
+    // Page 1: headerHeight(185) + 20px gap + tableHeader(24) = cursorY starts at 229
+    // Page N: headerHeight(40) + 20px gap + tableHeader(24) = cursorY starts at 84
+    const PAGE1_START_Y = 229;
+    const PAGEN_START_Y = 84;
+    const PAGE_BOTTOM = H - 40;
+
+    let found = false;
+    for (let testRowH = 18; testRowH >= 5; testRowH--) {
+      const scale = testRowH / 18;
+      let testCursorY = PAGE1_START_Y;
+      let pagesUsed = 1;
+
+      const testCheckPageAdd = (heightNeeded) => {
+        if (testCursorY + heightNeeded > PAGE_BOTTOM) {
+          pagesUsed++;
+          testCursorY = PAGEN_START_Y;
+        }
+      };
+
+      for (const cls of sortedBatches) {
+        const batchHeight = byBatch[cls].length * testRowH;
+        testCheckPageAdd(batchHeight);
+        testCursorY += batchHeight;
+      }
+
+      const totalTeachers = (data.teachers && data.teachers.length > 0) ? data.teachers.length : 0;
+      if (totalTeachers > 0) {
+        const teacherHeight = totalTeachers * testRowH;
+        if (testCursorY + teacherHeight + 24 + 10 > PAGE_BOTTOM) {
+          pagesUsed++;
+          testCursorY = PAGEN_START_Y;
+        } else {
+          testCursorY += 10 + 24;
+        }
+        testCheckPageAdd(teacherHeight);
+        testCursorY += teacherHeight;
+      }
+
+      if (pagesUsed <= data.maxPages) {
+        rowH = testRowH;
+        textFontSize = Math.max(5, Math.floor(9 * scale));
+        textYOffset = Math.max(2, Math.floor(4 * scale));
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      rowH = 5;
+      textFontSize = 5;
+      textYOffset = 1;
+    }
+  }
+
+  // group split removed
 
   let cursorY = M;
   let headerImageBuffer = null;
@@ -357,7 +427,7 @@ async function drawFeeCollectionSheet(doc, data) {
   const widths = [40, 65, 175, 75, 75, 85];
   const tableWidth = widths.reduce((a, b) => a + b, 0);
   const tableM = (W - tableWidth) / 2;
-  const rowH = 18;
+  
 
   function checkPageAdd(heightNeeded) {
     if (cursorY + heightNeeded > H - 40) {
@@ -429,7 +499,7 @@ async function drawFeeCollectionSheet(doc, data) {
 
         const textY = cursorY + 5;
         
-        doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+        doc.fillColor("#4b2d84").font("Times-Bold").fontSize(textFontSize);
         doc.text(s.studentId, tableM + widths[0] + 5, textY, { width: widths[1] - 10, lineBreak: false });
         
         doc.fillColor("#111827").font("Times-Bold");
@@ -438,7 +508,7 @@ async function drawFeeCollectionSheet(doc, data) {
 
         const fee = feeByStudent[s.studentId];
         if (fee) {
-          doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+          doc.fillColor("#4b2d84").font("Times-Bold").fontSize(textFontSize);
           
           let dateStr = "";
           let amountStr = "";
@@ -489,31 +559,35 @@ async function drawFeeCollectionSheet(doc, data) {
       return idA.localeCompare(idB);
     });
     
-    // Add a bit of space before the teacher section if there's room
-    if (cursorY + rowH + 24 > H - 40) {
-      checkPageAdd(H); // force a new page
+    const batchHeight = teachersList.length * rowH;
+
+    function drawTeacherHeader() {
+      doc.rect(tableM, cursorY, tableWidth, 24).fill("#ede9fe");
+      doc.lineWidth(1);
+      doc.rect(tableM, cursorY, tableWidth, 24).stroke("#d1d5db");
+      
+      doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
+      let curX = tableM;
+      const teacherCols = ["TYPE", "ID", "NAME", "DATE", "AMOUNT", "MODE"];
+      teacherCols.forEach((col, i) => {
+        if (i > 0) {
+          doc.moveTo(curX, cursorY).lineTo(curX, cursorY + 24).stroke("#d1d5db");
+        }
+        doc.text(col, curX, cursorY + 8, { width: widths[i], align: "center" });
+        curX += widths[i];
+      });
+      cursorY += 24;
+    }
+
+    if (cursorY + batchHeight + 24 + 10 > H - 40) {
+      doc.lineWidth(1).moveTo(tableM, cursorY).lineTo(tableM + tableWidth, cursorY).stroke("#d1d5db");
+      doc.addPage();
+      drawPageHeader();
     } else {
       cursorY += 10;
     }
 
-    doc.rect(tableM, cursorY, tableWidth, 24).fill("#ede9fe");
-    doc.lineWidth(1);
-    doc.rect(tableM, cursorY, tableWidth, 24).stroke("#d1d5db");
-    
-    doc.fillColor("#4b2d84").font("Times-Bold").fontSize(10);
-    let curX = tableM;
-    const teacherCols = ["TYPE", "ID", "NAME", "DATE", "AMOUNT", "MODE"];
-    teacherCols.forEach((col, i) => {
-      if (i > 0) {
-        doc.moveTo(curX, cursorY).lineTo(curX, cursorY + 24).stroke("#d1d5db");
-      }
-      doc.text(col, curX, cursorY + 8, { width: widths[i], align: "center" });
-      curX += widths[i];
-    });
-    cursorY += 24;
-
-    const batchHeight = teachersList.length * rowH;
-    checkPageAdd(batchHeight);
+    drawTeacherHeader();
     
     let batchStartY = cursorY;
 
@@ -541,9 +615,9 @@ async function drawFeeCollectionSheet(doc, data) {
       }
       doc.lineWidth(1).moveTo(tableM + tableWidth, cursorY).lineTo(tableM + tableWidth, cursorY + rowH).stroke("#d1d5db");
 
-      const textY = cursorY + 6;
+      const textY = cursorY + textYOffset;
       
-      doc.fillColor("#4b2d84").font("Times-Bold").fontSize(9);
+      doc.fillColor("#4b2d84").font("Times-Bold").fontSize(textFontSize);
       doc.text(t.teacherId || "TCH", tableM + widths[0] + 5, textY, { width: widths[1] - 10, height: 12, ellipsis: true });
       
       doc.fillColor("#111827").font("Times-Bold");
@@ -561,14 +635,8 @@ async function drawFeeCollectionSheet(doc, data) {
   }
 
   drawPageHeader();
-  if (group1.length > 0) {
-    await renderGroup(group1);
-  }
-  
-  if (group2.length > 0) {
-    doc.addPage();
-    drawPageHeader();
-    await renderGroup(group2);
+  if (sortedBatches.length > 0) {
+    await renderGroup(sortedBatches);
   }
 
   if (data.teachers && data.teachers.length > 0) {

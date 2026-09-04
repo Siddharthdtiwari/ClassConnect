@@ -667,7 +667,8 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
       students: sheetStudents,
       teachers,
       feeByStudent,
-      selectedYearStr: req.viewingYear
+      selectedYearStr: req.viewingYear,
+      maxPages: parseInt(req.query.maxPages) || 2
     };
 
     await generateFeeCollectionSheetPDF(data, res, "inline");

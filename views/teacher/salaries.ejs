@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Salary Overview | Tuition Hub</title>
+  <%- include('../partials/background') %>
+  <style>
+    .sal-title { font-family:'Unbounded',sans-serif; font-size:clamp(1.6rem,4vw,2.4rem); font-weight:900; line-height:1.1; letter-spacing:-0.03em; }
+    .sal-sub { font-family:'Space Mono',monospace; font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--fdd); margin-top:8px; }
+    .text-gradient-purple { background:linear-gradient(135deg,#7c3aed,#a855f7); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .sal-table-wrap { background:var(--bgc); border:1px solid var(--bd); border-radius:20px; overflow:hidden; box-shadow:0 8px 30px rgba(0,0,0,0.04); overflow-x:auto; }
+    .sal-table { width:100%; border-collapse:separate; border-spacing:0; min-width:700px; }
+    .sal-table th { background:rgba(124,58,237,0.07); padding:14px 16px; font-family:'Space Mono',monospace; font-size:0.65rem; font-weight:800; letter-spacing:0.1em; text-transform:uppercase; color:var(--fg); border-bottom:1px solid var(--bd); white-space:nowrap; }
+    .sal-table td { padding:13px 16px; border-bottom:1px solid var(--bd); font-size:0.86rem; color:var(--fg); }
+    .sal-table tr:last-child td { border-bottom:none; }
+    .sal-table tbody tr:hover td { background:rgba(124,58,237,0.03); }
+    .sal-table .totals-row td { background:rgba(124,58,237,0.06); font-family:'Space Mono',monospace; font-weight:800; font-size:0.82rem; }
+    .badge-green { background:#d1fae5; color:#065f46; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .badge-gray { background:var(--bd); color:var(--fdd); padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .badge-red { background:#fee2e2; color:#991b1b; padding:3px 10px; border-radius:20px; font-size:0.72rem; font-weight:700; }
+    .summary-card { background:var(--bgc); border:1px solid var(--bd); border-radius:16px; padding:20px; }
+  </style>
+</head>
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background:var(--bg);">
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <main style="flex:1;overflow-y:auto;overflow-x:hidden;">
+        <div class="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+          <!-- Header -->
+          <header class="mb-8 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+            <div>
+              <h1 class="sal-title">Salary <span class="text-gradient-purple">Overview</span></h1>
+              <p class="sal-sub">📊 Full Academic Payroll · <%= currentAcademicYear %></p>
+            </div>
+            <div class="flex gap-3 flex-wrap">
+              <a href="/teacher/finance" class="px-4 py-2.5 bg-theme-bgc border border-theme-b rounded-xl text-sm font-bold hover:border-purple-400 transition-colors">← Finance</a>
+            </div>
+          </header>
+
+          <!-- Summary Cards -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            <div class="summary-card">
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--fdd);">Total Fee Revenue</div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:900;color:#059669;margin-top:6px;">₹<%= totals.feeRevenue.toLocaleString('en-IN') %></div>
+            </div>
+            <div class="summary-card">
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--fdd);">Total Salaries Paid</div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:900;color:#dc2626;margin-top:6px;">₹<%= totals.totalSalary.toLocaleString('en-IN') %></div>
+            </div>
+            <div class="summary-card">
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--fdd);">Net Balance (Owner)</div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:900;color:<%= totals.balance >= 0 ? '#4b2d84' : '#dc2626' %>;margin-top:6px;">₹<%= totals.balance.toLocaleString('en-IN') %></div>
+            </div>
+          </div>
+
+          <!-- Table -->
+          <div class="sal-table-wrap">
+            <table class="sal-table">
+              <thead>
+                <tr>
+                  <th style="text-align:left;">Month</th>
+                  <th>Fee Revenue</th>
+                  <% teachers.forEach(t => { %>
+                  <th><%= t.teacherName.split(' ')[0] %> Salary</th>
+                  <% }) %>
+                  <th>Total Salaries</th>
+                  <th>Balance</th>
+                </tr>
+              </thead>
+              <tbody>
+                <% monthlyData.forEach(row => { %>
+                <tr>
+                  <td style="font-weight:700;"><%= row.month %></td>
+                  <td style="text-align:center; color:#059669; font-weight:600;">
+                    <%= row.feeRevenue > 0 ? '₹' + row.feeRevenue.toLocaleString('en-IN') : '—' %>
+                  </td>
+                  <% teachers.forEach(t => { %>
+                  <td style="text-align:center;">
+                    <% const sal = row.teacherSalaries[t.teacherId] || 0; %>
+                    <% if (sal > 0) { %>
+                      <span class="badge-green">₹<%= sal.toLocaleString('en-IN') %></span>
+                    <% } else { %>
+                      <span class="badge-gray">—</span>
+                    <% } %>
+                  </td>
+                  <% }) %>
+                  <td style="text-align:center;font-weight:600;color:#dc2626;">
+                    <%= row.totalSalary > 0 ? '₹' + row.totalSalary.toLocaleString('en-IN') : '—' %>
+                  </td>
+                  <td style="text-align:center;">
+                    <% if (row.feeRevenue === 0 && row.totalSalary === 0) { %>
+                      <span class="badge-gray">—</span>
+                    <% } else if (row.balance >= 0) { %>
+                      <span style="font-weight:700;color:#4b2d84;">+₹<%= row.balance.toLocaleString('en-IN') %></span>
+                    <% } else { %>
+                      <span class="badge-red">-₹<%= Math.abs(row.balance).toLocaleString('en-IN') %></span>
+                    <% } %>
+                  </td>
+                </tr>
+                <% }) %>
+              </tbody>
+              <tfoot>
+                <tr class="totals-row">
+                  <td>TOTAL</td>
+                  <td style="text-align:center;color:#059669;">₹<%= totals.feeRevenue.toLocaleString('en-IN') %></td>
+                  <% teachers.forEach(t => { %>
+                  <td style="text-align:center;color:#dc2626;">₹<%= (totals.teacherSalaries[t.teacherId]||0).toLocaleString('en-IN') %></td>
+                  <% }) %>
+                  <td style="text-align:center;color:#dc2626;">₹<%= totals.totalSalary.toLocaleString('en-IN') %></td>
+                  <td style="text-align:center;color:<%= totals.balance >= 0 ? '#4b2d84' : '#dc2626' %>;">
+                    <%= totals.balance >= 0 ? '+' : '' %>₹<%= totals.balance.toLocaleString('en-IN') %>
+                  </td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

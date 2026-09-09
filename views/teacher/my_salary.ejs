@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <link rel="icon" href="/favicon.ico" type="image/x-icon">
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>My Salary | Tuition Hub</title>
+  <%- include('../partials/background') %>
+  <style>
+    .sal-title { font-family:'Unbounded',sans-serif; font-size:clamp(1.6rem,4vw,2.4rem); font-weight:900; line-height:1.1; letter-spacing:-0.03em; }
+    .sal-sub { font-family:'Space Mono',monospace; font-size:0.68rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--fdd); margin-top:8px; }
+    .text-gradient-purple { background:linear-gradient(135deg,#7c3aed,#a855f7); -webkit-background-clip:text; background-clip:text; -webkit-text-fill-color:transparent; }
+    .sal-card { background:var(--bgc); border:1px solid var(--bd); border-radius:16px; padding:22px; }
+    .month-row { display:flex; align-items:center; justify-content:space-between; padding:14px 20px; border-bottom:1px solid var(--bd); transition:background 0.2s; }
+    .month-row:hover { background:rgba(124,58,237,0.03); }
+    .month-row:last-child { border-bottom:none; }
+    .badge-paid { background:#d1fae5; color:#065f46; padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:700; font-family:'Space Mono',monospace; }
+    .badge-pending { background:#fee2e2; color:#991b1b; padding:4px 12px; border-radius:20px; font-size:0.72rem; font-weight:700; font-family:'Space Mono',monospace; }
+    .download-btn { display:inline-flex; align-items:center; gap:6px; padding:6px 14px; background:rgba(124,58,237,0.08); color:#4b2d84; border-radius:10px; font-size:0.75rem; font-weight:700; text-decoration:none; transition:all 0.2s; border:1px solid rgba(124,58,237,0.2); }
+    .download-btn:hover { background:rgba(124,58,237,0.18); }
+  </style>
+</head>
+<body class="text-theme-fg m-0 p-0 overflow-hidden" style="background:var(--bg);">
+  <div style="display:flex;height:100vh;overflow:hidden;">
+    <%- include('../partials/teacher_sidebar') %>
+    <div style="flex:1;display:flex;flex-direction:column;overflow:hidden;">
+      <main style="flex:1;overflow-y:auto;overflow-x:hidden;">
+        <div class="container mx-auto p-4 sm:p-6 lg:p-8 min-h-screen">
+
+          <!-- Header -->
+          <header class="mb-8">
+            <h1 class="sal-title">My <span class="text-gradient-purple">Salary</span></h1>
+            <p class="sal-sub">💰 Personal Salary Tracker · <%= currentAcademicYear %></p>
+          </header>
+
+          <!-- Profile + Stats Row -->
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-5 mb-8">
+            <div class="sal-card flex items-center gap-4 sm:col-span-1">
+              <div style="width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#4b2d84,#7c3aed);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                <span style="color:white;font-size:1.4rem;font-weight:900;font-family:'Unbounded',sans-serif;"><%= teacher.teacherName.charAt(0).toUpperCase() %></span>
+              </div>
+              <div>
+                <div style="font-weight:800;font-size:1rem;"><%= teacher.teacherName %></div>
+                <div style="font-family:'Space Mono',monospace;font-size:0.65rem;text-transform:uppercase;color:var(--fdd);letter-spacing:1px;margin-top:2px;"><%= teacher.role %> · <%= teacher.teacherId %></div>
+              </div>
+            </div>
+            <div class="sal-card">
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--fdd);">Total Received This Year</div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:900;color:#4b2d84;margin-top:6px;">₹<%= totalPaid.toLocaleString('en-IN') %></div>
+            </div>
+            <div class="sal-card">
+              <div style="font-family:'Space Mono',monospace;font-size:0.62rem;letter-spacing:0.12em;text-transform:uppercase;color:var(--fdd);">Months Credited</div>
+              <div style="font-family:'Unbounded',sans-serif;font-size:1.8rem;font-weight:900;color:#059669;margin-top:6px;"><%= monthsPaid %> <span style="font-size:0.9rem;color:var(--fdd);">/ 12</span></div>
+            </div>
+          </div>
+
+          <!-- Month-by-month breakdown -->
+          <div class="sal-card" style="padding:0;overflow:hidden;">
+            <div style="padding:18px 20px;border-bottom:1px solid var(--bd);background:rgba(124,58,237,0.04);">
+              <span style="font-family:'Space Mono',monospace;font-size:0.7rem;font-weight:800;text-transform:uppercase;letter-spacing:0.12em;">📅 Month-wise Breakdown</span>
+            </div>
+            <% monthlyData.forEach(row => { %>
+            <div class="month-row">
+              <div style="font-weight:700;font-size:0.92rem;min-width:100px;"><%= row.month %></div>
+              <div style="flex:1;display:flex;align-items:center;gap:12px;justify-content:flex-end;">
+                <% if (row.paid) { %>
+                  <span style="font-size:1rem;font-weight:800;color:#4b2d84;">₹<%= row.salary.toLocaleString('en-IN') %></span>
+                  <span class="badge-paid">✓ CREDITED</span>
+                  <a href="/teacher/download-salary-slip?month=<%= row.month %>&year=<%= currentAcademicYear.split('-')[0] %>" class="download-btn" title="Download Salary Slip">
+                    <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                    Slip
+                  </a>
+                <% } else { %>
+                  <span class="badge-pending">PENDING</span>
+                <% } %>
+              </div>
+            </div>
+            <% }) %>
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+</body>
+</html>

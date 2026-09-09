@@ -131,6 +131,9 @@ router.get("/teacher/view_solution/:id", ensureDBConnection, requireTeacherLogin
 
 // Finance Management (Admin Only)
 router.get("/teacher/finance", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.renderFinance));
+router.get("/teacher/salaries", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.renderSalaries));
+router.get("/teacher/my-salary", ensureDBConnection, requireTeacherLogin, catchAsync(financeController.renderMySalary));
+router.get("/teacher/download-salary-slip", ensureDBConnection, requireTeacherLogin, catchAsync(financeController.downloadSalarySlip));
 router.post("/teacher/finance/add", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.addTransaction));
 router.post("/teacher/finance/delete/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.deleteTransaction));
 

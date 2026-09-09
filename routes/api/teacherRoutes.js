@@ -19,7 +19,7 @@ const { calculateCurrentAcademicYear, getAvailableAcademicYears } = require('../
 const { logAudit } = require('../../utils/auditService');
 const { NA_STATUS, naMonthSet, billableMonths } = require('../../utils/feeHelpers');
 const { upload, uploadToCloudinary } = require('../../utils/upload');
-const validate = require('../../middleware/validate');
+const validate = require('../../middlewares/validate');
 const { 
   createBatchSchema, 
   createStudentSchema, 

@@ -792,3 +792,31 @@ exports.sendFeeReminderEmail = async (req, res) => {
     res.status(500).json({ success: false, message: "Failed to send email" });
   }
 };
+
+exports.deleteFee = async (req, res) => {
+  try {
+    const feeId = req.params.id;
+    const fee = await Fee.findById(feeId);
+    if (!fee) {
+      req.session.error = "Fee record not found.";
+      return res.redirect('/teacher/manage_fees');
+    }
+    
+    await Fee.findByIdAndDelete(feeId);
+    
+    await logAudit(req, {
+      action: "DELETE",
+      entityType: "Fee",
+      entityId: feeId,
+      details: `Deleted fee record for ${fee.studentName} (${fee.month} ${fee.year}, ₹${fee.amount})`,
+      academicYear: req.currentAcademicYear
+    });
+
+    req.session.success = "Fee record deleted successfully.";
+    res.redirect('/teacher/manage_fees');
+  } catch (err) {
+    console.error("Error deleting fee:", err);
+    req.session.error = "Failed to delete fee record.";
+    res.redirect('/teacher/manage_fees');
+  }
+};

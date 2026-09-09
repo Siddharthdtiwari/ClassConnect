@@ -1,3 +1,4 @@
+const mongoose = require('mongoose');
 const Transaction = require("../../models/Transaction");
 const Fee = require("../../models/Fee");
 const Batch = require("../../models/Batch");
@@ -5,6 +6,11 @@ const Teacher = require("../../models/Teacher");
 const { ACADEMIC_MONTHS } = require("../../utils/constants");
 const { logAudit } = require("../../utils/auditService");
 const { renderError } = require("../../utils/renderError");
+
+const MONTH_INDEX = {
+  January: 0, February: 1, March: 2, April: 3, May: 4, June: 5,
+  July: 6, August: 7, September: 8, October: 9, November: 10, December: 11
+};
 
 const MONTH_NAME_MAP = {
   0: "January",
@@ -120,18 +126,33 @@ exports.renderFinance = async (req, res) => {
 
 exports.addTransaction = async (req, res) => {
   try {
-    const { type, category, amount, date, description, referenceId, staffName } = req.body;
+    const { type, category, amount, date, description, referenceId, staffName, salaryMonth } = req.body;
     
     let finalDescription = description || "";
     if (category === "Salary" && staffName) {
-      finalDescription = `Staff Salary: ${staffName}${description ? ' (' + description + ')' : ''}`;
+      const monthLabel = salaryMonth ? ` [${salaryMonth}]` : '';
+      finalDescription = `Staff Salary: ${staffName}${monthLabel}${description ? ' (' + description + ')' : ''}`;
     }
-    
+
+    // Monthly breakdowns everywhere group transactions by the calendar month of
+    // `date`, not by the salaryMonth label — so a salary marked "For Month: May"
+    // still needs a date that actually falls in May, or it silently lands in
+    // whichever month the picker's Transaction Date happened to be on.
+    let finalDate = date ? new Date(date) : new Date();
+    if (category === "Salary" && salaryMonth && MONTH_INDEX[salaryMonth] !== undefined) {
+      const startYear = parseInt((req.currentAcademicYear || "").split("-")[0], 10);
+      const monthIdx = MONTH_INDEX[salaryMonth];
+      // Academic year runs May-April: May-Dec fall in startYear, Jan-Apr in startYear+1.
+      const calendarYear = !isNaN(startYear) ? (monthIdx >= 4 ? startYear : startYear + 1) : finalDate.getFullYear();
+      const day = finalDate.getMonth() === monthIdx ? finalDate.getDate() : 1;
+      finalDate = new Date(calendarYear, monthIdx, day);
+    }
+
     const transaction = await Transaction.create({
       type,
       category,
       amount: Number(amount),
-      date: date ? new Date(date) : new Date(),
+      date: finalDate,
       description: finalDescription,
       referenceId,
       addedBy: req.session.userId,
@@ -153,14 +174,9 @@ exports.addTransaction = async (req, res) => {
         const Teacher = require('../../models/Teacher');
         const { buildSalarySlipBuffer } = require('../../utils/pdf/salarySlipGenerator');
         const { sendEmail } = require('../../utils/emailService');
-        const { MONTH_NAME_MAP_REVERSE } = (() => {
-          const monthMap = { January:0, February:1, March:2, April:3, May:4, June:5, July:6, August:7, September:8, October:9, November:10, December:11 };
-          return { MONTH_NAME_MAP_REVERSE: monthMap };
-        })();
 
-        const txnDate = date ? new Date(date) : new Date();
-        const monthName = ['January','February','March','April','May','June','July','August','September','October','November','December'][txnDate.getMonth()];
-        const txnYear = txnDate.getFullYear();
+        const monthName = salaryMonth || Object.keys(MONTH_INDEX).find(m => MONTH_INDEX[m] === finalDate.getMonth());
+        const txnYear = finalDate.getFullYear();
 
         const staffTeacher = await Teacher.findOne({ teacherName: { $regex: new RegExp(staffName.trim(), 'i') } }).lean();
         if (staffTeacher && staffTeacher.email) {
@@ -319,7 +335,7 @@ exports.downloadSalarySlip = async (req, res) => {
     const teacher = await Teacher.findById(req.session.userId).lean();
     if (!teacher) return renderError(req, res, 404, 'Staff not found');
 
-    const { buildSalarySlipBuffer } = require('../utils/pdf/salarySlipGenerator');
+    const { buildSalarySlipBuffer } = require('../../utils/pdf/salarySlipGenerator');
 
     const salaryTxns = await Transaction.find({ academicYear, type: 'EXPENSE', category: 'Salary' }).lean();
     const monthTxns = salaryTxns.filter(txn =>

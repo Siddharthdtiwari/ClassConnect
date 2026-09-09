@@ -151,6 +151,10 @@
                 </select>
               </form>
 
+              <a href="/teacher/salaries" class="flex items-center gap-2 px-4 py-2.5 bg-theme-bgc border border-theme-b rounded-xl text-sm font-bold hover:border-purple-400 transition-colors">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/></svg>
+                Salary Sheet
+              </a>
               <button onclick="openModal('add-transaction-modal')" class="btn-solid-purple flex items-center gap-2 shadow-lg hover:scale-105 transition-transform">
                 <svg class="w-4 h-4 text-white" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
                 Add Transaction
@@ -460,6 +464,18 @@
               <% if (typeof teachers !== 'undefined' && teachers.length > 0) { %>
                 <% teachers.forEach(t => { %>
                   <option value="<%= t.teacherName %>"><%= t.teacherName %> (<%= t.role.toUpperCase() %>)</option>
+                <% }) %>
+              <% } %>
+            </select>
+          </div>
+
+          <div id="salary-month-container">
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">Salary For Month</label>
+            <select name="salaryMonth" id="salary-month-select" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer">
+              <option value="">Select Month...</option>
+              <% if (typeof academicMonths !== 'undefined') { %>
+                <% academicMonths.forEach(m => { %>
+                  <option value="<%= m %>"><%= m %></option>
                 <% }) %>
               <% } %>
             </select>

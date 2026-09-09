@@ -4,7 +4,7 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const rateLimit = require('express-rate-limit');
-const validate = require('../../middleware/validate');
+const validate = require('../../middlewares/validate');
 const { loginSchema, studentLoginSchema } = require('../../validations/authSchema');
 
 const User = require('../../models/User');

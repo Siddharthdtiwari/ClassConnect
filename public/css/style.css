@@ -133,6 +133,27 @@ h1, h2, h3, h4 {
   box-shadow: 0 12px 35px var(--pg) !important;
 }
 
+/* Small icon-only submit buttons (e.g. inline delete/action buttons in tables)
+   need to opt out of the global button[type="submit"] premium-pill styling above. */
+button[type="submit"].btn-icon-sm {
+  background: rgba(244, 63, 94, 0.1) !important;
+  color: rgb(244, 63, 94) !important;
+  box-shadow: none !important;
+  border-radius: 4px !important;
+  font-size: inherit !important;
+  padding: 4px !important;
+  letter-spacing: normal;
+  text-transform: none;
+  font-family: inherit !important;
+  font-weight: inherit !important;
+}
+button[type="submit"].btn-icon-sm:hover {
+  background: rgb(244, 63, 94) !important;
+  color: white !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
 .btn-outline-purple {
   background: var(--bgc) !important;
   border: 1px solid var(--b) !important;

@@ -74,7 +74,8 @@ router.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherL
 
 
 // Fee Management
-router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderManageFees));
+router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.renderManageFees));
+router.post("/teacher/manage_fees/delete/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(feeController.deleteFee));
 router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.processAddFees));
 router.post("/teacher/fee_month_na", ensureDBConnection, requireTeacherLogin, express.json({ limit: '10mb' }), catchAsync(feeController.setMonthApplicability));
 router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
@@ -130,11 +131,11 @@ router.get("/teacher/solutions", ensureDBConnection, requireTeacherLogin, catchA
 router.get("/teacher/view_solution/:id", ensureDBConnection, requireTeacherLogin, catchAsync(solutionController.renderViewSolution));
 
 // Finance Management (Admin Only)
-router.get("/teacher/finance", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.renderFinance));
-router.get("/teacher/salaries", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.renderSalaries));
+router.get("/teacher/finance", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(financeController.renderFinance));
+router.get("/teacher/salaries", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(financeController.renderSalaries));
 router.get("/teacher/my-salary", ensureDBConnection, requireTeacherLogin, catchAsync(financeController.renderMySalary));
 router.get("/teacher/download-salary-slip", ensureDBConnection, requireTeacherLogin, catchAsync(financeController.downloadSalarySlip));
-router.post("/teacher/finance/add", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.addTransaction));
-router.post("/teacher/finance/delete/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(financeController.deleteTransaction));
+router.post("/teacher/finance/add", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(financeController.addTransaction));
+router.post("/teacher/finance/delete/:id", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(financeController.deleteTransaction));
 
 module.exports = router;

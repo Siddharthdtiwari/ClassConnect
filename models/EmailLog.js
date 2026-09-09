@@ -14,7 +14,7 @@ const emailLogSchema = new mongoose.Schema(
     },
     emailType: {
       type: String,
-      enum: ["Fee Receipt", "Test Score", "Test Marks", "Attendance Report", "Fee Reminder", "General", "Contact Confirmation"],
+      enum: ["Fee Receipt", "Test Score", "Test Marks", "Attendance Report", "Fee Reminder", "General", "Contact Confirmation", "SalarySlip"],
       default: "General",
     },
     status: {

@@ -103,7 +103,7 @@ exports.renderFinance = async (req, res) => {
     const grossProfit = totalIncome - totalExpense;
 
     // 6. Get active teachers for staff salary selection
-    const teachers = await Teacher.find({ isActive: true }).select('teacherName email role teacherId').sort({ teacherName: 1 }).lean();
+    const teachers = await Teacher.find({ isActive: true, role: { $ne: 'owner' } }).select('teacherName email role teacherId').sort({ teacherName: 1 }).lean();
 
     res.render("teacher/finance", {
       studentFeeRevenue,
@@ -125,9 +125,11 @@ exports.renderFinance = async (req, res) => {
 };
 
 exports.addTransaction = async (req, res) => {
+  const redirectTo = req.body.redirectTo;
+  const safeRedirect = ["/teacher/finance", "/teacher/salaries"].includes(redirectTo) ? redirectTo : "/teacher/finance";
   try {
     const { type, category, amount, date, description, referenceId, staffName, salaryMonth } = req.body;
-    
+
     let finalDescription = description || "";
     if (category === "Salary" && staffName) {
       const monthLabel = salaryMonth ? ` [${salaryMonth}]` : '';
@@ -178,7 +180,8 @@ exports.addTransaction = async (req, res) => {
         const monthName = salaryMonth || Object.keys(MONTH_INDEX).find(m => MONTH_INDEX[m] === finalDate.getMonth());
         const txnYear = finalDate.getFullYear();
 
-        const staffTeacher = await Teacher.findOne({ teacherName: { $regex: new RegExp(staffName.trim(), 'i') } }).lean();
+        const escapedStaffName = staffName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        const staffTeacher = await Teacher.findOne({ teacherName: { $regex: new RegExp(escapedStaffName, 'i') } }).lean();
         if (staffTeacher && staffTeacher.email) {
           const slipBuffer = await buildSalarySlipBuffer({
             teacher: staffTeacher,
@@ -216,18 +219,33 @@ exports.addTransaction = async (req, res) => {
             { emailType: 'SalarySlip' }
           );
           console.log(`Salary slip emailed to ${staffTeacher.email}`);
+        } else {
+          await logAudit(req, {
+            action: "UPDATE",
+            entityType: "Transaction",
+            entityId: transaction._id,
+            details: `Salary slip email skipped for ${staffName}: no matching teacher record with an email address was found.`,
+            academicYear: req.currentAcademicYear
+          });
         }
       } catch (salaryEmailErr) {
         console.error('Salary slip email failed (non-critical):', salaryEmailErr.message);
+        await logAudit(req, {
+          action: "UPDATE",
+          entityType: "Transaction",
+          entityId: transaction._id,
+          details: `Salary slip email failed for ${staffName}: ${salaryEmailErr.message}`,
+          academicYear: req.currentAcademicYear
+        });
       }
     }
 
     req.session.success = "Transaction added successfully!";
-    res.redirect("/teacher/finance");
+    res.redirect(safeRedirect);
   } catch (err) {
     console.error("Error adding transaction:", err);
     req.session.error = "Failed to add transaction.";
-    res.redirect("/teacher/finance");
+    res.redirect(safeRedirect);
   }
 };
 
@@ -265,7 +283,7 @@ exports.renderSalaries = async (req, res) => {
     const yearBatches = await Batch.find({ academicYear }).distinct('_id');
     const paidFees = await Fee.find({ batch: { $in: yearBatches }, status: 'Paid' }).lean();
     const salaryTxns = await Transaction.find({ academicYear, type: 'EXPENSE', category: 'Salary' }).lean();
-    const teachers = await Teacher.find({ isActive: true }).select('teacherName role teacherId').sort({ teacherName: 1 }).lean();
+    const teachers = await Teacher.find({ isActive: true, role: { $ne: 'owner' } }).select('teacherName role teacherId').sort({ teacherName: 1 }).lean();
 
     const monthlyData = ACADEMIC_MONTHS.map(mName => {
       const feeRevenue = paidFees.filter(f => f.month === mName).reduce((s, f) => s + (f.amount || 0), 0);
@@ -291,7 +309,7 @@ exports.renderSalaries = async (req, res) => {
       totals.teacherSalaries[t.teacherId] = monthlyData.reduce((s, m) => s + (m.teacherSalaries[t.teacherId] || 0), 0);
     });
 
-    res.render('teacher/salaries', { teachers, monthlyData, totals, currentAcademicYear: academicYear });
+    res.render('teacher/salaries', { teachers, monthlyData, totals, currentAcademicYear: academicYear, academicMonths: ACADEMIC_MONTHS });
   } catch (err) {
     console.error('Salary render error:', err);
     renderError(req, res, 500, 'Server Error');

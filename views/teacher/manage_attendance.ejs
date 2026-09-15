@@ -367,7 +367,10 @@
                 </div>
 
                 <!-- Save Action -->
-                <div class="flex justify-end">
+                <div class="flex justify-end gap-3 flex-wrap">
+                  <button id="copy-attendance-btn" class="btn-outline-purple flex items-center justify-center gap-2 text-[10px] font-bold uppercase tracking-wider font-mono">
+                    <span>📋 Copy Absentees (WhatsApp)</span>
+                  </button>
                   <button id="save-attendance-btn" class="btn-solid-purple w-full sm:w-auto flex items-center justify-center gap-2 shadow-lg">
                     <span>Save Daily Attendance ✓</span>
                   </button>
@@ -579,6 +582,63 @@
       markAllPBtn.addEventListener("click", () => markAll("P"));
       markAllABtn.addEventListener("click", () => markAll("A"));
       markAllHBtn.addEventListener("click", () => markAll("H"));
+
+      function buildAbsenteeMessage() {
+        const dateStr = selectedDate.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+        const dayStr = selectedDate.toLocaleDateString("en-US", { weekday: "long" });
+
+        const batchGroups = new Map();
+        allStudents.forEach((student) => {
+          if (student.isActive === false) return;
+          const row = studentAttendanceList.querySelector(`tr[data-student-id="${student.studentId}"]`);
+          if (!row) return;
+          const activeBtn = row.querySelector(".attendance-status-btn.active");
+          const status = activeBtn ? activeBtn.dataset.status : null;
+          if (status !== "A") return;
+
+          const batchName = (student.batch && student.batch.name) || "Unassigned";
+          if (!batchGroups.has(batchName)) batchGroups.set(batchName, []);
+          batchGroups.get(batchName).push(student.studentName);
+        });
+
+        let text = `${dateStr} - ${dayStr}\n`;
+        if (batchGroups.size === 0) {
+          text += `\nNo absentees today. All students present ✅`;
+        } else {
+          text += `\nFollowing students were absent today:\n`;
+          batchGroups.forEach((names, batchName) => {
+            text += `\n${batchName}\n`;
+            names.forEach((name, i) => {
+              text += `${i + 1}. ${name}\n`;
+            });
+          });
+        }
+        return text.trim();
+      }
+
+      const copyAttendanceBtn = document.getElementById("copy-attendance-btn");
+      copyAttendanceBtn.addEventListener("click", async () => {
+        const text = buildAbsenteeMessage();
+        try {
+          if (navigator.clipboard && window.isSecureContext) {
+            await navigator.clipboard.writeText(text);
+          } else {
+            const textarea = document.createElement("textarea");
+            textarea.value = text;
+            textarea.style.position = "fixed";
+            textarea.style.opacity = "0";
+            document.body.appendChild(textarea);
+            textarea.focus();
+            textarea.select();
+            document.execCommand("copy");
+            document.body.removeChild(textarea);
+          }
+          showMessage("Absentee list copied! Paste it in WhatsApp.", "success");
+        } catch (err) {
+          console.error(err);
+          showMessage("Could not copy to clipboard.", "error");
+        }
+      });
 
       saveAttendanceBtn.addEventListener("click", async () => {
         const dateKey = formatDateKey(selectedDate);

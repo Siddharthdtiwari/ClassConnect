@@ -187,8 +187,6 @@ const handleStudentReport = async (req, res) => {
       if (rankIndex !== -1) studentRank = rankIndex + 1;
     }
 
-    const mode = req.query.dl === '1' ? 'attachment' : 'inline';
-
     await generateStudentReportPDF(
       student,
       {
@@ -201,7 +199,7 @@ const handleStudentReport = async (req, res) => {
         studentRank,
       },
       res,
-      mode
+      'inline'
     );
   } catch (err) {
     console.error('Error generating public student report:', err);

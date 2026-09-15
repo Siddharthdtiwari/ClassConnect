@@ -1,3 +1,4 @@
+const mongoose = require("mongoose");
 const User = require("../../models/User");
 const Batch = require("../../models/Batch");
 const Attendance = require("../../models/Attendance");
@@ -268,6 +269,103 @@ exports.downloadDefaulters = async (req, res) => {
   }
 };
 
+
+exports.downloadAttendanceLedger = async (req, res) => {
+  try {
+    const { mode, month, year, start, end, studentId, batch } = req.query;
+    let startDate, endDate, rangeLabel;
+
+    if (mode === "range") {
+      if (!start || !end) return renderError(req, res, 400, "Start and end dates are required.");
+      startDate = new Date(`${start}T00:00:00.000Z`);
+      endDate = new Date(`${end}T23:59:59.999Z`);
+      if (isNaN(startDate) || isNaN(endDate) || startDate > endDate) {
+        return renderError(req, res, 400, "Invalid date range.");
+      }
+      const fmt = (d) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" });
+      rangeLabel = `${fmt(startDate)} - ${fmt(endDate)}`;
+    } else {
+      const monthNum = parseInt(month, 10);
+      const yearNum = parseInt(year, 10);
+      if (!monthNum || monthNum < 1 || monthNum > 12 || !yearNum) {
+        return renderError(req, res, 400, "A valid month and year are required.");
+      }
+      startDate = new Date(Date.UTC(yearNum, monthNum - 1, 1, 0, 0, 0));
+      endDate = new Date(Date.UTC(yearNum, monthNum, 0, 23, 59, 59, 999));
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      rangeLabel = `${monthNames[monthNum - 1]} ${yearNum}`;
+    }
+
+    // studentId alone is ambiguous — the same human-readable ID can be reused across
+    // different batches/academic years. Pairing it with batch pins down the exact
+    // student regardless of which academic year the teacher's session is currently
+    // viewing (a mismatch there previously caused false "Student not found" errors).
+    let studentFilter;
+    if (studentId && batch && mongoose.Types.ObjectId.isValid(batch)) {
+      studentFilter = { studentId, batch };
+    } else {
+      studentFilter = { batch: { $in: req.viewingBatches } };
+      if (studentId) studentFilter.studentId = studentId;
+    }
+
+    const students = await User.find(studentFilter).populate("batch").lean();
+    students.sort(sortStudentsByBatchAndId);
+
+    if (studentId && students.length === 0) {
+      return renderError(req, res, 404, "Student not found.");
+    }
+    if (studentId) {
+      rangeLabel = `${students[0].studentName} - ${rangeLabel}`;
+    }
+
+    const relevantBatchIds = studentId
+      ? students.map((s) => s.batch && s.batch._id).filter(Boolean)
+      : req.viewingBatches;
+
+    const attendanceRecords = await Attendance.find({
+      batch: { $in: relevantBatchIds },
+      date: { $gte: startDate, $lte: endDate },
+    }).lean();
+
+    const reportByStudentId = {};
+    students.forEach((student) => {
+      reportByStudentId[student.studentId] = {
+        studentId: student.studentId,
+        studentName: student.studentName,
+        batch: student.batch,
+        records: {},
+        presentCount: 0,
+        totalRecordedDays: 0,
+      };
+    });
+
+    const dateKeySet = new Set();
+    attendanceRecords.forEach((record) => {
+      const dateKey = record.date.toISOString().split("T")[0];
+      dateKeySet.add(dateKey);
+      (record.records || []).forEach((r) => {
+        const studentData = reportByStudentId[r.studentId];
+        if (!studentData) return;
+        studentData.records[dateKey] = r.status;
+        if (r.status === "P") {
+          studentData.presentCount++;
+          studentData.totalRecordedDays++;
+        } else if (r.status === "A") {
+          studentData.totalRecordedDays++;
+        }
+      });
+    });
+
+    const dateKeys = Array.from(dateKeySet).sort();
+    const reportArray = Object.values(reportByStudentId);
+
+    const { generateAttendanceLedgerPDF } = require("../../utils/pdf/attendanceLedgerGenerator");
+    await generateAttendanceLedgerPDF({ students: reportArray, dateKeys, rangeLabel }, res, "inline");
+  } catch (err) {
+    console.error("Error generating attendance ledger PDF:", err);
+    renderError(req, res, 500, "Failed to generate attendance ledger PDF.");
+  }
+};
 
 exports.renderBulkAttendance = async (req, res) => {
   try {

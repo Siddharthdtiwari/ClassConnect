@@ -370,7 +370,7 @@ exports.downloadSalarySlip = async (req, res) => {
 
     const filename = `salary-slip-${teacher.teacherName.toLowerCase().replace(/\s+/g, '-')}-${month}-${year}.pdf`;
     res.setHeader('Content-Type', 'application/pdf');
-    res.setHeader('Content-Disposition', `attachment; filename=${filename}`);
+    res.setHeader('Content-Disposition', `inline; filename=${filename}`);
     res.send(slipBuffer);
   } catch (err) {
     console.error('Salary slip download error:', err);

@@ -67,6 +67,7 @@ router.get("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin
 router.post("/teacher/manage_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.processManageAttendance));
 router.post("/teacher/send_attendance_emails", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.sendMonthlyAttendanceEmails));
 router.get("/teacher/detailed_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDetailedAttendance));
+router.get("/teacher/download_attendance_ledger", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.downloadAttendanceLedger));
 router.get("/teacher/defaulters/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderDefaulters));
 router.get("/teacher/defaulters/download/:year/:month", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.downloadDefaulters));
 router.get("/teacher/bulk_attendance", ensureDBConnection, requireTeacherLogin, catchAsync(attendanceController.renderBulkAttendance));

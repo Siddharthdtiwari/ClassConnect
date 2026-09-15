@@ -192,6 +192,11 @@
               </div>
               <p class="dash-sub">Faculty Command Center · Complete Attendance Matrix</p>
             </div>
+            <div class="flex gap-3 flex-wrap items-center">
+              <button onclick="openModal('download-ledger-modal')" class="btn-solid-purple flex items-center gap-2 shadow-lg hover:scale-105 transition-transform text-[10px] font-bold uppercase tracking-wider font-mono">
+                ⬇ Download PDF
+              </button>
+            </div>
           </header>
 
           <!-- Attendance Ledger Table Card -->
@@ -252,7 +257,7 @@
                 <tbody>
                   <% if (report && report.length > 0) { %>
                   <% report.forEach(student => { %>
-                  <tr class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all <%= student.isActive === false ? 'opacity-50 grayscale' : '' %>">
+                  <tr id="student-row-<%= student.studentId %>" class="hover:bg-theme-bgch/40 border-b border-theme-bd transition-all <%= student.isActive === false ? 'opacity-50 grayscale' : '' %>">
                     <td class="sticky-col-left font-bold text-theme-fg">
                       <div class="cell-content">
                         <div class="font-bold text-theme-fg text-sm"><%= student.studentName %></div>
@@ -339,6 +344,147 @@
     </div>
   </div>
 
+  <!-- =================== DOWNLOAD LEDGER MODAL =================== -->
+  <div class="modal-overlay" id="download-ledger-modal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <div class="flex justify-between items-start">
+          <div>
+            <div class="flex items-center gap-2 mb-1">
+              <span class="text-2xl">📄</span>
+              <h2 class="text-xl font-extrabold tracking-tight">Download Attendance PDF</h2>
+            </div>
+            <p class="text-purple-200 text-xs font-semibold">Export a printable attendance ledger</p>
+          </div>
+          <button onclick="closeModal('download-ledger-modal')" class="text-white/60 hover:text-white text-3xl font-light leading-none">&times;</button>
+        </div>
+      </div>
+
+      <div class="modal-body">
+        <form id="download-ledger-form" class="space-y-4">
+          <div>
+            <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">Range Type</label>
+            <select id="ledger-mode" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer">
+              <option value="month">Particular Month</option>
+              <option value="range">Custom Date Range</option>
+            </select>
+          </div>
+
+          <div id="ledger-month-fields" class="grid grid-cols-2 gap-4">
+            <div>
+              <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">Month</label>
+              <select id="ledger-month" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer"></select>
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">Year</label>
+              <select id="ledger-year" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs cursor-pointer"></select>
+            </div>
+          </div>
+
+          <div id="ledger-range-fields" class="grid grid-cols-2 gap-4 hidden">
+            <div>
+              <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">Start Date</label>
+              <input type="date" id="ledger-start" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs font-mono" />
+            </div>
+            <div>
+              <label class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-1.5 font-mono">End Date</label>
+              <input type="date" id="ledger-end" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p outline-none font-semibold text-xs font-mono" />
+            </div>
+          </div>
+
+          <div id="ledger-student-toggle" class="hidden flex items-center gap-2 bg-theme-bgc border border-theme-b rounded-xl px-4 py-3">
+            <input type="checkbox" id="ledger-student-only" checked class="w-4 h-4 cursor-pointer" />
+            <label for="ledger-student-only" class="text-xs font-semibold text-theme-fg cursor-pointer">
+              Only for <span id="ledger-student-name" class="font-bold text-theme-pt"></span> (uncheck for all students)
+            </label>
+          </div>
+
+          <button type="submit" class="btn-solid-purple w-full py-3.5 text-sm mt-4 shadow-xl">Download PDF ✓</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script id="ledger-dates-data" type="application/json"><%- JSON.stringify(allDates || []) %></script>
+
+  <script>
+    function openModal(id) { document.getElementById(id).classList.add('open'); }
+    function closeModal(id) { document.getElementById(id).classList.remove('open'); }
+    document.querySelectorAll('.modal-overlay').forEach(o => o.addEventListener('click', function(e){ if(e.target===this) closeModal(this.id); }));
+
+    document.getElementById('ledger-mode').addEventListener('change', function() {
+      const isRange = this.value === 'range';
+      document.getElementById('ledger-month-fields').classList.toggle('hidden', isRange);
+      document.getElementById('ledger-range-fields').classList.toggle('hidden', !isRange);
+    });
+
+    const MONTH_NAMES = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+
+    // Only months that actually have a recorded attendance date should be
+    // selectable here — otherwise picking an empty month produces a blank PDF.
+    const recordedDates = JSON.parse(document.getElementById('ledger-dates-data').textContent);
+    const availableByYear = {}; // { year: Set(monthIndex 1-12) }
+    recordedDates.forEach((dateStr) => {
+      const [y, m] = dateStr.split('-').map(Number);
+      if (!availableByYear[y]) availableByYear[y] = new Set();
+      availableByYear[y].add(m);
+    });
+    const availableYears = Object.keys(availableByYear).map(Number).sort((a, b) => b - a);
+
+    function populateLedgerYearAndMonth() {
+      const yearSelect = document.getElementById('ledger-year');
+      const monthSelect = document.getElementById('ledger-month');
+
+      if (availableYears.length === 0) {
+        yearSelect.innerHTML = '<option value="">No records</option>';
+        monthSelect.innerHTML = '<option value="">No records</option>';
+        return;
+      }
+
+      yearSelect.innerHTML = availableYears.map((y) => `<option value="${y}">${y}</option>`).join('');
+      yearSelect.value = availableYears[0];
+      populateLedgerMonths();
+    }
+
+    function populateLedgerMonths() {
+      const yearSelect = document.getElementById('ledger-year');
+      const monthSelect = document.getElementById('ledger-month');
+      const selectedYear = parseInt(yearSelect.value, 10);
+      const months = Array.from(availableByYear[selectedYear] || []).sort((a, b) => a - b);
+
+      monthSelect.innerHTML = months.map((m) => `<option value="${m}">${MONTH_NAMES[m - 1]}</option>`).join('');
+      if (months.length > 0) monthSelect.value = String(months[months.length - 1]);
+    }
+
+    document.getElementById('ledger-year').addEventListener('change', populateLedgerMonths);
+    populateLedgerYearAndMonth();
+
+    document.getElementById('download-ledger-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      const mode = document.getElementById('ledger-mode').value;
+      const params = new URLSearchParams();
+      params.set('mode', mode);
+      if (mode === 'range') {
+        const start = document.getElementById('ledger-start').value;
+        const end = document.getElementById('ledger-end').value;
+        if (!start || !end) { alert('Please select both a start and end date.'); return; }
+        if (start > end) { alert('Start date must be before end date.'); return; }
+        params.set('start', start);
+        params.set('end', end);
+      } else {
+        params.set('month', document.getElementById('ledger-month').value);
+        params.set('year', document.getElementById('ledger-year').value);
+      }
+      const studentToggle = document.getElementById('ledger-student-only');
+      if (!studentToggle.closest('#ledger-student-toggle').classList.contains('hidden') && studentToggle.checked) {
+        params.set('studentId', studentToggle.dataset.studentId);
+        if (studentToggle.dataset.batch) params.set('batch', studentToggle.dataset.batch);
+      }
+      window.open(`/teacher/download_attendance_ledger?${params.toString()}`, '_blank');
+      closeModal('download-ledger-modal');
+    });
+  </script>
+
   <script>
     window.addEventListener("load", function() {
       function alignStickyHeaders() {
@@ -360,6 +506,28 @@
       alignStickyHeaders();
       setTimeout(alignStickyHeaders, 100);
       window.addEventListener('resize', alignStickyHeaders);
+
+      const urlParams = new URLSearchParams(window.location.search);
+      const highlightId = urlParams.get('student');
+      const highlightBatch = urlParams.get('batch');
+      if (highlightId) {
+        const row = document.getElementById(`student-row-${highlightId}`);
+        if (row) {
+          setTimeout(() => {
+            row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            row.style.transition = 'background-color 0.3s ease';
+            row.style.backgroundColor = 'rgba(124, 58, 237, 0.18)';
+            setTimeout(() => { row.style.backgroundColor = ''; }, 3000);
+          }, 150);
+
+          const nameEl = row.querySelector('.font-bold.text-theme-fg.text-sm');
+          const studentName = nameEl ? nameEl.textContent.trim() : highlightId;
+          document.getElementById('ledger-student-name').textContent = studentName;
+          document.getElementById('ledger-student-only').dataset.studentId = highlightId;
+          if (highlightBatch) document.getElementById('ledger-student-only').dataset.batch = highlightBatch;
+          document.getElementById('ledger-student-toggle').classList.remove('hidden');
+        }
+      }
     });
   </script>
 </body>

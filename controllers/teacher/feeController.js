@@ -768,8 +768,7 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
     const dueMonthsCount = feesByMonth.filter((f) => f.status === "Due").length;
     const totalDue = monthlyFee * dueMonthsCount;
 
-    const disposition = req.query.dl ? "attachment" : "inline";
-    await generateFeeSummaryPDF(student, feesByMonth, totalDue, res, disposition);
+    await generateFeeSummaryPDF(student, feesByMonth, totalDue, res, "inline");
   } catch (err) {
     console.error(err);
     renderError(req, res, 500, "Error generating fee summary");

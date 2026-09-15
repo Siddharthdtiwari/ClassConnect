@@ -561,7 +561,6 @@ exports.generateBulkStudentReports = async (req, res) => {
         studentRank = rankIndex + 1;
       }
 
-      const disposition = req.query.dl === "1" ? "attachment" : "inline";
       await generateStudentReportPDF(
         student,
         {
@@ -574,7 +573,7 @@ exports.generateBulkStudentReports = async (req, res) => {
           studentRank,
         },
         res,
-        disposition
+        "inline"
       );
     } catch (err) {
       console.error("Error generating public student report:", err);
@@ -629,7 +628,6 @@ exports.generateBulkStudentReports = async (req, res) => {
         studentRank = rankIndex + 1;
       }
 
-      const disposition = req.query.dl === "1" ? "attachment" : "inline";
       await generateStudentReportPDF(
         student,
         {
@@ -642,7 +640,7 @@ exports.generateBulkStudentReports = async (req, res) => {
           studentRank,
         },
         res,
-        disposition
+        "inline"
       );
     } catch (err) {
       console.error("Error generating student report:", err);
@@ -660,8 +658,7 @@ exports.generateBulkStudentReports = async (req, res) => {
 
       students.sort(sortStudentsByBatchAndId);
 
-      const disposition = req.query.dl === "1" ? "attachment" : "inline";
-      await generateStudentDirectoryPDF(students, req.viewingYear, res, disposition);
+      await generateStudentDirectoryPDF(students, req.viewingYear, res, "inline");
     } catch (err) {
       console.error("Error printing student directory:", err);
       if (!res.headersSent) {

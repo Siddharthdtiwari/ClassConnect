@@ -7,6 +7,7 @@ const { NA_STATUS } = require("../../utils/feeHelpers");
 const { logAudit } = require("../../utils/auditService");
 const { sendFeeReceipt } = require("../../utils/emailService");
 const { generateReceiptPDF, generateFeeSummaryPDF } = require("../../utils/pdfUtils");
+const { renderError } = require("../../utils/renderError");
 
 const razorpay = new Razorpay({
   key_id: process.env.RAZORPAY_KEY_ID,
@@ -202,13 +203,23 @@ exports.verifyPayment = async (req, res) => {
       const FEE_DUE_DAY = 10;
       const monthsElapsed = now.getDate() >= FEE_DUE_DAY ? currentAcademicIndex + 1 : currentAcademicIndex;
 
+      // The HMAC signature above only proves (order_id, payment_id) came from Razorpay —
+      // it says nothing about the amount, which the client also controls. Fetch the
+      // actual captured payment from Razorpay's API rather than trusting req.body.amount,
+      // otherwise a client could pay a small amount and claim a large one was paid.
+      const razorpayPayment = await razorpay.payments.fetch(razorpay_payment_id);
+      if (razorpayPayment.status !== "captured") {
+        throw new Error(`Payment ${razorpay_payment_id} is not captured (status: ${razorpayPayment.status}).`);
+      }
+      const verifiedAmount = Math.floor(razorpayPayment.amount / 100); // paise -> rupees
+
       const paidFees = await Fee.find({
         studentId: student.studentId,
         batch: student.batch._id,
       }).lean();
       const paidMonths = paidFees.map((f) => f.month);
       const monthlyFee = student.monthlyFee || 1;
-      const amountPaid = parseInt(amount);
+      const amountPaid = verifiedAmount;
       const monthsCount = Math.max(1, Math.floor(amountPaid / monthlyFee));
 
       const dueMonths = [];
@@ -362,6 +373,7 @@ exports.downloadFeeSummary = async (req, res) => {
   try {
     const student = await User.findById(req.session.userId).populate('batch').lean();
     if (!student) return renderError(req, res, 404, "Student not found");
+    if (!student.batch) return renderError(req, res, 400, "No batch is assigned to your account yet. Please contact your teacher.");
 
     const months = [
       "May", "June", "July", "August", "September", "October",
@@ -388,7 +400,7 @@ exports.downloadFeeSummary = async (req, res) => {
     } else {
       academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
     }
-    
+
     const yearForMonthIndex = (idx) =>
       idx < 8 ? academicStartYear : academicStartYear + 1;
 

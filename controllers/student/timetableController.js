@@ -102,7 +102,12 @@ exports.processTimetableEdit = async (req, res) => {
       return res.redirect("/student/timetable");
     }
 
-    if (entry.addedBy !== "student" || entry.addedById !== student.studentId) {
+    if (
+      entry.addedBy !== "student" ||
+      entry.addedById !== student.studentId ||
+      !entry.batch ||
+      entry.batch.toString() !== student.batch.toString()
+    ) {
       req.session.error = "You are not authorized to edit this exam.";
       return res.redirect("/student/timetable");
     }
@@ -135,7 +140,12 @@ exports.processTimetableDelete = async (req, res) => {
       return res.redirect("/student/timetable");
     }
 
-    if (entry.addedBy !== "student" || entry.addedById !== student.studentId) {
+    if (
+      entry.addedBy !== "student" ||
+      entry.addedById !== student.studentId ||
+      !entry.batch ||
+      entry.batch.toString() !== student.batch.toString()
+    ) {
       req.session.error = "You are not authorized to delete this exam.";
       return res.redirect("/student/timetable");
     }

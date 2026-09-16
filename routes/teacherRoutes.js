@@ -36,17 +36,17 @@ router.get("/teacher/dashboard", ensureDBConnection, requireTeacherLogin, catchA
 router.get("/teacher/logout", catchAsync(authController.processLogout));
 
 // Teacher Management
-router.get("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderAddTeacher));
-router.post("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, catchAsync(authController.processAddTeacher));
-router.get("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, catchAsync(authController.renderEditTeacher));
-router.post("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, catchAsync(authController.processEditTeacher));
+router.get("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(authController.renderAddTeacher));
+router.post("/teacher/add_teacher", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(authController.processAddTeacher));
+router.get("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(authController.renderEditTeacher));
+router.post("/teacher/edit_teacher/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(authController.processEditTeacher));
 
 // Batch Management
-router.get("/teacher/manage_batches", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.renderManageBatches));
+router.get("/teacher/manage_batches", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(batchController.renderManageBatches));
 router.get("/teacher/add_batch", (req, res) => res.redirect("/teacher/manage_batches"));
-router.post("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processAddBatch));
+router.post("/teacher/add_batch", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(batchController.processAddBatch));
 router.get("/teacher/edit_batch/:id", (req, res) => res.redirect("/teacher/manage_batches"));
-router.post("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, catchAsync(batchController.processEditBatch));
+router.post("/teacher/edit_batch/:id", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(batchController.processEditBatch));
 
 // Student Management
 router.get("/teacher/manage_students", ensureDBConnection, requireTeacherLogin, catchAsync(studentController.renderManageStudents));
@@ -77,15 +77,15 @@ router.post("/teacher/bulk_save_attendance", ensureDBConnection, requireTeacherL
 // Fee Management
 router.get("/teacher/manage_fees", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.renderManageFees));
 router.post("/teacher/manage_fees/delete/:id", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(feeController.deleteFee));
-router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.processAddFees));
-router.post("/teacher/fee_month_na", ensureDBConnection, requireTeacherLogin, express.json({ limit: '10mb' }), catchAsync(feeController.setMonthApplicability));
-router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderRevenueReport));
-router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderFeeDefaulters));
-router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeDefaulters));
-router.post("/teacher/fee_defaulters/remind", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.sendFeeReminderEmail));
-router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.renderBulkFees));
-router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, express.json({ limit: '10mb' }), catchAsync(feeController.processBulkSave));
-router.get("/teacher/print_fee_sheet", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeCollectionSheet));
+router.post("/teacher/add_fees", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.processAddFees));
+router.post("/teacher/fee_month_na", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, express.json({ limit: '10mb' }), catchAsync(feeController.setMonthApplicability));
+router.get("/teacher/revenue_report", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.renderRevenueReport));
+router.get("/teacher/fee_defaulters", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.renderFeeDefaulters));
+router.get("/teacher/fee_defaulters/download", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.downloadFeeDefaulters));
+router.post("/teacher/fee_defaulters/remind", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.sendFeeReminderEmail));
+router.get("/teacher/bulk_fees", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.renderBulkFees));
+router.post("/teacher/bulk_save", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, express.json({ limit: '10mb' }), catchAsync(feeController.processBulkSave));
+router.get("/teacher/print_fee_sheet", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(feeController.downloadFeeCollectionSheet));
 router.get("/teacher/fee_summary/:id", ensureDBConnection, requireTeacherLogin, catchAsync(feeController.downloadFeeSummaryTeacher));
 
 // Test Management & Scores & Timetable
@@ -124,8 +124,8 @@ router.put("/api/materials/:id", ensureDBConnection, requireTeacherLogin, upload
 router.delete("/api/materials/:id", ensureDBConnection, requireTeacherLogin, catchAsync(resourceController.processStudyMaterialDelete));
 
 // Reports Hub
-router.get("/teacher/reports", ensureDBConnection, requireTeacherLogin, catchAsync(reportsController.renderReports));
-router.get("/teacher/reports/audit", ensureDBConnection, requireTeacherLogin, catchAsync(auditController.renderAuditTrail));
+router.get("/teacher/reports", ensureDBConnection, requireTeacherLogin, requireAdminOrOwner, catchAsync(reportsController.renderReports));
+router.get("/teacher/reports/audit", ensureDBConnection, requireTeacherLogin, requireAdminOnly, catchAsync(auditController.renderAuditTrail));
 
 // Solutions
 router.get("/teacher/solutions", ensureDBConnection, requireTeacherLogin, catchAsync(solutionController.renderSolutions));

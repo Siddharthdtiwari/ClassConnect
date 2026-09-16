@@ -12,6 +12,8 @@ const StudyMaterial = require('../../models/StudyMaterial');
 const Batch = require('../../models/Batch');
 const Syllabus = require('../../models/Syllabus');
 const { NA_STATUS } = require('../../utils/feeHelpers');
+const { logAudit } = require('../../utils/auditService');
+const { calculateCurrentAcademicYear } = require('../../utils/academicYear');
 
 router.use(requireStudentApiLogin);
 
@@ -335,7 +337,8 @@ router.put('/profile', async (req, res) => {
   try {
     const { name, email, mobileNo, password } = req.body;
     const student = await User.findById(req.user._id);
-    
+    let passwordChanged = false;
+
     if (name) {
       student.studentName = name;
       student.name = name;
@@ -345,10 +348,25 @@ router.put('/profile', async (req, res) => {
     if (password) {
       const bcrypt = require('bcrypt');
       student.password = await bcrypt.hash(password, 12);
+      passwordChanged = true;
     }
-    
+
     await student.save();
-    res.json({ success: true, student });
+
+    await logAudit(req, {
+      action: passwordChanged ? "PASSWORD_CHANGE" : "UPDATE",
+      entityType: "User",
+      entityId: student._id,
+      details: "Student updated their profile via mobile app",
+      academicYear: calculateCurrentAcademicYear(),
+      performedBy: student.studentName,
+      performedById: student.studentId,
+      userRole: "Student",
+    });
+
+    const studentObj = student.toObject();
+    delete studentObj.password;
+    res.json({ success: true, student: studentObj });
   } catch (err) {
     res.status(500).json({ error: 'Error updating profile' });
   }

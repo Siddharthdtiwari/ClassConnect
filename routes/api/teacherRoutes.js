@@ -287,27 +287,34 @@ router.post('/students', validate(createStudentSchema), async (req, res) => {
 // Create New Teacher
 router.post('/teachers', validate(createTeacherSchema), async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { teacherName, teacherId, email, subjects, password } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
-    
-    const existing = await User.findOne({ email, role: 'teacher' });
+
+    if (!Array.isArray(subjects) || subjects.length === 0) {
+      return res.status(400).json({ error: 'At least one subject is required' });
+    }
+
+    const existing = await Teacher.findOne({ $or: [{ email }, { teacherId }] });
     if (existing) {
-      return res.status(400).json({ error: 'Teacher email already exists' });
+      return res.status(400).json({ error: 'A teacher with this email or teacher ID already exists' });
     }
 
     const hashedPassword = await bcrypt.hash(password, 12);
 
-    const newTeacher = new User({
-      studentName: name,
+    const newTeacher = new Teacher({
+      teacherId,
+      teacherName,
       email,
+      subjects,
       password: hashedPassword,
-      role: 'teacher'
     });
-    
+
     await newTeacher.save();
-    
-    await logAudit(req, { action: 'CREATE', entityType: 'User', entityId: newTeacher._id, details: `Added new teacher: ${name}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
-    res.json({ success: true, teacher: newTeacher });
+
+    await logAudit(req, { action: 'CREATE', entityType: 'Teacher', entityId: newTeacher._id, details: `Added new teacher: ${teacherName}`, academicYear , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
+    const teacherObj = newTeacher.toObject();
+    delete teacherObj.password;
+    res.json({ success: true, teacher: teacherObj });
   } catch (err) {
     res.status(500).json({ error: 'Error adding teacher' });
   }
@@ -315,7 +322,7 @@ router.post('/teachers', validate(createTeacherSchema), async (req, res) => {
 
 router.get('/teachers', async (req, res) => {
   try {
-    const teachers = await User.find({ role: 'teacher' }).select('-password').lean();
+    const teachers = await Teacher.find({}).select('-password').lean();
     res.json({ teachers });
   } catch (err) {
     res.status(500).json({ error: 'Error loading teachers' });
@@ -324,23 +331,23 @@ router.get('/teachers', async (req, res) => {
 
 router.put('/teachers/:id', async (req, res) => {
   try {
-    const { name, email, password } = req.body;
+    const { teacherName, email, subjects, password } = req.body;
     if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
-    const teacher = await User.findById(req.params.id);
-    if (!teacher || teacher.role !== 'teacher') {
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) {
       return res.status(404).json({ error: 'Teacher not found' });
     }
-    
-    if (name) {
-      teacher.studentName = name;
-      teacher.name = name;
-    }
+
+    if (teacherName) teacher.teacherName = teacherName;
     if (email) teacher.email = email;
+    if (Array.isArray(subjects) && subjects.length > 0) teacher.subjects = subjects;
     if (password) teacher.password = await bcrypt.hash(password, 12);
-    
+
     await teacher.save();
-    await logAudit(req, { action: 'UPDATE', entityType: 'User', details: `Updated teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
-    res.json({ success: true, teacher });
+    await logAudit(req, { action: 'UPDATE', entityType: 'Teacher', entityId: teacher._id, details: `Updated teacher: ${teacher.teacherName}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
+    const teacherObj = teacher.toObject();
+    delete teacherObj.password;
+    res.json({ success: true, teacher: teacherObj });
   } catch (err) {
     res.status(500).json({ error: 'Error updating teacher' });
   }
@@ -349,19 +356,18 @@ router.put('/teachers/:id', async (req, res) => {
 router.delete('/teachers/:id', async (req, res) => {
   try {
     if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
-    const teacher = await User.findById(req.params.id);
-    if (!teacher || teacher.role !== 'teacher') {
+    const teacher = await Teacher.findById(req.params.id);
+    if (!teacher) {
       return res.status(404).json({ error: 'Teacher not found' });
     }
-    
+
     // Optional: prevent deleting oneself
     if (teacher._id.toString() === req.teacher._id.toString()) {
       return res.status(400).json({ error: 'Cannot delete your own account' });
     }
 
-    if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
-    await User.findByIdAndDelete(req.params.id);
-    await logAudit(req, { action: 'DELETE', entityType: 'User', details: `Deleted teacher: ${teacher.studentName || teacher.name}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
+    await Teacher.findByIdAndDelete(req.params.id);
+    await logAudit(req, { action: 'DELETE', entityType: 'Teacher', entityId: teacher._id, details: `Deleted teacher: ${teacher.teacherName}`, academicYear: calculateCurrentAcademicYear() , performedBy: req.teacher.teacherName, performedById: req.teacher.teacherId, userRole: req.teacher.role ? (req.teacher.role.charAt(0).toUpperCase() + req.teacher.role.slice(1)) : 'Teacher'});
     res.json({ success: true });
   } catch (err) {
     res.status(500).json({ error: 'Error deleting teacher' });

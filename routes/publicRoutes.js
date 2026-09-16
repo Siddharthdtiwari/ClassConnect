@@ -50,11 +50,15 @@ router.get('/public/receipt/:feeId', async (req, res) => {
 });
 
 // Public route to view fee summary PDF
-router.get('/public/fee-summary/:studentId', async (req, res) => {
+router.get('/public/fee-summary/:studentId/:signature', async (req, res) => {
   try {
-    const studentId = req.params.studentId;
+    const { studentId, signature } = req.params;
     if (!mongoose.Types.ObjectId.isValid(studentId)) {
       return renderError(req, res, 404, 'Invalid Student ID');
+    }
+    if (!signature || !verifySignature(studentId, signature)) {
+      console.warn(`Invalid or missing signature for fee summary ${studentId}`);
+      return renderError(req, res, 403, 'Invalid or expired link');
     }
 
     const student = await User.findById(studentId).populate('batch');
@@ -140,9 +144,9 @@ const handleStudentReport = async (req, res) => {
       return renderError(req, res, 404, 'Invalid Student ID');
     }
 
-    // Verify signature if provided
-    if (signature && !verifySignature(studentId, signature)) {
-      console.warn(`Invalid signature for student report ${studentId}`);
+    if (!signature || !verifySignature(studentId, signature)) {
+      console.warn(`Invalid or missing signature for student report ${studentId}`);
+      return renderError(req, res, 403, 'Invalid or expired link');
     }
 
     const student = await User.findById(studentId).populate('batch').lean();
@@ -210,7 +214,6 @@ const handleStudentReport = async (req, res) => {
 };
 
 router.get('/public/report/:studentId/:signature', handleStudentReport);
-router.get('/public/report/:studentId', handleStudentReport);
 
 // Public route to view test question paper
 const handlePublicTest = async (req, res) => {
@@ -220,8 +223,9 @@ const handlePublicTest = async (req, res) => {
       return renderError(req, res, 404, 'Invalid Test ID');
     }
 
-    if (signature && !verifySignature(testId, signature)) {
-      console.warn(`Invalid signature for test paper ${testId}`);
+    if (!signature || !verifySignature(testId, signature)) {
+      console.warn(`Invalid or missing signature for test paper ${testId}`);
+      return renderError(req, res, 403, 'Invalid or expired link');
     }
 
     const test = await Test.findById(testId).populate('batch').lean();
@@ -237,6 +241,5 @@ const handlePublicTest = async (req, res) => {
 };
 
 router.get('/public/test/:testId/:signature', handlePublicTest);
-router.get('/public/test/:testId', handlePublicTest);
 
 module.exports = router;

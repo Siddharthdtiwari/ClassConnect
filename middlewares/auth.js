@@ -92,6 +92,15 @@ const requireStudentLogin = async (req, res, next) => {
     const student = await User.findById(req.session.userId).populate('batch').lean();
     if (!student) return res.redirect("/student/login");
 
+    // Virtually every student-facing page assumes a batch is assigned (fees, scores,
+    // attendance, leaderboard...) and crashes deep inside a controller if it isn't —
+    // catching it once here, centrally, is far more reliable than guarding every
+    // individual call site. Still let them reach logout so they aren't stuck.
+    if (!student.batch && req.path !== "/student/logout") {
+      const { renderError } = require("../utils/renderError");
+      return renderError(req, res, 400, "No batch has been assigned to your account yet. Please contact your teacher or admin.");
+    }
+
     req.user = student;
     next();
   } catch (err) {

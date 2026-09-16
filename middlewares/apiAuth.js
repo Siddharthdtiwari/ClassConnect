@@ -28,6 +28,16 @@ const requireStudentApiLogin = async (req, res, next) => {
     if (!student) {
       return res.status(401).json({ error: 'Invalid token. User not found.' });
     }
+    if (student.isActive === false) {
+      return res.status(403).json({ error: 'Account deactivated.' });
+    }
+    // Almost every endpoint here assumes a batch is assigned (fees, scores,
+    // attendance, leaderboard...) and crashes deep inside a handler if it isn't —
+    // catching it once here is far more reliable than guarding every call site.
+    // Profile is exempt so the app can still show the account and let them log out.
+    if (!student.batch && !req.path.includes('/profile')) {
+      return res.status(400).json({ error: 'No batch has been assigned to your account yet. Please contact your teacher or admin.' });
+    }
 
     req.user = student;
     next();
@@ -55,6 +65,9 @@ const requireTeacherApiLogin = async (req, res, next) => {
     const teacher = await Teacher.findById(decoded.id).lean();
     if (!teacher) {
       return res.status(401).json({ error: 'Invalid token. User not found.' });
+    }
+    if (teacher.isActive === false) {
+      return res.status(403).json({ error: 'Account deactivated.' });
     }
 
     req.teacher = teacher;

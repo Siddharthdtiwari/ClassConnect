@@ -12,6 +12,15 @@ const MONTH_INDEX = {
   July: 6, August: 7, September: 8, October: 9, November: 10, December: 11
 };
 
+// Matching a salary transaction to a teacher by substring-searching `description`
+// is ambiguous whenever one teacher's name is a substring of another's (e.g.
+// "Priya" vs "Priyanka"). New writes always set `teacherRef` to the exact Teacher
+// _id; this fallback only applies to transactions created before that field existed.
+function txnBelongsToTeacher(txn, teacher) {
+  if (txn.teacherRef) return txn.teacherRef.toString() === teacher._id.toString();
+  return !!(txn.description && txn.description.toLowerCase().includes(teacher.teacherName.toLowerCase()));
+}
+
 const MONTH_NAME_MAP = {
   0: "January",
   1: "February",
@@ -130,6 +139,15 @@ exports.addTransaction = async (req, res) => {
   try {
     const { type, category, amount, date, description, referenceId, staffName, salaryMonth } = req.body;
 
+    // Resolve the exact teacher once, upfront, by an anchored (not substring) match
+    // against the dropdown-supplied name — this is what teacherRef is set from below,
+    // instead of re-deriving it later via a fuzzy description search.
+    let staffTeacher = null;
+    if (category === "Salary" && staffName) {
+      const escapedStaffName = staffName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      staffTeacher = await Teacher.findOne({ teacherName: { $regex: new RegExp(`^${escapedStaffName}$`, 'i') } }).lean();
+    }
+
     let finalDescription = description || "";
     if (category === "Salary" && staffName) {
       const monthLabel = salaryMonth ? ` [${salaryMonth}]` : '';
@@ -157,6 +175,7 @@ exports.addTransaction = async (req, res) => {
       date: finalDate,
       description: finalDescription,
       referenceId,
+      teacherRef: staffTeacher ? staffTeacher._id : undefined,
       addedBy: req.session.userId,
       academicYear: req.currentAcademicYear
     });
@@ -173,15 +192,12 @@ exports.addTransaction = async (req, res) => {
     // Auto-send salary slip email if it's a salary payment
     if (category === 'Salary' && staffName) {
       try {
-        const Teacher = require('../../models/Teacher');
         const { buildSalarySlipBuffer } = require('../../utils/pdf/salarySlipGenerator');
         const { sendEmail } = require('../../utils/emailService');
 
         const monthName = salaryMonth || Object.keys(MONTH_INDEX).find(m => MONTH_INDEX[m] === finalDate.getMonth());
         const txnYear = finalDate.getFullYear();
 
-        const escapedStaffName = staffName.trim().replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        const staffTeacher = await Teacher.findOne({ teacherName: { $regex: new RegExp(escapedStaffName, 'i') } }).lean();
         if (staffTeacher && staffTeacher.email) {
           const slipBuffer = await buildSalarySlipBuffer({
             teacher: staffTeacher,
@@ -291,7 +307,7 @@ exports.renderSalaries = async (req, res) => {
       let totalSalary = 0;
       teachers.forEach(t => {
         const sal = salaryTxns
-          .filter(txn => MONTH_NAME_MAP[new Date(txn.date).getMonth()] === mName && txn.description && txn.description.toLowerCase().includes(t.teacherName.toLowerCase()))
+          .filter(txn => MONTH_NAME_MAP[new Date(txn.date).getMonth()] === mName && txnBelongsToTeacher(txn, t))
           .reduce((s, txn) => s + (txn.amount || 0), 0);
         teacherSalaries[t.teacherId] = sal;
         totalSalary += sal;
@@ -327,7 +343,7 @@ exports.renderMySalary = async (req, res) => {
     const monthlyData = ACADEMIC_MONTHS.map(mName => {
       const monthTxns = salaryTxns.filter(txn =>
         MONTH_NAME_MAP[new Date(txn.date).getMonth()] === mName &&
-        txn.description && txn.description.toLowerCase().includes(teacher.teacherName.toLowerCase())
+        txnBelongsToTeacher(txn, teacher)
       );
       const salary = monthTxns.reduce((s, txn) => s + (txn.amount || 0), 0);
       const txnId = monthTxns.length > 0 ? monthTxns[0]._id : null;
@@ -358,7 +374,7 @@ exports.downloadSalarySlip = async (req, res) => {
     const salaryTxns = await Transaction.find({ academicYear, type: 'EXPENSE', category: 'Salary' }).lean();
     const monthTxns = salaryTxns.filter(txn =>
       MONTH_NAME_MAP[new Date(txn.date).getMonth()] === month &&
-      txn.description && txn.description.toLowerCase().includes(teacher.teacherName.toLowerCase())
+      txnBelongsToTeacher(txn, teacher)
     );
 
     if (monthTxns.length === 0) return renderError(req, res, 404, 'No salary record found for this month');

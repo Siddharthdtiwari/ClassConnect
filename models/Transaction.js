@@ -30,6 +30,13 @@ const transactionSchema = new mongoose.Schema(
       type: String, // Optional reference to teacher, receipt, etc.
       trim: true,
     },
+    teacherRef: {
+      // Exact reference for salary transactions — matching staff by substring-searching
+      // `description` is ambiguous whenever one teacher's name is a substring of another's
+      // (e.g. "Priya" vs "Priyanka"), so every salary-category write must set this.
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Teacher",
+    },
     addedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Teacher", // Assuming admins log in via Teacher model

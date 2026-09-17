@@ -19,14 +19,18 @@ exports.renderManageAttendance = async (req, res) => {
     students.sort(sortStudentsByBatchAndId);
     const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
 
+    // studentId alone is ambiguous — it's only unique per (studentId, batch), so every
+    // map key here pairs it with the Attendance document's own batch (record.batch),
+    // matching the client-side attendanceKey() helper in manage_attendance.ejs.
     const attendanceMap = {};
     attendanceRecords.forEach((record) => {
       const dateString = record.date.toISOString().split('T')[0];
+      const batchId = record.batch.toString();
       // Merge — a date has one document per batch, so resetting here would
       // keep only whichever batch's document happened to come last.
       if (!attendanceMap[dateString]) attendanceMap[dateString] = {};
       (record.records || []).forEach(
-        (r) => (attendanceMap[dateString][r.studentId] = r.status)
+        (r) => (attendanceMap[dateString][`${r.studentId}|${batchId}`] = r.status)
       );
     });
 
@@ -52,20 +56,17 @@ exports.processManageAttendance = async (req, res) => {
       }
       await attendance.save();
     } else if (records && records.length > 0) {
-      const studentIds = records.map(r => r.studentId);
-      // Student IDs repeat across academic years (unique only per studentId+batch),
-      // so resolve them strictly within the current year's batches — otherwise
-      // records get filed under last year's batch and students can't see them.
-      const yearBatchIds = await Batch.find({ academicYear: req.currentAcademicYear }).distinct('_id');
-      const students = await User.find({ studentId: { $in: studentIds }, batch: { $in: yearBatchIds } }).select('studentId batch').lean();
-
+      // Each record already carries its own student's batch (manage_attendance.ejs
+      // sends it directly from the already-batch-scoped row data) — grouping by that
+      // instead of re-resolving via a bare studentId lookup avoids misfiling a
+      // student's attendance under a different student's batch when the same
+      // studentId string is reused across batches/academic years.
       const batchGroups = {};
       records.forEach(record => {
-        const student = students.find(s => s.studentId === record.studentId);
-        if (student && student.batch) {
-          const bId = student.batch.toString();
+        if (record.batch) {
+          const bId = record.batch.toString();
           if (!batchGroups[bId]) batchGroups[bId] = [];
-          batchGroups[bId].push(record);
+          batchGroups[bId].push({ studentId: record.studentId, status: record.status });
         }
       });
 
@@ -101,11 +102,15 @@ exports.renderDetailedAttendance = async (req, res) => {
     students.sort(sortStudentsByBatchAndId);
     const attendanceRecords = await Attendance.find({ batch: { $in: req.viewingBatches } }).lean();
 
+    // studentId alone is ambiguous across batches — key every student and every
+    // incoming attendance record by (studentId, batch) so two students sharing a
+    // studentId string in different batches never merge into one report row.
     const detailedReport = {};
     const allAttendanceDates = new Set();
 
     students.forEach(student => {
-      detailedReport[student.studentId] = {
+      const key = `${student.studentId}|${student.batch ? student.batch._id.toString() : ""}`;
+      detailedReport[key] = {
         studentId: student.studentId,
         studentName: student.studentName,
         records: {},
@@ -116,11 +121,13 @@ exports.renderDetailedAttendance = async (req, res) => {
 
     attendanceRecords.forEach(record => {
       const dateKey = record.date.toISOString().split('T')[0];
+      const batchId = record.batch.toString();
       allAttendanceDates.add(dateKey);
 
       (record.records || []).forEach(r => {
-        if (detailedReport[r.studentId]) {
-          const studentData = detailedReport[r.studentId];
+        const key = `${r.studentId}|${batchId}`;
+        if (detailedReport[key]) {
+          const studentData = detailedReport[key];
           studentData.records[dateKey] = r.status;
 
           if (r.status === 'P') {
@@ -167,9 +174,13 @@ exports.renderDefaulters = async (req, res) => {
       batch: { $in: req.viewingBatches },
     }).lean();
 
+    // studentId alone is ambiguous across batches — key every student and every
+    // attendance record by (studentId, batch) so two students sharing a studentId
+    // string in different batches never merge into one defaulter row.
     const stats = {};
     students.forEach((s) => {
-      stats[s.studentId] = {
+      const key = `${s.studentId}|${s.batch ? s.batch._id.toString() : ""}`;
+      stats[key] = {
         studentId: s.studentId,
         studentName: s.studentName,
         standard: (s.batch ? s.batch.name : 'Unknown'),
@@ -182,11 +193,13 @@ exports.renderDefaulters = async (req, res) => {
     });
 
     attendanceDocs.forEach((doc) => {
+      const batchId = doc.batch.toString();
       doc.records.forEach((r) => {
-        if (stats[r.studentId]) {
-          if (r.status === "P") stats[r.studentId].present++;
-          if (r.status === "A") stats[r.studentId].absent++;
-          stats[r.studentId].total++;
+        const key = `${r.studentId}|${batchId}`;
+        if (stats[key]) {
+          if (r.status === "P") stats[key].present++;
+          if (r.status === "A") stats[key].absent++;
+          stats[key].total++;
         }
       });
     });
@@ -231,7 +244,8 @@ exports.downloadDefaulters = async (req, res) => {
 
     const stats = {};
     students.forEach((s) => {
-      stats[s.studentId] = {
+      const key = `${s.studentId}|${s.batch ? s.batch._id.toString() : ""}`;
+      stats[key] = {
         studentId: s.studentId,
         studentName: s.studentName,
         standard: (s.batch ? s.batch.name : 'Unknown'),
@@ -244,11 +258,13 @@ exports.downloadDefaulters = async (req, res) => {
     });
 
     attendanceDocs.forEach((doc) => {
+      const batchId = doc.batch.toString();
       doc.records.forEach((r) => {
-        if (stats[r.studentId]) {
-          if (r.status === "P") stats[r.studentId].present++;
-          if (r.status === "A") stats[r.studentId].absent++;
-          stats[r.studentId].total++;
+        const key = `${r.studentId}|${batchId}`;
+        if (stats[key]) {
+          if (r.status === "P") stats[key].present++;
+          if (r.status === "A") stats[key].absent++;
+          stats[key].total++;
         }
       });
     });
@@ -329,7 +345,8 @@ exports.downloadAttendanceLedger = async (req, res) => {
 
     const reportByStudentId = {};
     students.forEach((student) => {
-      reportByStudentId[student.studentId] = {
+      const key = `${student.studentId}|${student.batch ? student.batch._id.toString() : ""}`;
+      reportByStudentId[key] = {
         studentId: student.studentId,
         studentName: student.studentName,
         batch: student.batch,
@@ -342,9 +359,10 @@ exports.downloadAttendanceLedger = async (req, res) => {
     const dateKeySet = new Set();
     attendanceRecords.forEach((record) => {
       const dateKey = record.date.toISOString().split("T")[0];
+      const batchId = record.batch.toString();
       dateKeySet.add(dateKey);
       (record.records || []).forEach((r) => {
-        const studentData = reportByStudentId[r.studentId];
+        const studentData = reportByStudentId[`${r.studentId}|${batchId}`];
         if (!studentData) return;
         studentData.records[dateKey] = r.status;
         if (r.status === "P") {
@@ -514,15 +532,18 @@ exports.sendMonthlyAttendanceEmails = async (req, res) => {
 
     const stats = {};
     students.forEach((s) => {
-      stats[s.studentId] = { present: 0, absent: 0, total: 0 };
+      const key = `${s.studentId}|${s.batch ? s.batch.toString() : ""}`;
+      stats[key] = { present: 0, absent: 0, total: 0 };
     });
 
     attendanceDocs.forEach((doc) => {
+      const batchId = doc.batch.toString();
       doc.records.forEach((r) => {
-        if (stats[r.studentId]) {
-          if (r.status === "P") stats[r.studentId].present++;
-          if (r.status === "A") stats[r.studentId].absent++;
-          stats[r.studentId].total++;
+        const key = `${r.studentId}|${batchId}`;
+        if (stats[key]) {
+          if (r.status === "P") stats[key].present++;
+          if (r.status === "A") stats[key].absent++;
+          stats[key].total++;
         }
       });
     });
@@ -531,7 +552,7 @@ exports.sendMonthlyAttendanceEmails = async (req, res) => {
 
     let sentCount = 0;
     for (const student of students) {
-      const s = stats[student.studentId];
+      const s = stats[`${student.studentId}|${student.batch ? student.batch.toString() : ""}`];
       // Skip students with no attendance marked this month — nothing meaningful to report.
       if (!s || s.total === 0 || !student.email) continue;
 

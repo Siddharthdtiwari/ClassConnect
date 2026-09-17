@@ -437,6 +437,12 @@
         return `${year}-${month}-${day}`;
       }
 
+      // studentId alone is ambiguous — the same human-readable ID can repeat across
+      // different batches, so every lookup into the attendance map must pair it with batch.
+      function attendanceKey(studentId, batchId) {
+        return `${studentId}|${batchId || ""}`;
+      }
+
       function formatDateDisplay(date) {
         return date.toDateString();
       }
@@ -504,7 +510,7 @@
         studentAttendanceList.innerHTML = "";
 
         allStudents.forEach((student) => {
-          let status = attendanceForDate[student.studentId];
+          let status = attendanceForDate[attendanceKey(student.studentId, student.batch && student.batch._id)];
           if (!status) {
             status = student.isActive === false ? "A" : "P";
           }
@@ -658,6 +664,7 @@
           if (selectedStatusBtn) {
             dailyRecords.push({
               studentId: student.studentId,
+              batch: student.batch ? student.batch._id : null,
               status: selectedStatusBtn.dataset.status,
             });
           }
@@ -678,7 +685,7 @@
           if (data.success) {
             savedAttendance[dateKey] = {};
             dailyRecords.forEach(
-              (r) => (savedAttendance[dateKey][r.studentId] = r.status)
+              (r) => (savedAttendance[dateKey][attendanceKey(r.studentId, r.batch)] = r.status)
             );
             showMessage("Attendance saved successfully!", "success");
             renderCalendar();

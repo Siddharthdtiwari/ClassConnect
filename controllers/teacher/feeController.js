@@ -653,9 +653,11 @@ exports.downloadFeeCollectionSheet = async (req, res) => {
     const teachers = await Teacher.find({ isActive: true }).lean();
 
     const fees = await Fee.find({ month, year, status: { $in: ["Paid", NA_STATUS] }, batch: { $in: batchIds } }).lean();
+    // studentId alone is ambiguous across batches — key by (studentId, batch) so a
+    // student in one batch never shows another same-ID student's fee status.
     const feeByStudent = {};
     fees.forEach(f => {
-       feeByStudent[f.studentId] = f;
+       feeByStudent[`${f.studentId}|${f.batch}`] = f;
     });
 
     const sheetStudents = students;
@@ -688,6 +690,7 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
 
     const student = await User.findById(studentId).populate('batch').lean();
     if (!student) return renderError(req, res, 404, "Student not found");
+    if (!student.batch) return renderError(req, res, 400, "This student has no batch assigned.");
 
     const months = [
       "May", "June", "July", "August", "September", "October",
@@ -714,7 +717,7 @@ exports.downloadFeeSummaryTeacher = async (req, res) => {
     } else {
       academicStartYear = currentMonthIndex >= 4 ? now.getFullYear() : now.getFullYear() - 1;
     }
-    
+
     const yearForMonthIndex = (idx) =>
       idx < 8 ? academicStartYear : academicStartYear + 1;
 
@@ -808,7 +811,7 @@ exports.deleteFee = async (req, res) => {
       entityType: "Fee",
       entityId: feeId,
       details: `Deleted fee record for ${fee.studentName} (${fee.month} ${fee.year}, ₹${fee.amount})`,
-      academicYear: req.currentAcademicYear
+      academicYear: req.viewingYear
     });
 
     req.session.success = "Fee record deleted successfully.";

@@ -347,7 +347,11 @@ exports.processBulkSaveStudents = async (req, res) => {
 
     const allStudentIds = studentsData.map(r => r.studentId).filter(Boolean);
     const existingStudents = await User.find({ studentId: { $in: allStudentIds }, batch: { $in: req.currentBatches } }).lean();
-    const existingMap = new Set(existingStudents.map(s => String(s.studentId)));
+    // studentId alone is ambiguous across batches — key by (studentId, batch) so a
+    // brand-new student in one batch isn't mistaken for an existing one just because
+    // their ID string was reused by someone else in a different batch, which would
+    // otherwise silently skip generating them a password.
+    const existingMap = new Set(existingStudents.map(s => `${s.studentId}|${s.batch}`));
 
     await Promise.all(studentsData.map(async (row, i) => {
       if (!row.studentName || !row.studentId || !row.batchId || !row.mobileNo) {
@@ -367,7 +371,7 @@ exports.processBulkSaveStudents = async (req, res) => {
       if (row.password && String(row.password).trim() !== "") {
         updateDoc.password = await bcrypt.hash(String(row.password).trim(), 12);
       } else {
-        if (!row.id && !existingMap.has(String(row.studentId))) {
+        if (!row.id && !existingMap.has(`${row.studentId}|${row.batchId}`)) {
           updateDoc.password = await bcrypt.hash(String(row.mobileNo).trim(), 12);
         }
       }
@@ -440,32 +444,38 @@ exports.generateBulkStudentReports = async (req, res) => {
       batch: { $in: req.viewingBatches },
     }).lean();
 
-    // Group Fees
+    // studentId alone is ambiguous across batches — key every grouping and lookup
+    // by (studentId, batch) so two students sharing a studentId string in different
+    // batches never end up with each other's fees/scores/attendance in their PDF.
     const feesMap = {};
     allFees.forEach(fee => {
-      if (!feesMap[fee.studentId]) feesMap[fee.studentId] = [];
-      feesMap[fee.studentId].push(fee);
+      const key = `${fee.studentId}|${fee.batch ? fee.batch._id.toString() : ""}`;
+      if (!feesMap[key]) feesMap[key] = [];
+      feesMap[key].push(fee);
     });
 
-    // Group Scores
     const scoresMap = {};
     allScores.forEach(score => {
-      if (!scoresMap[score.studentId]) scoresMap[score.studentId] = [];
-      scoresMap[score.studentId].push(score);
+      const key = `${score.studentId}|${score.batch}`;
+      if (!scoresMap[key]) scoresMap[key] = [];
+      scoresMap[key].push(score);
     });
 
     for (let i = 0; i < allStudentsData.length; i++) {
       const student = allStudentsData[i];
       const studentId = student.studentId;
+      const studentBatchId = student.batch ? student.batch._id.toString() : "";
+      const key = `${studentId}|${studentBatchId}`;
 
-      const recentFees = feesMap[studentId] || [];
-      const recentScores = scoresMap[studentId] || [];
+      const recentFees = feesMap[key] || [];
+      const recentScores = scoresMap[key] || [];
 
       let presentDays = 0;
       let absentDays = 0;
       let totalDays = 0;
 
       allAttendanceRecords.forEach((dayRecord) => {
+        if (dayRecord.batch.toString() !== studentBatchId) return;
         const record = dayRecord.records.find((r) => r.studentId === studentId);
         if (record) {
           totalDays++;
@@ -519,6 +529,7 @@ exports.generateBulkStudentReports = async (req, res) => {
 
       const student = await User.findById(id).populate('batch').lean();
       if (!student) return renderError(req, res, 404, "Student not found");
+      if (!student.batch) return renderError(req, res, 400, "This student has no batch assigned.");
 
       const studentId = student.studentId;
 
@@ -586,6 +597,7 @@ exports.generateBulkStudentReports = async (req, res) => {
       if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return renderError(req, res, 404, "Student not found");
       const student = await User.findById(req.params.id).populate('batch').lean();
       if (!student) return renderError(req, res, 404, "Student not found");
+      if (!student.batch) return renderError(req, res, 400, "This student has no batch assigned.");
 
       const studentId = student.studentId;
 

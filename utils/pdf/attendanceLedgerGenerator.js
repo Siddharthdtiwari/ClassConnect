@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
+const { getBatchOrderValue } = require('../sortHelpers');
 
 const STATUS_COLORS = {
   P: { bg: '#d1fae5', text: '#065f46' },
@@ -9,15 +10,6 @@ const STATUS_COLORS = {
 
 const MIN_DATE_COL_W = 15;
 const MAX_DATE_COL_W = 26;
-
-const getBatchOrderValue = (name) => {
-  if (!name) return 999;
-  const lowerName = name.toLowerCase();
-  if (lowerName.includes('pre') || lowerName.includes('kg')) return 0;
-  const match = lowerName.match(/^(\d+)/);
-  if (match) return parseInt(match[1]);
-  return 100;
-};
 
 function formatDateHeader(dateKey) {
   const d = new Date(dateKey);

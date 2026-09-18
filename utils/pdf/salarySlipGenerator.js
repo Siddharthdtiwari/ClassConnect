@@ -1,15 +1,8 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
 
-async function buildSalarySlipBuffer(data) {
-  return new Promise(async (resolve, reject) => {
+async function drawSalarySlip(doc, data) {
     const { teacher, month, year, amount, academicYear, transactionId } = data;
-    const doc = new PDFDocument({ size: 'A5', margin: 0, bufferPages: true });
-    const buffers = [];
-    doc.on('data', chunk => buffers.push(chunk));
-    doc.on('end', () => resolve(Buffer.concat(buffers)));
-    doc.on('error', reject);
-
     const W = doc.page.width;   // 419.53
     const H = doc.page.height;  // 595.28
     const M = 30;
@@ -157,8 +150,19 @@ async function buildSalarySlipBuffer(data) {
 
     // ─── Bottom accent bar ───
     doc.rect(0, H - 6, W, 6).fill('#4b2d84');
+}
 
-    doc.end();
+async function buildSalarySlipBuffer(data) {
+  const doc = new PDFDocument({ size: 'A5', margin: 0, bufferPages: true });
+  const buffers = [];
+  doc.on('data', chunk => buffers.push(chunk));
+
+  return new Promise((resolve, reject) => {
+    doc.on('end', () => resolve(Buffer.concat(buffers)));
+    doc.on('error', reject);
+    drawSalarySlip(doc, data)
+      .then(() => doc.end())
+      .catch(reject);
   });
 }
 

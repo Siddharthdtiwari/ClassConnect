@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
+const { getBatchOrderValue } = require('../sortHelpers');
 
 async function drawFeeDefaultersReport(doc, data) {
   const { defaulters, monthData, effectiveMonths, selectedYearStr, reportTitle } = data;
@@ -124,14 +125,6 @@ async function drawFeeDefaultersReport(doc, data) {
       byClass[d.standard].push(d);
     });
 
-    const getBatchOrderValue = (name) => {
-      if (!name) return 999;
-      const lowerName = name.toLowerCase();
-      if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-      const match = lowerName.match(/^(\d+)/);
-      if (match) return parseInt(match[1]);
-      return 100;
-    };
     const sortedClasses = Object.keys(byClass).sort((a, b) => getBatchOrderValue(a) - getBatchOrderValue(b));
 
     for (const cls of sortedClasses) {

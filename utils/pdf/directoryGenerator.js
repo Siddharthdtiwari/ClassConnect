@@ -1,5 +1,6 @@
 const PDFDocument = require('pdfkit');
 const axios = require('axios');
+const { getBatchOrderValue } = require('../sortHelpers');
 
 async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
   const W = doc.page.width;
@@ -114,14 +115,6 @@ async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
     byBatch[batchName].push(s);
   });
 
-  const getBatchOrderValue = (name) => {
-    if (!name) return 999;
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-    const match = lowerName.match(/^(\d+)/);
-    if (match) return parseInt(match[1]);
-    return 100;
-  };
   const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
 
   const cols = ["Photo", "Student ID", "Name", "Mobile", "Email"];
@@ -283,14 +276,6 @@ async function drawFeeCollectionSheet(doc, data) {
     byBatch[batchName].push(s);
   });
 
-  const getBatchOrderValue = (name) => {
-    if (!name) return 999;
-    const lowerName = name.toLowerCase();
-    if (lowerName.includes("pre") || lowerName.includes("kg")) return 0;
-    const match = lowerName.match(/^(\d+)/);
-    if (match) return parseInt(match[1]);
-    return 100;
-  };
   const sortedBatches = Object.keys(byBatch).sort((a,b) => getBatchOrderValue(a) - getBatchOrderValue(b));
 
 
@@ -506,7 +491,7 @@ async function drawFeeCollectionSheet(doc, data) {
         const formattedStudentName = formatNameFit(s.studentName, widths[2] - 10);
         doc.text(formattedStudentName, tableM + widths[0] + widths[1] + 5, textY, { width: widths[2] - 10, height: 12, ellipsis: true });
 
-        const fee = feeByStudent[s.studentId];
+        const fee = feeByStudent[`${s.studentId}|${s.batch ? s.batch._id : s.batch}`];
         if (fee) {
           doc.fillColor("#4b2d84").font("Times-Bold").fontSize(textFontSize);
           

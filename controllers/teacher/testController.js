@@ -141,6 +141,10 @@ exports.renderManageScore = async (req, res) => {
 
 exports.apiGetTests = async (req, res) => {
   try {
+    const allowedBatchIds = (req.viewingBatches || []).map(String);
+    if (!allowedBatchIds.includes(req.params.batchId)) {
+      return res.status(403).json({ error: "Not authorized for this batch" });
+    }
     const tests = await Test.find({ batch: req.params.batchId }).sort({ testDate: -1 });
     res.json(tests);
   } catch (err) {
@@ -152,6 +156,10 @@ exports.apiGetTests = async (req, res) => {
 exports.apiGetScores = async (req, res) => {
   try {
     const { batchId, testId } = req.params;
+    const allowedBatchIds = (req.viewingBatches || []).map(String);
+    if (!allowedBatchIds.includes(batchId)) {
+      return res.status(403).json({ error: "Not authorized for this batch" });
+    }
     const test = await Test.findById(testId).lean();
     if (!test) return res.status(404).json({ error: "Test not found" });
 

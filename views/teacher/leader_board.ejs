@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en" data-theme="light">
-<%- include('../partials/background') %>
 <head>
+  <%- include('../partials/background') %>
   <link rel="icon" href="/favicon.ico" type="image/x-icon">
   <link rel="apple-touch-icon" href="/images/logo.png">
   <meta charset="UTF-8" />
@@ -22,56 +22,6 @@
       text-transform: uppercase;
       color: var(--fdd);
       margin-top: 8px;
-    }
-
-    .rank-card {
-      transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-      background: var(--bgc);
-      border: 1px solid transparent;
-      border-top-width: 6px;
-    }
-
-    .rank-card:hover {
-      transform: translateY(-8px) scale(1.02);
-      box-shadow: 0 20px 30px var(--pg);
-      border-color: var(--p);
-    }
-
-    .rank-1 { border-top-color: #f59e0b; }
-    .rank-2 { border-top-color: #a8a29e; }
-    .rank-3 { border-top-color: #a16207; }
-
-    .student-row {
-      transition: all 0.3s ease;
-      border-bottom: 1px solid var(--b);
-    }
-
-    .student-row:hover {
-      background-color: var(--bgch);
-      transform: translateX(4px);
-      border-color: transparent;
-    }
-    
-    .student-row:last-child {
-      border-bottom: none;
-    }
-
-    .highlight-user {
-      background-color: var(--p);
-      background-image: linear-gradient(90deg, rgba(255,255,255,0.1), transparent);
-      border-left: 4px solid var(--lt);
-    }
-
-    .tab-btn {
-      transition: all 0.2s ease;
-    }
-    .tab-btn.active {
-      background-color: var(--p);
-      color: white;
-      box-shadow: 0 4px 10px var(--pg);
-    }
-    .tab-btn:not(.active) {
-      color: var(--fd);
     }
 
     .rank-card {

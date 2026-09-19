@@ -34,7 +34,7 @@ const isValidEmail = (email) => {
   const trimmed = email.trim().toLowerCase();
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   if (!emailRegex.test(trimmed)) return false;
-  if (trimmed.includes("dummy") || trimmed.includes("test@") || trimmed.endsWith("@example.com")) return false;
+  if (trimmed.includes("dummy") || trimmed.startsWith("test@") || trimmed.endsWith("@example.com")) return false;
   return true;
 };
 

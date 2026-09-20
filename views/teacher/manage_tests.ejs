@@ -271,7 +271,18 @@
                       </td>
                       <td class="text-center">
                         <div class="flex items-center justify-center gap-3">
-                          <button type="button" onclick="openEditModal('<%= test._id %>', `<%= test.testName %>`, `<%= test.subject %>`, `<%= test.topic %>`, `<%= test.totalMarks %>`, `<%= test.questionPaper || '' %>`, `<%= test.testDate ? new Date(test.testDate).toISOString().split('T')[0] : '' %>`, `<%= cls %>`, `<%= test.batch ? test.batch._id : '' %>`, `<%= signId(test._id) %>`)" class="text-theme-pt hover:text-theme-p text-xs font-bold uppercase tracking-wider font-mono">Edit</button>
+                          <button type="button" onclick="openEditModal(this)"
+                            data-id="<%= test._id %>"
+                            data-name="<%= test.testName %>"
+                            data-subject="<%= test.subject %>"
+                            data-topic="<%= test.topic %>"
+                            data-marks="<%= test.totalMarks %>"
+                            data-qp-url="<%= test.questionPaper || '' %>"
+                            data-test-date="<%= test.testDate ? new Date(test.testDate).toISOString().split('T')[0] : '' %>"
+                            data-batch-name="<%= cls %>"
+                            data-batch-id="<%= test.batch ? test.batch._id : '' %>"
+                            data-signature="<%= signId(test._id) %>"
+                            class="text-theme-pt hover:text-theme-p text-xs font-bold uppercase tracking-wider font-mono">Edit</button>
                           <span class="text-theme-bd">|</span>
                           <form action="/teacher/delete_test/<%= test._id %>" method="POST" class="inline m-0" onsubmit="return confirm('WARNING: Are you sure you want to delete this test? This cannot be undone.');">
                             <input type="hidden" name="_csrf" value="<%= typeof csrfToken !== 'undefined' ? csrfToken : '' %>">
@@ -490,7 +501,8 @@
       document.getElementById('add-test-modal').classList.add('open');
     }
 
-    function openEditModal(id, name, subject, topic, marks, qpUrl, testDate, batchName, batchId, signature) {
+    function openEditModal(btn) {
+      const { id, name, subject, topic, marks, qpUrl, testDate, batchName, batchId, signature } = btn.dataset;
       document.getElementById('edit-test-name').value = name;
       
       const batchSelect = document.getElementById('edit-batchId');

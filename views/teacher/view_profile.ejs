@@ -310,7 +310,12 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
       const dataWrapper = document.getElementById("chart-data-wrapper");
-      const chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+      let chartDataObject = { labels: [], data: [] };
+      try {
+        chartDataObject = JSON.parse(dataWrapper.dataset.chartData);
+      } catch (err) {
+        console.error("Failed to parse chart data:", err);
+      }
 
       const scoreLabels = chartDataObject.labels;
       const scoreData = chartDataObject.data;

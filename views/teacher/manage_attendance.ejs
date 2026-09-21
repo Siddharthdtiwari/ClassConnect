@@ -414,8 +414,15 @@
       let currentDate = new Date();
       let selectedDate = new Date();
 
-      const allStudents = JSON.parse(document.getElementById("students-data").textContent);
-      const attendanceFromServer = JSON.parse(document.getElementById("attendance-data").textContent);
+      let allStudents, attendanceFromServer;
+      try {
+        allStudents = JSON.parse(document.getElementById("students-data").textContent);
+        attendanceFromServer = JSON.parse(document.getElementById("attendance-data").textContent);
+      } catch (err) {
+        console.error("Failed to parse attendance page data:", err);
+        alert("This page failed to load correctly. Please refresh.");
+        return;
+      }
 
       const savedAttendance = attendanceFromServer || {};
 

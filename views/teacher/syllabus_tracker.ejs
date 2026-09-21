@@ -217,11 +217,18 @@
               const container = document.getElementById('subjects-container');
               const selectedBatchName = container.dataset.batchName;
               const selectedBatchId = container.dataset.batchId;
-              const batchesList = JSON.parse(container.dataset.batches || "[]");
+              let batchesList, syllabusMap, studentProgressMap;
+              try {
+                batchesList = JSON.parse(container.dataset.batches || "[]");
+                syllabusMap = JSON.parse(container.dataset.syllabus || "{}");
+                studentProgressMap = JSON.parse(container.dataset.studentProgress || "{}");
+              } catch (err) {
+                console.error("Failed to parse syllabus tracker data:", err);
+                batchesList = [];
+                syllabusMap = {};
+                studentProgressMap = {};
+              }
 
-              const syllabusMap = JSON.parse(container.dataset.syllabus || "{}");
-              const studentProgressMap = JSON.parse(container.dataset.studentProgress || "{}");
-              
               let batchesToRender = selectedBatchId === 'all' 
                 ? batchesList 
                 : [{ id: selectedBatchId, name: selectedBatchName }];

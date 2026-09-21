@@ -422,7 +422,12 @@
 
     // Only months that actually have a recorded attendance date should be
     // selectable here — otherwise picking an empty month produces a blank PDF.
-    const recordedDates = JSON.parse(document.getElementById('ledger-dates-data').textContent);
+    let recordedDates = [];
+    try {
+      recordedDates = JSON.parse(document.getElementById('ledger-dates-data').textContent);
+    } catch (err) {
+      console.error("Failed to parse recorded attendance dates:", err);
+    }
     const availableByYear = {}; // { year: Set(monthIndex 1-12) }
     recordedDates.forEach((dateStr) => {
       const [y, m] = dateStr.split('-').map(Number);

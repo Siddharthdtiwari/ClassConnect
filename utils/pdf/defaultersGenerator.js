@@ -50,7 +50,7 @@ async function drawFeeDefaultersReport(doc, data) {
   const headerUrl = process.env.CLOUDINARY_HEADER_URL;
   if (headerUrl) {
     try {
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       const imgBuffer = Buffer.from(response.data, "binary");
       doc.image(imgBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
     } catch (_) {
@@ -196,7 +196,7 @@ async function drawFeeDefaultersReport(doc, data) {
         }
 
         doc.fillColor("#111827").font("Times-Bold").fontSize(9)
-          .text(r.studentName, curX + 22, cursorY + 8, { width: batchWidths[1] - 22 });
+          .text(r.studentName, curX + 22, cursorY + 8, { width: batchWidths[1] - 22, height: 12, ellipsis: true });
         curX += batchWidths[1];
 
         doc.fillColor("#4b5563").font("Times-Roman").fontSize(9)
@@ -204,7 +204,7 @@ async function drawFeeDefaultersReport(doc, data) {
         curX += batchWidths[2];
 
         doc.fillColor("#d97706").font("Times-Bold").fontSize(8)
-          .text(r.unpaidMonths.join(', '), curX, cursorY + 8, { width: batchWidths[3] });
+          .text(r.unpaidMonths.join(', '), curX, cursorY + 8, { width: batchWidths[3], height: 12, ellipsis: true });
         curX += batchWidths[3];
 
         doc.fillColor("#dc2626").font("Times-Bold").fontSize(9)
@@ -296,7 +296,7 @@ async function drawFeeDefaultersReport(doc, data) {
         }
 
         doc.fillColor("#111827").font("Times-Bold").fontSize(9)
-          .text(r.studentName, curX + 22, cursorY + 8, { width: monthWidths[2] - 22 });
+          .text(r.studentName, curX + 22, cursorY + 8, { width: monthWidths[2] - 22, height: 12, ellipsis: true });
         curX += monthWidths[2];
 
         doc.fillColor("#dc2626").font("Times-Bold").fontSize(9)
@@ -378,7 +378,7 @@ async function drawAttendanceDefaultersReport(doc, data) {
   const headerUrl = process.env.CLOUDINARY_HEADER_URL;
   if (headerUrl) {
     try {
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       const imgBuffer = Buffer.from(response.data, "binary");
       doc.image(imgBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
     } catch (_) {
@@ -459,7 +459,7 @@ async function drawAttendanceDefaultersReport(doc, data) {
 
     // Name
     doc.fillColor("#111827").font("Times-Bold").fontSize(9)
-      .text(r.studentName, curX, cursorY + 8, { width: widths[1] });
+      .text(r.studentName, curX, cursorY + 8, { width: widths[1], height: 12, ellipsis: true });
     curX += widths[1];
 
     // Batch

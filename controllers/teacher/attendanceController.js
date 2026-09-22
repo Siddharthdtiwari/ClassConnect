@@ -420,11 +420,14 @@ exports.renderBulkAttendance = async (req, res) => {
       attendanceMap[date] = {};
     });
 
+    // studentId alone is ambiguous across batches — key by (studentId, batch), matching
+    // the data-batch attribute bulk_attendance.ejs already carries on each cell.
     attendanceRecords.forEach(record => {
       const dateStr = record.date.toISOString().split('T')[0];
+      const batchId = record.batch.toString();
       if (attendanceMap[dateStr]) {
         (record.records || []).forEach(r => {
-          attendanceMap[dateStr][r.studentId] = r.status;
+          attendanceMap[dateStr][`${r.studentId}|${batchId}`] = r.status;
         });
       }
     });

@@ -240,7 +240,12 @@
                           <img src="<%= student.profilePhoto || 'https://placehold.co/96x96/ffffff/5d3a9b?text=' + encodeURIComponent(student.studentName.charAt(0)) %>" alt="Profile" class="w-10 h-10 rounded-full border border-theme-bd object-cover shadow-sm flex-shrink-0" />
                           <div>
                             <div class="font-bold text-theme-fg search-name leading-snug"><%= student.studentName %></div>
-                            <div class="text-[9px] text-theme-pt font-mono font-bold tracking-wider search-id mt-1.5 inline-block bg-theme-pt/10 px-2 py-0.5 rounded border border-theme-pt/20 leading-none"><%= student.studentId %></div>
+                            <div class="flex items-center gap-1.5 mt-1.5">
+                              <span class="text-[9px] text-theme-pt font-mono font-bold tracking-wider search-id inline-block bg-theme-pt/10 px-2 py-0.5 rounded border border-theme-pt/20 leading-none"><%= student.studentId %></span>
+                              <% if (student.session && student.session !== 'NA') { %>
+                              <span class="text-[9px] font-mono font-bold tracking-wider inline-block px-2 py-0.5 rounded leading-none <%= student.session === 'Morning' ? 'bg-amber-500/10 text-amber-600 border border-amber-500/20' : 'bg-indigo-500/10 text-indigo-600 border border-indigo-500/20' %>"><%= student.session %></span>
+                              <% } %>
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -346,6 +351,15 @@
                     <label for="studentId" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Student ID</label>
                     <input type="text" id="studentId" name="studentId" placeholder="e.g., THEC001" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all text-sm font-medium" required />
                   </div>
+                </div>
+
+                <div>
+                  <label for="session" class="block text-[0.62rem] font-bold text-theme-fdd mb-1.5 font-mono uppercase tracking-widest">Session</label>
+                  <select id="session" name="session" class="w-full px-4 py-2.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p focus:ring-2 focus:ring-theme-pm/20 transition-all font-medium text-sm">
+                    <option value="NA" selected>N/A (Single Session)</option>
+                    <option value="Morning">Morning</option>
+                    <option value="Evening">Evening</option>
+                  </select>
                 </div>
 
                 <div>

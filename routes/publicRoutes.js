@@ -14,6 +14,14 @@ const { generateFeeSummaryPDF } = require('../utils/pdf/feeSummaryGenerator');
 const { generateStudentReportPDF } = require('../utils/pdf/reportCardGenerator');
 const { verifySignature } = require('../utils/hashUtils');
 const { renderError } = require("../utils/renderError");
+const { ensureDBConnection } = require("../middlewares/auth");
+
+// Every other route file in this app guards against a cold/dropped MongoDB
+// connection on Vercel's serverless deployment -- this one, being the only
+// unauthenticated/external-facing set of routes (WhatsApp/email links clicked
+// by parents), was missing it, which produced a real "works once, 500s on
+// retry" bug whenever a request landed on a cold container.
+router.use(ensureDBConnection);
 
 // Public route to view fee receipt PDF
 router.get('/public/receipt/:feeId', async (req, res) => {

@@ -17,6 +17,61 @@ const { NA_STATUS } = require("../../utils/feeHelpers");
 const Syllabus = require("../../models/Syllabus");
 const StudentSyllabusProgress = require("../../models/StudentSyllabusProgress");
 
+// A student who joins after the academic year has already started shouldn't show
+// as owing fees for months before they enrolled, or be marked absent for tests
+// that happened before they existed -- this backfills "N/A" fee records and
+// null-score (shown as Absent) test records for every month/test strictly before
+// their admission date. Shared by both the single Add Student form and Bulk Add.
+async function backfillMidYearStudent({ studentId, studentName, userRef, batch, admissionDate }) {
+  if (!batch || !admissionDate) return;
+
+  const Test = require("../../models/Test");
+  const pastTests = await Test.find({ batch: batch._id, testDate: { $lt: admissionDate } }).lean();
+  if (pastTests.length > 0) {
+    const scoreOps = pastTests.map(test => ({
+      insertOne: {
+        document: {
+          studentId,
+          studentName,
+          userRef,
+          batch: batch._id,
+          testId: test._id,
+          testName: test.testName,
+          score: null, // Platform marks absent as null
+          percentage: 0
+        }
+      }
+    }));
+    await Score.bulkWrite(scoreOps);
+  }
+
+  const { ACADEMIC_MONTHS } = require("../../utils/constants");
+  const { feeYearForMonth } = require("../../utils/feeHelpers");
+
+  const admissionMonthName = admissionDate.toLocaleString('default', { month: 'long' });
+  const admissionMonthIndex = ACADEMIC_MONTHS.indexOf(admissionMonthName);
+
+  if (admissionMonthIndex > 0) {
+    const pastMonths = ACADEMIC_MONTHS.slice(0, admissionMonthIndex);
+    const feeOps = pastMonths.map(month => ({
+      insertOne: {
+        document: {
+          studentId,
+          studentName,
+          userRef,
+          batch: batch._id,
+          month,
+          year: feeYearForMonth(month, batch.academicYear),
+          amount: 0,
+          status: "NA",
+          naReason: "Joined mid-year"
+        }
+      }
+    }));
+    await Fee.bulkWrite(feeOps);
+  }
+}
+
 exports.renderManageStudents = async (req, res) => {
   try {
     const batches = await Batch.find({ academicYear: req.viewingYear }).lean();
@@ -50,6 +105,7 @@ exports.processAddStudent = async (req, res) => {
       mobileNo,
       monthlyFee,
       admissionDate,
+      session,
     } = req.body;
     const hashedPassword = await bcrypt.hash(password, 12);
 
@@ -69,6 +125,7 @@ exports.processAddStudent = async (req, res) => {
       password: hashedPassword,
       mobileNo,
       monthlyFee,
+      session: session || "NA",
       profilePhoto: profilePhotoUrl,
       admissionDate: parsedAdmissionDate,
     });
@@ -77,53 +134,13 @@ exports.processAddStudent = async (req, res) => {
     // Automation Logic
     const batch = await Batch.findById(batchId);
     if (batch) {
-      // 1. Backfill Tests
-      const Test = require("../../models/Test");
-      const pastTests = await Test.find({ batch: batch._id, testDate: { $lt: parsedAdmissionDate } });
-      if (pastTests.length > 0) {
-        const scoreOps = pastTests.map(test => ({
-          insertOne: {
-            document: {
-              studentId,
-              studentName,
-              userRef: newStudent._id,
-              batch: batch._id,
-              testId: test._id,
-              testName: test.testName,
-              score: null, // Platform marks absent as null
-              percentage: 0
-            }
-          }
-        }));
-        await Score.bulkWrite(scoreOps);
-      }
-
-      // 2. Backfill Fees
-      const { ACADEMIC_MONTHS } = require("../../utils/constants");
-      const { feeYearForMonth } = require("../../utils/feeHelpers");
-      
-      const admissionMonthName = parsedAdmissionDate.toLocaleString('default', { month: 'long' });
-      const admissionMonthIndex = ACADEMIC_MONTHS.indexOf(admissionMonthName);
-      
-      if (admissionMonthIndex > 0) { 
-        const pastMonths = ACADEMIC_MONTHS.slice(0, admissionMonthIndex);
-        const feeOps = pastMonths.map(month => ({
-          insertOne: {
-            document: {
-              studentId,
-              studentName,
-              userRef: newStudent._id,
-              batch: batch._id,
-              month,
-              year: feeYearForMonth(month, batch.academicYear),
-              amount: 0,
-              status: "NA",
-              naReason: "Joined mid-year"
-            }
-          }
-        }));
-        await Fee.bulkWrite(feeOps);
-      }
+      await backfillMidYearStudent({
+        studentId,
+        studentName,
+        userRef: newStudent._id,
+        batch,
+        admissionDate: parsedAdmissionDate,
+      });
     }
 
     await logAudit(req, {
@@ -156,8 +173,9 @@ exports.renderEditProfile = async (req, res) => {
 
 exports.processEditProfile = async (req, res) => {
   try {
-    const { studentName, studentId, batchId, mobileNo, monthlyFee, email, admissionDate } = req.body;
+    const { studentName, studentId, batchId, mobileNo, monthlyFee, email, admissionDate, session } = req.body;
     const updateData = { studentName, batch: batchId, mobileNo, monthlyFee, email };
+    if (session) updateData.session = session;
     
     if (admissionDate) {
       updateData.admissionDate = new Date(admissionDate);
@@ -342,6 +360,7 @@ exports.processBulkSaveStudents = async (req, res) => {
     }
 
     const bulkOps = [];
+    const opMeta = []; // aligned with bulkOps, used to backfill mid-year students after insert
     const errors = [];
     let processed = 0;
 
@@ -368,6 +387,23 @@ exports.processBulkSaveStudents = async (req, res) => {
         email: row.email || "",
       };
 
+      if (["Morning", "Evening", "NA"].includes(row.session)) {
+        updateDoc.session = row.session;
+      }
+
+      if (row.isActive !== undefined && row.isActive !== "") {
+        updateDoc.isActive = row.isActive === true || row.isActive === "true";
+      }
+
+      let parsedAdmissionDate = null;
+      if (row.admissionDate) {
+        const d = new Date(row.admissionDate);
+        if (!isNaN(d.getTime())) {
+          parsedAdmissionDate = d;
+          updateDoc.admissionDate = d;
+        }
+      }
+
       if (row.password && String(row.password).trim() !== "") {
         updateDoc.password = await bcrypt.hash(String(row.password).trim(), 12);
       } else {
@@ -385,17 +421,47 @@ exports.processBulkSaveStudents = async (req, res) => {
           upsert: true
         }
       });
+      opMeta.push(parsedAdmissionDate ? {
+        studentId: row.studentId,
+        studentName: row.studentName,
+        batchId: row.batchId,
+        admissionDate: parsedAdmissionDate,
+      } : null);
       processed++;
     }));
 
     if (bulkOps.length > 0) {
-      await User.bulkWrite(bulkOps);
+      const bulkResult = await User.bulkWrite(bulkOps);
       await logAudit(req, {
         action: "BULK_UPDATE",
         entityType: "User",
         details: `Bulk saved ${processed} student records.`,
         academicYear: req.viewingYear
       });
+
+      // Only newly-created (upserted) rows get the mid-year backfill — editing an
+      // existing student's admission date shouldn't re-run the backfill and create
+      // duplicate NA fee / absent score records for them.
+      const upsertedIds = bulkResult.upsertedIds || {};
+      const backfillIndices = Object.keys(upsertedIds).filter(idx => opMeta[idx]);
+      if (backfillIndices.length > 0) {
+        const batchIds = [...new Set(backfillIndices.map(idx => opMeta[idx].batchId))];
+        const batches = await Batch.find({ _id: { $in: batchIds } }).lean();
+        const batchMap = new Map(batches.map(b => [b._id.toString(), b]));
+
+        await Promise.all(backfillIndices.map(idx => {
+          const meta = opMeta[idx];
+          const batch = batchMap.get(String(meta.batchId));
+          if (!batch) return null;
+          return backfillMidYearStudent({
+            studentId: meta.studentId,
+            studentName: meta.studentName,
+            userRef: upsertedIds[idx],
+            batch,
+            admissionDate: meta.admissionDate,
+          });
+        }));
+      }
     }
 
     res.json({

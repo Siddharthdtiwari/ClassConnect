@@ -47,7 +47,7 @@ async function drawFeeSummaryReport(doc, student, feesByMonth, totalDue) {
   const headerUrl = process.env.CLOUDINARY_HEADER_URL;
   if (headerUrl) {
     try {
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       const imgBuffer = Buffer.from(response.data, "binary");
       doc.image(imgBuffer, M, 18, { fit: [W - 2 * M, 70], align: "center" });
     } catch (_) {

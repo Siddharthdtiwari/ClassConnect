@@ -12,8 +12,11 @@ const MIN_DATE_COL_W = 15;
 const MAX_DATE_COL_W = 26;
 
 function formatDateHeader(dateKey) {
-  const d = new Date(dateKey);
-  return `${d.getDate()}`;
+  // dateKey is a "YYYY-MM-DD" UTC date string -- parsing it through `new Date()`
+  // and reading .getDate() returns the day in the server's LOCAL timezone, which
+  // can mislabel the column if the server ever runs somewhere behind UTC.
+  // Reading the day straight out of the string sidesteps that entirely.
+  return String(parseInt(dateKey.split('-')[2], 10));
 }
 
 async function drawAttendanceLedger(doc, data) {

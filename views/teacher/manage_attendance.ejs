@@ -352,6 +352,22 @@
                   </div>
                 </div>
 
+                <!-- Batch / Session Filters -->
+                <div class="flex flex-wrap items-center gap-3 mb-5">
+                  <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono">Batch:</label>
+                    <select id="filter-batch" class="px-3 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p outline-none text-xs font-semibold font-mono cursor-pointer">
+                      <option value="all">All Batches</option>
+                    </select>
+                  </div>
+                  <div class="flex items-center gap-2">
+                    <label class="text-[10px] font-bold text-theme-fdd uppercase tracking-widest font-mono">Session:</label>
+                    <select id="filter-session" class="px-3 py-1.5 bg-theme-bgc text-theme-fg border border-theme-b rounded-lg focus:border-theme-p outline-none text-xs font-semibold font-mono cursor-pointer">
+                      <option value="all">All Sessions</option>
+                    </select>
+                  </div>
+                </div>
+
                 <!-- Table Wrapper -->
                 <div class="flex-1 overflow-x-auto rounded-xl border border-theme-b bg-theme-bgc mb-6">
                   <table class="data-table">
@@ -523,6 +539,8 @@
           }
           const row = document.createElement("tr");
           row.dataset.studentId = student.studentId;
+          row.dataset.batchName = (student.batch && student.batch.name) || "";
+          row.dataset.session = student.session || "NA";
           row.className = "hover:bg-theme-bgch/40 border-b border-theme-bd transition-all";
           if (student.isActive === false) {
             row.style.display = 'none';
@@ -550,7 +568,59 @@
             `;
           studentAttendanceList.appendChild(row);
         });
+
+        applyFilters();
       }
+
+      // Batch / Session filters
+      const filterBatchSelect = document.getElementById("filter-batch");
+      const filterSessionSelect = document.getElementById("filter-session");
+
+      function populateFilterOptions() {
+        const batchNames = Array.from(new Set(allStudents.map(s => (s.batch && s.batch.name) || "").filter(Boolean))).sort();
+        batchNames.forEach(name => {
+          const opt = document.createElement("option");
+          opt.value = name;
+          opt.textContent = name;
+          filterBatchSelect.appendChild(opt);
+        });
+
+        const sessions = Array.from(new Set(allStudents.map(s => s.session || "NA")));
+        const hasRealSessions = sessions.some(s => s !== "NA");
+        if (hasRealSessions) {
+          ["Morning", "Evening", "NA"].forEach(s => {
+            if (sessions.includes(s)) {
+              const opt = document.createElement("option");
+              opt.value = s;
+              opt.textContent = s === "NA" ? "N/A" : s;
+              filterSessionSelect.appendChild(opt);
+            }
+          });
+        } else {
+          // Nobody uses sessions in this cohort -- no point showing the filter.
+          filterSessionSelect.closest(".flex.items-center.gap-2").style.display = "none";
+        }
+      }
+
+      function applyFilters() {
+        const batchFilter = filterBatchSelect.value;
+        const sessionFilter = filterSessionSelect.value;
+
+        studentAttendanceList.querySelectorAll("tr").forEach(row => {
+          const student = allStudents.find(s => s.studentId === row.dataset.studentId);
+          if (student && student.isActive === false) {
+            row.style.display = "none";
+            return;
+          }
+          const batchMatch = batchFilter === "all" || row.dataset.batchName === batchFilter;
+          const sessionMatch = sessionFilter === "all" || row.dataset.session === sessionFilter;
+          row.style.display = (batchMatch && sessionMatch) ? "" : "none";
+        });
+      }
+
+      filterBatchSelect.addEventListener("change", applyFilters);
+      filterSessionSelect.addEventListener("change", applyFilters);
+      populateFilterOptions();
 
       prevMonthBtn.addEventListener("click", () => {
         currentDate.setMonth(currentDate.getMonth() - 1);
@@ -584,8 +654,11 @@
       });
 
       function markAll(status) {
+        // Only the currently filtered-into-view rows -- "All P" while filtered to
+        // Morning session shouldn't silently also mark the hidden Evening students.
         const rows = studentAttendanceList.querySelectorAll("tr");
         rows.forEach((row) => {
+          if (row.style.display === "none") return;
           row.querySelectorAll(".attendance-status-btn").forEach((btn) => btn.classList.remove("active"));
           const targetBtn = row.querySelector(`.attendance-status-btn[data-status="${status}"]`);
           if (targetBtn) targetBtn.classList.add("active");

@@ -17,6 +17,9 @@ const userSchema = new mongoose.Schema(
       select: false,
     },
     mobileNo: { type: String, required: true, trim: true },
+    // A batch (e.g. "6th") can be run as two separate sessions in the same
+    // standard -- this subdivides it without needing a whole extra Batch.
+    session: { type: String, enum: ["Morning", "Evening", "NA"], default: "NA" },
     profilePhoto: { type: String },
     points: { type: Number, default: 0, min: 0 },
     monthlyFee: { type: Number, default: 0, min: 0 },

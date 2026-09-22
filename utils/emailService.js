@@ -5,6 +5,7 @@ const { buildReceiptPDFBuffer } = require("./pdfUtils");
 const EmailLog = require("../models/EmailLog");
 const User = require("../models/User");
 const { NA_STATUS } = require("./feeHelpers");
+const { signId } = require("./hashUtils");
 
 const LOGO_URL = "https://res.cloudinary.com/dvegngui0/image/upload/v1788105540/branding/itner0bzhrekcbz7tqsj.png";
 
@@ -87,7 +88,6 @@ const sendEmail = async (to, subject, htmlContent, attachments = [], logOptions 
       emailType,
       status,
       errorMessage,
-      sentAt: new Date(),
     };
 
     if (studentRef) logData.studentRef = studentRef;
@@ -113,7 +113,7 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, lo
         <p style="font-size: 16px; line-height: 1.5;">Thank you for your payment. We have successfully recorded your fee payment for <strong>${month} ${year}</strong>.</p>
         
         <div style="background-color: #f3e8ff; border-left: 4px solid #5d3a9b; padding: 15px; margin: 20px 0; border-radius: 6px;">
-          <p style="margin: 0; font-size: 18px;">Amount Paid: <strong>?${amount}</strong></p>
+          <p style="margin: 0; font-size: 18px;">Amount Paid: <strong>&#8377;${amount}</strong></p>
         </div>
         
         <p style="font-size: 16px;">Please find your official PDF receipt attached to this email.</p>
@@ -124,9 +124,17 @@ const sendFeeReceipt = async (studentEmail, studentName, month, year, amount, lo
 
   try {
     let pdfBuffer = null;
-    let student = await User.findOne({ email: studentEmail }).populate('batch').lean();
+    // Every caller already has the real saved Fee document and student record --
+    // using those instead of re-deriving them here matters because this used to
+    // fabricate a brand-new receiptNo/datePaid and hardcode method: "Cash" even
+    // for UPI/Razorpay payments, so the attached PDF's receipt number never
+    // matched the real one stored on the Fee document or shown via the public
+    // receipt link, and the payment method shown was simply wrong for anything
+    // that wasn't cash. Only fall back to deriving a student/fee here for a
+    // caller that doesn't pass them (defensive, not expected in practice).
+    let student = logMeta.student || await User.findOne({ email: studentEmail }).populate('batch').lean();
     if (student) {
-      const fee = {
+      const fee = logMeta.fee || {
         month,
         year,
         amount,
@@ -319,12 +327,12 @@ const sendFeeReminder = async (studentEmail, studentName, month, balance, id, ba
         <p style="font-size: 16px; line-height: 1.5;">This is a gentle reminder that your fees for <strong>${month}</strong> are currently pending.</p>
         
         <div style="background-color: #f3e8ff; border-left: 4px solid #5d3a9b; padding: 15px; margin: 20px 0; border-radius: 6px;">
-          <p style="margin: 0; font-size: 18px;">Total Due: <strong>?${balance}</strong></p>
+          <p style="margin: 0; font-size: 18px;">Total Due: <strong>&#8377;${balance}</strong></p>
         </div>
-        
+
         <p style="font-size: 16px;">You can view your detailed fee summary by clicking the link below:</p>
         <div style="margin: 25px 0;">
-          <a href="${baseUrl}/public/fee-summary/${id}" style="background-color: #5d3a9b; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">View Fee Summary</a>
+          <a href="${baseUrl}/public/fee-summary/${id}/${signId(id)}" style="background-color: #5d3a9b; color: #ffffff; padding: 12px 25px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 16px; display: inline-block;">View Fee Summary</a>
         </div>
         
         <p style="font-size: 16px;">Please arrange for payment at your earliest convenience.</p>

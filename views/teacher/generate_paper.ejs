@@ -642,8 +642,6 @@
         chatLoader.classList.remove("hidden");
         chatMessages.scrollTop = chatMessages.scrollHeight;
 
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
-
         const batchName = document.getElementById("ai-batch").value;
         const testName = document.getElementById("ai-test-name").value;
         const time = document.getElementById("ai-time").value;
@@ -720,8 +718,6 @@
         loaderText.textContent = "AI is modifying document...";
         chatLoader.classList.remove("hidden");
         chatMessages.scrollTop = chatMessages.scrollHeight;
-
-        const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
 
         try {
           const res = await fetch("/api/ai/generate_paper", {

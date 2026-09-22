@@ -2,8 +2,9 @@ const crypto = require("crypto");
 
 const signId = (id) => {
   if (!id) return "";
-  const secret = process.env.SESSION_SECRET || 'secret';
-  return crypto.createHmac("sha256", secret).update(id.toString()).digest("hex");
+  // app.js exits at startup if SESSION_SECRET is unset, so it's always a real
+  // secret here -- no silent fallback to a guessable default.
+  return crypto.createHmac("sha256", process.env.SESSION_SECRET).update(id.toString()).digest("hex");
 };
 
 const verifySignature = (id, signature) => {

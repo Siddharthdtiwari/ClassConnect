@@ -51,7 +51,7 @@ async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
   const headerUrl = process.env.CLOUDINARY_HEADER_URL;
   if (headerUrl) {
     try {
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       const imgBuffer = Buffer.from(response.data, "binary");
       doc.image(imgBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
     } catch (_) {
@@ -194,7 +194,7 @@ async function drawStudentDirectoryReport(doc, students, selectedYearStr) {
 
       // Name
       doc.fillColor("#111827").font("Times-Bold").fontSize(9)
-        .text(r.studentName, curX, cursorY + 10, { width: widths[2] });
+        .text(r.studentName, curX, cursorY + 10, { width: widths[2], height: 12, ellipsis: true });
       curX += widths[2];
 
       // Mobile
@@ -343,7 +343,7 @@ async function drawFeeCollectionSheet(doc, data) {
     const headerUrl = process.env.CLOUDINARY_HEADER_URL;
     if (headerUrl) {
       const axios = require("axios");
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       headerImageBuffer = Buffer.from(response.data, "binary");
     }
   } catch(err) {}

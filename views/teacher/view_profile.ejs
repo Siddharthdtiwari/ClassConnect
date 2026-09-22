@@ -83,7 +83,7 @@
                 </h1>
               </div>
               <p class="dash-sub">
-                ID: <%= student.studentId %> &middot; Grade <%= student.batch ? student.batch.name : 'Unassigned' %>
+                ID: <%= student.studentId %> &middot; Grade <%= student.batch ? student.batch.name : 'Unassigned' %><%= (student.session && student.session !== 'NA') ? ' &middot; ' + student.session + ' Session' : '' %>
               </p>
             </div>
 

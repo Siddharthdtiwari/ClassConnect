@@ -51,7 +51,7 @@ async function drawStudentReport(doc, student, stats) {
 
   if (headerUrl) {
     try {
-      const response = await axios.get(headerUrl, { responseType: "arraybuffer" });
+      const response = await axios.get(headerUrl, { responseType: "arraybuffer", timeout: 5000 });
       const imgBuffer = Buffer.from(response.data, "binary");
       doc.image(imgBuffer, M, 20, { fit: [W - 2 * M, 80], align: 'center' });
     } catch (_) {
@@ -314,13 +314,13 @@ async function drawStudentReport(doc, student, stats) {
       const testDate = (score.testId && score.testId.testDate) ? score.testId.testDate : score.createdAt;
       doc.fillColor("#4b5563").font("Times-Roman").fontSize(8).text(new Date(testDate).toLocaleDateString("en-IN"), curX, cursorY + 8, { width: academicWidths[0] });
       curX += academicWidths[0];
-      doc.fontSize(9).text(score.testName || 'Test', curX, cursorY + 8, { width: academicWidths[1] });
+      doc.fontSize(9).text(score.testName || 'Test', curX, cursorY + 8, { width: academicWidths[1], height: 12, ellipsis: true });
       curX += academicWidths[1];
       const subjectName = (score.testId && score.testId.subject) ? score.testId.subject : 'Overall';
-      doc.text(subjectName, curX, cursorY + 8, { width: academicWidths[2] });
+      doc.text(subjectName, curX, cursorY + 8, { width: academicWidths[2], height: 12, ellipsis: true });
       curX += academicWidths[2];
       const topicName = (score.testId && score.testId.topic) ? score.testId.topic : '-';
-      doc.text(topicName, curX, cursorY + 8, { width: academicWidths[3] });
+      doc.text(topicName, curX, cursorY + 8, { width: academicWidths[3], height: 12, ellipsis: true });
       curX += academicWidths[3];
       const scoreStr = score.score != null ? score.score.toString() + '/' + (score.testId && score.testId.totalMarks ? score.testId.totalMarks : '?') : 'Absent';
       doc.text(scoreStr, curX, cursorY + 8, { width: academicWidths[4] });

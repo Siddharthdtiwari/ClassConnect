@@ -230,8 +230,9 @@
                       </div>
                     </td>
 
-                    <% daysArray.forEach(date => { 
-                       const status = (attendanceMap[date] && attendanceMap[date][student.studentId]) ? attendanceMap[date][student.studentId] : '';
+                    <% daysArray.forEach(date => {
+                       const cellKey = `${student.studentId}|${student.batch ? student.batch._id : student.batch}`;
+                       const status = (attendanceMap[date] && attendanceMap[date][cellKey]) ? attendanceMap[date][cellKey] : '';
                        
                        let statusClass = 'status-empty';
                        if(status === 'P') statusClass = 'status-P';

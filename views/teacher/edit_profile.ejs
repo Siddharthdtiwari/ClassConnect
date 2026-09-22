@@ -125,6 +125,15 @@
               </div>
 
               <div>
+                <label for="session" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Session</label>
+                <select id="session" name="session" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm">
+                  <option value="NA" <%= (!student.session || student.session === 'NA') ? 'selected' : '' %>>N/A (Single Session)</option>
+                  <option value="Morning" <%= student.session === 'Morning' ? 'selected' : '' %>>Morning</option>
+                  <option value="Evening" <%= student.session === 'Evening' ? 'selected' : '' %>>Evening</option>
+                </select>
+              </div>
+
+              <div>
                 <label for="mobile-no" class="block text-[10px] font-bold text-theme-fdd uppercase tracking-widest mb-2 font-mono">Mobile No</label>
                 <input type="tel" id="mobile-no" name="mobileNo" value="<%= student.mobileNo %>" class="w-full bg-theme-bgc text-theme-fg border border-theme-b rounded-xl focus:border-theme-p focus:outline-none py-3 px-4 font-semibold text-sm" />
               </div>

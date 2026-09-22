@@ -394,7 +394,8 @@ app.post("/contact", contactLimiter, async (req, res) => {
 
     // Send confirmation back to the person who inquired
     try {
-      await sendContactConfirmation(email, name, message);
+      const messagePreview = message.length > 80 ? `${message.slice(0, 80).trim()}...` : message;
+      await sendContactConfirmation(email, name, messagePreview);
     } catch (confirmErr) {
       console.error("Confirmation email failed (non-critical):", confirmErr);
     }

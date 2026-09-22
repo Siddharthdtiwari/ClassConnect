@@ -326,7 +326,6 @@
         });
 
         try {
-          const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
           const res = await fetch("/api/scores/save", {
             method: "POST",
             headers: {

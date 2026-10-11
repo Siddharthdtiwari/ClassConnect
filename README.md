@@ -7,8 +7,8 @@ A web-based management system for tuition centres and coaching academies. It giv
 ## Features
 
 ### Teacher / Admin Portal
-- **Student management** — add/edit/bulk-import students, deactivate accounts, per-student profile & report cards (PDF)
-- **Batch management** — group students by academic year/class
+- **Student management** — add/edit/bulk-import students, deactivate accounts, per-student profile & report cards (PDF); mid-year joiners are auto-backfilled with "N/A" fee months and "Absent" test scores for everything before their admission date
+- **Batch management** — group students by academic year/class, with an optional Morning/Evening session split within a batch
 - **Attendance** — daily marking, bulk entry, defaulter lists, monthly emailed reports
 - **Fees** — monthly fee tracking, payment recording, PDF receipts, defaulter reminders (email), month-level "N/A" marking for mid-year joiners
 - **Tests & scores** — create tests, enter/import scores, AI-assisted question paper generation, consolidated score printing

@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en-IN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <% const url = site.baseUrl + '/' + page.slug; %>
+  <title><%= page.title %></title>
+  <meta name="description" content="<%= page.description %>">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1">
+  <link rel="canonical" href="<%= url %>">
+  <link rel="icon" href="/images/logo.png" type="image/png">
+  <meta name="google-site-verification" content="r14iaND1Q_hINO8ltTell63KtgNlJbDLv2jQyqPxnVo" />
+
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="en_IN">
+  <meta property="og:site_name" content="<%= site.name %>">
+  <meta property="og:title" content="<%= page.title %>">
+  <meta property="og:description" content="<%= page.description %>">
+  <meta property="og:url" content="<%= url %>">
+  <meta property="og:image" content="<%= site.baseUrl %>/images/logo.png">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="<%= page.title %>">
+  <meta name="twitter:description" content="<%= page.description %>">
+
+  <script type="application/ld+json"><%- safeJson({
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "WebPage",
+        "@id": url + "#webpage",
+        "url": url,
+        "name": page.title,
+        "description": page.description,
+        "inLanguage": "en-IN",
+        "isPartOf": { "@id": site.baseUrl + "/#website" },
+        "about": { "@id": site.baseUrl + "/#organization" },
+        "breadcrumb": { "@id": url + "#breadcrumb" }
+      },
+      {
+        "@type": "BreadcrumbList",
+        "@id": url + "#breadcrumb",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Tuition Hub", "item": site.baseUrl + "/" },
+          { "@type": "ListItem", "position": 2, "name": page.crumb, "item": url }
+        ]
+      },
+      {
+        "@type": "FAQPage",
+        "@id": url + "#faq",
+        "mainEntity": page.faqs.map(function (f) {
+          return { "@type": "Question", "name": f[0], "acceptedAnswer": { "@type": "Answer", "text": f[1] } };
+        })
+      }
+    ]
+  }) %></script>
+
+  <script>(function(){var t=localStorage.getItem('classconnect_theme')||'light';document.documentElement.setAttribute('data-theme',t);})();</script>
+  <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    :root{--p:#7c3aed;--l:#bde045}
+    [data-theme="dark"]{--bg:#05050a;--bg2:#0b0b14;--card:rgba(255,255,255,.04);--fg:#F0EBE0;--fd:rgba(240,235,224,.78);--b:rgba(240,235,224,.12);--pt:#a78bfa}
+    [data-theme="light"]{--bg:#F5F1FC;--bg2:#EDE8F5;--card:rgba(255,255,255,.85);--fg:#0C0C0C;--fd:rgba(12,12,12,.8);--b:rgba(12,12,12,.12);--pt:#5d3a9b}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--fg);font-family:'Inter',system-ui,sans-serif;line-height:1.7}
+    a{color:var(--pt)}
+    header{border-bottom:1px solid var(--b);padding:16px 24px;display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
+    .brand{font-family:'Unbounded',sans-serif;font-weight:700;font-size:1rem;color:var(--fg);text-decoration:none}
+    .brand span{color:var(--pt)}
+    .call{background:var(--p);color:#fff;text-decoration:none;padding:10px 18px;border-radius:999px;font-weight:600;font-size:.9rem}
+    main{max-width:860px;margin:0 auto;padding:40px 24px 80px}
+    nav.crumbs{font-size:.8rem;color:var(--fd);margin-bottom:24px}
+    nav.crumbs a{color:var(--fd)}
+    h1{font-family:'Unbounded',sans-serif;font-size:clamp(1.7rem,4.5vw,2.6rem);line-height:1.15;margin:0 0 18px}
+    h2{font-family:'Unbounded',sans-serif;font-size:1.15rem;margin:44px 0 12px}
+    .lead{font-size:1.08rem;color:var(--fd)}
+    p,li{color:var(--fd)}
+    ul{padding-left:20px}
+    li{margin:6px 0}
+    table{width:100%;border-collapse:collapse;margin:12px 0;background:var(--card);border:1px solid var(--b);border-radius:12px;overflow:hidden}
+    th,td{text-align:left;padding:12px 16px;border-bottom:1px solid var(--b);font-size:.92rem}
+    th{font-weight:600;color:var(--fg);background:var(--bg2)}
+    td{color:var(--fd)}
+    tr:last-child td{border-bottom:0}
+    .note{font-size:.85rem}
+    details{background:var(--card);border:1px solid var(--b);border-radius:14px;padding:0 20px;margin:10px 0}
+    summary{cursor:pointer;padding:16px 0;font-weight:600;color:var(--fg)}
+    details p{margin:0 0 16px}
+    .cta{margin-top:48px;padding:28px;border:1px solid var(--b);border-radius:20px;background:var(--card)}
+    .cta h2{margin-top:0}
+    .btns{display:flex;gap:12px;flex-wrap:wrap;margin-top:16px}
+    .btn{display:inline-block;text-decoration:none;padding:12px 22px;border-radius:999px;font-weight:600;font-size:.92rem;border:1px solid var(--b);color:var(--fg)}
+    .btn.p{background:var(--p);border-color:var(--p);color:#fff}
+    .links a{display:block;margin:6px 0}
+    address{font-style:normal;color:var(--fd)}
+    footer{border-top:1px solid var(--b);padding:28px 24px;text-align:center;font-size:.82rem;color:var(--fd)}
+  </style>
+</head>
+<body>
+  <header>
+    <a class="brand" href="/">Tuition <span>Hub</span></a>
+    <a class="call" href="tel:<%= site.phones[0].tel %>">Call <%= site.phones[0].display %></a>
+  </header>
+
+  <main>
+    <nav class="crumbs" aria-label="Breadcrumb"><a href="/">Tuition Hub</a> › <%= page.crumb %></nav>
+
+    <h1><%= page.h1 %></h1>
+    <p class="lead"><%= page.intro %></p>
+
+    <% bands.forEach(function (band) { %>
+      <h2>Fees and timings: <%= band.label %> (2026-27)</h2>
+      <table>
+        <thead><tr><th>Class</th><th>Per month</th><th>Yearly option</th></tr></thead>
+        <tbody>
+          <% band.fees.forEach(function (r) { %><tr><td><%= r[0] %></td><td><%= r[1] %></td><td><%= r[2] %></td></tr><% }) %>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>Batch</th><th>Days</th><th>Time</th></tr></thead>
+        <tbody>
+          <% band.timings.forEach(function (r) { %><tr><td><%= r[0] %></td><td><%= r[1] %></td><td><%= r[2] %></td></tr><% }) %>
+        </tbody>
+      </table>
+    <% }) %>
+    <p class="note">Monthly fees are due between the 1st and 10th. The annual option is due on 10 August. Parent consultation: daily 7:30 – 8:30 PM.</p>
+
+    <% page.sections.forEach(function (sec) { %>
+      <h2><%= sec.h2 %></h2>
+      <% (sec.paras || []).forEach(function (t) { %><p><%= t %></p><% }) %>
+      <% if (sec.list) { %><ul><% sec.list.forEach(function (t) { %><li><%= t %></li><% }) %></ul><% } %>
+    <% }) %>
+
+    <% if (page.hindi) { %>
+      <h2 lang="hi">मरोळ, अंधेरी ईस्ट में ट्यूशन</h2>
+      <p lang="hi"><%= page.hindi %></p>
+    <% } %>
+
+    <h2>Frequently asked questions</h2>
+    <% page.faqs.forEach(function (f, i) { %>
+      <details<%- i === 0 ? ' open' : '' %>><summary><%= f[0] %></summary><p><%= f[1] %></p></details>
+    <% }) %>
+
+    <section class="cta">
+      <h2>Visit or call</h2>
+      <address>
+        <strong><%= site.name %></strong><br>
+        <%= site.address %><br>
+        <a href="tel:<%= site.phones[0].tel %>"><%= site.phones[0].display %></a> ·
+        <a href="tel:<%= site.phones[1].tel %>"><%= site.phones[1].display %></a>
+      </address>
+      <div class="btns">
+        <a class="btn p" href="/#contact">Send an inquiry</a>
+        <a class="btn" href="https://www.google.com/maps?cid=10829597217759303032" rel="noopener">Directions on Google Maps</a>
+      </div>
+    </section>
+
+    <h2>More from Tuition Hub</h2>
+    <div class="links">
+      <% siblings.forEach(function (s) { %><a href="/<%= s.slug %>"><%= s.crumb %></a><% }) %>
+      <a href="/#faq">Home page and FAQ</a>
+    </div>
+  </main>
+
+  <footer>© <%= new Date().getFullYear() %> <%= site.name %>, Marol Naka, Andheri East, Mumbai.</footer>
+</body>
+</html>

@@ -9,8 +9,10 @@ const signId = (id) => {
 
 const verifySignature = (id, signature) => {
   if (!id || !signature) return false;
-  const expectedSignature = signId(id);
-  return signature === expectedSignature;
+  const expected = Buffer.from(signId(id));
+  const given = Buffer.from(String(signature));
+  // timingSafeEqual throws on length mismatch, so check that first (length is not secret).
+  return expected.length === given.length && crypto.timingSafeEqual(expected, given);
 };
 
 module.exports = {

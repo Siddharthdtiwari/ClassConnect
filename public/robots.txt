@@ -1,9 +1,56 @@
+# Tuition Hub Education Centre - Marol, Andheri East, Mumbai
 User-agent: *
 Allow: /
 Disallow: /public/report/
 Disallow: /public/test/
 Disallow: /public/fee/
+Disallow: /public/receipt/
+Disallow: /public/fee-summary/
 Disallow: /student/
 Disallow: /teacher/
+Disallow: /api/
+
+# AI search / answer-engine crawlers: public marketing page is welcome to be cited.
+User-agent: GPTBot
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: OAI-SearchBot
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: ChatGPT-User
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: PerplexityBot
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: ClaudeBot
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: Claude-SearchBot
+Allow: /
+Disallow: /student/
+Disallow: /teacher/
+Disallow: /public/
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: Applebot-Extended
+Allow: /
 
 Sitemap: https://tuitionhub.vercel.app/sitemap.xml

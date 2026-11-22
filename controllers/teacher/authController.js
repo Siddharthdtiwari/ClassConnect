@@ -14,7 +14,10 @@ exports.renderLogin = (req, res) => {
 
 exports.processLogin = async (req, res) => {
   try {
-    const { teacherId, password } = req.body;
+    // Coerce to strings: with urlencoded extended parsing, "teacherId[$ne]=x" would otherwise
+    // arrive as an object and be treated as a Mongo operator.
+    const teacherId = String(req.body?.teacherId ?? '');
+    const password = String(req.body?.password ?? '');
     const teacher = await Teacher.findOne({ teacherId }).select('+password');
 
     if (!teacher) {

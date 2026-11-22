@@ -1,0 +1,25 @@
+# Tuition Hub Education Centre
+
+> Tuition centre in Marol Naka, Andheri East, Mumbai for Nursery (Jr. KG / Sr. KG) to Class 10, in English, Hindi and Semi-English mediums. Small batches, weekly tests, and a digital portal where parents and students see attendance, scores, fees and study materials.
+
+## Key facts
+- Address: Chhabinath Pandey Chawl, Airport Road, Near The Lalit Hotel, Navpada, Marol Naka, Andheri East, Mumbai 400059, Maharashtra, India
+- Phone: +91 9967466955, +91 8451826909
+- Email: tuitionhubeducationcentre@gmail.com
+- Classes: Nursery to Class 10; mediums: English, Hindi, Semi-English
+- Batches (Mon-Sat): Nursery-Class 4 at 9:00-11:00 AM or 5:00-7:00 PM; Class 5-10 at 8:15-11:15 AM or 4:00-7:00 PM
+- Centre open: Mon-Sat 9:00 AM-8:30 PM, Sunday 10:00 AM-12:00 PM
+- Parent consultation: daily 7:30-8:30 PM
+- Fees 2026-27 (per month): Jr. KG/Sr. KG Rs 400; Class 1-2 Rs 450; Class 3-4 Rs 500; Class 5 Rs 550; Class 6 Rs 600; Class 7 Rs 700; Class 8 Rs 800; Class 9 Rs 900; Class 10 Rs 1,000. Monthly fees due 1st-10th; annual option due 10 August.
+- Areas served: Marol, Marol Naka, Andheri East, Chakala, Sakinaka
+
+## Pages
+- [Home, admissions, fees, timings, FAQ](https://tuitionhub.vercel.app/): everything above, in full
+- [Tuition in Marol, Andheri East](https://tuitionhub.vercel.app/tuition-in-marol-andheri-east): location, what a batch looks like, all fees
+- [Nursery to Class 4](https://tuitionhub.vercel.app/nursery-to-class-4-tuition-marol): fees, timings, FAQ
+- [Class 5 to 7](https://tuitionhub.vercel.app/class-5-to-7-tuition-andheri-east): fees, timings, FAQ
+- [Class 8 to 10](https://tuitionhub.vercel.app/class-8-to-10-tuition-andheri-east): fees, timings, FAQ
+- [Sitemap](https://tuitionhub.vercel.app/sitemap.xml)
+
+## Related
+- ClassConnect (the software behind the Tuition Hub portal, for other coaching institutes): https://classconnects.vercel.app/

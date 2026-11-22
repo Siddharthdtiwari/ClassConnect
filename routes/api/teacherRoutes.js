@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-const { requireTeacherApiLogin } = require('../../middlewares/apiAuth');
+const { requireTeacherApiLogin, requireAdminOrOwnerApi, requireAdminOnlyApi } = require('../../middlewares/apiAuth');
 const User = require('../../models/User');
 const Batch = require('../../models/Batch');
 const Teacher = require('../../models/Teacher');
@@ -141,7 +141,7 @@ router.get('/batches', async (req, res) => {
 });
 
 // Create New Batch
-router.post('/batches', validate(createBatchSchema), async (req, res) => {
+router.post('/batches', requireAdminOrOwnerApi, validate(createBatchSchema), async (req, res) => {
   try {
     const { name, description } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
@@ -157,7 +157,7 @@ router.post('/batches', validate(createBatchSchema), async (req, res) => {
   }
 });
 
-router.put('/batches/:id', async (req, res) => {
+router.put('/batches/:id', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const { name, description, isActive } = req.body;
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Batch not found' });
@@ -285,7 +285,7 @@ router.post('/students', validate(createStudentSchema), async (req, res) => {
 });
 
 // Create New Teacher
-router.post('/teachers', validate(createTeacherSchema), async (req, res) => {
+router.post('/teachers', requireAdminOnlyApi, validate(createTeacherSchema), async (req, res) => {
   try {
     const { teacherName, teacherId, email, subjects, password } = req.body;
     const academicYear = req.body.academicYear || calculateCurrentAcademicYear();
@@ -329,7 +329,7 @@ router.get('/teachers', async (req, res) => {
   }
 });
 
-router.put('/teachers/:id', async (req, res) => {
+router.put('/teachers/:id', requireAdminOnlyApi, async (req, res) => {
   try {
     const { teacherName, email, subjects, password } = req.body;
     if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
@@ -353,7 +353,7 @@ router.put('/teachers/:id', async (req, res) => {
   }
 });
 
-router.delete('/teachers/:id', async (req, res) => {
+router.delete('/teachers/:id', requireAdminOnlyApi, async (req, res) => {
   try {
     if (!require('mongoose').Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: "Teacher not found" });
     const teacher = await Teacher.findById(req.params.id);
@@ -400,7 +400,7 @@ router.get('/students/:id', async (req, res) => {
   }
 });
 
-router.delete('/students/:id', async (req, res) => {
+router.delete('/students/:id', requireAdminOnlyApi, async (req, res) => {
   try {
     if (!mongoose.Types.ObjectId.isValid(req.params.id)) return res.status(404).json({ error: 'Student not found' });
     const student = await User.findById(req.params.id);
@@ -486,7 +486,7 @@ router.post('/attendance', validate(saveAttendanceSchema), async (req, res) => {
 });
 
 // ========== FEE MANAGEMENT ==========
-router.get('/fees', async (req, res) => {
+router.get('/fees', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const batchIds = await Batch.find({ academicYear }).distinct('_id');
@@ -527,7 +527,7 @@ router.get('/fees', async (req, res) => {
 });
 
 // Collect Fee
-router.post('/fees', validate(createFeeSchema), async (req, res) => {
+router.post('/fees', requireAdminOrOwnerApi, validate(createFeeSchema), async (req, res) => {
   try {
     const { studentId, batchId, amount, month, year, method, datePaid } = req.body;
     const studentObj = await User.findById(studentId).populate('batch');
@@ -800,7 +800,7 @@ router.post('/materials', upload.single('file'), async (req, res) => {
 });
 
 // ========== REPORTS ==========
-router.get('/reports/revenue', async (req, res) => {
+router.get('/reports/revenue', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const batchIds = await Batch.find({ academicYear }).distinct('_id');
@@ -823,7 +823,7 @@ router.get('/reports/revenue', async (req, res) => {
   }
 });
 
-router.get('/reports/audit', async (req, res) => {
+router.get('/reports/audit', requireAdminOnlyApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const logs = await AuditLog.find({ academicYear }).sort({ createdAt: -1 }).limit(50).lean();
@@ -833,7 +833,7 @@ router.get('/reports/audit', async (req, res) => {
   }
 });
 
-router.get('/reports/communications', async (req, res) => {
+router.get('/reports/communications', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const logs = await EmailLog.find({ academicYear }).sort({ dateSent: -1 }).limit(50).lean();
@@ -844,7 +844,7 @@ router.get('/reports/communications', async (req, res) => {
 });
 
 // ========== DEFAULTERS ==========
-router.get('/defaulters/fees', async (req, res) => {
+router.get('/defaulters/fees', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const { month } = req.query; // e.g. "January"
@@ -905,8 +905,8 @@ router.get('/scores/consolidated', testController.apiConsolidatedScores);
 // PDF Downloads
 router.get('/students/directory/pdf', studentController.printStudentDirectory);
 router.get('/students/report/:id/pdf', studentController.generateStudentReport);
-router.get('/fees/sheet/pdf', feeController.downloadFeeCollectionSheet);
-router.get('/fees/defaulters/pdf', feeController.downloadFeeDefaulters);
+router.get('/fees/sheet/pdf', requireAdminOrOwnerApi, feeController.downloadFeeCollectionSheet);
+router.get('/fees/defaulters/pdf', requireAdminOrOwnerApi, feeController.downloadFeeDefaulters);
 router.get('/attendance/defaulters/pdf/:year/:month', attendanceController.downloadDefaulters);
 
 router.get('/defaulters/attendance', async (req, res) => {
@@ -1205,7 +1205,7 @@ router.post('/bulk_save_attendance', async (req, res) => {
 });
 
 // ========== BULK FEES ==========
-router.get('/bulk_fees', async (req, res) => {
+router.get('/bulk_fees', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const academicYear = req.query.year || calculateCurrentAcademicYear();
     const students = await User.find({ batch: { $in: req.viewingBatches }, role: 'student' }).lean();
@@ -1243,7 +1243,7 @@ router.get('/bulk_fees', async (req, res) => {
   }
 });
 
-router.post('/bulk_save', async (req, res) => {
+router.post('/bulk_save', requireAdminOrOwnerApi, async (req, res) => {
   try {
     const { updates } = req.body;
     if (!updates || !Array.isArray(updates)) return res.status(400).json({ error: 'Missing updates array' });

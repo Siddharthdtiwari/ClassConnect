@@ -80,7 +80,23 @@ const requireTeacherApiLogin = async (req, res, next) => {
   }
 };
 
+// Staff role guards for the mobile API. The JWT only says "teacher" for every staff account, so the
+// real role (teacher / admin / owner) comes from the Teacher document loaded by requireTeacherApiLogin.
+// These mirror requireAdminOrOwner / requireAdminOnly in middlewares/auth.js, which the web portal
+// applies to the same operations.
+const requireAdminOrOwnerApi = (req, res, next) => {
+  if (req.teacher && ['admin', 'owner'].includes(req.teacher.role)) return next();
+  return res.status(403).json({ error: 'Access denied. Admin or owner only.' });
+};
+
+const requireAdminOnlyApi = (req, res, next) => {
+  if (req.teacher && req.teacher.role === 'admin') return next();
+  return res.status(403).json({ error: 'Access denied. Administrators only.' });
+};
+
 module.exports = {
   requireStudentApiLogin,
-  requireTeacherApiLogin
+  requireTeacherApiLogin,
+  requireAdminOrOwnerApi,
+  requireAdminOnlyApi
 };

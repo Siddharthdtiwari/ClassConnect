@@ -156,6 +156,9 @@ app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.use(express.json({ limit: '10mb' }));
 app.use(express.static(path.join(__dirname, "public")));
 
+// Stateless public SEO pages + /review short link: no session, no CSRF token, no DB.
+app.use(require('./routes/seoRoutes'));
+
 // HTTP Request Logging
 app.use(morgan('dev', { stream: { write: message => logger.info(message.trim()) } }));
 
@@ -257,7 +260,10 @@ const reportIssueLimiter = rateLimit({
 
 app.post('/api/report-issue', reportIssueLimiter, async (req, res) => {
   try {
-    const { url, time } = req.body;
+    const clean = (v, n) => String(v ?? '').replace(/[\r\n]+/g, ' ').trim().slice(0, n);
+    const url = clean(req.body?.url, 300);
+    const time = clean(req.body?.time, 100);
+    if (!url) return res.status(400).json({ success: false, message: "A page URL is required." });
     await contactTransport.sendMail({
       from: process.env.CONTACT_EMAIL_USER,
       to: process.env.CONTACT_EMAIL_TO,
@@ -280,39 +286,49 @@ app.get("/health", (req, res) => {
   });
 });
 
+const landingCache = new Map();
+const LANDING_TTL_MS = 5 * 60 * 1000;
+
 app.get("/", ensureDBConnection, async (req, res) => {
   try {
     const User = require("./models/User");
     const Batch = require("./models/Batch");
     
-    // Find active students in the current academic year
-    let targetYear = req.currentAcademicYear;
-    let batches = await Batch.find({ academicYear: targetYear }).select('_id').lean();
-    let activeBatches = batches.map(b => b._id);
-    let students = await User.find({ batch: { $in: activeBatches } }).lean();
-    
-    // If no students or no one has any points, fallback to previous year's leaderboard
-    const hasPoints = students.some(s => s.points > 0);
-    if (!hasPoints) {
-      const startYear = parseInt(targetYear.split('-')[0]);
-      targetYear = `${startYear - 1}-${String(startYear).slice(2)}`;
-      batches = await Batch.find({ academicYear: targetYear }).select('_id').lean();
-      activeBatches = batches.map(b => b._id);
-      students = await User.find({ batch: { $in: activeBatches } }).lean();
-    }
-    
-    students.forEach(s => {
-      if (typeof s.points !== "number") s.points = 0;
-    });
-    students.sort((a, b) => b.points - a.points);
+    const startYearOf = (y) => parseInt(y.split("-")[0]);
+    const loadTop = async (year) => {
+      const batchIds = await Batch.find({ academicYear: year }).distinct('_id');
+      const top = await User.find({ batch: { $in: batchIds } })
+        .sort({ points: -1 })
+        .limit(3)
+        .select('studentName points profilePhoto')
+        .lean();
+      return top;
+    };
 
-    const topStudents = students.slice(0, 3).map((s, index) => ({
-      rank: index + 1,
-      name: s.studentName,
-      score: s.points,
-      avatar: s.profilePhoto || s.studentName.split(" ").map(n => n[0]).join("").toUpperCase(),
-      year: targetYear
-    }));
+    // Cached for a few minutes per server instance: this is the public home page, and the
+    // leaderboard does not need to be real-time.
+    const cached = landingCache.get('top');
+    let topStudents, targetYear;
+    if (cached && Date.now() - cached.at < LANDING_TTL_MS && cached.year === req.currentAcademicYear) {
+      ({ topStudents } = cached);
+    } else {
+      targetYear = req.currentAcademicYear;
+      let top = await loadTop(targetYear);
+      // If nobody has any points yet this year, fall back to last year's leaderboard
+      if (!top.some(st => st.points > 0)) {
+        const startYear = startYearOf(targetYear);
+        targetYear = `${startYear - 1}-${String(startYear).slice(2)}`;
+        top = await loadTop(targetYear);
+      }
+      topStudents = top.map((st, index) => ({
+        rank: index + 1,
+        name: st.studentName,
+        score: typeof st.points === "number" ? st.points : 0,
+        avatar: st.profilePhoto || st.studentName.split(" ").map(n => n[0]).join("").toUpperCase(),
+        year: targetYear
+      }));
+      landingCache.set('top', { at: Date.now(), year: req.currentAcademicYear, topStudents });
+    }
 
     res.render("index", { topStudents });
   } catch (err) {
